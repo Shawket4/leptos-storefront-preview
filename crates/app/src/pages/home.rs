@@ -121,8 +121,8 @@ pub fn HomePage() -> impl IntoView {
             Lang::Ar => format!("توصيل سريع في {} دقيقة", format::count(m, num)),
         },
         None => match lang {
-            Lang::En => format!("Free delivery over {}", format::money(t.free_delivery_over, lang, num)),
-            Lang::Ar => format!("توصيل مجاني فوق {}", format::money(t.free_delivery_over, lang, num)),
+            Lang::En => format!("Free delivery over {}", format::money_short(t.free_delivery_over, lang, num)),
+            Lang::Ar => format!("توصيل مجاني فوق {}", format::money_short(t.free_delivery_over, lang, num)),
         },
     };
 
@@ -233,7 +233,7 @@ fn Hero(art: HomeArt, kicker: String, headline: String, sub: String, cta: String
 
 #[component]
 fn TrustStrip(lang: Lang, num: Numerals, express_minutes: Option<u32>, free_over: domain::Piastres) -> impl IntoView {
-    let free = format::money(free_over, lang, num);
+    let free = format::money_short(free_over, lang, num);
     let items: Vec<(&'static str, String, String)> = vec![
         match express_minutes {
             Some(m) => (
