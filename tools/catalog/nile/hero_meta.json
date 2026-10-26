@@ -1,0 +1,62 @@
+{
+ "hero-1": {
+  "title": "Grado Headphones SR80e (Unsplash)",
+  "creator": "Michael Mroczek (mroczekm)",
+  "license": "cc0",
+  "license_version": "1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "foreign_landing_url": "https://commons.wikimedia.org/w/index.php?curid=62191354",
+  "source": "wikimedia",
+  "provider": "Wikimedia Commons (Unsplash import)",
+  "width": 6000,
+  "height": 4000,
+  "url": "https://upload.wikimedia.org/wikipedia/commons/e/ee/Grado_Headphones_SR80e_%28Unsplash%29.jpg"
+ },
+ "hero-2": {
+  "id": "f4b7fca0-50af-46e2-9b91-e6e83b2e45bc",
+  "title": "A fashion editorial. Close-up of a person wearing a modern black and beige outfit with oversized sleeves, putting a pink phone case to the transparent pocket.",
+  "creator": "Guste Cibulskyte",
+  "creator_url": "https://wordpress.org/photos/author/gusteci/",
+  "license": "cc0",
+  "license_version": "1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "foreign_landing_url": "https://wordpress.org/photos/photo/45268adefc/",
+  "source": "wordpress",
+  "provider": "wordpress",
+  "width": 2048,
+  "height": 1365,
+  "url": "https://pd.w.org/2025/08/45268adefc04c7563.25407766.jpg",
+  "url_2048": "https://pd.w.org/2025/08/45268adefc04c7563.25407766-2048x1365.jpg"
+ },
+ "promo-1": {
+  "id": "e249b95c-8392-49f3-9a76-4bb514ed3e83",
+  "title": "New Balance 2002R Sweet Caramel sneakers",
+  "creator": "Jon Breitenbucher",
+  "creator_url": "https://buddypress.org/community/members/kahless/",
+  "license": "cc0",
+  "license_version": "1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "foreign_landing_url": "https://wordpress.org/photos/photo/29462b2449/",
+  "source": "wordpress",
+  "provider": "wordpress",
+  "width": 2048,
+  "height": 2048,
+  "url": "https://pd.w.org/2022/06/29462b24492556070.61682681.jpeg",
+  "url_2048": "https://pd.w.org/2022/06/29462b24492556070.61682681-2048x2048.jpeg"
+ },
+ "promo-2": {
+  "id": "395b3054-d1df-477a-90e1-f059ab993671",
+  "title": "A yellow upholstered armchair with wooden legs is placed next to a small wooden cube-shaped side table. The setting is against a plain white wall on a tiled floor.",
+  "creator": "Nilo Velez",
+  "creator_url": "https://www.nilovelez.com",
+  "license": "cc0",
+  "license_version": "1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "foreign_landing_url": "https://wordpress.org/photos/photo/72067d80e4/",
+  "source": "wordpress",
+  "provider": "wordpress",
+  "width": 2048,
+  "height": 1365,
+  "url": "https://pd.w.org/2025/03/72067d80e474b8d97.17011664.jpg"
+ }
+}

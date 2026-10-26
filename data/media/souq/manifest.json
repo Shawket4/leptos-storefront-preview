@@ -1,0 +1,4291 @@
+{
+ "souq/hero-1": {
+  "kind": "hero",
+  "widths": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "aspect": 2.3329,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRnQAAABXRUJQVlA4IGgAAACwAwCdASoUAAkAPwFqrU6rJiQiMAgBYCAJbACdMoRwAA0xhqz7gAD9mBswJy5ACYmtUlVnowiTp8VBaH4nnNTVMOVD25TRL+N3eGtBRGcpLF3bjzVa/p7hhP6W0P1Gwo+IFCuKuoAAAA==",
+  "color": "#ad733a",
+  "alt": {
+   "en": "Whole and halved oranges with a peeled segment on a pale grey surface",
+   "ar": "برتقالة كاملة ونص برتقالة وفص مقشّر على سطح رمادي فاتح"
+  },
+  "source": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Oranges_-_whole-halved-segment.jpg",
+  "license": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)",
+  "credit": "“Oranges - whole-halved-segment” by Ivar Leidus (https://commons.wikimedia.org/w/index.php?curid=98469414), cropped and resized"
+ },
+ "souq/hero-1-m": {
+  "kind": "hero",
+  "widths": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "aspect": 0.8,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRqwAAABXRUJQVlA4IKAAAADQBACdASoUABkAPwFws1GrJiSiqAqpYCAJbACdMuN+GQAuwAB3tfJiRLUQyyD1EAD+x33e5g4b2RcUTtVHgpSKf+N89hqPF4pdbqVEVU1yqoZvxj51kXMNVRCErepLoysjlz+y6mlf7jEBfysJU3/2GOqBHCyAhf/Kb+wrAcphR7WLy/umG6GbxnlQ1dyCNA8/9UBBWKQXn7G1jTReAAAA",
+  "color": "#b37d4d",
+  "alt": {
+   "en": "Whole and halved oranges with a peeled segment on a pale grey surface",
+   "ar": "برتقالة كاملة ونص برتقالة وفص مقشّر على سطح رمادي فاتح"
+  },
+  "source": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Oranges_-_whole-halved-segment.jpg",
+  "license": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)",
+  "credit": "“Oranges - whole-halved-segment” by Ivar Leidus (https://commons.wikimedia.org/w/index.php?curid=98469414), cropped and resized"
+ },
+ "souq/hero-2": {
+  "kind": "hero",
+  "widths": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "aspect": 2.3329,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAADQAwCdASoUAAkAPwFsrE6rJiQiMAgBYCAJbACdIExBbUlO4Bc9ynAA/j+Vz5/qrehvXrCr2r5JqYlrMlFEhbrRfWkjLjZLsIfshu6oBBkatktNGtHe+BJlXh5a3zEn8AA=",
+  "color": "#866566",
+  "alt": {
+   "en": "A whole pomegranate beside an opened one full of ruby-red seeds",
+   "ar": "رمانة كاملة جنب رمانة مفتوحة مليانة حبات حمرا"
+  },
+  "source": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Pomegranate_fruit_-_whole_and_piece_with_arils.jpg",
+  "license": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)",
+  "credit": "“Pomegranate fruit - whole and piece with arils” by Ivar Leidus (https://commons.wikimedia.org/w/index.php?curid=99248987), mirrored, cropped and resized"
+ },
+ "souq/hero-2-m": {
+  "kind": "hero",
+  "widths": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "aspect": 0.8,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRqYAAABXRUJQVlA4IJoAAAAwBQCdASoUABkAPwFyslGrJqSiqAqpYCAJbACdM2Wv/gGDYvncliVr+CreqFnx9uYNjgD+nsU9V2nsiXyVxPPEfIWhMcstx+rpYYt/sVEFXTtipOrCkmBFb/nfonFd/jgymgpCXp68BYXOmRQrVzOwxGQrDhvHFXlVQqF8iFp0pZhSvRz8YDBbIKTOLXe/MdmGW0To77oOIAAA",
+  "color": "#856a6a",
+  "alt": {
+   "en": "A whole pomegranate beside an opened one full of ruby-red seeds",
+   "ar": "رمانة كاملة جنب رمانة مفتوحة مليانة حبات حمرا"
+  },
+  "source": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Pomegranate_fruit_-_whole_and_piece_with_arils.jpg",
+  "license": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)",
+  "credit": "“Pomegranate fruit - whole and piece with arils” by Ivar Leidus (https://commons.wikimedia.org/w/index.php?curid=99248987), mirrored, cropped and resized"
+ },
+ "souq/hero-3": {
+  "kind": "hero",
+  "widths": [
+   640,
+   960,
+   1280,
+   1920
+  ],
+  "aspect": 2.3326,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAACwAwCdASoUAAkAPwFqrU8rJiQiMAgBYCAJbACdMoADQmqzIaNciAD8rGcMq7SmKnSTGsHVsGVheurQ1YgP5phHx2O2cZ/n7vSQtcPRhkaiPO9d9emxv+bsTiAAAA==",
+  "color": "#c8942b",
+  "alt": {
+   "en": "Roasted coffee beans spilling across a warm wooden table",
+   "ar": "حبوب بن محمّصة متناثرة على ترابيزة خشب"
+  },
+  "source": "https://pd.w.org/2022/05/203627f31f8770f03.61535278-2048x1366.jpg",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "credit": "“Coffee Bean with bags” by Shusei Toda (https://wordpress.org/photos/photo/203627f31f/), mirrored, cropped and resized"
+ },
+ "souq/hero-3-m": {
+  "kind": "hero",
+  "widths": [
+   640,
+   960,
+   1093
+  ],
+  "aspect": 0.8001,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4IMQAAACQBQCdASoUABkAPwFytFGrJqUiqAqpYCAJbACxHuN/ZfgAG4Cum+xfHp/F57xQLofs5SjWYAD8pmNzjinxJH3kTNRtyr3psA98xZvt//yRUUe57CLdmu94fPeAU0fCpNFYs3kTp54mIn1aba2ormx27e2lJqpWBLvpqwhqT8iKcsI25M3p9yGkq08ySeUuRUsRYLk5RQhuixC9PN7HAT2x1ecLWyy8A7ptGGBOaBlEXlNX1lJnP6yEMCfmtdqj0rb8OfAA",
+  "color": "#9f6b1d",
+  "alt": {
+   "en": "Roasted coffee beans spilling across a warm wooden table",
+   "ar": "حبوب بن محمّصة متناثرة على ترابيزة خشب"
+  },
+  "source": "https://pd.w.org/2022/05/203627f31f8770f03.61535278-2048x1366.jpg",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "credit": "“Coffee Bean with bags” by Shusei Toda (https://wordpress.org/photos/photo/203627f31f/), mirrored, cropped and resized"
+ },
+ "souq/p2001-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   790
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJgAAAABgGLb1vLmhhQzM8MA0GdFxTLDPLKi4qJT8nW13HpS3Fpmrvz5/0MTiIgJwJznJpNClnd5J9G3Czv90ST1J5IkyU0jALGCK0eQnPtJWbatVHLskbzDk6vb9QzHMx/nT4J1OgF5yBpPQloB8f1EQSBETvogBczEJDUA2OC7PiHJmyrYnjcuIgu5GrzJT9Z/D8Lja8cHAwcWEFZQOCCOAAAA0AMAnQEqFAAUAD8BdrFTqyckIqgIAWAgCWwAPkA9FUAsEErHThOIALYmxoswegnYc39ilExVKLKaCXU7PblQ5SrH+N9UaJAUAS/uEtrUYEZTNsAuux4yW7tKcxokO+N11yCt4Xvzy3vQoYy3aSMNMkATN7ifWsk/ujDLwhA5WiqW9JpAShNgy/4RodvgAA==",
+  "color": "#f4c2b7",
+  "alt": {
+   "en": "Tomatoes",
+   "ar": "طماطم"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tomatoes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tomatoes”"
+ },
+ "souq/p2001-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   794
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIoAAAABgFvb1rLo4u4Qeej04ER0QA1usWtqmbuN5dPEZJ5aBT74961FBRExATh7vZbOFGvc1N1MosD15+bw7TYhPhHbkD6bjjh/iDZ3goPLDWUWgOiH5gWAeUP7LwIcdHJA8UfzwQVwQ7MCAOcP2a/nABmyNvMIKv8EUxFOBu+PvYZ5IOS48p1hI6TBmQNWUDgglgAAAHAEAJ0BKhQAFAA/AXayU6snJCKoCAFgIAlsAJ0ZoDbZinVAOMcCjPmB0mUAAOzKSIZ7d/VMmUvTV14Fhh5sghlkzNl3a3po9nKK22DRyPkYTLJKkIDp9nQVk8G39CmLFEUdTA/pUW6V2xreJo2XfleDTrV+woQCesKRD/pAQs3yVFsEccfDuzNQYI1ZxYcThfckDcpYAA==",
+  "color": "#e3a99c",
+  "alt": {
+   "en": "Tomatoes",
+   "ar": "طماطم"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tomato.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tomato”"
+ },
+ "souq/p2002-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   767
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJwAAAABgGLb2rLl/q7Nvbm74+4MwGlEFgMg0ejedAJ0klujubslh4u3v0fEBKBQqvTiH611gv8kH86bgTayT/2PIXIemCBPt2clfyQePnoRv+HhI1ki/w1KfeXkJnnwzpvVjznRDw3ML+Tl+TvZStIDYGB/2PrCdwcWyJ4NbskB4ztZUj7eAKhfyFxQAsDyA7/u8COMX7uXB/G7vb8OhRNWUDggcAAAALADAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlsAMELUADo1iBumgoAAP4M8RzPU6+QxXSoYC+22I3gBUehrK2EiSqoq2OV/stxtC/DXq1r//5c/7Xeq7osMGGAGhK2DTXPOZoLkplnwEWzfwg6UW0AAAA=",
+  "color": "#f1dcd5",
+  "alt": {
+   "en": "Cherry tomatoes",
+   "ar": "طماطم شيري"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cherry%20Tomatoes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cherry Tomatoes”"
+ },
+ "souq/p2003-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJcAAAABgCJb2/LmC0tm0skuOJHoY2kNzMzMUNhBHcpOXKeKLSvmhj6YyQoiYgLARrLYRBRl/mUfg+eqd3yW3tt8votgJd7m6CqMN5ujv9+dsL055oeXCTHNsR8FkCnePAiZEZxCrgj+GGsnJPS1NsEFWHcTVCHWW6wfNST0gxUH69LEG8ZPjApRaEfnN2n/8dPzWVkDkFSVGGwgAFZQOCCSAAAA0AMAnQEqFAAUAD79aq1OqyYkIjAYDAFgH4lsAJ0zHHg+gAKeEhOAAP7rD+/ATU7y7CSKx4C9JWedjWfvO22Z4+Ae3d0r0Yd1jWRuRlf+7OLPuOBqS+sprrW8xkLvq5iHPzSnsS+QbVxn/2KuLkDAgaZXihQdrRcCuSRMy0QO36rnGKh6F/RUJizPl07/d9J0AAA=",
+  "color": "#f8dabf",
+  "alt": {
+   "en": "Onions",
+   "ar": "بصل بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Onions.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Onions”"
+ },
+ "souq/p2004-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   791
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRk4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABgFtt27Lmwd3d3aViBRag5dAyAh0l9M4EVJSZgi6e0t3dk9//N2wQEROA1Wos/xDZW9PRBsx9gBS7ZL6qBF/vjmGY3/VeWkrZeWEkf4ZGEeWckb00CNoMsSvYopwrACdDjgM5WgFwk551ALYpMwCo/8o78QjQ+pSzX4B4bSlx17dCZry5eGYuG3qQrVgtVlA4IJoAAACwBACdASoUABQAPwFyrFGrJqQiqA1RYCAJbA24RQS3/xRWAo9KnlByzZYW3kqgAP3NLu+Ve9vwetBKbHYrho6mJGwdEN2Y1w9KcevuZ3Ukv2TongS6Y50dArdJq/zT/2R3vFz/4xNfP+8i1f0lS60eeKS1tsYSDLRe8NDGBhIGNKbrn+6OA+5FMi+fSiEboLM8m//Z7lu1LSAA",
+  "color": "#d0adac",
+  "alt": {
+   "en": "Red onions",
+   "ar": "بصل أحمر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Red%20Onions.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Red Onions”"
+ },
+ "souq/p2004-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   837
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIYAAAABcFpt27K8P54sQXP3yARUpzkkJiBxWACSa6OT2IABdAQnkVx+e398gIiYAPjTEuFrxvLa8Yp3cCc36XDErwB5wYNI5iR+t0h6ZB8BRW13ZZHtPUkecwiAsoHgeQx4nQdJPrCjDAN1tlIcY6SFA6QaVQxbCLjYJdbBBy9Gh6OaBV4WCOA/A1ZQOCBgAAAA0AMAnQEqFAAUAD8BcLNRqyYkoqgKqWAgCWoAzNAQ3u0UfPYwd0EAAP7DBDXO7BGnjgmwLfN4kfqAhuDLb8JXHi8jG9tM9FbvuhJ//3LJp9DUKQOPBoskPX5LoUwNmgAA",
+  "color": "#ede1e1",
+  "alt": {
+   "en": "Red onions",
+   "ar": "بصل أحمر"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/red-onions/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2005-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJMAAAABgGJt27LowTfgzW0DHJbgsgg6h6aZaM3dpTtMmjN1Jmp2d/8NhwVExARgZ8t8nBVErrnG4WFCLjYsIH5KyJ4Igni62mMIwvuj3gFh8hIzL1gASsRMW33WkA3wfmY9jmbd8AAxMfdjFqEDNPOOxzPOuQD7aE6GW2B4AEDYnXGlA6zhqAsz2R2CIN7dWFLgT5qF2OUAVlA4IFwAAADQAwCdASoUABQAPwFsrlArJiQiqA1RYCAJQBhyEngwkJGdqFAZn6AA/tLZRb2IriHeObG0KtLmRLK4Fc9uDzZXcIf/9cCdIPe1hp6Kf34WA8KiYEHt/SC6AAAAAA==",
+  "color": "#f1eae3",
+  "alt": {
+   "en": "Baladi garlic",
+   "ar": "توم بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Garlic.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Garlic”"
+ },
+ "souq/p2005-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIoAAAABcBwAoKm8bNfVWECnFuhkt0ZN4QF40gp2nRugk62T+6g+NoiICQDEy2VEZKZ8AsSLNAEg9LQRQBnPxPiA8Tbk4/MdoU3DhYni7EA/C9Z/ghqEsUj/VYIwp3/oPtjuiq8AhNPx5cdj/1LcsF25XyCGLQ5+R57/XjnmH2DKjo7Qe1KNKgF2ulEKyAVWUDggUAAAALADAJ0BKhQAFAA/AWSvTyslP6IwGAwD8CAJYwDIXBC18+9VFwH0AP7TGU2T6H5mzoFTXGUJKu906mJ//92fhR0T/y4CscYXOWSoVzyPTAAA",
+  "color": "#eee8e4",
+  "alt": {
+   "en": "Baladi garlic",
+   "ar": "توم بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Garlic%20Bulb.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Garlic Bulb”"
+ },
+ "souq/p2006-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   817
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRu4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHcAAAABgGLb2rLs4u5OojmRaGNwqK6NMbhDpxEdJuGVIdif3AWHRI+ICcDdJBtV9lHLALbNRDtHSK52p5+Vh93uKc84ae5ubANQ7W79FwOyn1t2agDh7xu+uQCg9J17He92u8cgzi/PpAnmVISPi/6TBQM3usrdBh/3FQBWUDggUAAAAHADAJ0BKhQAFAA/AXCzUasmP6KoCqvwIAlkAMUHwIBO2w6aAAD3ABOmFBVH99nYx2qRb/CzBXljdtYF20+C91L8tO1fVXpK0bV8yA+0URYA",
+  "color": "#e6d8cc",
+  "alt": {
+   "en": "Potatoes",
+   "ar": "بطاطس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Potatoes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Potatoes”"
+ },
+ "souq/p2006-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   789
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABgJpt27LswTXR3J3qDo3IABxsIBkSJHcWgAXoNoA2micOmiT4/fPv+22AiJgA+KdthX6vmOTT874ixI2MVhshz1O5RvMTxSHFIZHeENoLI8GOkH6SIRc9AIgeJC8UyBgAoEG4zqi+5ADAHSIIMkifKRAzECOZhM0ZX5Nt2STkwtIrgiB3PzBUZ8s5BfzHVlA4IFoAAACQAwCdASoUABQAPwF2s1QrJySjKAgBYCAJZgDImBDQFLOutj3AAP3MW8tic8RrzdtKd46bi5NMtFKicq6dYLbF1/OE///2BrsjnvbcdspzpawNls/7FGA4IAA=",
+  "color": "#e8e1d5",
+  "alt": {
+   "en": "Potatoes",
+   "ar": "بطاطس"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/potatoes/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2007-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   817
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIAAAAABcFpt27I8f8Kbk6E5CSZwHYBBbAeiTuDukNw9cuhu3T3RI2IC8DfpAY9CQPzAa7usw9tQB1A+qfhK2/h2u92qadUHRmgRWp5ebreKjngDwHC5fe5riHfk2u1anZ9fbrcgCQDZEL1tTQBVZLEHcm42AKRnBTEdv6oTDPwuZOIvA1ZQOCBkAAAAsAMAnQEqFAAUAD8BdrJTqyckoqgIAWAgCWoAyJgRHLEangTG2wAA/lIlrgV3GHNwOZQjYRF9JoaloiykjQgeL4IT+hMf//laAeJmEstFJvyRzEKpGsqlEo51obV91ehdAAAAAA==",
+  "color": "#faf0e5",
+  "alt": {
+   "en": "Carrots",
+   "ar": "جزر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Carrots.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Carrots”"
+ },
+ "souq/p2008-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   780
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH8AAAABcFNt27K8P+42ubt0oAMJOMxskkFTONQgArvu7g6/fd/vASJiAkBBbW4tN1exNpn/yV2JQ2H6I9EvL0pT+ZL4X5AV6n9Jrk0AgPiW5NwgWF2S660MbMODyywFyDyJfzWMgA5yaABetUA9OiYOUEWsM8BZVT+Sm54N+KpsBCgnAFZQOCB0AAAAcAMAnQEqFAAUAD8BcK1RKyY3IqgNUuAgCWwAyJgFlGtpkGAAAM/3N8z27S8JiJ7ILMGZcWSQL04WVmZ5HPGg/uE4bvA76qewHvo7L56gXdHZEvOAzeHr//81c0P6x1aofdEm1BlcV9avPDfEiwEmf8qAAAA=",
+  "color": "#dbeac3",
+  "alt": {
+   "en": "Cucumbers",
+   "ar": "خيار"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cucumber.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cucumber”"
+ },
+ "souq/p2008-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   785
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIcAAAABgFrb1vLohZlBkeYeoriC6Mi0waCiItMBOfaMDaQHGr4DHwwVEBETQP9pNKmTsRb3wN4gFOxc8NUvoNftwFwpWNrS+e0NzHWQmIYRuLeynthxsN8WCRVxDWvGJe4mrjrX6s4vANrEV/QAYD8cFNQCIXw92UjY+PilQZL5R2DjlSFfOqSg/xMAVlA4IGwAAADQAwCdASoUABQAPwFsr0+rJiQiKA1RYCAJYgDG9BEqYxDYpSFB8yAA/orQg1B9OM8OdO2qeeY+RLXGns3Oh2sU1FHWXLbwvmyfegC7bT7hl+QydPtLC1vFIFhBn8pJ//siBR4GlCsSbZRgAAA=",
+  "color": "#e7edde",
+  "alt": {
+   "en": "Cucumbers",
+   "ar": "خيار"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/cucumber/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2009-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   763
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRigBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKMAAAABgJtt27Hn/mPbtm1nlmQH26mywJ/KGMFJ5QHs9H8q6+qe7/g3iIgJkDdd4VKko0UWtDnkoB7e/F7os83Cvc8XF7ZtWNUTrz6mJ+jSId+BFt9fvlO1A2GWBDh36QiSLXngli4gx1IHI5IHsiyd0KOAf8i2tMCo4oECSy64FQ1kWvzeefLx/4N0i7agVNeQaur8YFJzeEJMqjybV2B3ixz6BMjLAFZQOCBeAAAAEAQAnQEqFAAUAD8BeLRUKyckoygIAWAgCUAZv4IcN9N0DMSqCbxxFwAA/tjgVBbC6D0dRWEh0/cbcwG9mpQIKBe94ZD+MroHvuqYVX1mD9XLKtd8kFflelJ3jQAAAA==",
+  "color": "#d9dad2",
+  "alt": {
+   "en": "Zucchini",
+   "ar": "كوسة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Courgettes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Courgettes”"
+ },
+ "souq/p2009-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   793
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHQAAAABcFtr25N8cJghx4oF6ClZIFu5RFggbqETpAW0SjOwgVnLLPH7qOgjQmHaNoztjlugIfYPS7sWK03Td4+pgX+laZruXZaum1Y8zcaxQtT5p9iNgWs9iRKPQTnnlHCKX2NF8OcB6yeICVBy8fpxWfbbJjRDAFZQOCBgAAAAUAMAnQEqFAAUAD8BcK1RKyYkIqgNUWAgCUAABI/U+UTeu8AA7UOQoi9o1g6bmBcniMWLb9e/0STf2mhZvSQ+2/LeP//2hQA1o9rS4zWuRGEIWZhaWFIN/BQKWpmAAAAA",
+  "color": "#dee2d9",
+  "alt": {
+   "en": "Zucchini",
+   "ar": "كوسة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Zucchini.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Zucchini”"
+ },
+ "souq/p2010-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   802
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJsAAAABgFtt27LmxZ3aStctdAirOQxB5VD6BlRQuSbZwKV0d7cn9ltsgIiYAPr7xhDFhVGTTsrORN/AS3+5Blxhoc1Hk3pjfbnzSznCJ+Be38ywaK/AO8JixhvvQwujBYETxv0bcLTO8gYARiLRLoCVNONln2EhsoO5xYCzsbtXIiL1HuN1EcCZlDitCwCGlk0gSdwibbaTUpAq7KN/EQBWUDggiAAAAHAEAJ0BKhQAFAA/AXKrUasmo6KoDVFgIAllAMoBi/5EEEXlNBwSgvg8qkkgAPce+CtV8YMwQLZE891SzqhFqCb+h2My8mMDcmb9hvN6ZrnQhw2bYzX7F9Elms6chO6vjtzf/+vqwhf3c+KAyHuuop53FOmeaGxYb+OtCFDALvBIsF/yB+dgAAA=",
+  "color": "#ceccca",
+  "alt": {
+   "en": "Aubergines",
+   "ar": "باذنجان رومي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Aubergine.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Aubergine”"
+ },
+ "souq/p2011-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRv4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH8AAAABgGJt27Low63R3aVy2AQL8Ea35tY9O0Qqa2AN7u6afPR9Z9hBREwAeTef+w+Gifsv4lR1+xFloPS1xcfPuhEhvnyAVwUU/EDGoAKmDFUwcSiLsUMZjB6KYQSQByOETIgXD1IhGgTZhbwYJ9DnYqiZ697R++jqCJ7FICwpjbwTAFZQOCBYAAAAEAMAnQEqFAAUAD8Bcq9SqyakIqgKqWAgCWYAAEF72sIAAP7c+rIzRxKwqWhsYh9vBVX/KK/dgw+zdh7tDQt/+HHYaPagpI9rvb8gQRgWWbC4snB8H8AAAA==",
+  "color": "#c1caaa",
+  "alt": {
+   "en": "Bell peppers — green",
+   "ar": "فلفل رومي — أخضر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Green%20Pepper.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Green Pepper”"
+ },
+ "souq/p2011-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   779
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIYAAAABgJtt27Hn/m2bld2aC6Cy0f8zZIiU6TJBynQZw+xsJ59/DxARE4DNaPHIebMJq7vXBEEQl9MZcocE56+OQ3JDzJhAiMVEzHof//YBMO3MROy9GwAcELPftAE4iTm3AED9NEeJgckcFRYM3md5d7EhsM/1X8aMye2jb4IgzmqYk6d163nYgFZQOCCAAAAA8AMAnQEqFAAUAD8BdrNTqyckoqgIAWAgCWwAvmjYgO2yxhoRarzwAAD504ws/qExYXtuAL5W4vyDt8RpW+LaCXe2rWc2QqQvVyjddZND9K7mukFPEtRsSuZo8sVQphS1MB98I//0OHio0mDGYezvYB1SexKO7m0qq//U+RHgAAA=",
+  "color": "#e6bebc",
+  "alt": {
+   "en": "Bell peppers — red",
+   "ar": "فلفل رومي — أحمر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Red%20Pepper.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Red Pepper”"
+ },
+ "souq/p2011-3": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   846
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI8AAAABgGJt27LowSW5Q7LGAoh0iG6RJbAA2wGJyhI0sQGaa3NrbjPz+/+PLSAiJgD/ob5jBSDmozFIUh8q+Ce3soJNWnm9r8Q1q1wSBNGQseQI9inBrLAMOTjjjLuQuQhQE4K9gFuYC/AJqgFwCqkqAIiPXCeCIPYGMEscO024NQqAVZbvLgiC+AxCaKg9zuCfBABWUDggmgAAANAEAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlsALsvgNZrbAc+BpgG8vALfkabI54AAPxS3HVLKCUUTgcNbg4yfkB5gFMTfoBFdQyD+hsjb+1YLErj9BG+SINc9hsEHeeqcljLVzBlHDclZ5c4+MRncpujdq3M2u8XoE7ZOudyEVODT4wOOtt3ka4xBqnlvRLHW9fw/7f/wsgAAAA=",
+  "color": "#eccda9",
+  "alt": {
+   "en": "Bell peppers — yellow",
+   "ar": "فلفل رومي — أصفر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Yellow%20Pepper.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Yellow Pepper”"
+ },
+ "souq/p2012-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   793
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIMAAAABgFtt27Lmxd1poXN362AV9xXYQFvXyiHptSIjaJcyC+hT4DJAREwAXXFrKXKYfwzchvdTdP+xORLvEf0EgDsAT4IdyT9s1hcAGtuK/9h8MFn/gB/VRgwAfrt2IloBH0IiinwDWLtoU1Eqa4iI8QJ8xZm0vwF41tKhOqxldLA6w6WrDwBWUDggVgAAAHADAJ0BKhQAFAA/AXKwUismpKKoCqlgIAloAMssB7arxidJAACSstgVm3AopsKvG5Eu83KabQl+6uisBVT0yl3ynP/4W/EyQCAYPCoiKbe4Pt4YAAAA",
+  "color": "#e3e8d9",
+  "alt": {
+   "en": "Hot green chillies",
+   "ar": "فلفل حامي أخضر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Green%20Chilli.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Green Chilli”"
+ },
+ "souq/p2012-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   841
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJQAAAABgGJt27Loxd0dkkN1T0RYgVeW4NBINLcEzS0zPlM5swF3d3f3BUTEBMD/Tjd8TdH24Ckayqc4qfO9xFmdxfuI7qhcPc6PnoZqvZMGQEnObhw/Pa2kc/tP27X9GR68RQrUNpFl/GmhdPPUpcOHJNfofs5lON3yoOBDRDBg5wCEN6Xw9WodvtE/+A5EQfUNgBR/x/8IVlA4IFIAAABQAwCdASoUABQAPwF2s1OrJySiqAgBYCAJYwDDrA1yMwniAADtN/OuDWojQbdbJXANGeWkJpyJ9fnb3xN3V5UNf8qTx0SOteFTU+22/vGAAAAA",
+  "color": "#ebefe8",
+  "alt": {
+   "en": "Hot green chillies",
+   "ar": "فلفل حامي أخضر"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/green-chili-pepper/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2013-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   852
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgJpt27Ll/t2iS/X/x50EiRXcPVtkBLo7E2h0yO4OA7jrHd4HZ4CImAD8+VhVoUfxlVSEJd0Qycd2DZqfyfdRm9JCsSn/jWofAP+LdHhC8dUNoFM6q5Xe/QACN8p7sWVX6ICaNnV7M10A+AbPH5brNYKaNHF5MZaGzzvPSfIh71OmZYobms9gXKL9U7nvwhI+3/ZMcs79BXjLazLwLwIAVlA4IHAAAAAQBACdASoUABQAPwFsr0+rJiQiKA1RYCAJbA2wAUn+AUk9xnEAIm2CAADXMVc92fr+WCdCcyi4ohAmrUKSee22p5/r//8nFdCd/KyeUyNNsZsrerwjuz79qRcd2E3H7I+p9Zbxt1ff/+czdj/576AA",
+  "color": "#d2e0be",
+  "alt": {
+   "en": "Baladi lemons",
+   "ar": "ليمون بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Unwaxed%20Lime.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Unwaxed Lime”"
+ },
+ "souq/p2013-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   789
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJkAAAABgFpt2/LmDTMNwAolg2XSUZkhSySyzOg6A9dW5lQxMzPTT+/3/u0GETEB8J9Gv1OOtbnyyXFrWVLtlEO/6xklphj75Zi/JWBGtlnPKhboGl8Y1yDADMe8drAyHLFtZPRRuOMEtkziHnzILI2bRrpk3CD+TxqnlsAq7QzQ1uIepRcDAE+0g3UsBABr/yPHvQ7aQaYmFDbC3wMAVlA4IJAAAAAwBACdASoUABQAPwFyrVKrJqOiqAqpYCAJbA28xRtcATaSAjGStU0sJYAA1oTMRKBTsW9B6lmU4Z/TKLpMPVx47zdkzxc3c8/0CZSVPq6f//6KgJqLRDK/O+9/Anqg8OqTx+LuX6h8Hxb//wRUMt9ksIyGUkZ6c9qg/ryofY7wCsT4CLdu8EvwQho9pNoAAAA=",
+  "color": "#d4e5aa",
+  "alt": {
+   "en": "Baladi lemons",
+   "ar": "ليمون بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lime.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lime”"
+ },
+ "souq/p2014-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   832
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIUAAAABgCMAAKnqZc6NdifA1uwr2LZr1twNeIE28xyutW8+5wNEBIGkjXuCxwCeIU2ZfJnwADZJl6hWIAj22OdJTiBa57w2iE131jsO2Ofi0cAzbbEjagN/5zbBIC/B86kxM19gQzGOF9RJCE4waVH6u2dWA85U+MF6c54/MdMo+sKVuJoIPDQAAFZQOCCMAAAA0AMAnQEqFAAUAD8BdrNTqyckoqgIAWAgCWwAVBmP+AeGwItWIWNgAP7ehngHkO1cmG7Jv7/o/CrEEvMdAkNRnZ/727Lq2Wpf+vGn8X/8h3///EUOjZEbpe183D0q36khfUQf/7+0btBr7UKhzvjmzXeEj7/58FTh5FfLzwEHIyqYQM32kI1k6M74iAA=",
+  "color": "#f4f0bd",
+  "alt": {
+   "en": "Adalia lemons",
+   "ar": "ليمون أضاليا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lemon.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lemon”"
+ },
+ "souq/p2014-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI8AAAABgGJt27LowS1ptugswjOHBbAFl0SjcqiQWYJlSOzA3aku870jv4wtICImAH9cli5F1aISRLT2A5Hu/dQOcvWJiK6+GKOvxS9G4qwPiTsMwMG1JN4OAAuXQKYHJFsxZAWQFjORANAxERUAMBMvq/WmjYD8i+TIMwp7ZeAt8sRlECivMiJ6ZiDSWyin7PgnAQBWUDggegAAAPADAJ0BKhQAFAA/AWqwTysmJKIoDVFgIAlsAMKvwIDo0vf7Lf7yrgAA/sOsHfXcLBUfbrUJFAhQ+2MdGJNp1ysRfbNUnPIXWTf+MtJfhy3Y+e5JrHf4uj/Q6Sf6f8+wld+Ot/g5M/wGE7FBCTW16+PC5v/r9+ZPgAAA",
+  "color": "#f0e4bd",
+  "alt": {
+   "en": "Adalia lemons",
+   "ar": "ليمون أضاليا"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/lemon/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2015-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   833
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH0AAAABgGJt27Lowd3dfQE0KvvQBlkTyV0rS9BG0pk9THT3SW64s4CImADsebt3DeSjkXUOm7OA7z8ejeo0APS30UWjEE/XDj9Hsx0AaI9WNQCy25UsALG3yisZAC3ys1wVs77R0veSOQR3927Riw2LqdGHmb+WHksTTZ6wQ409DQBWUDggagAAALADAJ0BKhQAFAA/AXC0UasmJSKoCqlgIAlsALbIEN6oWtvKAQEYAP7TGa4B5C8EQIXlxq+T4wqpwyDMLgTZJ63kXtBDfRCRf5YKf0PA++zrE7NHBQ0bn5usPySDXKsjDnJ35o70ibJoAAA=",
+  "color": "#fcf0c8",
+  "alt": {
+   "en": "Bananas",
+   "ar": "موز بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Banana.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Banana”"
+ },
+ "souq/p2016-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   846
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI0AAAABgFvb1rLo4u6QuafWgnTAIiTWDjRz64A2KIHI3VMLZXwG+wYvICImAC9UarmC4w07DLWLKFCN9vv9517mIlH8859mbX++reRIyf3FVh4DAP/jos++DwAs+8t9OOfuLlMSELlMTZDkfy+p4lyw3l+6tBDg2VyQUuBfkdtZIrTpuJiWWOzfynJcS5Ux8PgAVlA4IIgAAADwAwCdASoUABQAPwF2slOrJySiqAgBYCAJbACsIOf6AAN+I4uf1sYAAP6LvehQwBU0tkv/nnJ9bAit3taynCO70Sez0E7sjDL9cW8i/AaTneZgGmOjkxyb/REw9TzVAO1Dl+ET2zbzIITaW8FD58K0w1CtAb9IaW59sec0XkL6i/85WziwAAAA",
+  "color": "#f7deb7",
+  "alt": {
+   "en": "Baladi oranges",
+   "ar": "برتقال بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Orange.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Orange”"
+ },
+ "souq/p2017-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   771
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgKP///nmG9s2NtvJmBNYYy6QVHM3t2OfXqG7zQt0s7nbf4cXiIgJgH7kZcsOWhtp2EYQZEVFYazlVbSx2PD8E4Ici0gqnwiC3B/vrk8am6/ICCH4jVCfKLzPh4QFpNVZcB3RAZivLd0BhCQAdqR1NRAdbZhI5K39sEngrKUtIB9tqUCheWlhm0YBDaorHVDT5kj+F43QcqSeCbil0PsAVlA4IIwAAABQBACdASoUABQAPwFurlCrJiQiqA1RYCAJbABLgUIAAu5gLauU8eCjCJgAAP3MwVTRswol23SoPagFFwuxxE9J14oI89sqKwzZ/8iQt16gapp+0E9Zl5nIa0U74YbBVBwwI78kpQUCC3V1+0/bHYe83JfH1G635xwso9Wc7fnUpp4ElX1lPlP+ACAAAA==",
+  "color": "#f7ccb9",
+  "alt": {
+   "en": "Imported apples — red",
+   "ar": "تفاح مستورد — أحمر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Apples.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Apples”"
+ },
+ "souq/p2017-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRh4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIsAAAABgGNt2/HoCTvbqryCbCO1KmMD2UFSJ13GnkrtbMCsbNv+zRVExARA/tbufE9IKzxOEKf8vJn5hSuCeC2auZzTfwTnfYHNvEPwbrN0CIF5AKpHIQcKIEQI9gNuYRFA8SjkXw9gSsgiAKT+BTQY6PC70rFoZ/j8p8Guar5xfJfBMzqwsb26tzuchLwBAFZQOCBsAAAAkAMAnQEqFAAUAD8BeLVUKyclIygIAWAgCWwAwNwZeVmf+p9vgAD+4JOIM+BrTanR2S1yK8bQ1YGoeVGb7rd3lOueDlp0VivaaRlOhLDDFK6JopMOyT8eBaoXsay1fDvMCoQX8BHH/6kukgAA",
+  "color": "#dad8a8",
+  "alt": {
+   "en": "Imported apples — green",
+   "ar": "تفاح مستورد — أخضر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cooking%20Apples.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cooking Apples”"
+ },
+ "souq/p2018-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   799
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRj4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIYAAAABgFvbtqrq4u4RBUBmGTEFUIK7lOFE1OANuKQeu7s7xIwh/9+LNhARAoIi1oBfJw30Zxm/kvOU7nqDulifwExvaE/m3p440hH8Z24KBHb1jB0g+Z6JyTEwav72rLwInhZ9+lkG4EJP72BhhqduPBix+kwaIAkHsGtOSwRoTE9js6o4BODnAVZQOCCSAAAAkAMAnQEqFAAUAD8BeLRTqyckoqgIAWAgCWwAeAIyQAXNbeA0AACbFyXJVdrOhslxdtnHvcWMhoIgsn9ON+x/7Y+EXref1Jac5/xO07F/r1ko5NnM9UGf//g8WGD3Q011z81v8YC/h5/mEZMQL7pqfyR21sHnWhzSGQ5AbTKxyWOt/k4+T7sRGn/lKlD1+fiAAAA=",
+  "color": "#edd3a9",
+  "alt": {
+   "en": "Mango",
+   "ar": "مانجو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mango.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mango”"
+ },
+ "souq/p2019-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJwAAAABgFpt2/LmCTPKnHiSzKDJxZKMzwLZgElFRWKZGQbgLlDFzG34+2GCiJgAsFrngEdLxRO64V0GKPDiib/twUZSbItBpZumzz8NJo+tzcZVzswBwA1/DQj/dnMGEYDTAfmJHoBmQLUAANdUDicyVNYn0KKQniJ4JFrkTtH8k8xJMJV/R9ATY2b6b1rUAlLr8vtgMGiDqjJRyYoosRBWUDggmgAAAFAEAJ0BKhQAFAA/AXaxU6smpCKoCAFgIAlsAFXV+a2wE0sALcvLAPK9WQAArnhmbMH5p91RyR5UTsJXelOVIWxMv4NE/+yiuS/GJ2/nYjzFIN7AoZaPsE9vFxw7dFolM2pCu96Xcvii0FDSMvzjNTG4JhqJHlkXVnvZn8Cbpf5ZGVHdnUXJHHZlHTHiw4Zq6Ue96OI/6p4GIAA=",
+  "color": "#eebcb0",
+  "alt": {
+   "en": "Strawberries",
+   "ar": "فراولة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Strawberries.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Strawberries”"
+ },
+ "souq/p2019-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   799
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgLNt2/HmiW07Wbl6c/IzcnRyp/4DG1NnY7IxdbTd0bbvesseERNAWZMXlrcUk1T2v1yc4rXmvbO1/CbzV+zp7Qy/j6j+cB8cPv+BgV8chc3A880LTp7xgQrOjxXM971hfxcXwPrcWwMRceYxol/C1AHat7HygGUOEdlyJF7gCugcxdPsfIx+d55jZvU2rxcvPib9bYyIuGmmobSEsicAVlA4IG4AAACQAwCdASoUABQAPwF4tFOrJySiqAgBYCAJbADDNAepmWzp0IoAAP0cEcthM3znARucdlB+jak2gMgZYJ+b0gWFQbA8xUzzFLP0hkhETUSiWMSA0E1RNj5kSAhP+3louzFrGkLo4IeL43tCIGAAAA==",
+  "color": "#f2d4cf",
+  "alt": {
+   "en": "Strawberries",
+   "ar": "فراولة"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/strawberry/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2020-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRj4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI8AAAABgGLb1vLmhjmSmcEyWyabMUTxADiefFF2AEy6q666kpkxzBlAREwAlrLJKuVNZGufnzEAeEwgjpJ+dd6KPoD0kimbhxGKncEVbqTT2SYPy3TGTWEo9XGs/4aqQAZ0nQk/7wiAaJLOFgCcTpIY8P+Nd2EeQPKy0+lcfgzrnLAHQHGFzWR5fftgM10OELCEAQBWUDggiAAAANADAJ0BKhQAFAA/AXayVCsnJCMoCAFgIAlsALsR+qANUm9KZQnPgACY7ILh08iKJgWR09Q6PtwQigE11+PMoFhnkc43P0Ctt9UfpUahsDzFMQ10plOWKdPLeP//3h+Eryt+1DFuSzzz+iCa47c/2/59hK/z1rrPf5Qerk6ltZdh/JMcytGAAAA=",
+  "color": "#ecc9c8",
+  "alt": {
+   "en": "Pomegranates",
+   "ar": "رمان"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Pomegranate.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Pomegranate”"
+ },
+ "souq/p2021-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRioBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgFtt2/Lkibu7p0x6r9xGENw6q+kcVtCOwwCUrgPABC7lTxdPXuQXbICImAD8g75pTWRan5rjt0GNJjHdvQof5xuxPygG991fpo5vibNxTW35l3li7xL1iZYBSHf6HKyPiwAwwau17sNXyTl12eqvSbBHe0RUP3slKuvBOZbtN2/csF718+AZnLNIAewyYT7sWuZALGyuHoJg4/gC/kcAVlA4IGQAAABwAwCdASoUABQAPwF2s1OrJySiqAgBYCAJYgDO7AZDoIccvgAA6MCZAH1mLPVgaCuc5JgOSGO3xjqlGD0C+MlLgdg10no9D/P7jUeTj7jISWrB3P7o///Lw9jTM0DN/+XYgAAA",
+  "color": "#d8dcd1",
+  "alt": {
+   "en": "Fresh molokhia",
+   "ar": "ملوخية خضرا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mulukhiyah.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mulukhiyah”"
+ },
+ "souq/p2022-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   791
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKwAAAABgJpt27Ll/hWHRCK6JGcDW8GTj0AiubOAS/or1d3d3SG5y4X9vkBETIC8M9Ql9VPxLmhjI8g5G9Q5FJkQbLRewqhDrXDevw0TBgdiyz+Ba8hr+ZOUX9CbHXaH3a8QKeQGOJ377wAeAyWlPeLo21ChJPlfOPRZmflH4Y3H/zw8Au9l/0jBttn7QRg9BjrtWGeBw4HY9E9YtCNLVkWtRSrs7XtbsWc3RLKYnHIrVlA4IGQAAADQAwCdASoUABQAPv1ork6rJiSiMBgMAWAfiWgAvdAQtfdln7xC8gAA/vKkEidwbUpSMVTf63jo1V+TP/vWINTuJOE3wsp64Ss+OS6VHeyvRuNSKCS8rhiqxmRXu2iMc3lOigAA",
+  "color": "#c7cebf",
+  "alt": {
+   "en": "Spinach",
+   "ar": "سبانخ"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Spinach.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Spinach”"
+ },
+ "souq/p2023-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   802
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIkAAAABgGJb27LqwzV6cndLVGuW3GEGNDITcLprY9FIft1GYO1WS8gbfmn0iJgAdE1pQRkXZd2kGN43gPX+9b5MQtE/AQD8/xwXBJnaCoiPLz4Mt/t8IQEQwCD7G5D9ylIwy9M3GZjzMaVIh9RBR0cIoTG8e5K/cDkDwGntpGEoUkG1XYm6TRK3TImuJgBWUDggYAAAADADAJ0BKhQAFAA/AXKwUqsmpKKoCqlgIAlsAMTYAmkOTgAA1juISGxH8mNPXYgtig8VfFn/QcbErr3Ib6b6Zsxpm5b4cD//9lY/bZES3SeRFOi3QKeSwo3t+qS3TQAAAA==",
+  "color": "#dae8c6",
+  "alt": {
+   "en": "Rocket",
+   "ar": "جرجير"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Rocket.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Rocket”"
+ },
+ "souq/p2024-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   762
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRngBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSNgAAAABgGvbtrHnxLaNFm9gVvm72HZS2q1L27bNyrZtWzv44xeIiAmg/yoZHfI91XF0M+OV+SS9HE8x3EwsE4mIO4bHEbt4WmJnkrTGILJDRB6OMGtNH4XKEOAvcoj+KmD+ZpBJevHzwOh8K54A4Mqbieb1Oe7wiJdDnIxjgp1Iwps3BTjAFuqP6oZxH01EbNurph04xWDicMPCS7cJGxFRJC4euibQw3rdeI5jN/qokH2L+MViMRUzErC3I6Zuh3icHyRi0JcVldnJmFNC/WsfWTT06AeV1X7i9wFWUDggegAAADADAJ0BKhQAFAA/AXCxUismJKKoCqlgIAlsAC7qgGLyqYAA/tIl08A/Ol+3kZoCgb6PO5fGVy7KeJeWro7lQXjRs6b2Af8QA7mfuEZOz//u/v3NjzxWleW3pT1lOtq8wfxZ6FhkL2N8Tlfjb//LlJtbRrM/9yT4jAAA",
+  "color": "#cfe0ba",
+  "alt": {
+   "en": "Parsley",
+   "ar": "بقدونس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Parsley.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Parsley”"
+ },
+ "souq/p2025-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   838
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKAAAAABgGNt2zHnHdu2FXVOFpF6qthoc2YDsUuzc9qUXIPqQRUbz9gLiIgJoHLIJEdutQsH5wOhrBhE7UD4ZzQb/71F/Yl/IFJvzMTd3zpD6s+DJ1NNGOm/Yt2ODPPI/Pa6EmjwpdTfA39pgMuxVkYKBRd/Wqb/0vyFb0KCFHKeHkuNy3XrAPC1QRmZTCJi7QFAW6b0wghwrc+FgufjUspZTmUQVlA4IHwAAAAwAwCdASoUABQAPwF2s1OrJySiqAgBYCAJbADDNAXMCWYAAI+VN72Ay4lcG1rnjmBOAfbSm5R5SArF1JYnyQzW/JS79qlePVqj//4YxsaT29P/f6yau59K9Q3eou9rk+M13MVDHew1g0nkp//0UwTi487yXf/+v6wCgAAA",
+  "color": "#d9e3cb",
+  "alt": {
+   "en": "Fresh coriander",
+   "ar": "كزبرة خضرا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Coriander%20Leaves.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Coriander Leaves”"
+ },
+ "souq/p2026-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSLcAAAABgCoAgEHnnmfbjPaik1G3bttLSMYXqKnZtm3b3u0eD/uDiJgA8M9cGq6OyNkmw9ueSySISc+q2e7M1BbhlA2cGhdWL79uuqt8cHz33OZ7iMS/X7PBXgJFwCh64v1XLBbDrWRfLYxd0fD7n1iMxH3+agAriG2DYjGC310OXJxGeO6ZGIrRQbI5wHM0giqXv9BLuS4g1vJOPfkstAeUXEH7OGCYWsEirIyFbymL8CYWcQMstIxZEAMAVlA4IGgAAADQAwCdASoUABQAPwF0rVKrJqOiqAqpYCAJbAAu/8A9IY6RSRaA5wAA/hDsFZ+HtoSSCABmTPwuv+3jHgmuypgSFKDZCo+ls+N8Iaf/907Wt8Kzpd4H//idq8rAvuYx5YUDiotYd+eAAA==",
+  "color": "#dce6d5",
+  "alt": {
+   "en": "Dill",
+   "ar": "شبت"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Dill.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Dill”"
+ },
+ "souq/p2027-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   815
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIcAAAABcFpt27J8vza06gY0y3TPTAADOJHoLtUHoNJILhswgLvb937//28QEROApFaLYV8aBbGZ97tmK/cMJHzsjbdDBhS/A1nA9Bjs32AHqL9JMzjriiiA879JLxpckmhK4XJEPoRvk0xZwEMSRqBsDWUQYQzoK0joBGbJIWLKu3hfulYklNLxSGIAVlA4IIIAAABQAwCdASoUABQAPuFcpE6/pSOiN+gD8BwJbACdACn9twk4AADnkfZepxdg8F2cdIPojOvHQghAczeUOZ0bo/KAuOtBBd4iyWdkNGH5drK4HHdhKfJmsMqUrtHO+hnQK3SSQW00cbss3L4O/rUJqso11SYM9f/wVqlsv/5n34JdAAAA",
+  "color": "#c1dbaf",
+  "alt": {
+   "en": "Fresh mint",
+   "ar": "نعناع أخضر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mint.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mint”"
+ },
+ "souq/p2028-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKAAAAABgFxt2zHnGXtmywbMoAEnO9vG0i2kATvZ2U4KyBQQ7WybT+wCImIC8E+KvkFQ5ld+TgKg5oH+6E/12qCfJ7lc/gnz6rGj9oEknxJDsuuUAJTl5OIa330i8wEg+Iiffsx8U8LPP6S90Q1+bkEJQDbFdyen31xUiABA3fdO994bXnXIAcBefUtur5yQPJ734X25paonXBkz2pzhwmel+D8BVlA4IHIAAAAwAwCdASoUABQAPwF0r1KrJqQiqAqpYCAJbAC90BiSUa5AAPs/wt6u8spXm8I6nMuZpFyyEv0PgBN4ecf8m814wYd2/o5X/ddlFSDJOu871xwEHnbQKdY0mL4CemP0/zGsdR2/5Ezf8A2///CDGailzAA=",
+  "color": "#d4e1bd",
+  "alt": {
+   "en": "Fresh vine leaves",
+   "ar": "ورق عنب فريش"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Vine%20Leaves.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Vine Leaves”"
+ },
+ "souq/p2029-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   823
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSFgAAAABcKL9/9J8cSdxATgCiUwj00g2T65tSQ+wZ3XH0Ox5V1j16pbIETEBiJuG+of+/rod9Qr5XNJzLNs3Xna3HzciwI2/OCyGzZYGAGx1Pmg3XVOX8SUjIdYCVlA4IEIAAACQAwCdASoUABQAPwF4tFQrJySkKAgBYCAJZQDI1BEcu55mfWkAAP5vd7m8YhnXKp1XishxH06Vk5e2+PFNhxAHQAA=",
+  "color": "#eff3eb",
+  "alt": {
+   "en": "Green onions",
+   "ar": "بصل أخضر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Spring%20Onions.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Spring Onions”"
+ },
+ "souq/p2030-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   796
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ0AAAABgGrbtrLl/O7u0bK7pL/bQ+CSSA7RyTQqWROZBNUd0k9yl43ce5AniIgJoP+oNf5kanZ0/PIowtM0AeDFzWtA2MKKHop6OS33EK47ZLYFSN+qkvQR5Bv2b8FM3y2Yo/R9AmuTks2OqFJQfj2H8HlETdJ+iM8LxAy8YWcLWPUQe7E5945DE/Hn34D3CvFDF4/9jTH6YWUvTr9opH8JAFZQOCBiAAAAMAQAnQEqFAAUAD8BZq9RqySkIrAYCAFgIAlAGQuCH5Ii8/lTYAdxe93QAP7elTi+qoweEUojs9H3HruOURLB0CkVp1SJ3dcIKdTjeEbld6Pme7wTUPb39/5ocMTLBTgAAAA=",
+  "color": "#dde3d8",
+  "alt": {
+   "en": "Leeks",
+   "ar": "كرات"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Leek.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Leek”"
+ },
+ "souq/p2031-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJsAAAABgGLb1vLmhZlRJY5BcaKZQcWTZ3YsW8Wtq2RQjANgVPUdAIc5A4iICYBZjSguDIMyooPNbdsQ+82Yt/l1MMRFc850dcIfItxYNtyIAD8YOMup9/mHR85gkuf/t/9m82hjUz3AbbPnf7P5SemD+OvVreoD683m4V+PD1QvgcGcdSJLf1+xeMIR4gMAQogFDAAAnymnYwCrwMDsBQBWUDggcAAAAFADAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlsAMfkBGJTZnEAAPxSTwVSRs0Q+zlxoXGP0AC2hao31NMTxH/J5PxSy3pOC8hHRC/A3qy7ZfJwjnlS2/mfH//7+lhWplrAj2cB+sxJuqOupT+pJNc6aAA=",
+  "color": "#f7e8e3",
+  "alt": {
+   "en": "Radishes",
+   "ar": "فجل"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Radish.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Radish”"
+ },
+ "souq/p2032-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJoAAAABgCMAoLHsZdv2qrF7WFtTbY2tzbyDa9PI3Sfot21/en8+QEQoctu2oXNKd58Bdh9e2GFYKdq9cadWkR8hyDxDWY7buPxDkKkdMJY2JOkbBEGqo7+Plm1JyRILBM6V6Z/4K7IkFVgQWZobCGmx3APEgCzXhKiXex5yoBrBep3f+6bLUlARHGeEIx2AvoriYRA7CWLFelIE9iQAVlA4IGQAAACwAwCdASoUABQAPwF0sVOrJqQ/qAgD8CAJbADCgA0xLhAi8KVJ0AD+cQhIIbY3TkJFTmLgTmY9SGRx/hOWpgAmaYFXoWcv7Md6+1//9+VhmmShCrM7XCSfP1rJ2DM6/iSzgAAA",
+  "color": "#e5c0c9",
+  "alt": {
+   "en": "Beetroot",
+   "ar": "بنجر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Beetroot.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Beetroot”"
+ },
+ "souq/p2033-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   828
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgGNt2/HojW1bC7CtLietndQYVNN5C+pmFmFWrGy0KG3EGS4gIiYA/k8EEL6GkZrpX/Okl9WA+cpkz4IPjNz2AttHkRX2CbMt1flO72xxvgTt6q7uxicuNoegTXTxsbKxX7kuQGt0+OCjUqlU1nnQHBsc2355rlQql11YaFkaHLutvOwMhzDQWupK2ordQvgiT4ZWCTFfAaACg/C1vwsAVlA4IFoAAACQAwCdASoUABQAPwFys1IrJqS7KAqrYCAJQAAFtUJnN3WxLmMAAP7ypD6OFBemKvioSI3f7b1iAu6XDGoK1pFAwX9QN4lm65H8PQGp5Zz6L3/+9k/oA140cAA=",
+  "color": "#f2f5ed",
+  "alt": {
+   "en": "Green beans",
+   "ar": "فاصوليا خضرا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Green%20Beans.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Green Beans”"
+ },
+ "souq/p2034-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   812
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHMAAAABcFpt27K8uDvVqZAgOVu4JfdBWAEGILskHcChMYG7vTiJHhETAH9VwvqJatWfZlWdhv1FbFzANSLubkW1gffGPcUvj5h/08cfe2wAOf66FwNAIPPVddSCV/kOcf5yREQtvOf708Rus4GRbM4GP1JV8FcBAFZQOCBiAAAAsAMAnQEqFAAUAD8BdrJTqyckoqgIAWAgCWQAxNgQ0SZvP/akHAAA/lFxqw6VS7JpqgPRIKDgumY2isyEvBqr+IupdNslI+SHrzn/8JzkGHlNU8S6pQVjfCIpt8uoWWVQAAA=",
+  "color": "#dde6d4",
+  "alt": {
+   "en": "Frozen green peas",
+   "ar": "بسلة خضرا مجمدة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Peas.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Peas”"
+ },
+ "souq/p2035-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   576
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHoAAAABgFvbtqrq4mSuHUBH7k4NRO7WABV45m4VELq7ZvL/wTPyiJgA9DuFDtvc3LaIvlvC+1qJ9gm3/gBgf4PRJtbwZQb/wpvC9+kXhCbf/RfJL8Hv4MB4sX66/ANE+AghRLrBuQFwBYh1AeTobSzLpUT7Cq8OJyh3BO9+IFZQOCBqAAAAUAMAnQEqFAAUAD8BeLNTqyckoqgIAWAgCWwcAPh0ABvsx0AA/uGemSxtAV6idNQULqHxVE8+jfpUmBp6k92zp+vQBcfONkpjkL7kOJjSx/603//51SnLkVlrG6+DiEjQrz/WUmtZVkAAAA==",
+  "color": "#e4ead2",
+  "alt": {
+   "en": "Green fava beans",
+   "ar": "فول أخضر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Broad%20Beans.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Broad Beans”"
+ },
+ "souq/p2036-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   828
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG8AAAABgFNt2/LmC7OATMzsISdTpphgC8wMHrCspBPjXAMdA/f4tlUQEROg/tJh/oXVuStzwjkvsh3gXqS+gJjoDqiJCsC7RhIFTn6J/QhUJeoBuBLNgB+TJAOQlei+gaZErYGtKAcMRapzek7LVMCl/j0AVlA4IFQAAACQAwCdASoUABQAPwFytFGrJqUiqAqpYCAJZgDMHBDRNgw8MjgAAP7ej+ZhyTo48oH3TcPnZ7ZQCdjYFvQAQGKZXgh+P9rIn55r//+1dYLMMpzwAAA=",
+  "color": "#faf7e7",
+  "alt": {
+   "en": "Corn on the cob",
+   "ar": "درة شامي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Corn%20On%20The%20Cob.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Corn On The Cob”"
+ },
+ "souq/p2037-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   854
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIIAAAABgFtt27Lmwd1LSnc6StZwGMCd1qG0CaAkMoK7b2CVW5d0nk9iA0TEBOAfDA5m4xCHZePt61TEYr55I+dZ+m/U8827nShpn0ZME445HqWAtnLB8eYBEHjieNYDWHzjLALACceJ9MsG270dX8OUYX11KW8CufHyZVMFdndnYZKS4J8EVlA4IIwAAAAQBACdASoUABQAPwF2s1OrJySkKAgBYCAJbAB2Sbm84BLFe8lgQfS0AAD+0zqeaCxnl4whIZUFVWP+TEE6ZcUoVoNpgwYB0v/ll812rHVqh6I4NXiCGkyMotpqCb5AXLnSL+PY1CIUntmudwaVXmI2BRgZ+bdTEako9z9klewviksT4Aq0HzP/jrAAAA==",
+  "color": "#fbd2a2",
+  "alt": {
+   "en": "Pumpkin",
+   "ar": "قرع عسلي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Pumpkin.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Pumpkin”"
+ },
+ "souq/p2038-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIwAAAABgLJt27JW/ou7Vg6iu8NfILplMpUsyTKN5E0zyZ0Ec9/i2mjz1w4iYgLAWcVqPo2puP/++X7tpjg4Rv7zB3s0YHI/pKcAwvVF9POuhOo/lFnoiWYMHWjeoA7NAxSjqULMEdmHBgKKOckpDNDs4BD1UFABQisqDYhFqAzFM6JCBviJ2vrq1k+BFIBzAlZQOCBaAAAAUAMAnQEqFAAUAD8BdrJTqyckIqgIAWAgCUAEeAAGWXvPmAAA+EWKdYx/Vwy8QGP7yXbsvCUblsflOmxQhMN39wN4Gd+ggH4xT7M4uDAtqRUCxEuDf/6AiAAA",
+  "color": "#dbd0c5",
+  "alt": {
+   "en": "White mushrooms",
+   "ar": "مشروم أبيض"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mushrooms.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mushrooms”"
+ },
+ "souq/p2039-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   854
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKcAAAABgFpt2/LmDTgGh5qTAaKiIqNyskBOHDtOW9UBGBZgVtwqbn1Px2D6nld8UFogIiaA/rytuLVXNbN3Vq8A8TVpNAUB+cWhs05A82DTTUP7ViBtVgAQgMBXWjcFw7buDIBQxTSBLxhuWlTeTxOeUNGJAbPYr9mledX93SODmQfSQFW22yvM4M8gEeUV5z4id2wXvExEZNsH8JEjOTqccUrkWLpYKtG/BABWUDggcgAAAHADAJ0BKhQAFAA/AXSwUismpKKoCqlgIAlsAAAXfkj2/aZiwAD9HRGi0j96HpuP6PqNJ6SUJSQ5qpNO79374jQYlEC6U63+Pqf//bWTvsNnhayhD3ADGAcAKLMdpoh1h9YZb8DP7ZxgR8ORgEhVuwQAAA==",
+  "color": "#bdcfb2",
+  "alt": {
+   "en": "Broccoli",
+   "ar": "بروكلي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Broccoli.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Broccoli”"
+ },
+ "souq/p2040-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   767
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJcAAAABgLJt2zHpmVl7m23bTOrM+xts/QErKk3b5Oqttm2mwRU+tOkRMQFiZ+fPGnUURDonJYn4HXMQPpWt1mVZ/SsUmQHzHw8mNxFxmoMjZ5Eq1moWYEcR/A/M5Us1rT6/bMaJcgBsjAXswgOwVqsoWzQB9yhf4cNXlOXwaVMBc4Oo1n/xPmh9U6yliqZHytV0sWNmT2eFUewmAFZQOCBWAAAAMAMAnQEqFAAUAD8BdK9SqyakIqgKqWAgCWgAwzQVvl6YAAD+1m77P1aJtiPA9Jwq9zACciZ5AvRcI21S8AXwP0InTiIxTSDQsAMvi2zH+3Jr72GAAAA=",
+  "color": "#efe9de",
+  "alt": {
+   "en": "Fresh ginger",
+   "ar": "جنزبيل فريش"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Ginger.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Ginger”"
+ },
+ "souq/p2041-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   802
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJgAAAABgFtt27Lmwd2141A5HQvQUtGyhbvLEnQWmcA9E6TPyQLubm/xvf8fHSAiJgD/YnrleCXxBeWYiOgpI69E7K1DjvKUo5ScAElG5XjeufdaSMIccC5zRG8jpdB9I7qTImoAUN2T+Dm65O60gI/4I5IMAvo37uqVuzYAWOfKB1wVAJJPwkQROxEWFALCS4dbWQD+0f5uToW/DlZQOCCGAAAA0AMAnQEqFAAUAD8BdrJTqyckoqgIAWAgCWwAwq+OgLyHYklUhkfgANSeIA8eGm4N3dk8iokMC6vei93fHU8q5h6Nzlttgn2/RGTLE/TGf//5AqD9fz5E6dK0II/tRzjzlmVuHfcrW+R3/oJ0MyJyOtCkqP/G3j/xW05LZqpi+K2uJBBgAAA=",
+  "color": "#dad7b7",
+  "alt": {
+   "en": "Kiwi",
+   "ar": "كيوي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Kiwi.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Kiwi”"
+ },
+ "souq/p2041-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   779
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABgFpt2/LmDVtmZqYJ4hiWiMMJ4jhlklVMA9RWV8Z1AGbm9hHfV+4AETEB9B/GC7qvzQJPI5Iv2MEufMHNQbRQEvFk5fnVF84xMMfbwqdvhYwFn38XM6YvnNkZmnj/FK6TDCWayzucKwDYkzBEghZnyCDAoxSzW7kEMBR9QI2bp82YI7O83VXSJyVy+icBVlA4IGYAAADwAwCdASoUABQAPwFwrVCrJiQiqA1RYCAJagDE2AYydZBR+D8WE0iQAOh1NcFIgMoQ71+RwXYPupWl0uE6LvvzekCwQeYt0+F+PgWk6vOzqzqVlxG37OcJL3n6u/+QFfH8uW/zAAA=",
+  "color": "#dbd3c3",
+  "alt": {
+   "en": "Kiwi",
+   "ar": "كيوي"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/kiwi/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2042-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   812
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI8AAAABgJtt27Hn/m1jAnOD/98gdlJZfQaxUeZIn8ru/jLmEPYdvAgWiIgJwD/s/JH5lFvL3FkmV6NqkRWSt9xUKlyT5PkB8wrtNxQeL7RIjCOUPw1IJqk8KGik+lvx274G1wB4X3TeAkCM2mnA9qjz7AKwJ5pcEq0CQMX7t1mze1lQ/Q2loaGeFABj7WJ5ow1/GQBWUDgghgAAAJADAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlsALsAENAOW9531VgA/otiyEJXgFT9s8Kv4CTFKV8W1br14znxseokqPrBRAgi6cdPD34v//9O7xfTF0iw0c3zw7vOEl0Xz//rsNCR74tPUCt/HAv/gi5umBMK9fXUhvAAjbowokcoWaxcAAAA",
+  "color": "#d3d7bc",
+  "alt": {
+   "en": "Avocado",
+   "ar": "أفوكادو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Avocado.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Avocado”"
+ },
+ "souq/p2043-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   824
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI0AAAABcFpr29r8ZWZSLHmAnoxQj4o9267CDJZcR6iMK0zA3NCfL6cbRMQEoH86rE65kNiR+lH3hgSUpvBFiJ3koeZqHtGGAjYluDgFzkQwJRiVwBQFnPwc6RZGVTmoIoDgSHuwp5MTeMBIxPVR8CJG/ALVEX4NGSHeyJm6495BPmQgRMTiS1G7KBJqCnjF6J8AVlA4IJAAAABwAwCdASoUABQAPwF0sVOrJqQiqAgBYCAJbAAAFu9c5OiuXcAA+bSIzbwikVuMQYcdJXHA5PyVHhd90esCFoDjpFYKhM/mNcm7/KZ0mWZ0TcaTW09NP/qRCU6Lr8cz267i/l5MzQKYLW4RGina5Af1IG3s1BZ5lzTKHfn1cofcA7ffJrDAwevPoFHX/Mw4gAA=",
+  "color": "#bacea2",
+  "alt": {
+   "en": "White cabbage",
+   "ar": "كرنب"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cabbage.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cabbage”"
+ },
+ "souq/p2044-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   829
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRk4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJcAAAABgFtt2/Lkibu7ezKAVjnp3YWSBbTiMIWXrhUTpKKEGSjd3eX3+AARMQEYlQVHV7at9u/HarSDsUkffN8EQRBHTo7q88/ZyjfB2uZI/hMd/sjZrH+dELNs80TH/03G+GlnJ/MALFdEl89CgD9x0wXhAIDIbyevKROYmsdOZsAuPv4niLdP4mB/7lDLAYQnMupMWgqREMMPAFZQOCCQAAAAEAQAnQEqFAAUAD8BdrFTqyakIqgIAWAgCWwnAAAHwouhWTE/rbBZygAA/tJ87IEmDzDKLXTbvIMi07l/w8rGS3C1E8xHOX63C+4D7k6U2cft4eX5OAuu/Xa/FH6VbrxohN9Urt9sIbzc1fWJ5ApnPGKFhtnG/vVm87O4fV62ZzteQJsynhwxvdHcPb6GCAAA",
+  "color": "#bbd1ab",
+  "alt": {
+   "en": "Baladi lettuce",
+   "ar": "خس بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lettuce.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lettuce”"
+ },
+ "souq/p2045-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   829
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIAAAAABcBoAgKIc7jqAuyeNDhMwAMlJMADdEytAJNFotgKNj/gA9nq2QURMAKBuMJHY1AnUhgDXtLx+mjjyHcuyHy9GgxV30DSMxBhtwUpukfqs9C+FoHtD2BNCjkWMwfIoZVgIJQlTPGEPJQxMYSOAaGek9joU4FifL6fVQAdwFQpAF1ZQOCBMAAAAsAMAnQEqFAAUAD8BcrNRqyakoqgKqWAgCWoAzjgRKmhTLqNAS4AA/tMl8LGwXcDbvvF8EJEm+p68H6w1Wlv/9AOsrx/z6KhNviQAAA==",
+  "color": "#e5e1cf",
+  "alt": {
+   "en": "Pears",
+   "ar": "كمترى"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Pears.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Pears”"
+ },
+ "souq/p2046-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   837
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRj4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIwAAAABgGJt27LoheTujWbNu8MiHLqTXVfgLl0rjDR3axNdqs/gzgIiYgJgA9KF8yFQt3d22hzs+9N+v38W9hVpM9j7U38uSFPq/9Me+7vYCeh2f+YjzhiUZ+u/q8eSc/Q/aABgm6eDAoD0PAkAgNpsT/3GmOByhp8buR47Bkhv16X76u+Vs1w+zC4zEmEzAlZQOCCMAAAAUAMAnQEqFAAUAD8BdrJTqyckoqgIAWAgCWwAwzQKdUfDBwAA1j4pf9GxQNWSuIzVLuAT0g356PBQcEoM6FPTvRhuRvnLUKnpUj3voVQlEC7I3mWdWSvCOQvf+G8f//rm1Pb/93WvpJraCCRQGOZ0o2bM46lV18X5//idkEu4wovkoB5jI/0HZa9AAAA=",
+  "color": "#d8d0bc",
+  "alt": {
+   "en": "Weekly veg box",
+   "ar": "سلة خضار الأسبوع"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Vegetables.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Vegetables”"
+ },
+ "souq/p2047-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   795
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJkAAAABgKtt+/nmjZ1Mto3ZTm1bq9YeQVdja6Zac6ecQz21m3EG/cdODiAiJgBNU2WSWYQVCHovMpkMcUAq0I1AN7N/+58pLgUwkUr/ZMrdBIBUpuzvRRIAyVMZxE0LFUVnP0q8BVFmeyZD3K0ln2Mol7F0vRI5e3vtKAtwcHYy50+eCtD/dJ78IxYqgO7wXra6XsnES1qCyt1TaJIAVlA4IGwAAABwAwCdASoUABQAPwFsr1ArJiQiqA1RYCAJagDDrA3avjSBsAAA/FQHEYn9pgdh4LfxsDyiW9uZKASSiv+a5rdLFxERHNwTpnX8v//v0nL8aCmTf1ifzQdZbJmRjmjXBiLfSX//3ttjUwIAAAA=",
+  "color": "#e6ecd2",
+  "alt": {
+   "en": "Celery",
+   "ar": "كرفس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Celery.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Celery”"
+ },
+ "souq/p2048-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH4AAAABgFxb2/HqiZNRMrNtuxVVkjRho4+kBc+MGa7tGzsFRMQE4BrS5BazgLiXPtf5XiwWi5eKn7Qj9L3Ysybe4vtZ7D1hb1QXB5YBMP8O+WAA2sXBKkB6mAAg3h8yAIDoIYEN1nC/BLYap3u8RYjbwE3ebPy2w2zsSxC7HRoGriJWUDggagAAABAEAJ0BKhQAFAA/AXSwUismpKKoCqlgIAlsAMb0ESptAygDdntMv5UAAP5u1ifjIfJAztUd99xHBUHcIZ9CKH22u0uKVK0h+pG1HE1DP6MLCXKkXsvnfa//gjZdqVR5Z1BnMMf+9BfYAAA=",
+  "color": "#ddc3c3",
+  "alt": {
+   "en": "Turnips",
+   "ar": "لفت"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Turnips.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Turnips”"
+ },
+ "souq/p2049-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   852
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKEAAAABgGLb1vLmhRPFrDiKOdFRYNmXB8BkubqVHQC5KvLMrapltHjFB6UJRMQE0D9XRmrTHk1/WCPVArDUxkVvhdyiCQB3sae3y8GJq4U8z7D4Cpwdgb+mJSL7C87nVyA5TkTUcwj5c4ZoW+6a4/6Sm+GUIb+uYqqC7dE7APAy2h3exh0AfBkZsix/AdjKvjG7JPR19JWU1PUBPBZFwvTkiJP+OwBWUDggfgAAAHADAJ0BKhQAFAA/AXayU6snJKKoCAFgIAlsAAAuL0TZe5VTEAD27hjP0CaAHExspKGxVbOyok9QsxFhR5A7Sg++KTGTpMwlrAuSHwFPQYfJ+ySa8+1n8BdNueUQAM8vq5oDJ6pjST/7OJWHlL0Df//KyMCrOUMoHg+FxNAgAA==",
+  "color": "#dfcec7",
+  "alt": {
+   "en": "Fresh figs",
+   "ar": "تين"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Figs.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Figs”"
+ },
+ "souq/p2051-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   839
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGkAAAABcFpt27I8v/vPADQOWeZgCA4buEUiRIawpgu4uzcbgvq7pL9HxAQg4KvD3qyZSXhSomfdseZWeWi6e0NwCGu652HIRqy96UsGAGY+9BEBoOz26v51XdcjABCvj9+/fSstArFkKk/ZAhoAVlA4IHAAAACQAwCdASoUABQAPwFwr1CrJqQisBgIAWAgCWIAzNAY/8L/pSLYAP7ovaS2GhBmO8Lmo95EBK0f4wHDQf6xpscWa+2inwux7I97D//6pXOkg1yksSUH4rB2DnneJ9/zd2QkHP/JyZ/Zv/1GwCLzAAAA",
+  "color": "#f5ece3",
+  "alt": {
+   "en": "Shami bread",
+   "ar": "عيش شامي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Pita%20Bread.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Pita Bread”"
+ },
+ "souq/p2052-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   841
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGcAAAABcFpt27K8v6GVQ3JonnwAa7YASRdgCyqNZFPQyO42iX3+fenvETEBYMNaIqug5drDN0IzGX99j/hhQWOPxBNgze4aiR8dYJ0rJN60gb9E/M+0ogM/jrjPkQ8kXXeELuMyKHoLAbBjAFZQOCBmAAAAEAQAnQEqFAAUAD8BcrBSKyakoqgKqWAgCWoAwRW/gHIRgrHNSv+mw0AA/vKkK1CuxdtO0EtXPJWuYnd+tCg9a9b0eSl1pLYoS78CiPf/OGWwoLKEPV0aQnEKNYnIX+noOt4AAAAA",
+  "color": "#f5eade",
+  "alt": {
+   "en": "French baguette",
+   "ar": "باجيت فرنساوي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Baguette.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Baguette”"
+ },
+ "souq/p2053-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   830
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHoAAAABcFNt27I8uBaAzZ0AFkM2T6CTT64ZqAAzOZgcdnf7HQ8QEROA/+2MFoJ23lOBtuZOEATRt3OYy4M70SFYtw6GrHolnu4xlGfi+QMPALov3O2M4gvEQgwg9QqhAWC+vDATAoB/+9TSA1Z1ecixqKvwpMYXS8e8Bh7+M1ZQOCBgAAAAUAQAnQEqFAAUAD8BdrNTqyckoqgIAWAgCWoAxvQRHLGaEk3dn3N/+wlOQAD+UdAfpl/NIXklQEwVpTk1zV6iyFc5z41RgBgDooMDDudUjVVy+1M75nAI9m/qgB6Kn8AA",
+  "color": "#e5d8c9",
+  "alt": {
+   "en": "Country sourdough loaf",
+   "ar": "عيش ساوردو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Crusty%20Bread.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Crusty Bread”"
+ },
+ "souq/p2054-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   943
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHoAAAABgFrb1vLohlExOo5lsCmCSbGLimPFklqITgNMDougGcUUzmABETEB+KdtyUKI/QX7YL/f79cereyG2Of+eltxyfy2v/UhfqGz/2IYAH//1XsqoPnSXg5wvtQlAFh9YSYCgOCV12qzVfPQcDH1fjbV4Xa5P5F3kPGPA1ZQOCBaAAAA0AMAnQEqFAAUAD8BcKxRqyYkIqgNUWAgCWwAvndQAIAvrEzWOP0AANaEuFM+Dv7Xttccl4g7Cdx1s3XxIgLRV0Cn4137gDPAOVd+w4S+FbTMVJJS/KYwxAAA",
+  "color": "#e8d7c1",
+  "alt": {
+   "en": "Brioche buns",
+   "ar": "بريوش"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Bun.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Bun”"
+ },
+ "souq/p2055-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIEAAAABgJpt27Lsxi26DOBePZJoLKGZRIXqM9gGkNwdxnB3l18HiIgJwN8nGILZViHhFXyiz19fbwLUN47j9cMe94Vid/24Sn1KX7/oBEDffqUOQHH96oEIyL90YgOM+VdyABD6iu9JvP5sxH2C7fDJUIvX1u6bc5yF9yR7uN5tZfwS/IMAVlA4IHAAAAAQAwCdASoUABQAPwF4tFOrJyUiqAgBYCAJbAC06BbIMQAA/uTpCEATe2Rog0XAcQiB3SKswzpp+joofqZi8z2iju5OtwTHv4Kz+7Sfv7axGfL607gG2npF/y7QL//t9izRteEK8kl+o/9wD4Hw4AAA",
+  "color": "#f1d9ba",
+  "alt": {
+   "en": "Sesame burger buns",
+   "ar": "عيش برجر بالسمسم"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Sesame%20Seed%20Burger%20Buns.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Sesame Seed Burger Buns”"
+ },
+ "souq/p2056-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   806
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJIAAAABgKJt27Hp+W3t4E82N2D/jVOtNguYBUw3q9FsJSWrT7Tv8Gm0gIiYAPq3Td0LQ0WRkHkA2HHw030w8GLm8PZs7o8/sTyr2Erv4Pm6NcYQHYPz5AnAZ4xxwLWWegNwryai8AVHP0VW8D4kIiJSt50ybv0zT8BHPbFLLHWdUUUbmHciNvZmllPiL+/oasw4VAL+SVZQOCCCAAAAEAQAnQEqFAAUAD8BcrJSKyakoqgKqWAgCWwAvzgHaSTyHQqHz8t0wAAAnEyAoEoYRw05N4Tpa5j/uQgK7eDC9xzEMuihXU81kJrWQDncoTXHGnr+aWZ6jvUHJhZLeAZ+tJ8F2ePzhp/5v7yp9Br/2OTP7FY7yb3Z/sqPMbrQlQAAAA==",
+  "color": "#e7d9cd",
+  "alt": {
+   "en": "Fino bread",
+   "ar": "عيش فينو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cuban%20Bread.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cuban Bread”"
+ },
+ "souq/p2057-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGwAAAABcFpt27I8aHf3xghuIxBJNCYgcViBDdwrc1C9utPcHpwEOSImAH+gwOn4ShPvchc2pKLKd+7agST3c3KrejImevxwEAIgzZ/5PF4/1RUAoFyR3JZjDZKTCF57N/2kEt4mmZbhvUWCZ3sIPx9WUDggagAAAPADAJ0BKhQAFAA/AXi0U6snJSKoCAFgIAlAGDu//sf8BjRP5yy+P2AA/vKkPrtR46VAcyOH1APTPufPBLg2XJmiNomG3PIqRXdq6qxm/9fJwSK1cavz+Am49CafZD5C21xTQfXbKagGwAA=",
+  "color": "#f8f2e8",
+  "alt": {
+   "en": "Ciabatta",
+   "ar": "شاباتا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Ciabatta.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Ciabatta”"
+ },
+ "souq/p2058-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   762
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJAAAAABgFtt27Lmwd2hdKdjBCqm8E20dNfOHSaAeJX6HyCdla4470kmiIgJwB8L1azTdJHa8m79+32TUB/xTH/Xx5+8B3zv65OfXXvMmljee6As9lqEL//eJeHXt3dPWA8AiNZUBoCR9AzATfrlA07SWgGYaRJA+E3SA7glWQEEP1+YYjIdjcVS9XauFeMAgIiF/whWUDggogAAAFAEAJ0BKhQAFAA/AXKuUqsmpCKoCqlgIAlsAKwzaHVAEoD+WzhEBjIBtAAA/FQtC/XicnemQXiyGWcQ5PLK+5dIfq3bdwJXin535FklD5v3S7vA0QNuJEx0RBBdZIil0asnIFYieXjtXgcm5PMUpuQm4hMtGEJWPd+NPC7jMj2L4RHjqWj+Tv6f8I5f017r9cC2/n//gJvwMXbHUvFBJQAAAA==",
+  "color": "#e0c4a0",
+  "alt": {
+   "en": "White toast bread",
+   "ar": "عيش توست أبيض"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Toast.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Toast”"
+ },
+ "souq/p2059-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   816
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHcAAAABcFpt27I8WCOR3PbQxCH5BCSPdA71T2ygM7jLCDqBk91+dwaIiAnA/04uBhFR6R9J/ohWMyjAXHuS3N8Cj2lLCrwaWZrQhBR6MbCqpOBzEAAKpOCbAwD0O0HfFNjmr6AiuMNLARnwa7ylypvVhEhPubsitGL+KABWUDggWgAAALADAJ0BKhQAFAA/AXKsUSsmpCKoDVFgIAlAGRcZADCQnwLiDUAAAP5QW6ZBtPh8KXqu5p7IQT82v/QRBIQfcZCbbbRdHkYbLbqdv5MRHRyQnDpNPx7IF7gAAA==",
+  "color": "#ede0d2",
+  "alt": {
+   "en": "Soft milk rolls",
+   "ar": "ميني رولز باللبن"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Bread%20Rolls.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Bread Rolls”"
+ },
+ "souq/p2060-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   828
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHQAAAABcGJr26K8Y7i7Jl8AjU6eyGEBVPdEhAWwAppsgKUwCRrdffwjTY+ICYCFhmq9aatRZii57Uc2lPpOk/hJJu69BnZJpj7cBkuZfFyHACTkP39ZAMzmRnvOOQBwi4vVwUy+hnV68WV03lVBzDVHs3a94oJlAlZQOCBeAAAAMAMAnQEqFAAUAD8Bdq5SqycjoqgKqWAgCWwAuwAYEussAAD+484WJ6QeHQxan7L7b9rJwvYCACFcKCEbi8KGWy8GTepgz5luiCza2kOduQlcb0h7FMU3P+zT2GbAAA==",
+  "color": "#f4e8d6",
+  "alt": {
+   "en": "Tortilla wraps",
+   "ar": "خبز تورتيلا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tortillas.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tortillas”"
+ },
+ "souq/p2061-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   824
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHYAAAABcFtt2/G8sZ1KlVWlTGfbrv9RwqE0QtpkA9u/4wEiYgLgP1sCyUK10awm1U+oFijtgEnXQ59EaDSHZ+Yqqj76dItCunluKSAh6Isp0viVFgCo7q9MGQDKyyuoAQDSsyfO5ys6EQIAcF2RgMcXdjv1TCZXDP8YVlA4IF4AAABwBACdASoUABQAPwFsqU8rJiOiMBgMAWAgCWIAygAQ7+hvdbBFVMZvcRaxgAD+6mV3/llZyMW97MhnAMUMeslwWcHPrGqSqWZyjmGwo8gR/rsNltAkoLy9lQIz13AA",
+  "color": "#f0e9e2",
+  "alt": {
+   "en": "Puff pastry sheets",
+   "ar": "عجينة باف"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Puff%20Pastry.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Puff Pastry”"
+ },
+ "souq/p2062-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJAAAAABgGJt27Lowd3dE4fuUEksgB24Q2IXRCqVkaQrmOTuU725y++6goiYAMjeMUoIylWuiGuFgAJBEMRjXz/dqynYXO0NBnE/TxDEmCX5QPD+zzPWCYGLAEy/Qs4BxAmhBwA8gt50QEQQEQM0L0K+jAAmQmYAYD/mdxNkwLnE5ygOzuLaF+N/u6EFX1OpPyx7IXdWUDggfgAAALAEAJ0BKhQAFAA/AXSvUqsmpCKoCqlgIAlsAL9ZIAGGuain4JuK9vs86dN25MAA/lIpFA9f8Xmkz0Yz8BzNUWTiCMfbRI8SzAZH9RoqzpMvBJGlTdj0ZI89XH9oWpQHxYIA6Ien0PWcwlWz2q8jrQ3yMzRDwEn/p/ZaxwAAAA==",
+  "color": "#ece0c8",
+  "alt": {
+   "en": "Breadcrumbs",
+   "ar": "بقسماط مطحون"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Stale%20bread.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Stale bread”"
+ },
+ "souq/p2063-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   854
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHkAAAABcFpt27J8eHOvDp0FOIxAJHNIuoA7lTkcKocGmQnc3d35BBsgIgQEhawBf8lVzBQCekKmGySBLwFXM2Jiucc3REaFpLrhHOJsePPihjOw0qDllRtWVQRND11wbWUAZmijlbUAJUhCrZ00gGVZ324lOSDRZW0U8J8AAFZQOCBwAAAA0AMAnQEqFAAUAD8BeLRTqyckoqgIAWAgCWwAyLhMQOoAE8WurmegAO0zdpkRSDZl6Nb9WNgV4+9hwCwxd6yXG275GhkuAf2AT//+5nb1Wa59u0TqjsILob1kEsT4RrcxCqRqkPs+uOw+pJZCAAAAAA==",
+  "color": "#ece0d4",
+  "alt": {
+   "en": "Farmhouse loaf",
+   "ar": "عيش لوف بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Bread.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Bread”"
+ },
+ "souq/p2101-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   830
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGsAAAABcFNt27J8v4/uuEzagywUYWZnJoFWoIJLgb8APOj7SYKImAAmNR0NCr4tcOebAgu+GbDmWwN7LqsEHhnPGAAmPPOvJc/lq9RozvMLCS3EzwYtU6byq0Zr/KrQur9Cmr372mo0xtxaL2dSAQBWUDggRgAAAJADAJ0BKhQAFAA/AXKwUKsnJKKwGAgBYCAJaQAAG9MXg33lEwgAnbd5WXsHr8ezc8TqY34HRKk17U7mFF4fXRc/wwAAAAA=",
+  "color": "#f2f1f2",
+  "alt": {
+   "en": "Juhayna full-cream milk",
+   "ar": "لبن جهينة كامل الدسم"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Milk.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Milk”"
+ },
+ "souq/p2102-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGgAAAABcFzbttJ8CiA68l48GTGKu3szlBQf0VHCF+QsOoiICRCJpvL5FBt2O2O2vd+3zJXSZZ6UHqr6UvpVspRSyiW5BW7kHDiTfWBPNoE1mQfmZBwYk16gR5yAQ+qBGrE/v//XJsIqFC2RKFZQOCBCAAAAMAMAnQEqFAAUAD8BerNTqyekoqgIAWAgCWkAAC2nXTIuoAD+7UgECIIU3sIghYkH1N1sB+NL/n+/Xr+eYtxXAQAA",
+  "color": "#f8f7f6",
+  "alt": {
+   "en": "Fresh buffalo milk",
+   "ar": "لبن جاموسي طازة"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/milk/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2103-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   804
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIMAAAABcFpt27I8uC7g7i6RRLPGBjRm0MwAf8cjlQWgywYO3Z0X9wEiYgLwpyUh2WuyHq2CL6WIqD+ZMJInRMku3S+Z8ozjRtKhx6sV0ZQPIE632xM9NAJw33lyJgQ47VdSAGx093gzL9QTLACC3p1a40iU4+G+pUVETZtUHXPgWUM4wMJfBwBWUDggbgAAAJADAJ0BKhQAFAA/AXKsUasmpCKoDVFgIAlsAAPgAQr9qU2ZQwAA/q62IC0YIzLW96do3bpehI3jQ9gkQCQO+HMKVKEguArK8o7naCJqS//es5P3EW1Dp7addOKYCuSvx9RdY79va5V/vDEeq6AA",
+  "color": "#fae6d8",
+  "alt": {
+   "en": "Red eggs",
+   "ar": "بيض أحمر"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/eggs/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2104-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIAAAAABcBvbtqrc93FP3bUBUoqgC5eGGGJK0NC6gMjd/du798/vICImAHQVEglBi9BciuKiwUisLXJbjFIW0SLBs8d2bqwsEovYgNJFhCvlzHh+kezlZWlpXowW4Vk+lLeZB1PKCNAmpYY55tjMjkH+xjvkgGgvDN+i+OwkQKMtk7aCrlZQOCB8AAAAMAQAnQEqFAAUAD8BcK1QqyYkIqgNUWAgCWwAtOgRHNghddiK26VeIsggAP6LpaJio+4MEmCJfX9qPdjN8aN077zlNBsD14RLriarPrzKXZCP//m2/3E5CaIVexCZLMGzHOZZ6gowW3aofHnBJM1jgUVSz3a3/TFhxFqwAA==",
+  "color": "#fae0cf",
+  "alt": {
+   "en": "Baladi eggs",
+   "ar": "بيض بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Eggs.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Eggs”"
+ },
+ "souq/p2105-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   776
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSFUAAAABcGvbtlmtsMpIl3TWM3/2lbatn7PRR8QE8B+19nKz3e0Ph/12s1pM+lUd4uPTWcg+V4LyS4rP5SH/XApSzwXgPmeB+ZwBams4nszm19PxcNCpyPxHAFZQOCBgAAAA8AMAnQEqFAAUAD8Bdq5SqyckIqgKqWAgCWwAAC51WnYqsMBKecMOAAD+3lmIrWtuJZxPHOyZA5OnzPX9Pjx0tuOXqWmR4COtq6T+xiB7jISQpnnkqrtW1T7q7KP7jwAA",
+  "color": "#f8ddd1",
+  "alt": {
+   "en": "Anchor unsalted butter",
+   "ar": "زبدة أنكور غير مملحة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Butter.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Butter”"
+ },
+ "souq/p2106-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   784
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHUAAAABcBPbtuq8P/9XYWbsmKEnDWgiNmIhDthBykjgkhUw4z3zvoOImAAmpzIQDftFrDq8vl6v12ncROYvcoq0qBEgLKidQOVeYIoqIw1KewXyFDsCLuAEOIEz4OBiAy6AhYuZixGYAAqg1F7+7Ad1hlt9Nr3E5AQAVlA4IFwAAACQAwCdASoUABQAPwFwrFGrJiQiqA1RYCAJQBlWgiObzJsIIU1AAP7nKGz7+EbnYJUk67/5TmBlG/iEk6ELi/miwpPaUA40QX+Bw56SAhDHJaLDHhRhUJFrRTWgAA==",
+  "color": "#f2eee2",
+  "alt": {
+   "en": "Fresh ishta",
+   "ar": "قشطة بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Clotted%20Cream.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Clotted Cream”"
+ },
+ "souq/p2107-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   816
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGwAAAABcBvbtqq8P/Ozn7oL7u4euff0W6EIGqAWSC30+6yDiFDbtg1Dz6lnIL7E4qpAMbk+3+93RDF9g4zIDtCGrAetyTrQiqzFpAEtycpMCkwyTJJMQqYyj+lXJrQlE2/AHpFzel3OxyhOIUuIMwhWUDggegAAAPADAJ0BKhQAFAA/AW6wUKsmJKKwGAgBYCAJZADKH8EwwAI31AkBMigA/c8KnX6Y5hY8m2dp3WGNqrTGWt9LpxWpGi42Cnc1Uy3FlcxaSczYnagpNC7+Oms///3ZIK0qjlSYv+uilaucsfnhw9HrWlXD1fdY6fSyAAAA",
+  "color": "#f4efe9",
+  "alt": {
+   "en": "Alpro soya drink, unsweetened",
+   "ar": "ألبرو لبن صويا من غير سكر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Soya%20Milk.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Soya Milk”"
+ },
+ "souq/p2108-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   837
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEcAAAABYNvadhPLSyAWyB1iiD8FS6XKHoIudixFF5+c3UfEBDDLvMo0WiLq7qtRO2+4GTnUFjSrSTRFa7Qn0KAmnRGoV0trmKjpAgBWUDggfgAAANADAJ0BKhQAFAA/AWytTqsmJCIwCAFgIAliLMADJACKA3wyKRO1gAD+jTLD2J7SduFY9FRp1UDUcK+5uAZUoxRfkx7Ng9AXC3qgyhbeS6VDRFJs2mcQNKzVKP/TwLGbOnl4GgjNn7jORMsaSWcjSmmwSgbBqlRkMZ/aD7AAAA==",
+  "color": "#d5d8dc",
+  "alt": {
+   "en": "Oldenburger whipping cream",
+   "ar": "كريمة خفق أولدنبورجر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Whipping%20Cream.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Whipping Cream”"
+ },
+ "souq/p2151-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   849
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG0AAAABcFpt27I8eHV3b1SX6pHIAh4dpuD8kQ2IrhNQOVQYgOjy+0+iR8QE4O8qkr1FUZAk1FlfSZJ8pXgC5fGF5D0AkKSJMylcDdjIn32A4vuTDsD+lxMANH8hWG6u23EybBSCSrA9u9GgFDWL8WcBAFZQOCBoAAAA8AMAnQEqFAAUAD8BcqxRqyajoqgNUWAgCWwAt7gQz/Tx6lyPqiAgAAD8TF4Q8PPngr3AFHA6utsn25IEKXt2JO6D5J9r2/b59D+XM9NNo90XOaIBysmfGmlFivGhPwQn+7TQM+w7AAA=",
+  "color": "#f7eeda",
+  "alt": {
+   "en": "Aged romy cheese",
+   "ar": "جبنة رومي قديمة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cheese.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cheese”"
+ },
+ "souq/p2152-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIgAAAABcFpt27J8uEYO0a3bDO4S/8YajOCQif8UWHSP7pIY4Bf0ff/DBhExAeSvJpfT65YLkO6fzPMZFpB6fhcFNH7McE7+B69HFZ+/Mxj1A6hhqCe4wHQgXgfZeeiZgHJPZB4aYjqAlsPcAWkbw6t/ESWNeBoAIqWWQFcMESLx1VfnBZ1VEYFSFfkrVlA4IGYAAABwAwCdASoUABQAPwF4s1QrJySjKAgBYCAJbADG9Ap5l5C1UwAA1v88GPNgcR3W3N2ZSryIiIQuJOMx/yej//6druGU+q4qr3lhPxK8SCt/4d9L5cThC4sl5tp2xWUs/8BbxKAAAAA=",
+  "color": "#f1e5d2",
+  "alt": {
+   "en": "Emmental",
+   "ar": "جبنة إيمنتال"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Emmentaler%20Cheese.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Emmentaler Cheese”"
+ },
+ "souq/p2153-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   846
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG0AAAABcJpt26q8R+Kp7o40h8QCbMEW7MECJIfGCJZop51Gc2juLgNExATg/9KxqM0CFPFU/HQ6bZrl2XG9Go8Cf9iVgMTp5fi3lJh3RPGOgfCOUxwwj88dgrYKoPNgUSDtLIO7udPOrxTzKp53afx7AFZQOCBgAAAA0AMAnQEqFAAUAD8BcrNRqyakoqgKqWAgCWoAVdQP+AeiAGEWWxqAAP7TIpPfznC+8N4Ij5d/qV40Pf+VUFsN40LIG5sfI4SU+6IyDoHA7fP/3mxEbppa/Sc/ldvS1fgA",
+  "color": "#fbebcd",
+  "alt": {
+   "en": "Maasdam",
+   "ar": "جبنة ماسدام"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Swiss%20Cheese.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Swiss Cheese”"
+ },
+ "souq/p2154-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuYAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGAAAAABcGLbttqcrGiOimTo3Go7g646ZmYaVKeQujqmp+IjYgIoyNp+v99s1qvlfDrsLU/Vj8tDeFXAfogdKMkS8GUeuDIHNNFNBeUmyQFyyfmjUu90u91er9fvd7udevmjCAFWUDggYAAAANADAJ0BKhQAFAA/AXq0VCsnpSMoCAFgIAloALsAERzKYJLdBTAk0AD9yMLkV+Mkh31P+cDkhkXo/dAoKyPin0ZZX5ES+J0ZDn2u9oxCUZJRZ+Auj1vPdRykT5IeICUAAA==",
+  "color": "#f1e3d2",
+  "alt": {
+   "en": "Gruyère",
+   "ar": "جبنة جرويير"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Gruy%C3%A8re.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Gruyère”"
+ },
+ "souq/p2155-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   796
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIcAAAABgFrb1vLoBS0qZtLkY8kxMyqGDtJACiAfGYk+BTDMFDCKMfj92EBETADQnmdPlkpxGxeLe/x7fvisR6nPGGMoKZYyivODoYKCPYYihgWGz90oJ3owxHD/Ebnr4Dj/SQEgjOesAwBlt+Exf2IRw2PW5AX1ykQAMDS+dm/5fj6vADfb5HTgozoAVlA4IGIAAABwAwCdASoUABQAPwF2slQrJyQjKAgBYCAJYgDDNAFJ1q63p1gA/FO3RZQCdnMbZUer+2KtxkQjod/qUWe3w7u4Pj/ZmMo5xg7QwZ7HRK30+M+tuYrMe07P/8+t+XzIjLJgAA==",
+  "color": "#e1dfd1",
+  "alt": {
+   "en": "Blue cheese",
+   "ar": "جبنة ريكفور"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Stilton%20Cheese.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Stilton Cheese”"
+ },
+ "souq/p2156-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMAAAAABkGNr27FXT2zbrDkAs0qqVGZlJ2NImYzAtm11aW0bx7wOPqzMICImQN7V1N9Dn/ktZIeUu2mIzDGzBj5+5SZBpfA3+w3AIzClFPEdxf4mYN1FwedeSXnL6L9OdKaJiMm1li/w3VlEItD4qRpoERHfk436/75M8JoO4Cf/m5wA3MJwH5wbKIjdEorTQS/bwaKaC4dbcPPtc6xoTIHdojXgQEszfHeIAE60NALJhgt8TdUStAO14t4ULNqdXQ3kXQFWUDggbgAAADADAJ0BKhQAFAA/AXKvUqsmpCKoCqlgIAlqAAARVGBM8AAA9wTzmg9CE3Ls6uCI6+cBKVPeP30XpmGkKnaAIMXNuxkqWgyuGUbRkHHG/YwWt2L0ZiPKZCe+qGL3GnGndhZiN0rn+IOtmhDJdkAA",
+  "color": "#dcd1be",
+  "alt": {
+   "en": "Fresh mozzarella pearls",
+   "ar": "موتزاريلا فريش كرات"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mozzarella%20Balls.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mozzarella Balls”"
+ },
+ "souq/p2157-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   799
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG0AAAABgFNt2/ImMMcBM0dAPMUArcwTcyTQyjAyMxiIAmj7nKetg4iYAME/iqXiP/C+X8/bcuzkUm+456JowNVQn6ujFtdGFW6IstwEJbkdCnFn5OPuyM89UJC7oBA3RwFug1xcCTk4icVuM+lUYu63AFZQOCBmAAAA0AMAnQEqFAAUAD8BcrJRqyakoqgKqWAgCWIAwoAQ4cFkzKYWxwegAP3MGks2nrkFieZ47N9tbdOtjqsncFl5YaUVnO8lQmbqaFm8qXEEohyS7lsl9b2DUPgYX5F9IrJoIHjhmuYA",
+  "color": "#e9d9bf",
+  "alt": {
+   "en": "Gouda",
+   "ar": "جبنة جودة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Gouda%20Cheese.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Gouda Cheese”"
+ },
+ "souq/p2158-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   812
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJkAAAABgJtt27Hn+e3uDzpnAdvJDv8cWcDWBuxsVansBWzbet8rdvqImAD5T43iauu1fcLd0dnNcEGW9yNlp3dNsHd0kxv0Xqzi5OQedYSer4t7q/Sa9zVDnlfBIw+rGrQCDWMmEasvb/oOFGgF0CMi1qSMHMcFwALwQK28DjRI8ytQitXUN0RkD7bKNLCeKO/7OiuDDanRkRHyNwMAVlA4IGAAAABwAwCdASoUABQAPwF2slOrJySiqAgBYCAJZgDM0Aezu24EjAAAMAmFhcm5+yx3pQ+J3trWpDz2kzAgg30mutluPdy64CHDvsOz//7k513e/9KPoiPUluhefvm8MV6gAAA=",
+  "color": "#d9d9cf",
+  "alt": {
+   "en": "Olives, green or black",
+   "ar": "زيتون أخضر وأسود"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Olive.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Olive”"
+ },
+ "souq/p2201-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   826
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHwAAAABcFpt27K8uFtyl2QTMAiNbJ1MtwV0hT/j7pD5Z8CT87vCABExAfDHtdV+XsVBiuwxDFs6WElSGO1CQmfOtZYHjDFBE0Ex1hmaOsY+TVHcOOySABDCuD6tAPYblwoAgJ8DaqLImncMa3c/b8olDvTqcFwCEktxjBQ88JcBVlA4IGIAAAAwAwCdASoUABQAPwF0r1IrJqQiqAqpYCAJbADE2AJpDk4AAPnS2/MnWs/ZmHcedDzZh1Z+voNX4MmG6hCkmnQB2o3/10KxggvwAY1Jl0TPAAz/0eRKO/jCL5+Jukt6l6IAAA==",
+  "color": "#e0c7c5",
+  "alt": {
+   "en": "Baladi beef (kandouz)",
+   "ar": "لحمة كندوز بلدي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Goat%20Meat.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Goat Meat”"
+ },
+ "souq/p2202-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   843
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIsAAAABcFtr25r8SOVM4A41G1C5wxAOG6SipeTQZQHcKmqtoORkANxdEuDDGSAiJgD9JO0lhthYGuufMeA+jDiTJNmlQaxUfUk+1kGcC/lsXwig3lNkAMKe2ycB+3Okh3GnPD93wu9Q6TkyB/hfaDPvpC8sBHeIeOawjiIwBh1biWrcwYGQJd2puWUS9BcBAFZQOCB+AAAAUAMAnQEqFAAUAD8BdK5SqyakIqgKqWAgCWwAtsgKaqkmksAAiR5wHAxFxHcBz0iKkSEItg+s/fSyyK9QGabfg3WVhdsgmeWH0Hm//8+zosCNGLriDZgslKcAkR3oijNrx+ba3YXYBbVHvx7gk51dipY/5dpeYlYX/tCUegAA",
+  "color": "#e4b7b9",
+  "alt": {
+   "en": "Minced beef",
+   "ar": "لحمة مفرومة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Minced%20Beef.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Minced Beef”"
+ },
+ "souq/p2203-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   821
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGgAAAABcFvbtqLcccULoIDpAHd3SSfEyrESXBogJCUiJ3StwD2aPCImAFpOK55cJqvWgsQP0d3962VZ78c/TO6/X0xvrT/uGQCW6z87BsD4n7sVgG3Wnp6/Le5zEoAAgFLcxXJJ9dtkFw8NB1ZQOCB0AAAAsAMAnQEqFAAUAD8BeLNUKyckoygIAWAgCWQAygARKmera1vnfgAA/czR/Y6AyTquB0cGcbZCRURIwAzk5AJC407TCOpUKGi9Gk2tMU3IhCOOajbB4FEkE97wo85D7WDhRLhA/77ijg9PRmf+L/+dXbX9wAA=",
+  "color": "#f2d7da",
+  "alt": {
+   "en": "Sirloin steak",
+   "ar": "ستيك سيرلوين"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Sirloin%20steak.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Sirloin steak”"
+ },
+ "souq/p2203-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   789
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHcAAAABcGJr26K8M7hLZyqVNBFNTvNF6AI4rIHszROVzh6IRCf6uM8CImICYOIWutXLOGQRyeGVYRjmWJKROTDSfTHfiJH79griZ0Z+FAD9ZOT/AoDlxCgcAKAYub/toggAkY+MfxOSc4nXvgxpaifyzkF+rFJrZcMwcQBWUDggXAAAAHADAJ0BKhQAFAA/AXKxUismpKKoCqlgIAlmAMM0B8sd0KpGAAD8U1Ffyj7gILKHnVCC+ZjFCY4dhn4FxH7zSmA7UX/yI+yOKsHONwwM9qtI7wyQF+5VAGLaAAAA",
+  "color": "#e9d0d0",
+  "alt": {
+   "en": "Sirloin steak",
+   "ar": "ستيك سيرلوين"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/beef-steak/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2204-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   817
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHsAAAABcBrbtqu8/78i2kwFOTgGlYPD5azo4PdAA1EiUwEodLQUAAXgUBxzX5qhgIiYAKbVE43Ijb/AtSFzAYCfrQKoiDQ3byohMAP34xA48BZMcEvtcobIjZoy4TPx8Ar5QT59QgUKc6EVxxY6EKe8JZR9ATgaTNLM9FrsbwIAVlA4IF4AAADQAwCdASoUABQAPwFyrlKrJqOiqAqpYCAJaADE2A/nScD5PVNJS+AA/dFzQAKm03esY23T0DByBpnqx4qpoN9huzzFJrg9gfNe3Xb97ozHvQ8//60LLriGjiZfAAAA",
+  "color": "#eed9d6",
+  "alt": {
+   "en": "Lamb rib chops",
+   "ar": "ريش ضاني"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lamb%20Loin%20Chops.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lamb Loin Chops”"
+ },
+ "souq/p2205-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIQAAAABcGLb1rK8X3CSMwL3DpmhWLfGDOh0EhUqkUV0d4+e/Hf/BxAREwBqbEVFSPx61dGlU4/zQXPL+YsgCOJ3rmRiCEuQ2NSWDNaxlwHJxo/g29EyAHa8iCwDSRH8u4wUIfBjB4BSc8vvYQGmubgniD/bwg2ceq/e2CJ+z3bZBfxRqw4BlQZWUDggUgAAAPADAJ0BKhQAFAA/AXCsUSsmJCKoDVFgIAlAGRqCI5HR/ewMQu+V4yAA/q7Foj471HeLdoj+IcCfwtBIMFxyk7Qvh7i97QI4d1IjI19tfBJDAAA=",
+  "color": "#efe6e4",
+  "alt": {
+   "en": "Whole fresh chicken",
+   "ar": "فرخة كاملة طازة"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/chicken-meat/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2206-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   767
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGAAAAABcFpr25u8SVRvrulMUG1kXYsVeocFkCxALDaaMgCupycKdERMAH6/aKpUD36YffP8me28pnh6PJ3z1vciAKA88p53BlDzvikPwE87rGhTQyNhzW755zCY7xN0Jg0a/yBWUDggVgAAAJADAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlAGRqCI5gVrFjD9qgA/sLSmLoJRV181egRTW01dr4GJhCQ46n76y2g7vhxf//1r7U/wrez1U/n6d6iBgAA",
+  "color": "#faf2ee",
+  "alt": {
+   "en": "Chicken breast fillets",
+   "ar": "صدور فراخ فيليه"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chicken%20Thighs.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chicken Thighs”"
+ },
+ "souq/p2207-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGwAAAABcKpt25p8c9/S+vKQTCITuWhUJ/6JuIvGCXh1Kidgyc6DRnaZf6T1iJgASH42V1D+qlxct4swyOYwmriu6zrtnhDluGgS1cGdmZB5xT3qNAAIrdUHcd8XKYi08uX5x3VvJ2ILgM6O1yUdkhRWUDggWAAAAJADAJ0BKhQAFAA/AXKxUismpKKoCqlgIAllAM50EN6076yzqNAA/vKkPwopOsZ8b4e8HiwnuQBZjNgymfHhPw+W6v/+mgvGksvFJC1L7w/Hfxzn40AAAAA=",
+  "color": "#f7f1f1",
+  "alt": {
+   "en": "Chicken drumsticks",
+   "ar": "دبابيس فراخ"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/chicken-meat/2.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2208-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHQAAAABcFpt27I8vwvuNBINIgswAIkK7R8BHYEpSCQaAziRSnVr2vTBSX+PiAmArXoSzr8c9RsnVccvolUbtUlyUUh+0VvkbfNGshn90ODv2zSAGP89mYDZJbn7tr0zDACpXDb/6T4OyGF8FTML8jy08K8/7oGtAlZQOCBmAAAAMAMAnQEqFAAUAD8BdrJTqyckIqgIAWAgCWoAwNwHqgJs4AD3B72wHksaaQRlM0LEapORAF/UKe7Vo1OBFtOTCUngdDld/Z82pf//DEgVnfcqBg6iNWVNfmYoyC/hFefMJ0cYyAAA",
+  "color": "#e9d8d8",
+  "alt": {
+   "en": "Chicken livers",
+   "ar": "كبدة فراخ"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chicken%20Liver.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chicken Liver”"
+ },
+ "souq/p2209-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   778
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHYAAAABcJr9/6L87pIgSXcgMYAuwApX0eSZalNoYgCSVkiuiedmwPX7/H7PbRARE0D2egKKRDEXr/c5J6i+ocnbogHPQmveAZ14QzTntVCfV0NNXgZVeHGU5HmeIMGjIwgKen8XTZD/m5Ew/FeTGNPH2wpJiNw+lWwFVlA4IFwAAADQAwCdASoUABQAPwFys1GrJqSiqAqpYCAJYgDE+OZBVykqUp2yjgAAoeJqiREbbpst3Cui4iiLCI0fw9hTtYop1ABTQB3LZL6USrX5WiNeuSXd45sbCSy+POAAAA==",
+  "color": "#ebd8d4",
+  "alt": {
+   "en": "Marinated beef shawarma",
+   "ar": "شاورما لحمة متبلة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Doner%20Meat.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Doner Meat”"
+ },
+ "souq/p2210-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   793
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH0AAAABgGJb27LqIbk2Fs0tQqSRZQruNAbAaMhUBuDudt3d3e8TsESPiAnAhlWvI0N89vZ/5F7FV/85a5NkYQXBJcny3ABar2NO4CfJ6iPJXeMhf9MAjJzPc35yTd4LAVTmMiS/Of+vBZCdc+WGEXvco7MY9ADgPP5lUYG1FRpsYABWUDggYgAAAJADAJ0BKhQAFAA/AXayU6snJKKoCAFgIAlAGUACI5Vq5AK5noAA/ELIeBOV+cw7LlYNC6CvWWPQQPeV4X2E+TfrniAt+7bP//3Azxj8O91L0AFafu4PS9KVujNfrAkGgAAA",
+  "color": "#f0e7e6",
+  "alt": {
+   "en": "Oxtail",
+   "ar": "ديل عجالي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Oxtail.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Oxtail”"
+ },
+ "souq/p2211-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   816
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHAAAAABcFpt27J8uLu7Q2QAX4LIEGRr7mRZwNJ/yExAdI9M4C7v2/4eEWSTNjVTTyF0YUzW2t1sIsDEZmq9/k1icPL9C0HJQbwh1kgJT/8S6UGJQIMXJgXmOWA7MkCOzA5JRyBWtDn+7doREJyvNIibCU0QVlA4IG4AAAAwBACdASoUABQAPwFwsVIrJiSiqAqpYCAJbADA3BEN3ddjZejmMjg6MNAA/cxK2bfxo8SaCr0z8HXCf9tW2UzubC3IGqloNq7pT7sSN4s60MeniYQDDlHVtsK2SOYtHt6F03rrSSYqP52W4JJwAA==",
+  "color": "#f3e1dd",
+  "alt": {
+   "en": "Lamb shoulder",
+   "ar": "كتف ضاني"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lamb%20Shoulder.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lamb Shoulder”"
+ },
+ "souq/p2212-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   854
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRv4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG0AAAABcFpt27I8v2PR6ZA4DOIDkKhEi06D6BDdJ9DGAgzw74C785L+HhETACX22n+w/kJj3G3WctnqfcJ8MGH5QXZ9CJsHef0FA9opzgP6+pYkVwM6wPEgrlJOfM9/uS9jNhCZ5uO6CFnxpxQ0Q4EBAFZQOCBqAAAAEAMAnQEqFAAUAD8BcrFSKyakoqgKqWAgCWUAAAaPAtQAANSOLqUmJ7ESfa9YEkT5aC0ReKDEuy/FG2gTxKEySR5GTsLAwD4FA6neMV8gJnruv//kfTVmWJNqIaVT2UG0EVrR8NjYCAAAAA==",
+  "color": "#e7dddd",
+  "alt": {
+   "en": "Beef shank (mouza)",
+   "ar": "موزة بقري"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Beef%20Shin.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Beef Shin”"
+ },
+ "souq/p2213-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   805
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRioBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ0AAAABgGLb1vLmhROZWGZmRhmX8gDqmVuX1RmgjavrBMimkplJMTNf8VNpABExAfQ/BrzClC0bp0NhAf51MGdreEi67sB+a+OILINnO5v2AtwL5VJBxJgG51nlGMCahkgP9qfBMTC3iEj+xTKenwDzs0REtAbgsNh0CQBHCTExG/FSHtgBc8ZC7Krh9DKYt/1i4impAHgdVZPAZEOzg/5JAFZQOCBmAAAAsAMAnQEqFAAUAD8Bbq5QKyYkIqgNUWAgCWwAuwAQ0AajixWwDAAA/lFxhbaDiBfvb8DZwVXzOm4fpqJDx/Dgf//rep55Ze4vqN10M166mxT9G8MFW8Rgvb/54ugWwkgf+gJGtjgA",
+  "color": "#f2d8d8",
+  "alt": {
+   "en": "Veal escalope",
+   "ar": "بتلو بانيه"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Veal.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Veal”"
+ },
+ "souq/p2214-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   600
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRi4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJEAAAABgGNt2zHnGVuly9mJUbO02bqaLlmDbZu1kz6VbSdjzwIiYgLQBmkyppYRWXFVYmcG1h9zH7nZXO7PW0EwnKvyRNFbBjvV5HLPwpKuXI1LTADaWiboAOK1nJIBUIdqOANAsO7UcAhAcJWr/s8MALYaYiiVfVf11VEGxuxNbmEkl1vZ2X3rRGX5kIhkCLAAMlofAFZQOCB2AAAA8AMAnQEqFAAUAD8BeLNTqyckoqgIAWAgCWwAnSEGOu+fVAE68YNOQADnxLkDKkV36njT/gIfD+xzRez4ytwF841tOHMT+D4v91huqO9D8feT8rCghSMRsKgTAah3GxM7c5YsWYAt0Fkbwu/fUf/12xpv6AAAAA==",
+  "color": "#deb8b0",
+  "alt": {
+   "en": "Minced lamb",
+   "ar": "ضاني مفروم"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lamb%20Mince.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lamb Mince”"
+ },
+ "souq/p2215-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   845
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIcAAAABgGNt2/HojW11XIDdZg1OqrTegY0l2BnbrGcPRuXpPOGXLn1ETADMT326FXEFAnueWdSfg+mPGJ8bkRggn/ODRdy0I9RgUDv2TogN3zPcm39KAMD7+F8+R126alYaAG61rBigL+4+VRiYlPyi1vs2LkzfnPK0XzSL5IBkhn0Jj4UFRAwW5iYAVlA4IGoAAAAQBACdASoUABQAPwFysVIrJqSiqAqpYCAJbAC4MBEcnkV2Hln/aLH8AAD9zQUuaSf0JASxKI50oPB5IktZVK0ZAM3yNXHJkMmyxVv//jtYW0XhDqWs+p5uzTfii8RzEguP2lz/BACMyoAA",
+  "color": "#f4e8e3",
+  "alt": {
+   "en": "Muscovy duck",
+   "ar": "بط مسكوفي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Duck.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Duck”"
+ },
+ "souq/p2216-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   817
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIkAAAABcFpt27K8uLvbBhwiyTuRSKTTLGpzl2zRWcF1Aki2gcP//7gNEBETAH+Q5l2qXmsjSD7otTynHyN3Q8+o98j9s+yJDPLY8cTmib3hDrWb2z+BXIokANAgr7aoAJLLKwsOALg626d2dgAAvqfwlI10Q7Sq+o9OFTw8NB/vXJx0eFYXn1dnRS38QwBWUDggdgAAANADAJ0BKhQAFAA/AXayU6snJCKoCAFgIAlsALsAERyJGhvjdYD3AAD9yUYd1DynVlkjK/RYOMsLBZkEEwghXqcGsAEsHiOHUqGCU5bIqP9Hd///i7jna/Oh4vnQuupbIe4Dl+Zn/FSd5KlrB0kRX/40Go8IAAA=",
+  "color": "#e6cfbf",
+  "alt": {
+   "en": "Rotisserie chicken",
+   "ar": "فرخة مشوية"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chicken.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chicken”"
+ },
+ "souq/p2217-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   838
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHcAAAABcGJr26K8M5PQ5GyEDVCd6nEavgAineQQNbu7dRo0uru7LCAiJgD/mpJVo+1hnKa59yip0jk6PZy3WACo6un5JQ+A9/RiAQAmr/gAsKavyAEg/YIbt8HnYsQdhm77RIrAfWL8qC3BY6Zlc7PWknha5PKkBmb8bQBWUDggZgAAAJADAJ0BKhQAFAA/AXKsUasmpCKoDVFgIAlsAMarUOz/AVj4mEAA/rpfEh/MtbmUGWfpWgo7Ei6Qq1ql/KjXUz6O9uVqv/t46/IGQ3evqWXKVT/OtCBpnHQUhIXjjvLP+9QUssQAAA==",
+  "color": "#e8d0ce",
+  "alt": {
+   "en": "Beef fillet",
+   "ar": "فلتو بقري"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Beef%20Fillet.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Beef Fillet”"
+ },
+ "souq/p2218-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIQAAAABgJNt27LsxTe3BmwawB0K+EQAJhK4U8InZ+KggpPAIYH9bs/9HzSICAFBEWvYE0l0mn8Jao/PxyQhxjqff5pxEN8nKYnUqdcgMKM+LwpqAnxWqDhyoDhTtIUujAEpBr5RWz44/0kLAQGgD5iAOWAGuoDoQNkYyP7zdb8ZOxmMq1Wyp2JWUDggcgAAAFADAJ0BKhQAFAA/AXi0VCsnJSMoCAFgIAlsAL84DlZIUfzAAP6vjde4E8Kq/AGf6o7e1Hjd9rqHb1h5N7n7QomNohfvasn//3pUR4P/nwBgLiIGZ10//oCAVwFyhSCZMda6QSGddzMJsy91fWpphmgAAA==",
+  "color": "#ecd8d1",
+  "alt": {
+   "en": "Leg of lamb",
+   "ar": "فخدة ضاني"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lamb.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lamb”"
+ },
+ "souq/p2251-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   824
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuYAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHQAAAABcGLb1rLc39O//oQnh0x2mwOLyByI9H8iuGb3xCLBHJzo7g45IiYAP9+seIJ3mib0ohqQya5Rgdb+cOhvD1OJY5K7om0ebrc3h70cQHB2uL3pTA4HJcCJ3dXhcOhXi73DQcWH8rhKCqZVGIAlTuJuvw//IFZQOCBMAAAAUAMAnQEqFAAUAD8BdK5Sqya/oqgKq/AgCWkAACSPd9ipVAAA7TfzvPkF6CsoHfblbGXlElyTSCs40QlRSi09OPuHiNn85N/KPgAAAA==",
+  "color": "#f1f1f1",
+  "alt": {
+   "en": "Sea bass",
+   "ar": "قاروص"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/barramundi.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “barramundi”"
+ },
+ "souq/p2252-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   791
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHAAAAABcFpt27I8uFeX5JXMIXknuTYfgeQTkH0BtuH8C+Du329IghwRE4Bf7277BF+kqfmZJn2LgKeRABB2n/RLQqVESPYAoEF/OPXXiQeAlf7yKQQgLExmywdNkw1NiubYOoK33r1WKo/aAJgq0jfCGv5CVlA4IFwAAACQAwCdASoUABQAPwF2r1KrJyQiqAqpYCAJZQDKtAfeWXE9+YaAAPxS9as1YSv3nEKQhlVwyA1r1AaLKscWXvSkQ58JB85Av+yWt/TFKNYVM261W0Buv4SjptwAAA==",
+  "color": "#f9f3f1",
+  "alt": {
+   "en": "Sea bream",
+   "ar": "دنيس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Snapper%20Fish.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Snapper Fish”"
+ },
+ "souq/p2253-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   790
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH0AAAABcFpt27I8v+DOAESqLcBhC7cEQ5C9uXaqd7cRXAb4K+6uPSLMpm1jJ+3W/oG/kvcKTqZqED+G0IcXx+NxzzR192h7x3tDdzg2xwfMKzkvC+D1j/cc9rP9VguAzjTu1raVcNt3Mtyo8mRn+7xNfnPTinsVY9f9VzxQosR/CQBWUDggcAAAANADAJ0BKhQAFAA/AXStUqsmo6KoCqlgIAloAMiYB9/NqLZqflFUYAD8U9AqgF4wWK1DcxcoFg9YUh41v/hrNBDjabAqRe66yHE+LVeeRuMUIm0gNQxKIhR8TfHz6MAnTD9BizMmlmn8D9IhxFgAAAA=",
+  "color": "#f7e8e5",
+  "alt": {
+   "en": "Red snapper",
+   "ar": "مرجان أحمر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Red%20Snapper.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Red Snapper”"
+ },
+ "souq/p2254-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   798
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHkAAAABcCIAgJrccHeLdJcXaITkD+ABLsmi84K9gMovSA7Nneauty2tR4SBtG3S3cBlANJEpxOiNDuPcyPtlOBirN5Qr1bNzcIQjN447aoWeKHrG7ehC1oY3/ug+rO+YLdePR80sP+nLOw3i0nco2EAKEgGRT1q4s8AMgYAAFZQOCB0AAAAsAMAnQEqFAAUAD8BeLNUKyckoygIAWAgCUAY5Hgtn+AYISwW9qgA9wgK18EPyEgIm9B5Nrt6nDwqSNpfEJ4waG4o3cwNes53rKyb5i2ZdPH00F//8RPVLrtvbSmsBUH26lr/OlCwNvpbFT9mf9KmkoDgAAA=",
+  "color": "#f7ece4",
+  "alt": {
+   "en": "Norwegian salmon fillet",
+   "ar": "فيليه سلمون نرويجي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Salmon.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Salmon”"
+ },
+ "souq/p2255-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   763
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRngBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMgAAAABgKRt27Hl+fDbf7ZtL6GjcSNz3LQN2A1bgOZ27cG2besOz5tWEBETQP9Y1ekNnGqQBF9NZqvN6RkeFJNgF6h6icjoancP848ud+eIDGZ7Zu3EK4CxcIlTsmtnwd42ycRmDEF4muUg1ucewpWinBBGv4GvC6eTA6ElHsRm4OvFZGKaRJKWqwTwetjdVkZkTSW+CgDa4ytUyj/adeNivoy5SVIXcB3N6XcB4OF+HZhKJWHkLti3Vh19M338AcBhHf0wIDcjVKL/D1ZQOCCKAAAAcAMAnQEqFAAUAD8BdLBSqyaqIqgKqWAgCWwArBUIAA2PHlFAAPmzYuEFgtot9+G9LJa4ftfAHpumlbKKzjfKAFi4cv4ujgfKq3+xl2RvyTzSuQy7cnNK++mQsVkpYB7qFHbso+NInQwr/idm3H8Ej/Rvf8qHgvHZqvTJ6jq6v7Cqw9w7b/Zcz0AA",
+  "color": "#f1dad4",
+  "alt": {
+   "en": "Fresh shrimp",
+   "ar": "جمبري طازة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Shrimp.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Shrimp”"
+ },
+ "souq/p2256-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   838
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRrgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSFIAAAABcFrbtuLcYWaW08qseAadAiLTC1MZkcwyKhWwi2O0oyNiAhCPKSVIFl3+y9EBqL3N+f78ednOd0sPANV6PP9ep+VkJiIBICw1B+t+tZKQEZcBVlA4IEAAAABQAwCdASoUABQAPwF2sFMrJz+iqAqr8CAJaQAALnV9fnV2AAD+8pZn0SiSoQQQFxADk5qfOzu5f/+sJH+ktAAA",
+  "color": "#f9f9f8",
+  "alt": {
+   "en": "Sardines",
+   "ar": "سردين"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Sardines.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Sardines”"
+ },
+ "souq/p2257-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   843
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIIAAAABcFpt27I8uHvz9g+AJhqZLdwjh8gGEIk0snuGzgDQ3Z1fcQaIiAnAvxS/w5A2C/gvEF5Xc9QLPNBE8qXhmCSX6zM5yxJ8Vp98/pADYLu+QM4VgPz2woQAAP/0mWNGAraPfLwrGMEtHXDdykY8aeeoOPC04USSRQ9erV6TeN1qxx8FVlA4IEwAAACwAwCdASoUABQAPwFwrVCrJjwiqA1TgCAJZQDH5BDehINWR5AgAAD+3o7iu0itUPUNHYju+nsaZQKxWq3s/D5YaR6hv//fNlhbagAA",
+  "color": "#efebe6",
+  "alt": {
+   "en": "Tilapia fillet",
+   "ar": "فيليه بلطي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/White%20Fish%20Fillets.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “White Fish Fillets”"
+ },
+ "souq/p2258-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   851
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSF0AAAABcFpt27I8v0u09o/gP9qYgObOCBySbuA6gkYbgUNjDE2M4NL+HBETAK+qEt9E802LlGq7fS2tE2+YxnzNw/37sUUBKK4q29sP1z4PoCoCbDiaL9eWk7RD4F8JXhQAVlA4IFQAAABwAwCdASoUABQAPwF4tFQrJySjKAgBYCAJZwAALpmd/TnM7QAA/vKj6hy4or6pfPXsKeVqz6C58HAqgZX49+Fv//mjMf7a/6pT9ojmGwn2wrgAAAA=",
+  "color": "#f5f5f5",
+  "alt": {
+   "en": "Mackerel",
+   "ar": "ماكريل"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mackerel.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mackerel”"
+ },
+ "souq/p2259-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   822
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuYAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG4AAAABcFtr25q8CVC6ViwAA2jpbhVbaAe1DeAuG9gClEzADrSufzyp0kfEBEDlg63melXK5YoNrxhd31wZ6YUTgLF7YuT/9YDtQf5EzjkNAK75V4wwzKWsg7hny5D/6/v/9GyQGzgyhDm4oTQ+CkH9AVZQOCBSAAAAMAMAnQEqFAAUAD8BdLBSqyakoqgKqWAgCUAYVBf4PXyGGgD+w8vJwVIUwaqWqdPTkB/mLoRgmIcu9yLnROhmOYobXet9dRPf/8q/8l4xLCSAAA==",
+  "color": "#f6e9e0",
+  "alt": {
+   "en": "Smoked salmon",
+   "ar": "سلمون مدخن"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Smoked%20Salmon.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Smoked Salmon”"
+ },
+ "souq/p2260-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   818
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvYAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH8AAAABgFvbtqrq4C65e+buTg204L1QgJUAJVAAOYPI3d25B/iSkUfEBMCXVwVCUeV/6O5UpYU/29Uk8zfx+omIT0IQCc4Khh+Q6MxvBBHxeTvuDqc6BwBAUiO/4HWznDc7yh8gGOOvz+v12gjD7/biDJEgeQzyTPgnVW91esMOJnx3AFZQOCBQAAAAMAMAnQEqFAAUAD8BdLBSqyakoqgKqWAgCUAYOYIOjaB00AD8RZiQ00snhqZy9oIpWltNw2X3jf90JP//UMe55I0bQ4CtlTiuv4D6/eeAAAA=",
+  "color": "#ece3e0",
+  "alt": {
+   "en": "Fresh tuna loin",
+   "ar": "تونة فريش"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tuna.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tuna”"
+ },
+ "souq/p2261-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   810
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIAAAAABgJpt27LswZu7wwBUqnVdgDVoHAxgE5CIOoI72d0XIPlnr/DLABExAfCfinx2KkP6yizEZKHSnWEYxkUS7jDIgRjnrzPosQvQsuSbQZeVgNbWGGxRBOj4lUHfEoBNMdi9F7CaG2ZuAcIM6ugBUkVesHEBZYFhJm6glQbDcvg3AVZQOCBUAAAAUAMAnQEqFAAUAD8BYrBOqyUlIjAYDAFgIAlsAMHMFaKXOwAA/uwSs1/onffHnP6SrDTSSk6NZcV0bqztPxB2OaEiFd/3H//2mnLAooraRtYcQAAA",
+  "color": "#f9f2e7",
+  "alt": {
+   "en": "Hake fillet",
+   "ar": "فيليه ميرلوزا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cod.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cod”"
+ },
+ "souq/p2262-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   809
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHkAAAABgJpt27Lsxpq7e4PMAA5jkMiMQPQBWIFsyT05RE/u+rv/6AARMQF48GJnWP+Lxh2OxBO5cqXVGHX2tB/248e/R8Qf7Y8zTT+O5wQBUD7OzQFgnTUjAPKzPsSA7jwtIHw750QF4Dlj48BPQyjdGk5W292mH3Nx8YgBAFZQOCBcAAAAsAMAnQEqFAAUAD71aKdOqqYjIjAMAVAeiUAAC1PutHjRtZjxgwAA/ucGvHPO9voM3xmm0vKmb49h2QL4Ony/jz6X1Mq4C7qIVr/kzoRNTIcqatzPX2a9g0wAAAA=",
+  "color": "#e9e3dc",
+  "alt": {
+   "en": "Peeled shrimp, frozen",
+   "ar": "جمبري مقشر مجمد"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Prawns.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Prawns”"
+ },
+ "souq/p2263-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJEAAAABgJpt27Lswd2hOdGbZYskGgu4e6PDAAzg0bbwAX53dzfsfd/fFoiICYB/GHT9xMYAANiBGpNE/PUVSHeu58cyAll1jtzRAVZZuZkjP5yA5pbu5tg6IBXZ8zn+WY8QXM5Ju4COvJNccVBgOySYezEAxjLORwAinIFEihjGrUDK/pzP9/zw3f35TAnfrrio8A8BAFZQOCBaAAAA0AMAnQEqFAAUAD8BdK5Sqya/oqgKq/AgCWUAwNwRCM6BwhlkAGAAAP5SKiW+3H7n0hELcs78uFnL8fNFmqAiZuDvxf//4dLDCxp/+r55hTDiHNw+OePmCAAA",
+  "color": "#ebe8e5",
+  "alt": {
+   "en": "Sea bass fillet",
+   "ar": "فيليه قاروص"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Sea%20Bass%20Fillets.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Sea Bass Fillets”"
+ },
+ "souq/p2264-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   810
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGwAAAABcFvbtqLc8cHdyYmoALKpgSbcUrIpAiIWTdCAu7tEVEDo7pZHxATg/5OvEBbuJzRCILE5tm00Z4A9YgAgzo93t6tpdn8wAZLU8dFaZr2XAIDZs+w1u7tienz0wpZUXQFOBxCLQyq68CyB/w9WUDggYAAAALADAJ0BKhQAFAA/AXKwUismpKKoCqlgIAljAMTYEN6yb2HvvspQAP7ypCtM3clEWbrMHw8afMBAeCFS44eKB+3xEKwJnQut5zG//8wI3OeBwFrLxCF/RtXtt1W7f0AAAA==",
+  "color": "#edeae7",
+  "alt": {
+   "en": "Rainbow trout",
+   "ar": "سمك تراوت"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Trout.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Trout”"
+ },
+ "souq/p2301-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEYAAAABYGLbthJm8v8nkWz47jSvXt0G4LyFJGpETAD1Ic0QhGiG3NOWftu6VbznLvO2TatxL95A714JJfd6qLo3Q90/YQWQvfcUVlA4IFQAAACQAwCdASoUABQAPulmpU6pJiOiN/qoASAdCWUAUwZn8D564RAAAP35MkpPhks5X1iD7iY57D2Jkokszu/hyOZyDBu5r/JAIVUM6Z2Wqdg5rgAAAAA=",
+  "color": "#e1d7cd",
+  "alt": {
+   "en": "El Doha Egyptian rice",
+   "ar": "أرز الضحى مصري"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/rice/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2302-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   841
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIEAAAABcCPb2pq8KJRulbMLKKFlKGF1DF0mLe6yAoYyJboDh/j3kR1ExAQgWElmNbSbaZ56NUpqaPrqEZ+0YRL3MQ9xbZL7Hh2T2XStOWMAoSfnrgAVk537SwEIPzmvEIAFZwMALU7bJYxpO9GFxIFiZOEd1f2GSRCr3ePvd9Xq4KoKggUAVlA4II4AAAAQBACdASoUABQAPwF4tFOrJySiqAgBYCAJYgAD40jNopiChrM6f6xsAAD3H95jBv6m4E1ZGW8gi4f9lo6ob9HGiYDEpwmyzh/8kTDjgqYt75MHK3iyAYtnS0kizrcg/DSjB99sbdIyO7lvu+vKLg6xwlApYQo30qxR5+aO2XulIGwn8lthgby/9AGb9oAA",
+  "color": "#dcccbd",
+  "alt": {
+   "en": "Black-eyed beans",
+   "ar": "لوبيا ناشفة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Black%20Eyed%20Peas.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Black Eyed Peas”"
+ },
+ "souq/p2303-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   824
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIQAAAABgJpt27Lswd2p7p3kLk2jS7TkMIhGBmAOkltkAed3xZ0BImIC4PGJzlzSG4hFFYgzwtPNybH+hPJ/c+aX/Fhpc3btCGd93oJ10NhcWAcA9t8lP1QA0eZiAQBycskIAQDun/M+dHBo7p3TVMJxhL1/bOmBczHF5WazaUngQrIz5cDAMwRWUDggYAAAALADAJ0BKhQAFAA/AXSuUqsmpCKoCqlgIAlmALToERzdYHZu6QKAAP6dONXJYwCvz9wE0ajckcJNIgoXrcJf8hrpx4hy1E5muvZoukMRXnme//4nNQTmxKn/hiVKTAAAAA==",
+  "color": "#c9b9af",
+  "alt": {
+   "en": "Whole wheat for belila",
+   "ar": "قمح بليلة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Whole%20Wheat.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Whole Wheat”"
+ },
+ "souq/p2304-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   784
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIUAAAABcKL//3t87b132ntvLiBLokRTnUAUHWBLu3pEzQEk6S/tTfT/xu/fDSJiAuDvfDGPpqxXRaQasxsbSevrt2Oh+NgHUwFqC3EhpoiPeCgKKGXEgS1EWeEtl5YS3Cy24yogNvGY1gJRsMeGDqgl3EiAvGQLQHb+RkAPbO0c8FQiDoDH44IKAFZQOCBuAAAA8AMAnQEqFAAUAD79YrBOqyUlIjAYDAFgH4lmAMPoELX8Cu6Tp9qgwAD+8qQ/C0g4o2fC53Ps84QlPCRlozRYT1DlEe5MV9GB6Ua4mbHY7SqFlvshrIPhA//3LBQ+0/EzU9WFcN+T9IPQFQcRCAA=",
+  "color": "#fcf9f1",
+  "alt": {
+   "en": "Regina spaghetti",
+   "ar": "مكرونة ريجينا اسباجتي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Spaghetti.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Spaghetti”"
+ },
+ "souq/p2305-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   833
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHoAAAABcFNr29M852eFiXQL4IAJHynGmBDAhIF0DT2x0enf//8oiIgJwK5SWnH6/P2eaSwZ5UVnPuqYXQvhddbi7Avx3mmsCs1V46hzBLyfzs+DsNAOIdALwP3qfF1gr7MHmOvMG2otW6sGk5PkNKHdz7oyH2GUnF+vcxLRc1ZQOCCQAAAAcAMAnQEqFAAUAD8BeLNTqyckoqgIAWAgCWwAnS/V1gAECtGAAP7oHuX1lkCYLjISANn/cY22S51+dGlLWB3IkYy9Or4xq0hofPc0P53ikZSghYkzexYyXnEOpL79nUM6E+1JoplJx7KiTSGk7T8EJ/Ib9VUtBb5PBZPspGHFmz2RiEd74AYhe3/qSlDVWgAA",
+  "color": "#f2d8aa",
+  "alt": {
+   "en": "Regina farfalle",
+   "ar": "مكرونة فيونكة ريجينا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Farfalle.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Farfalle”"
+ },
+ "souq/p2306-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSCkAAAABUBIAQIJb5ABNKw/8/xUOkCwSI2ICwHMa9+Ygrf3Uu7wOx/+Q9lCB5wBWUDggcAAAABAEAJ0BKhQAFAA/AW6tUKsmJCKoDVFgIAloAFZqD/gHqiJi1ms643xoAP7jLMuoT7m7a3IY98G152mpNEn/xnxmPKm+UKS5avNQ4Cxr+Ti8+37LMRrPXsXgDqykA6OG3n31JAPpgA0Tg9QxGcg0AAA=",
+  "color": "#a7acb3",
+  "alt": {
+   "en": "Barilla rigatoni",
+   "ar": "مكرونة ريجاتوني باريلا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Rigatoni.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Rigatoni”"
+ },
+ "souq/p2307-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   811
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHIAAAABcFTb1rK8b/2zf+y4OxGoRAgKkIUSlsHdXUZu9671N4iICRAPNSOcSvh0RlXbt9fffb2Mzi9yAOTAdNCe6aId00Mbpo/WzACtmCFaMiO0YCZozkzRjJmhKTNHE2aBBswBOZXW9c++VkIiosxkMWsp8RBWUDggeAAAAPADAJ0BKhQAFAA/AXayVCsnJKMoCAFgIAlsAMssCiU8nVd5R2krugAA94zHn2JseI5Lo7lYuAyf4U7PChmZIv7ALQvwqOPub4KuFu3f6CCnBY+30WFPGfrjaDMiZ2Ow47uIRMpsACHz+kvgCH9qDZ8dW/xEnAAAAA==",
+  "color": "#dbd2c6",
+  "alt": {
+   "en": "Bonduelle red kidney beans",
+   "ar": "فاصوليا حمرا بونديل"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Haricot%20Beans.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Haricot Beans”"
+ },
+ "souq/p2308-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   846
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRugAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEEAAAABYBvZtpL3fweQu7sXDWW5WweuEWlETAB8SEpOGFgCcStZLgt0I72q4Sc1V9MNVF31N0CP5sMcG3cAMO25FIYvAQBWUDgggAAAAFAEAJ0BKhQAFAA/AXSuUqsmpCKoCqlgIAlsAMNNoDC1QDdG6rMB9M6YP0AA+c0R+xZ1ks/ZBvNb8wLCnKRl5SniZWVC6I5ouzJVXhsKPNhhwaCgABicAHbK3LdwGC0X1r/QfFqmfxv6H7ZwID/q4clJx73GkxbXhDX8O8OGAAAA",
+  "color": "#bacdc9",
+  "alt": {
+   "en": "Heinz baked beans",
+   "ar": "فاصوليا بيضا بالصلصة هاينز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Baked%20Beans.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Baked Beans”"
+ },
+ "souq/p2351-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   816
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIUAAAABcKL9/5p8NzS5JIe2JbLTqTTuoInOQx6RO/Cs4ZI8cQiu4Dr/T04QERMAizPtHn/iUkRU5y0of4eKVmQhaL9yGiuB9BJVKQrkW5WxDoEBEPzrqQNgBb19AAldQwDOr54GAOx0/DOKmo45VHmiK6vm2RHcq9B0c2+1cxakie5ovxlUKFgcAFZQOCBWAAAAkAMAnQEqFAAUAD8BbK9QKyWkIqgNUWAgCWwAUwADL7y5Yv+wQADVqDZQLmPOGhPvzgdotczj8O5luVGDryYuxigTPjVq6y7jXA0ODmNHqr/m//ZvQAA=",
+  "color": "#d3bfa9",
+  "alt": {
+   "en": "Ground cumin",
+   "ar": "كمون مطحون"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cumin.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cumin”"
+ },
+ "souq/p2352-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   845
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRrABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMsAAAABgGNt2zHnef6ZiW07qez0dqmSlV1nA07K2UK6LMD2AmzbGnz//NhBREwA9JaU+cqwVgkBwCk80zyUpABAeE7bicVi+Us2OJMAPIj623+L/FMBAYCG+Jp/i8Pv8VABzOj7cGSxmKMFGExLSqYiKdBvTcFvmQGi5LKgpDUWAJ2iq58VnDpDTG3p3lYwYBAYmJ9w/P0r91dACQBo8muY/v8VdicDDAYZfxfXtMGhp8u9GT8fyDsZ4n093GMLy8OcCYU+ITS6OBPKCYDQGwBWUDggvgAAAJAEAJ0BKhQAFAA/AWKuT6slJCIwGAwBYCAJbA2wBMCIDTBrFhEIgHMa7tz4qAD+cWGvoa+sfx0lWZdKGz2dWSNi1BmKid6CcGcbqKW0oIwmz/07sNyc3yqYRcK/TwcdZ3eKJYB39M9fuMxA/0XRK3srYFy9MCtURHOtOOub/j30IID7r/Pv7HJio92mvfuZtjjTy1958+mkB6f9v91KIlTnYDX7vzOuXbqnQY+//yUShCnQ3CIt/yOhSmaAAAA=",
+  "color": "#deb7b3",
+  "alt": {
+   "en": "Sweet paprika",
+   "ar": "بابريكا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Paprika.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Paprika”"
+ },
+ "souq/p2353-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSK4AAAABgLJt2/lX+/O3bWP22pbspGZEtSVbUXHNH8BtSXHHkpFs8909OyImgP5J2UD+NzSj/2uOWxb5hcoY6sUIfV5xfp1/9ej7BUq5A5br+0bnV7fcbywJZb3T1wDAlhcY1jhEXnw8kzPJcD9pINKsT3TmRu2ddAF4mivX08dVOH0EsB1GH4tKzsCmsjOucJb+QcUO0OMlouhDPJS+17Z4OMGht4FbWHqPR5+0Nojf+8NWUDggigAAAJADAJ0BKhQAFAA/AXayU6snJCKoCAFgIAlsDbABSf4Ad388HgAA/FJO6elrpDRF/F0FFlgcUxKOEz0Vn3Fj4kTwiKOsAGrczGV/mGPbEh4/mWl//9oTLmzRrRuO/knDzeZX+Tv8/8Sii0yCh+AL82/yV2oSyTmcKFxL37x9AsyAKO6kZGWISWAAAA==",
+  "color": "#f0dfd1",
+  "alt": {
+   "en": "Cinnamon — sticks",
+   "ar": "قرفة — عيدان"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cinnamon%20Stick.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cinnamon Stick”"
+ },
+ "souq/p2353-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   849
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHAAAAABcBoAEKLc/T/ukmiMoZEFWILGECSHSGIOjy7ZussE+nqH94iYAPiJ4YTvKWf2Is9rKW+QY1rJ+kczz0k+DGS5zunK5AgpbFBnoE056mimpAw1s1JoLhutQ8AUTFVdL4LIAPA2h/u0KCLw0SoiIPxRVlA4IFQAAADQAwCdASoUABQAPwFmqk+rJSOiMBgMAWAgCWIAw3AQ76ZZviEi3QAA/p1btvHJNyEEFWfool/PKviK9gNTDNYzsuL+Xt6DWehd9+9s39coMkXdAAA=",
+  "color": "#e6dbd4",
+  "alt": {
+   "en": "Cinnamon — ground",
+   "ar": "قرفة — مطحونة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cinnamon.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cinnamon”"
+ },
+ "souq/p2354-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   565
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSLwAAAABgKpt//nn87dtDkewxSVbyUhrtpLOYHXZrlayvTXb9t700xlExASQsCpeair5yG8hORdpjlsRkcPFd34e3NLKTi5tx9RSX0eshUX9ULKoLP4cwH0E09JL2sz1J3D1i8MghsLUTny8AfjZXzEwkGcTfwDwd0aM3sZhMH5HMIjGPxj+kcGgOp/7BfANAA0MirCWWQD/z/g5qGIg20HbHvB/i+MQYhkcGoHlE6QXWNgQUWHH38dVOHG2arUkJFZQOCBYAAAA0AMAnQEqFAAUAD8BdrNUKyckoygIAWAgCWwAyJgQ0FYCQPQ+a+QAAP4QZ7gFbA+7hOyUBRjsaIQyX3xXPbsf//yGWK+Umx9H/csYhi6Jwy+Jn/v6B8AAAA==",
+  "color": "#d6d3c4",
+  "alt": {
+   "en": "Green cardamom",
+   "ar": "حبهان (هيل)"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cardamom.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cardamom”"
+ },
+ "souq/p2355-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   563
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMcAAAABgLNt2/FW/BM7dafO6WiMtr2lq21r69ajU7vZtjvadlfbjl41IiYA/tuKSl6SnFVDIVLFdKyFAmVwocnS9uBUbHUuD8eN8+t81vzdLM22cjGW7erLv78PjUbzM1CPMW2szLzVIE9ePFBGpWNdGvRGaTjCtbj2bBbz83YeZ8AVlX9pPlGa/Va1AYD08u4LM6+0RkG69wNmRqzCACR+fd5qfn/n6twA61Pp9nhy/XmXkisAYpejbl8nkAClwAYY2lZZMACOnAUpAFZQOCBWAAAAMAMAnQEqFAAUAD8BeLNTqyckoqgIAWAgCU1hJNQASuruAAD+7D7E2o6jTfg2tJaG7mz614z0eHtc6zMexavRf/+26qwNUB7mAYkwkZvknM6/9q5AAAA=",
+  "color": "#cbc3c0",
+  "alt": {
+   "en": "Whole cloves",
+   "ar": "قرنفل"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cloves.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cloves”"
+ },
+ "souq/p2356-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   826
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIMAAAABcCJb27J8P5FEdHfdBI1hA+4kEsMOPDGsACLNWQSNoTrJ3Ulv+mxgBRExAeiXgs5plXKIYjMAgElYYHCPgDo0UjQnYFwrST1gbhN8wOnBBjwDbMOzx048D+zGc8XGPAssz1PDJHu2ixRDGbYcIldZ6iIK8n5JKz9irWQbrUEzLUZ/DgBWUDggXAAAAHADAJ0BKhQAFAA/AXazU6snJKKoCAFgIAljAAAfzCgxw25jAAD3C/YxSCzF/2m5arppq+BMJA0yzdJ2bHMlVFg0+9zZv359bFf2Xv/1LPirkQsdYGvP/JmnoAAA",
+  "color": "#c4cabe",
+  "alt": {
+   "en": "Bay leaves",
+   "ar": "ورق لورا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Bay%20Leaves.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Bay Leaves”"
+ },
+ "souq/p2357-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   843
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSOUAAAABgHPbtqlX8vliu7LNmpVt21Zns3c6p7Nt27ZtJ/ezI2ICgOlZ6SHorGvAoU6DbMLSZlDKkysPVWDz9J11gP1LoiSoBjp1k0v9p9hNDkps8+pXLtLpHKnvsY4KZuSgcQfrxVpY2VyUH7GS4cQJAImXt+gjouEL3dYHvv8/2gCpziL2r2YRi33wHLtBnxUcJJG/qKP8Gov9tvbdHk6WxZDkWa85vBxhV78HxrXlbYFi4PTp1//RFXo5NwLKLqNvr90Hj//P/kCZW0/+6NBCobC3vEiMEoBxeLIaJIqrANVcwMIGGGB6AFZQOCBSAAAAMAMAnQEqFAAUAD8BdK1SqyajoqgKqWAgCWIAyJgYlLcEAAD+6+EDXn6KRAIZ7b3HthV30JGr3ul7bCJZI0eySLP+ejczvrEsck8FSP8QAAAAAA==",
+  "color": "#d6cdc7",
+  "alt": {
+   "en": "Star anise",
+   "ar": "ينسون نجمي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Star%20Anise.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Star Anise”"
+ },
+ "souq/p2358-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   820
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRigBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIoAAAABgGJb27IKd7fs0N0dGtV1AF5ZTINmmQGwmIC7NIbgct3vi5PoEaGwbRskHcMjiMcRKl0v3CcBkLtL+P075nRhbiP7hfYYoHTzQ5TZAABM47dAMmsAAJWyEXuzKcCF5nkTFnkVCDG40muWeWVKR6A/m5zZ7TpVG5F8UeKoFKNbbfDI+TyWAPEgQgBWUDggeAAAANADAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlsAMTYER0Ayl9goK8fcAD+rsnZtQJKvGR5X3C19bjseinL00y1XedSKxvEctwrRT2VjCLAwB2uIj76ywSb6SL//9lajvNpuk5hEpjiIHtCUhkLv5kTX9ajqV271cAAAA==",
+  "color": "#f4ebee",
+  "alt": {
+   "en": "Saffron threads",
+   "ar": "زعفران"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Saffron.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Saffron”"
+ },
+ "souq/p2359-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   815
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJUAAAABgFvb1rLo4Q6hu+Q0AA1QBRmLZtxDYrcG3H3cJXT3md+1goiYAOC1QqeSMHG333+/X/aKIT0NwRSh/Kr7KSSvVAjyX7OTCG/pIMiNnwAbesizj5BkgHQIgX8GhwIAgBKDCBCtD7TqYhLpBY3/ghxILQj1IgiUiney84AQaOb+ST7SBjrgDUcrw6Pr2ysDHWqtkg1OAQBWUDggjAAAALADAJ0BKhQAFAA/AXCtUSsmJCKoDVFgIAlsALToCs0qrB+6tHgAAOHVvWyU+f7JD0eAfxRnoBTpMR47XcE5/u7HDgnCqkJDJG3GIbqBrkBzTL8lpagiyl74bfIyeUfcHD/dk4QR/J+K+fmfH8CVs+NXTGInVA1tMo0hL6hLeVJ6pBUmQ/9X3i4+AAAA",
+  "color": "#e5c4b6",
+  "alt": {
+   "en": "Hot chilli powder",
+   "ar": "شطة مطحونة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chili%20Powder.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chili Powder”"
+ },
+ "souq/p2360-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   628
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRmoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSL8AAAABgLJt2/lX9PO3bZt17EprVl21km0vrnrN+gqrtu3kv14c/4iYAIgzV06ncVnSBEwKSWrfdrbBQsYzLuz+bJVpuGwMgy0qaPwK/T+spcuBjWC4g1Uh5G6RRwHoTMkOKnT00MzgxHBlWTeYUGiCJYhhMDdDhLsaQGpmSELJjBi+c5LktAjBlJYQvHakMGP4ksUfzGOplwVIY33DF+IqQQiE4s7pvc+d22Epi0EAnER1mW9KzwJyJrDUKUDPZEB8AQBWUDgghAAAABAEAJ0BKhQAFAA/AWisTyslpCIwGAwBYCAJbGrJQADrXA56iZ5eCufQAP7hFNWKqIWUgZLvM6Iyf70u4mi80TFXfRva5PuwzeDtFDNTXbLwPmHnXpmSvm63N2rAscmUnCdXoZf0DOjci0rp4Hx/+nq7J8eYYr/p/+w2f8rh/64/4XwAAA==",
+  "color": "#daccc3",
+  "alt": {
+   "en": "Ground nutmeg",
+   "ar": "جوزة الطيب مطحونة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Nutmeg.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Nutmeg”"
+ },
+ "souq/p2361-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRi4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKcAAAABgJtt27Hn+a3qr2zbf4zOTiYwOttaIOm9RSq7t50BzCd83iOZICImAP6hmI2XXpTBZ4rf2q+Ts4Q6cRSYqzc26+rtCoaJrbnBl6NGWsLqxez92XwzKTj+hogzhzqKZvkMEfE9D6iJ7/h9D6jifvx+G0dKxh/zgVz6w6SE4M72Xf/QCsRA6ykiHs73mGUEXvnNw8XxmM6gFRBAXtY2ok/ggALoHAH8OQBWUDggYAAAABADAJ0BKhQAFAA+/WKsTqslJCI39VgBYB+JYgAAQT23wADM//+d//+Th//2KRyyA7v8IOCyMeexoI7DcWn8X27vu9Y8Sn6QkeSAjU8Qhtm+ehV/pqO+q6+W+//wWcRwAA==",
+  "color": "#edefe4",
+  "alt": {
+   "en": "Fresh rosemary",
+   "ar": "روزماري فريش"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Rosemary.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Rosemary”"
+ },
+ "souq/p2362-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   774
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIEAAAABgFvbtqpqD1K32GlASqAJIiogcid2d3coQssg88iJHP7HnQIiYgLwE0k2K+Mp+fB4HMkIDxETx5tJ6gOSzvFuW3qL7ZocH1xmxACYi+OTWxbAOT7NBAitZ7wAIPx/bE29Qu2xAm6Kdo+sBbegfUSB+4bDra0ajwqVsWolqODiBwIAVlA4IFIAAACwAwCdASoUABQAPwF2slQrJySxKAgCICAJZwDPoBDQU4IK0ScEAAD+6nq02V5qGPnn65rpex/Adbtzgoi8BVW4Q/uqVlv+yex9o339/6vzoAAA",
+  "color": "#e9e8e5",
+  "alt": {
+   "en": "Coarse sea salt",
+   "ar": "ملح بحري خشن"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Coarse%20Salt.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Coarse Salt”"
+ },
+ "souq/p2363-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   772
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH0AAAABcFtr25p8waV0OlqHBZjBvc4idFoxhssKVrkzCOlC/Ptlg4iYAGAeyVtGyTaq5c1ONLZSRWglMRH57dUJlkNU9RjDHBLWBsIt9hIIRpjqJ+hgso8ggX2B0C4hcxLYIV2iAVInKiJJosDfQvEQQeFgmgJlTVaVHlB74j7gCgBWUDggVAAAALADAJ0BKhQAFAA/AXizVCsnJKMoCAFgIAllAMzQEay0mWbUDMYAAP3SYOrhLFIFtnk248R7tGp/Zxno2aKeETh+a4xpr/Te9W2Ci+sexETTsAAAAA==",
+  "color": "#dfd8d2",
+  "alt": {
+   "en": "White sesame seeds",
+   "ar": "سمسم أبيض"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Sesame%20Seed.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Sesame Seed”"
+ },
+ "souq/p2401-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGkAAAABcBtJkiLNgQ/wzMzgBqOb/JZ8vAFMKmktHPSdBxExARJsIu7HfuVD/njIUNYbeBpM+Q98C4zsgKWwlR/wKTJzABgzNVuJKdmyTM6WZFK2KBOzWUzX1mDGth6zsE2Y6gU4lRjRi0VdAgUAVlA4IFIAAACwAwCdASoUABQAPwF0sVQrJqQjKAgBYCAJYwC/7BEcjZMsvR1dAAD+3pVEG3ol/PhXAu+bncwkOll2xOVyn1Me5JZQxh89tGb4/sCf2dxtqAAA",
+  "color": "#f7f5ee",
+  "alt": {
+   "en": "Crystal sunflower oil",
+   "ar": "زيت كريستال عباد الشمس"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/cooking-oil/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2402-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   823
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGQAAAABcFtr25r8ca/d8BkYijVoswHuTONDpOXQcc5vxZswQURMAOlUGaYtTOnPwHq0cTCLvgke0kaFyhul9wlSU0ppjRykBbKXVn+zbmWLHKQ9cpR2yEnaIFdphcw+lH7nCAkqj3QLVlA4IFoAAABwAwCdASoUABQAPwFytFGrJqUiqAqpYCAJYgDO7BEJhwp+nSQA/cx/FvR8QDfc1zQzrbDS52aBS9CFaMhHGGPNYMi/GdrfdXlQ+PMo97scJKMIHY78t/gAAAA=",
+  "color": "#f0eede",
+  "alt": {
+   "en": "Wadi Food extra virgin olive oil",
+   "ar": "زيت زيتون بكر ممتاز وادي فود"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Olive%20Oil.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Olive Oil”"
+ },
+ "souq/p2403-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJcAAAABgFtt2/Lki7u7u7sN4TJBOl0hPexARUfFEGnp3KFzd+eLvd+LTBARE0D+kGd0haI+Dc50RUej0YgOUfJ1YLSIIksjcIBqfUDPFUSTjuDvlxxDfDxif69woMYI852F5jGjrz60gKFfA2gOM6JtqIiLQvwdzDJhJm9ZuyYWyR9BQyvBFlbP7+5vjho6Hoavtrr9PquMQ/43AFZQOCB6AAAA0AMAnQEqFAAUAD8BdrJTqyckoqgIAWAgCWwAuwANMK2EFhqvNZcwAPxak3oSRseFefIhYzPeLeLBUdDxs5pHZzak1LOGXrcSm+/Ar4zpz32dff/+hvEMdm+La45mEfIB4rzB6pZJIYj6GOKGD8esdIf4f+UkxM4AAAA=",
+  "color": "#e6d1ba",
+  "alt": {
+   "en": "Imtenan clover honey",
+   "ar": "عسل نحل برسيم امتنان"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Honey.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Honey”"
+ },
+ "souq/p2404-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRugAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGsAAAABcBzZtmndb81sGzPbthXFj+THauPh31IGETEBgKoqGhXhTRhGj5dgjgA/xhyIHAmsmbcPa/9jmM8OI8b8v9RoWwiTRFvACmgTWA1tAOugdWFDtDpshlaGrdDSsC2a/fF3q6IBhTMcMIsBTQBWUDggVgAAAFADAJ0BKhQAFAA/AXCvUKsmpCKwGAgBYCAJZADM0ANghWUAAPcEul5S+D4+r7W/dBBeoGcbPMzdIu6YuNnSMzLR1qGp17ml/n9dWvmP+XOLUWxAAAAA",
+  "color": "#f1f0dc",
+  "alt": {
+   "en": "Siwa extra virgin olive oil",
+   "ar": "زيت زيتون سيوي بكر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Extra%20Virgin%20Olive%20Oil.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Extra Virgin Olive Oil”"
+ },
+ "souq/p2451-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI0AAAABgGJt27Lowd0dVuDSnEqmSYLl0Ly5Q4fqzWYmuUbquA/uLCAiJgBHkMADgg99znrh367ndTLxrUG1GpqTpQPzCsPtZM0nNWmJd7L+WASAlNxg4lq43sQNAGebnJMA+WTTDxag3qgGgDxe0Vg2AoDAY24ymdzXVYkl5QWAcDb5FgGwJHudkGwZzH0/jiYAVlA4IFAAAADwAgCdASoUABQAPwF2slOrJyQiqAgBYCAJQBjmAtkJGAD+4yos/+b+Op440twdaKdy0PFhp+IDcrXf/qh81YxfYOEmNSq59Of/8IGL3bYAAA==",
+  "color": "#c5baba",
+  "alt": {
+   "en": "Medjool dates",
+   "ar": "تمر مجدول"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Medjool%20Dates.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Medjool Dates”"
+ },
+ "souq/p2452-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI0AAAABgFtt27LmwR06dxnAKipfwN0qWgZgADqoWUNbJ9an8nRWuSdv5JfYABExAfi3Rc54M8in/EhEUz4dIqJXE4/eF2prOMgagwMGOpskdV8S3VPivANA/0Zfn65YnkWAgxh3GyxkBuQnDHctlksxgD7DXmTBcBEGAP3mG+0VREBo8HY78IHZm1GA0SrF/wwAVlA4IF4AAACwAwCdASoUABQAPwF4tFQrJySjKAgBYCAJbAC/OBEc7a+QWue0IAD+3pQjDqb8Vf3pEpqEWOitYfeS1UfA8tzQecH//+xltIuPRVhTc0LxVJTMUv3yB6Pz2Oz/AAAA",
+  "color": "#fbe8e0",
+  "alt": {
+   "en": "Malban, rose and plain",
+   "ar": "ملبن مشكل"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Turkish%20Delight.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Turkish Delight”"
+ },
+ "souq/p2453-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvYAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG8AAAABcFpt27I8uDsTOImoW2i27ANoZQASkegwBCswgbs7v38kekRMAP6qPDfuhn/xTCiK2kWtJI7mkeK9thNennTjS5FuFABsL4q8BMC8oohvGREAcbz0IZiGIGiqC4z0IFT5anuKuhal+NHda3nwVwEAVlA4IGAAAABQAwCdASoUABQAPwFysFIrJqSiqAqpYCAJbACzgAT/OLLkgACN8F36ax66kH52OQ3pCZhmAmKGpnNI6SGStVcvz0H+REsqSJKxVTRv5fBEC1VRnptb7Tj/CcvnVj8AAAA=",
+  "color": "#efe3d1",
+  "alt": {
+   "en": "Peanut fuliya",
+   "ar": "فولية"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Peanut%20Brittle.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Peanut Brittle”"
+ },
+ "souq/p2454-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   849
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHgAAAABcBvbtqo8PHMP3d1duqAMiyHWFogdImiAghxivffMp4OImAAhvcYZjicSEY9DhQxe7BwZcjukxfUB2Z47yrn2C+wxuifyNFPJF1yicpIUsRxVxpJUBYtQNSxANTE3FcHMlDgga8FqpyfqNtNxQsisvnDI51CIPwJWUDggkgAAABAEAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlmDbhE23PVCV4QQUtaZVgAAP3SdN6yBTnKr18MjI34ya/Z/Ss6I5QQTgwK/VoIs1snHxs+LqRU7uncwbos5rNfjVyKGv0xmiTUCE/Pk//+XyoGeiAfVXh9jvU+q/rsWZdaWOAxxDz45yVZyXKgZCuOKPf4h4wnrQAA",
+  "color": "#dcc8c1",
+  "alt": {
+   "en": "Nutella hazelnut spread",
+   "ar": "نوتيلا شوكولاتة بالبندق"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Nutella.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Nutella”"
+ },
+ "souq/p2455-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   798
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHoAAAABcFpt27I8uEtiAVsAkhP/BYg+ApHzzwAb0GAKbRoZwB2SO78rDBARE4D/rJPDOe9W0kG9hDLFPUZEBW481KtqE1GjhGeEQOgpgqLqHp4GJf6QAuB+S6CoAIAw2XlS1FhgQxrA60iWTMUzRVGjghnivcMeoYFkvQb/GlZQOCBmAAAAsAMAnQEqFAAUAD8BdK5SqyakIqgKqWAgCWwAyNQQ3q8nKG6WwgAA/uK08nP0Q9ZbH3HmE/Stsen+4hbML+LkEhyWOSiYLrM3//0g5XwiX7HjazhG0EXuKdNxnmcAj2b9v91UxQAA",
+  "color": "#dad2d1",
+  "alt": {
+   "en": "Dark cooking chocolate",
+   "ar": "شوكولاتة خام داكنة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chocolate.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chocolate”"
+ },
+ "souq/p2456-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHwAAAABcFtr25O8ZBiBEbLaaskIdMxgS2XJCKxByRjmULKHOb9/2CAiJgCKvSiO4+RvHMeR91O8JIufqczsx2vFWu8HpViJv7FY/M+5ilydfziJnEA7kY41Ig2rRCo2Fpmw4MEeAcPABgj2rBep2ULEmi/Pr9dlV7siAIIw9KEVVlA4IHgAAADQAwCdASoUABQAPwFysFIrJqSiqAqpYCAJbA28xUbwTtVt5BTYnWAA7zB6HyCR9xiyBeQPBrH78k8m6EFdXPG3mUimZ8WLz7X//7B5l2n42alFoVkvTz9/YOrGQDs+Xn8fqxjsqNBSPy/2oFROmVFKX94crPAAAAA=",
+  "color": "#c9afa6",
+  "alt": {
+   "en": "Magnum Almond ice cream tub",
+   "ar": "آيس كريم ماجنوم لوز"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/ice-cream/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2456-2": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   822
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHgAAAABcBxJkuL0vs4B8Z+Z4XdOiH04EwSOsOSN9GRmN45mZ0MeRMQE4K+eRMKjUJ/+TNM0f9OaTJuazLFGrUz2igibimGXrqK7AioBF168F0iDZ1BizpkICkVOBvKTbAvmSNbnRGVRDtbUBuwG1eChczPNWw+qIhQU+CtWUDggcgAAAFADAJ0BKhQAFAA/AXSvUqsmpCKoCqlgIAloAAARXgv20LEAAPnTjHLvZqs7w5sWYz2DambI6oQt3n7rO8ftJMPhrbRJTCRE67N//DG7BkNIkbd3S/9HjHz110d39+obnJ8CsSKIkcrKCHnna38oEAAAAA==",
+  "color": "#d4bdb4",
+  "alt": {
+   "en": "Magnum Almond ice cream tub",
+   "ar": "آيس كريم ماجنوم لوز"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/ice-cream/3.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2457-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   815
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSFQAAAABcGLbttqckI1EG5VpZYJYZmYmRZ5hApHl6oiYAP5HAVCMR1zA2rd6g+F4PB6NZ6v1rpUAtPjRJWA/dAGch2IV9Ft/0G3Xa7VKIZsMfe+u8kSZHw5WUDggVgAAANADAJ0BKhQAFAA/AWqpT6slo6IwGAwBYCAJZQDKABDv5IcVSiK7QAD+y13Soep28Ihp/zCTXsaHyDJXkDovuqNC13eeP673GdMLllGLG9fYbYl57AAA",
+  "color": "#e5dddb",
+  "alt": {
+   "en": "Mars chocolate bar",
+   "ar": "شوكولاتة مارس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mars%20Bar.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mars Bar”"
+ },
+ "souq/p2458-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHwAAAABcFpt27K8WNTkkhnCYQzoDtHdoXnWARjBXRobcJjA9Xd8gIiYAPjbtOKo5tawX6gixGuLgqa05CMIpZEktkWebhNoF+T5qwAA+MirHQBgp+bH584sILLVHueKCpGQAABjR7VhUUGXKgFPmta7G+GmeAZoHKnK7C2E4B8DVlA4IGIAAABwAwCdASoUABQAPwF2slQrJyQjKAgBYCAJbAC7AAeMh6DKvGAA1BnibJsL8AVO+9nfxoO/lCCCO+AURe5RDXH07O8euTm+/7ITbb5cNSlRIirYxdtt6F1rOyYPgpu8cPoAAA==",
+  "color": "#deccc3",
+  "alt": {
+   "en": "Soft caramels",
+   "ar": "كراميل طري"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Caramel.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Caramel”"
+ },
+ "souq/p2459-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   779
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRqoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSDMAAAABYBvZtpLfgsb+8ZByHPqvQe98iUgjYgJIQTZAGndecInrUIjzSP2nFvm4A01xcoQiLhUAVlA4IFAAAAAwAwCdASoUABQAPwF0r1CrJyQisBgIAWAgCUAYG4LdGMaAAP7sfbbtE7DeWIiSYtim6Z8wze/67cBaZziivkEGgrF9bui2sWak22d3QukgAA==",
+  "color": "#d1c9d1",
+  "alt": {
+   "en": "Cadbury Royal Dark",
+   "ar": "كادبوري رويال دارك"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Dark%20Chocolate.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Dark Chocolate”"
+ },
+ "souq/p2501-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHwAAAABcFpt27K8uLu7Q/0rlQloHGZhC+gs4AzgrpnkEl3af/hdkAEiYgLgPyq9Jk7pMYphx5yTVRajP8dZJDDmpYgBebDA8gwTjHVPBiDQhzD2qA1AXWly2AA19mY3poE6uwxd7MRmrqQDZMHUNACzOFV4Ydi1lhQAe4FCC38RVlA4IHAAAADQAwCdASoUABQAPwF2slQrJyQjKAgBYCAJZQDM0BDRhNYvEJRSmwAA/lI2PoTHaRWPVHzD2GrHvFso1h8QQQD3fUbqvHZJQ5+nR0J506+gj+BvRudg/YrX//lQ55NED7/If+JE//qjuOMASwlgLWAA",
+  "color": "#d4d0cc",
+  "alt": {
+   "en": "Abu Auf Turkish coffee",
+   "ar": "بن تركي أبو عوف"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Coffee.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Coffee”"
+ },
+ "souq/p2502-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   815
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSKcAAAABgGPb2rHn+W2jsm11NuOkc6pUziSMLgNwUqVV5TY9Kk3A+Pn831r/CCJiAqDDOfag2+lSM9qxLYyU07FYemhm1I0txkZXjk/PDpaGI9skxPdcbf3/OA2o4R+pVouY4g3702HSS+xBgvG3sB0Wxixgk7RWpOLxF/Z+GG0iHVUJrgKAoUpYBUC+I/LEAAD5RXv3RmhZPHlv9Xs5xQCc7u0dH+sL86HDAQBWUDggkAAAABAEAJ0BKhQAFAA/AXSxU6smpCKoCAFgIAliAMwoEAAW2qrFWp85/8MwANVQQNjOPEo7V37s4jPAO0ZmZF3DtA1pNs/lsY/Z9UciisA78kYBA6R81VUqXBmHJHXXWU//+qR7B6nyOwAlKuncDmhs/Mf8Z+ngZ0h3fjIuTe67JPp10P94p00Sg5KwhX+8PRIAAA==",
+  "color": "#d3cec6",
+  "alt": {
+   "en": "Espresso roast beans",
+   "ar": "بن إسبريسو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Espresso.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Espresso”"
+ },
+ "souq/p2503-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   854
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI0AAAABgJpt27Ls/r6EdHcnO0RLNAaAERjAx7AOyZtFkm9A89+S6+c6QURMANROWKOpkEacp3WlKIr6WZVIodQrJTwlBLqU2BjBlxfzf6/w5d5F9LQTnuY/JfbQ4BQpiWUA5EnKlQT8lGQbYPqX8q0HsJTSAwD/g7ijgQP/WszMBH6yMHjh3PtpiCZckbAZqgcAVlA4IGwAAADwAwCdASoUABQAPwF2slQrJySjKAgBYCAJQBkagLL28htf2NrnSLYAAPxQH6unnhGYWRDgICDX7HEeBOMcpEkkTtU6883eznPYUNov0VfqObeZzRiRFrMiGEVsDwq6BL7BKncxYrI/s3GpgAA=",
+  "color": "#d4ccc2",
+  "alt": {
+   "en": "El Arosa black tea",
+   "ar": "شاي العروسة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tea.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tea”"
+ },
+ "souq/p2504-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIQAAAABgFvb1rIId83dnYyUyKEJFm1YJ1aC96CRu7trxsxgb71ZdBARE0D4Jl1utigY/6BMH4/HY8PE6R6gFWfrtzudTt+O8z1AN451+jgyccT+R5eIE/983EW4wAP04xJQFFeG8rgFNMWdoB1uBHVxOSiJi0BBnLZ+ud3OFS2OQGQL+UzCVwFWUDggYgAAALADAJ0BKhQAFAA/AXKxUismpKKoCqlgIAlAGeGJiAeJyYhWR5/gAPchHU+2xMMcw35xAbCpVCqd9ahhMgWs/56hBxs6+0TJgIAEL7obfdJAEWVWmVD0Bzd1120+43sgAAAA",
+  "color": "#ded6d2",
+  "alt": {
+   "en": "Nescafé Classic",
+   "ar": "نسكافيه كلاسيك"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/nescafe-coffee/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2505-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   774
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMIAAAABgJpt27Llfu13aQ6JxsEALs2lcZA0Ud2JDODJHRbw9jdkAEju7g4P8gk2QERMAP5DxqUU3ISwOt0et1cxI7KwyNdakx3tsnA9HrOxurj2uL9Q6VZMK1A1TfT6RvR8vd4SpyHLz0j77fFpe0V8KV6539Eiotd2BoCXLj4cGXiZKuAAMPhGRjeCAOCJRF7oTe/E84XF9i7ePWu8XlEGtOPHbg+fiR4fB6JyfTqooNuLq/2axiQrDEalt/WM9AgG8wq/H1ZQOCBwAAAAUAMAnQEqFAAUAD8BdrNTqyckoqgIAWAgCWQNxiVG8K3yB4AA/urltwTXrKAw8zP3OUoPtKJMw019oy1arBz2k8wgvKawW/1TfZ0zPO5qqPgqdUphjbeJN+U54ye3Zn8FGaftrtcJBYY31ZEX1cAAAA==",
+  "color": "#cfcabf",
+  "alt": {
+   "en": "Isis baladi anise",
+   "ar": "ينسون بلدي إيزيس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Anise.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Anise”"
+ },
+ "souq/p2506-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSLcAAAABgGptmwLln3V3d19I7m7JXe+AROQOnA5Vm1vTtJlkiebuzo/MDHoBETEB8OvFRP8VCSG6HLdUwiV02gfXJitKpQIeyFy6ecWjxfoUnnBD7BURMVYmEzBUcXMn+PllSEUYnrxLpK97gNBcfQ+M+3xpgCIItR8wcENLKEpzzfgr4yYlngIpyV33iPiK+LIZtdLAl79z/YJ4v9uRYAd2uHNge3iiN0nslnGAtLissU0blQM/AaEZ/kcAVlA4IFwAAADwAgCdASoUABQAPwFwrFGrJj+iqA1T8CAJQAAAazHIAADaGoByzs1Ympvxb3DMPpxI6q4usRSK/nVW4HzwyvlK9//42JbGJb4WPZgPy1v/9bxOWkaq3/vm2QgAAA==",
+  "color": "#dddfd3",
+  "alt": {
+   "en": "Isis dried mint",
+   "ar": "نعناع ناشف إيزيس"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chopped%20Parsley.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chopped Parsley”"
+ },
+ "souq/p2507-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   779
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEcAAAABcBsAANmED9i2kxN4hG9le5PNrWtETADwawTjNdvzfc/WOAx+MRyvHx/rp2r/2S57AjafjcCftv0JSil2kKRpHNgKhbz6IQBWUDggZgAAAFADAJ0BKhQAFAA/AW6uUKsmJCKoDVFgIAlsAMiYD02yxsoAAP4fx0UzTMmwvwgldCRCwuntVfVJ2ooG1Si4zpJZcWrRKn8fkOzNtviy1RmHsa9N6+pOnB3ISG32fz6nGWbpcf8gAA==",
+  "color": "#b2989b",
+  "alt": {
+   "en": "Hershey's cocoa powder",
+   "ar": "كاكاو هيرشيز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cocoa.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cocoa”"
+ },
+ "souq/p2508-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   796
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRv4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHAAAAABcBvbtqo8JKIAd4jctQGIPHeHmFLd3aUAl3vnvqGDiJgA9k+lzedzaAS02BuN0CpYhtbCmrQGVqTFsCjNhGlp4ie4i2jsBPaMcwxGPG3Q5+mDOc8OXDmEN/CS0PRv1E1LYzmaewPWYRpjUrNVxv4KVlA4IGgAAABwAwCdASoUABQAPwF2tFOrJySiqAgBYCAJQBjmAiVO6MM94nAA/czBfyh8JOSdJeh4yfStc4IlfgILqz1Y4Yoi6T8rMMM8+vrW9z9LdsxP/5409O67D1g88Hm7ltoZ1eW8Tqgklq2AAA==",
+  "color": "#dddfe3",
+  "alt": {
+   "en": "Hot chocolate mix",
+   "ar": "شوكولاتة سخنة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Hot%20Chocolate.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Hot Chocolate”"
+ },
+ "souq/p2551-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRu4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH0AAAABcGPb1vH8QZmV1rZt20bl6m+z0iYj+zIVz8O+3z+DiJgAhlurhcZ5R0EwGvGxgMfjg8QTlh2LkPb9crnXkN7j8Xg0kc5HHWl9VJAUIWQbQ3Tr8XijRmy1YLBuRlz5QKBoR2zpQCBjppGF9Mv5YqVF5KfH4yhBGKHVKmQ4BQBWUDggSgAAAFADAJ0BKhQAFAA/AXq1VCsnpSMoCAFgIAlpAAAtqQixZy6gAP6uy01sYb0XpvkNO8UaX0bRSFEp29jaz6LMAmD35v1kZaDk6DgA",
+  "color": "#f4f5f5",
+  "alt": {
+   "en": "Baraka natural water",
+   "ar": "مياه بركة طبيعية"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/water/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2552-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG8AAAABcFzbtpr8VOAJNuOPsVFaQmvwobu7ayss+oAKLJ670kFETADxlI1EWOz+eh+xhKrGMRoIhLHSeJyHQl9N+/iRnKZpWhJZWabI3XJGLpY9sreskKVlgkwsfaRvaSEtSxWpWAoIfWjakyKEkSSGeAoAVlA4IFoAAACwAwCdASoUABQAPwFurk8rJqSiMAgBYCAJZgDI1CH5Hbl3l3PaAAD+3pI03hldXj3zkjKfqWyG9YgN1Sxt9A5P4Lfk91prH/t3cNxmlSR+NOuQe62PWKIAAAA=",
+  "color": "#f6f2e0",
+  "alt": {
+   "en": "Freshly squeezed orange juice",
+   "ar": "عصير برتقال فريش"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/juice/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2553-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   960
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuYAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGcAAAABcBvbtqrcLwVI5GjqTuTSD/QC1bkTO9kJkPN+BxExARJvNqNiu1AxHihILJYhNwdmlP0CXjbTAYA20/poMrWPKlP+KDK5jxyT+Egy+ht4G4ycgYuwLgC4jLkBDiYj0+t9IrRmORIvAFZQOCBYAAAAsAMAnQEqFAAUAD8BcrBSqyakoqgKqWAgCWMAy2gRHPE2YwYkBLgA/RKkAYmgqAu0AtknnIBr13J6gtyQ5HctJ5sral9zkdmuv/6RGWG7dst28+DGHwAAAA==",
+  "color": "#eae2e3",
+  "alt": {
+   "en": "Coca-Cola",
+   "ar": "كوكاكولا"
+  },
+  "source": "https://cdn.dummyjson.com/product-images/groceries/soft-drinks/1.webp",
+  "license": "DummyJSON demo asset — placeholder, replace with tenant photography",
+  "credit": "DummyJSON (dummyjson.com), groceries category"
+ },
+ "souq/p2554-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   843
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSLIAAAABcBvbtqrc747DN9zd3T1yJ3VSOiGm3i8RBUTEBMBfxhgXywNuDVBmbpci96lfk6Gs38T1uLS+17+itToyMXhU5FXj2/HkiwaCUFumoi35VHbnmwFSp8uxY9nik6Rg7Z0JekhNTZFFu120CpZQO9oUMU0kWWotDq2wW2mpcj5KauRwvFry+0fFcmOemKm4Bqigy+F0OJRGrqkEQZ8UPAGRBbKcEGWnAQCGAADgoupCTfxVVlA4IEAAAAAwAwCdASoUABQAPv1grE6rP6QiN/VYA/AfiWYAygAV8YPgAP7tYzl6Gb47gEHHMk/CvHZ9zL/wmBVr97S7QAAA",
+  "color": "#f2f3f6",
+  "alt": {
+   "en": "Ice cubes bag",
+   "ar": "كيس تلج"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Ice%20Cubes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Ice Cubes”"
+ },
+ "souq/p2555-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   813
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRigBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIYAAAABgGJt27LowV0TJHddgMMiSGS24NqILEOju8xMIk7T7O6KOwuIiAnAvqasgdD7dK/mGY2OYwG/S7hUejT/LyuaR/dmThaMRgdmBgDCcLTiUAAoR6sGARBOlno5KrEBwFprXP4uGI3akhkAROvF/X+2OLr9G41SCwAYtLBeasW+jGWZWQL2NVZQOCB8AAAA0AMAnQEqFAAUAD8BeLRUKyckoygIAWAgCWwAuwAQ3rt3XNReRWwAAP6uMYngydEex9EOxIlIrNSE4nbBs1I44k9TofP4UdyOyyReAv2FnSSEQw7nPiv34ul//+5Pa3SdosJmeswXgfO0Fs3Z/vZiFyvxV/JYXJ/p/KAAAA==",
+  "color": "#e5e1cd",
+  "alt": {
+   "en": "Dried tamarind",
+   "ar": "تمر هندي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tamarind%20Ball.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tamarind Ball”"
+ },
+ "souq/p2556-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   826
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRt4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGIAAAABcBvbtqq8Cr7j3oVX4e4eQX2uoXdC5PD9n/epICImgNjr8dK4HmjsVxRSv18UW8nyFPL/ZPnrQnKyLMtpZKIbIk1dBano8kj5v0pIQ1dDxroeMtI1kcj9/b35EcI43TyxFVZQOCBWAAAAkAMAnQEqFAAUAD8BcrRRqyalIqgKqWAgCWkAAC51CHR4Ijr1wAD+5xmfDu0w3PWKwx0lflvxfpDxSuT+Em44YuSX0BdUwAAlEfusndW95sc1WepiAAA=",
+  "color": "#f3f4f4",
+  "alt": {
+   "en": "Schweppes lemonade",
+   "ar": "شويبس ليمون"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Lemonade.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Lemonade”"
+ },
+ "souq/p2557-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   854
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsgAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEcAAAABYBMAYBKsg377sQTQYjWwGg5lfT6cOyImQLlU9z3jmImQe0yfNuMYRAgeSlaE1vhIixBC1ZGRaU5pb9P8hZJJj6ggjIByKQBWUDggWgAAAJADAJ0BKhQAFAA/AXK0UasmpSKoCqlgIAlAAAW0660iniWwZqAA/rkqVZ6L4l1rdVz+kgZQOk8q/SPw7rDbDfu31wQb/hA/oPsjts8H0l24zRzF8cq+fAAAAA==",
+  "color": "#dbdbe6",
+  "alt": {
+   "en": "Rose water",
+   "ar": "ماء ورد"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Rose%20water.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Rose water”"
+ },
+ "souq/p2558-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGQAAAABcFXbtqo8d3+4SyVCkIwCNKAABRwK8OlcebLPaxARE6A0uxxQ3LYU+w3FfUdgvC8Ea8ZWUPvJ2MNCFowxliDjQoz0CwnSLqRIXkiQuJAiSSFEokKCJIURoh4YuzqIYi+mutIoVlA4IEoAAAAQAwCdASoUABQAPwF0sFKrJqQiqAqpYCAJZQAAQwPFeQAA/ugg8e/RLi04klYaP8rPwI99l5NE/zpS8Av+lalN5S2qXeHn4GIAAA==",
+  "color": "#f7f2ec",
+  "alt": {
+   "en": "Orange blossom water",
+   "ar": "ماء زهر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Orange%20Blossom%20Water.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Orange Blossom Water”"
+ },
+ "souq/p2601-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   824
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSLYAAAABgGJt2zLlw91d0zTc3SKJFbizALdIIsMaoHmaiCdt7u7O2B0+mWEHETEB4p99IjwxN1Mb7U6Blc6LFT+TjKjJb5g65zRTV8MK8n4/45qEbWxsA9w4GzR9tm30q5qSD5vBUZRqEOBQRaMiZVu6V73Y+6UD+H1Gb12R0gew/yrsW2BbloTlz4bSCaxuS3XTGE6c9vhI9R/8zB4pPnOENnCZoVfgviVIGAZUBqT1/9Ar3I+wBHvAGFZQOCB2AAAAUAMAnQEqFAAUAD8BdrJUKyckIygIAWAgCWwAuyE7ggvw4AAA/uGjTkWD05YoisYO3nEyLfCSiyJssjrgAwWe0nA1rsSkAIP15IjnL2f4BG9//94g7yfhV0qFQIdHfKrZeIjfNNfB5aRvOX4UEUv+d1mdLkAAAA==",
+  "color": "#e7dbc5",
+  "alt": {
+   "en": "Roasted peanuts in shell",
+   "ar": "سوداني بقشره محمص"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Peanuts.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Peanuts”"
+ },
+ "souq/p2602-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH8AAAABgFvbtqpq4+6RuzspBVAAVTnkDiW4ZO5OSh/yFXcKiIgJwCeWugkANE7DDZzmft/2hvL/+79FbRwjn0n2t395zrC5bb86k+3v/B/wAOH3Hfu9CED8ngYAqH5v+7acIXWbHxeF61uG9EsQ16/85bi40Tf/3+9/KnbcKbCamPiIAFZQOCBmAAAAMAMAnQEqFAAUAD8BcLFSKyYkoqgKqWAgCUAYZoIbJGhBAAD+rn21IuxnZhL32oK2fViYNwxnrfa1079ZGPhZCcldi1pNAsmrEKcx97bXFwUgPrpLHz8jz//zbXjLEj//xtbsgAAA",
+  "color": "#ece2d5",
+  "alt": {
+   "en": "Roasted cashews",
+   "ar": "كاجو محمص"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cashews.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cashews”"
+ },
+ "souq/p2603-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   852
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSLUAAAABgGPb2rHn+c3YduaQiv1fxrYrTSS17UzBlW3bNm7wfM+//hlExASQY500doUW1t7vTXeqRTEnm4fAwc2kt0FJdb8yCQCvuFgJ5wK6vm+guJjERA9B+h7FJN2KJqsY6ruWoIWxVn+KXv4FvJxDPP/P7xHyiSAiosQ30duB7V8DxB+PW05EVMA8c32hGiKi2PrP4w/sHT4Dp7ta4t37slOb0vE1fH7x4qXABi/Z6koTc8lOLTkYAFZQOCCCAAAA8AMAnQEqFAAUAD8BdrNUKyckoygIAWAgCWwAnTORGAbca7KwA1mOQAD9FNhMnY3/I2PrWnjZnDlj21SgyVKS4ZWr7r4sSpr8CwrRiM2J7y7+VWKg5MyFRshauaYOUdPi2ZT7a8tmPY2L7PB7500ejIM5w3LkbKtM54g1/9LznySgAA==",
+  "color": "#cdb3a1",
+  "alt": {
+   "en": "Raw almonds",
+   "ar": "لوز ني"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Almonds.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Almonds”"
+ },
+ "souq/p2604-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   768
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIcAAAABgGJt2zLlGXfJ7u5TfSC52y44RCorcIcElUW4ZNdMJbk8476AiJgAdMzAdKQu9z7JY3Nt2XeWH1YKbdy9HDjOWDlZ1vNBkq9vVebKrlhnDwDdfx3/RgAm1rsGQPxQz7cKwEQ9dAJQL/yT3JuvcidGeWJ2phvSy0o51Kzf/SG5jHoNAyMxtD0AVlA4IIgAAACQAwCdASoUABQAPwF2s1OrJySiqAgBYCAJbAC06BDeog7y8cQAAP7DQJ5KzheVOFg2FTrYzeOOCWRxV2KD/vrXdFO/a0Znuxjw6wxfYXIuSwjRln7/frdOaKulkAoMh1JsVf25Z02zi19Fukwh+MXPM/yJf//avD8fH3GOSsQXe3/wxtaj4AAA",
+  "color": "#e8d7c2",
+  "alt": {
+   "en": "Walnuts in shell",
+   "ar": "عين جمل بقشره"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Walnuts.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Walnuts”"
+ },
+ "souq/p2605-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   817
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSG0AAAABcKL9/5p8521LgrvbOZwDcB8O4dHqnn9GIo0GDRJHcJlvaT0iJgDBTglUhGrvScJL93w76Bdd16+iC5Vd6+7aMOyw0N8edH3DAJD+uk/CAWFfDxnA4K9/nOZ3/ag1Yc82CmTbn51GQqUvINABAFZQOCB4AAAAUAMAnQEqFAAUAD8BdK5SqyakIqgKqWAgCUTgAlGAUvEXWQAA/uW9/bf34YUlvPiORlAfnBJLx+7CIeyoej7UlFBGZx1N2v8OrGM7eA2Q9BELSR75/De//+K34BFuT6eW+cjrzEcQs8L4EW811x2H+80PSoUpcAAA",
+  "color": "#f4eae1",
+  "alt": {
+   "en": "Roasted pistachios",
+   "ar": "فستق حلبي محمص"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Pistachio.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Pistachio”"
+ },
+ "souq/p2606-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   806
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRv4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHAAAAABcKpt25p8E9w1OZE+joFrp4O7VDsEOtU5AosuySWTHOZbWo+ICQB59QU14khXOV+h/tNGExEKU/cPxT8P8SV/lNiJmYPeKPE7EgCcDwnU1wZgO0vZYgAQaNVXQvvhwA/8xHFHtTrZiNcAolFCBTILVlA4IGgAAAAwAwCdASoUABQAPwF0rlKrJqQiqAqpYCAJZgC3uADkUtQAAPcHNX1VbjLwVAC4zFwoXjcC58s/Cmh+9g8nJ2vjSgtGxXhrdWZhU4oNXMTNX8/SP//E8bUg7w5lYqxNtAkn79rvaZgAAA==",
+  "color": "#e9d9d3",
+  "alt": {
+   "en": "Roasted hazelnuts",
+   "ar": "بندق محمص"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Hazlenuts.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Hazlenuts”"
+ },
+ "souq/p2607-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   806
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJAAAAABgCJb2/LmCTPjAjKxzAwaLaOlHTCsITtIQZIi1anvxHXqmBVDmLOAiJgAbGgKjDElc47w3ctv/+2pFJHN4PvuT71wT9n76s94aJxgC/dn/tUAkP/vz9ZvA8BRf85bCYCz3mzvZSIA1bX2edJl/6rXxThFgfx/fffpY+svfX7KmwCAowQUNx0/bC7MmRNgYwNWUDggXgAAABADAJ0BKhQAFAA/AXizVCsnJKMoCAFgIAliAMKAGH12WAD+6pAvgsqXJTBzVn+nonVzXzwv0dtV9gnt3Rjg2l5zir6dH8x912oAASwoxeOaD1TEAkn/cdymuwQAAAA=",
+  "color": "#cdc4bf",
+  "alt": {
+   "en": "Golden raisins",
+   "ar": "زبيب أصفر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Light%20Raisins.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Light Raisins”"
+ },
+ "souq/p2608-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   794
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIMAAAABgFvbtqrq4O6pu1OCF0ALLh1QAw1ADJl7TCYVELu7w1fcKSAiJgA+M5YAGCXlNpa2+lco7b8ififyiu9rf6P5Sm1/Y0V4JXDLMsy+lLplv59bz5CT2/b/XgAQ7e9dUwDom5taoa82DQB05WLQ0r+UBwIarqtzu/3+KymAO3ESNhY+NQBWUDggcAAAAFAEAJ0BKhQAFAA/AXayU6snJKKoCAFgIAlsAMELgKAAAa4NtT6ovxYVPAAA/cw6gEa5k+/Q3LjTAL1BUD5+kHPy7+vC72wXL4KcoPFzvt5///8ekDIn3/u/gF7/J9C0LJV88C3k3/q9mp4wcPqAAAA=",
+  "color": "#f9dcc1",
+  "alt": {
+   "en": "Dried apricots",
+   "ar": "مشمشية"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Dried%20Apricots.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Dried Apricots”"
+ },
+ "souq/p2609-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGcAAAABcFpr29p8KTNXcX26QBXDDAwjkKti3oBpjC7QIdAyKQwnKj4iJgB439weS7gg3j2GHaYoq+gKoz33LQz6PMbyuLZQKj+MfRUAFEsuNxWAyLx5Pf9070G2UQaqArXlAq5kzFNyA88DAFZQOCBcAAAA0AMAnQEqFAAUAD8BdrNTqyckoqgIAWAgCUAXrT/8A9P2e5eG+GdoAP6uLKuAGWIhASjaHaLwkt5URnP5Ss//++33FP7GdhbWMiqvm5P+rc25Mqeb4aer3XIAAAA=",
+  "color": "#ece4df",
+  "alt": {
+   "en": "Lib sury (sunflower seeds)",
+   "ar": "لب سوري"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Seeds.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Seeds”"
+ },
+ "souq/p2610-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRt4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHQAAAABcFpt27I8uDsklyaNwwgsRHQ2cDo7OEkbK1hyd4dfkUSPiAnAf5X4XNyfjEOSXKXt3/DVugTJvgR5b5y57o0giDckWZMCMOzIH/MAPOSvLwPAffyylwEofngRb0IAIA2057NBPW7yF24k2VGxvlZ73Rz8S1ZQOCBEAAAAcAMAnQEqFAAUAD8Bbq5QqyYkIqgNUWAgCWcAyRAXHv2zUpOgAP7qFrnCpyv/hPgRhuvwDs/V6Bl4u184/1DUOI0AAAA=",
+  "color": "#d2cecc",
+  "alt": {
+   "en": "Oreo original",
+   "ar": "بسكويت أوريو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Oreo%20Cream%20Biscuits.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Oreo Cream Biscuits”"
+ },
+ "souq/p2611-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   848
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH8AAAABgJpt27LsOSBCcofkC7gllnAnMgKVg0j0AWh0t8YGOoC7/v9dPkn0iJgA+p2iWCHErwIgzEMlHgBokb1oYhPsngAwt52wCQqZqAvGFwDkmWwPJsaJiyEPxn8GoCwgkp6ZFgBKQ+CuIKJItdMF0NwCA8esnSRWo0VLQl9aQj8UAFZQOCBGAAAA8AIAnQEqFAAUAD8Bdq5SqycjoqgKqWAgCWkAADrOlogA/uv3q/95x6yRh3BWZUW0mkYwb1bub//9M/N7hD7/Or/0AQAAAA==",
+  "color": "#d3d1d1",
+  "alt": {
+   "en": "Prunes",
+   "ar": "قراصيا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Prunes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Prunes”"
+ },
+ "souq/p2612-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   806
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI8AAAABgGNt2/HoiW0uICetbdRszVY7MNaQHWRQqlI1Z/o56WZKuzJiZwERMQHY0BQYY0rmHOG7l9/+22MpIpvB992feuGesvfVn/HQOMEW7s/8qwEg/9+frd8GgKP+nLcSAGe92d7LRACqa+3zpMv+Va+LcYoC+f/67tPH1l/6/JQ3AQBHCShuOn7YXJgzJ8DGBgBWUDggXgAAABADAJ0BKhQAFAA/AXizVCsnJKMoCAFgIAliAMKAGH12WAD+6pAvgsqXJTBzVn+nonVzXzwv0dtV9gnt3Rjg2l5zir6dH8x912oAASwoxeOaD1TEAkn/cdymuwQAAAA=",
+  "color": "#cdc4bf",
+  "alt": {
+   "en": "Dark raisins",
+   "ar": "زبيب أسود"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Currants.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Currants”"
+ },
+ "souq/p2613-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   777
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHcAAAABcFNt27LgLiMFHL5/RhN4C5cGFGDU2dndYaQBGwk0wQ9Mz8MfISImQKW4RoiQCIWEJAktssg/+LUj6490Is0HyTqkeqO7iryhK3NBZ2aGpswENZkWqjINlGQKKMzkkJdJIBfjRmZGW++v98dVL69i1WqVksr8CwBWUDggXAAAAHADAJ0BKhQAFAA/AXKxUismpKKoCqlgIAloAMM0C8bunIICXAD29ZHUraZM+69XfEslqwSrL9FC68KelOP34E6ZJujWP3eg9I+Vj//OmfH+yErsMbc/rOpeGrAA",
+  "color": "#e7dacf",
+  "alt": {
+   "en": "Desiccated coconut",
+   "ar": "جوز هند مبشور"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Desiccated%20Coconut.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Desiccated Coconut”"
+ },
+ "souq/p2651-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   823
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHkAAAABcGLb1rI83GUcJHdt7h69u2sl0Sx6ojMGEjOACVj2h5PoETEB8NeJpnCr1Hb/YF3cEPGcHc4bfv4bgnF9xC+HhBfBBr+eAQAQFrfvTlQAoKiXiLhFxMNLB976T9itraL2yBbxHE5RX4DNBeGgoEwypRomqcZ+858BAFZQOCB8AAAA0AMAnQEqFAAUAD8BcrJSKyakoqgKqWAgCWYAxPhwAHvTB4VGO0gAANSedgq7oIZ4OxuvjeRDXlyUCTjw3avP5LkIZWin8HB1ItEZEQnoyT2dnBH1aZOqr7tShb5UuWud+CKQcho2jjGKDUL5BAnZZps1zwj/5TE6RQAAAA==",
+  "color": "#ece2d7",
+  "alt": {
+   "en": "Ready-to-fry ta'ameya",
+   "ar": "طعمية فريزر جاهزة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Falafel.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Falafel”"
+ },
+ "souq/p2652-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   802
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSF4AAAABcBvbtqp8IdLcQofUpQJ3yVxagaKI6MmijZ/3O4iICbA89SXSjtaEhpaHhFaFgtaGlraEtXaCo3aBsxR+wNWvzAHGyupjoSyNrIxsjGw/lsrhY6f0PvqKFcnm4panVlA4IF4AAADwAwCdASoUABQAPwFssFErJaSisBgIAWAgCUAZGoIfkAJR2sw/GXRAAP7ypDVsjOByTgkAQS+YiA9x+BZg7I3QLqC46qFSSoLtL60BFLdcko9PSvacApSIH8hrKmAA",
+  "color": "#f1e9e8",
+  "alt": {
+   "en": "Heinz tomato ketchup",
+   "ar": "كاتشب هاينز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tomato%20Ketchup.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tomato Ketchup”"
+ },
+ "souq/p2653-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRlgBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIQAAAABgJtt+/nqjW0MwAXSZQK21gYewMkEHoADWKWTLp1xTs3SPtECETEBuHYe/RSZ120r5dXKyP/qf/z+smmmPFrBD+LTH7/PWQCUH0e+sQGYjrkBgOQxvR/VY/I/bo8JApB+HGsEwBwcowIAhtoWKozv/nim/vidING445XZ/QInJHBOceFWUDggrgAAANAEAJ0BKhQAFAA/AXazU6snJKKoCAFgIAlsALsvShQI0B6gJYA3lgBBf3k/dRcIANSee5WbXZvN6nQrkOQHjoh1qaAxvUuhxn/i2wTTmVoNEImE+TRoyWnjNxlqzi06ME68z61eyb+UieLBSw9z1Gv2L8bpw+8oud8CKwIGuV+/v+ahOwZvmb0WFfTY9VVxA3TpWbPmP3fkMFSX6ReCDD+qULh/zx5PY48t/3wAAA==",
+  "color": "#f2d4b1",
+  "alt": {
+   "en": "Maggi chicken stock cubes",
+   "ar": "مرقة فراخ ماجي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chicken%20Stock%20Cube.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chicken Stock Cube”"
+ },
+ "souq/p2654-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRggBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSF0AAAABYBvZtpKPu0tumfVIRgkMJZGR04VH/uZhDUTEBJA3zTBJYpdC8EXTb+DSljzkb2gLsnEGZOF0SMdpkPaI+ivlEfkR6T0FEh5RJ8ysQiStuvWydnVGsFKQ5YFE3gQAVlA4IIQAAACwAwCdASoUABQAPwF0sVOrJqQ/qAgD8CAJbADMHA8mKLEHr/v4AAD8VWw1IJDMMG6zfXGn1aewyWuEfQjvVk2/ucPpA2MTtgV0vGvTISr9/5egDZcEur4aHRfHZ0lwxrj56P/qFnXo50Mm39130RClpC6+7Kc/907wwQ1xFTlS+RSAAAA=",
+  "color": "#e3c4c7",
+  "alt": {
+   "en": "Heinz tomato paste",
+   "ar": "صلصة طماطم هاينز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tomato%20Puree.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tomato Puree”"
+ },
+ "souq/p2655-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   850
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGwAAAABcBPbturcz9X/Ye64RQGMVmIgBqhnTTHAKTMxwXAeKYiICSCZbq5UTDts6d3r976NsNResMQSff67eyyjFxwyODd01FHtxVhFA5a2kJZ6fWXaLA2UeqBHEtEGzYnRHl9/LjObhYiC2UKApAJWUDggdAAAALADAJ0BKhQAFAA/AXayU6snJKKoCAFgIAlsAMq0DyfzjazSlmkAAP3SXZihIK5GdxCekydm64XqPsAiWSY8APAd4LGAD8/l67BDGe8PCpAqZwDln9ROcwircHSdLHR/aBHrONHgZ6c0gl6ebS3Yh0RseKwA",
+  "color": "#e2e0d6",
+  "alt": {
+   "en": "Hellmann's Real mayonnaise",
+   "ar": "مايونيز هيلمانز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Mayonnaise.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Mayonnaise”"
+ },
+ "souq/p2656-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   805
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRs4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSCQAAAABUBpJUrSZ3MMPivwTQZIJctWhI2ICEOO6tAH70eU3xqEFMQJWUDgghAAAADAEAJ0BKhQAFAA/AXayU6snJKKoCAFgIAlsALsa8C3/wD0QJ2EgB4W/QAD+baVqYJRjgLwsfIndP8RDwu/QqRDcDq/d6XEIbR2h7WJy82GueTXmBScbnDNT3pdf7/IvBtih/QR9dj4UWE8cGGoZ16FpVrmtQ6GiJwhpgy/9n1KcoVUAAA==",
+  "color": "#d9bcb3",
+  "alt": {
+   "en": "Knorr beef stock cubes",
+   "ar": "مرقة لحمة كنور"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Beef%20Stock%20Cubes.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Beef Stock Cubes”"
+ },
+ "souq/p2657-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHoAAAABgGLb2rLsxV2Tu1dGQPPkTnKS0y0SWUSm4Z1mo4Ff3/TctZhBREwA+6TIHAyaRJBx9fzinPPXba6lNhxcUztkSw2RGdVBBlQV6VM5pEmlkAYVRcpUBMlTYSRDOZE0FUSKlPMPiFFsQV0EAEvsvzj/vbYlDJfYPUr2UVZQOCCAAAAA8AMAnQEqFAAUAD8BdK5SqyajoqgKqWAgCWwAv0n/4BpFFYQzz+rDyADFOuI5z7SaX9tufLtQX+A64PeyutEW7lLLIO47nLufFoX+Wqqe///MIxyKueLAaqgsm781XVDN//2+aPGq/od9emZOGPVWzlCIoPQIqJZcbSO3aDQAAAA=",
+  "color": "#d5cfb0",
+  "alt": {
+   "en": "Knorr chicken bouillon powder",
+   "ar": "مرقة فراخ بودرة كنور"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Chicken%20Bouillon%20Powder.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Chicken Bouillon Powder”"
+ },
+ "souq/p2658-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   796
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRl4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIMAAAABgGrbtrJs4+6WGEQegGaNyiDTrFHp7olOJrlbtN+aa3d390+wF4iICcCii7jTyLwftrJ+u4FFq/9D/rxVyfhsEgLjnIJ8WwJA/zPhtwyAc5ITAIhMMiA0J8kRjiYJAND9TOoAIFyaxAgAfJMrmF+7pnjjECg1ZneisP5wgCkyFdOYcwBWUDggtAAAAHAEAJ0BKhQAFAA/AXi0U6snJKKoCAFgIAlsALEFoDbAc9Vple8vo0AA21MAAJjtEkgEjkLsc7YRxQxcslvCfan4Ppwpxzokt6ksezXL7rnE/EXjg+x5+X2e5dzm+6J8mw+D/uqbZbPDx+9XVqTGcN/8K95vi6eeG/Srl9dlRhN1FlQ1W7nqTH/1zb+T6gfv+/2/MvuFa8XfAlqmpvr+3K//0xf2FqwIB2ciBIch/tohOWAAAA==",
+  "color": "#e0dbb2",
+  "alt": {
+   "en": "Maggi vegetable stock cubes",
+   "ar": "مرقة خضار ماجي"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Vegetable%20Stock%20Cube.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Vegetable Stock Cube”"
+ },
+ "souq/p2659-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   812
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSFIAAAABcFXbtlId3Plzd41JGALwRwWaPH8FcKdAREwAnMmYaR5p9Kby0S92NbkiNP3GVlzy+83JGcFlwstEt4pvFW2Ll/Dqv9K9anIJAEQnLVJXIuBEVlA4II4AAABwBACdASoUABQAPwFwsVIrJiSiqAqpYCAJbAC/WKq2NgFDkW6pb49G8OfsAAD54uGQMNfp5gPKVqC7gShfzsDOyEfGoaPL7KC2FjN4+S42CTfHAm7ttdT7OkgSH2ChvJOgmN66zLJMHEffM37L0iOaVh7sU4E4sxah9j7soPfdvY+KCnsAl2P35XtMIAAA",
+  "color": "#cdcdcb",
+  "alt": {
+   "en": "Dr. Oetker baking powder",
+   "ar": "بيكنج باودر دكتور أوتكر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Baking%20Powder.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Baking Powder”"
+ },
+ "souq/p2660-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   812
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSFYAAAABcBsAgOHc27atPDbNNKrSp88Y6W17gIiYAPBJ3K7q1MSfgfvz4+n2OMYfKNPTkzPpXu/0dPMP6q9pvqb9mu5r6ufqe8Rg+2gxoe4BAMtRr+4VPg8+CFZQOCCSAAAA8AQAnQEqFAAUAD8BcrBSKyakoqgKqWAgCWwAtPQTMBObtWmU5DnjowOxSa6J18KAAPnWx3kD4faN2fLp8Pn53qQHHgEPJzCnVaqAgLQTSzdGh1w9csWQBEs21LDRoM5EXgRzK739oYP5+28yOt4n5r4rj/fy4nfpJA5MTlulIixPDzMxmNsyrkmaN/V7rrMAAAA=",
+  "color": "#bbc1be",
+  "alt": {
+   "en": "Dr. Oetker bicarbonate of soda",
+   "ar": "بيكربونات صوديوم دكتور أوتكر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Bicarbonate%20Of%20Soda.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Bicarbonate Of Soda”"
+ },
+ "souq/p2661-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   841
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRp4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEgAAAABcFvbthI9FimZRzRBIdaIRx47BVgZVOFkPu5tTEwcERMARxtl/0hVd/+9Xo/79Xqe9pJjADC5HjPXNxTDi/MiNXkEAHAEDjdWUDggMAAAAPACAJ0BKhQAFAA/AXCzUb+mJKsoCqvwIAlpAAA//A/EAP7wQM+Db/LOswdrgAAAAA==",
+  "color": "#f3f2f2",
+  "alt": {
+   "en": "Vanilla pods",
+   "ar": "أعواد فانيليا"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Vanilla.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Vanilla”"
+ },
+ "souq/p2662-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   813
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRr4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSB8AAAABUNpICoQ7Wnn7Lw91gERGxATIOWwIVj20n9Eagu0BAFZQOCB4AAAAEAQAnQEqFAAUAD8BdrJTqyckIqgIAWAgCWwAwPyIwVqkaRrVg15BkwAA1Q3zUIkUY6QbNXHO9Pqb9nPTpvm5aAQwQ/cyo3wQN195koR07j5m6EKAVL9/ZKKXnu5UoKuITn4x8rLsFb5930ccKZjWsqsmDXCmAAAA",
+  "color": "#cedadd",
+  "alt": {
+   "en": "Kellogg's Rice Krispies",
+   "ar": "كيلوجز رايس كريسبيز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Rice%20Krispies.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Rice Krispies”"
+ },
+ "souq/p2663-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   812
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHQAAAABcFpt27L8nH8LnOhT0Kg0EsldkkN3q+7eiLqN2wD2vef5DhtExAQI/xSVeoNS5DAc3+/3+6TF1m9yhW2oAzak5liZamBxKoc5KD9mpWyYmbJgfsqDDakpprkzLxMmNJmuwJll8jwhJsNjZ2I8gtRkVEu4cFZQOCBoAAAAMAQAnQEqFAAUAD8BcrFSKyakoqgKqWAgCUAZmgHIsrmNUBdAptSoTAwAAPnkwLPTEFZHMzScTlvYvSZY5mC5oy+4l6SysAx84Mn3yhWV/1uwReRthNj34qgXm/JP/zjkqTILkFtAAAA=",
+  "color": "#e9deda",
+  "alt": {
+   "en": "Heinz sweet chilli sauce",
+   "ar": "صوص سويت تشيلي هاينز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Sweet%20chilli%20sauce.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Sweet chilli sauce”"
+ },
+ "souq/p2664-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   834
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGoAAAABcFpr29q84ZRhKAbH7RSME1SSqu4OPZF1TIoHqEOF4UTFR8QEwELj9WFiVMhShpoPUXNSc+r4e6LBa0TDsRQNvwOqmmjyYgNsezM7BkDdTBEA7FNjAquCvfPSu7UZ6HqyA2E+H3eTDlgnVlA4IGoAAACQAwCdASoUABQAPwF0rlKrJrMiqAqqYCAJbADCr6Ds/wEz0MOAAP7lzv7mYCS9XoKD2yYnlEOYqQyUa4D/8Dvqp5Loh/CiJN9cD4xWKnudp9RDQk/NyzrgOZcSQmErxvHl/upWZlZhe+AA",
+  "color": "#f7e5c6",
+  "alt": {
+   "en": "Frozen French fries",
+   "ar": "بطاطس نص سوا مجمدة"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Fries.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Fries”"
+ },
+ "souq/p2665-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   798
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRh4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSHsAAAABcFNt27J85x9xIrj7+JOCjdHdR2Z3iUAAAhCBELBRwV2e5/A3iIgJEAqqTB6f22SUmOD28fx53jhQ7ElGkXxGDxlJa7QSOP4ky2jM9NGMaaIR00ADpoh6TBZ1mCRqMam/ZFCXSaPIBR2sSISX++vz+dwt7IJX+ywGoSgAVlA4IHwAAAAQBACdASoUABQAPwFysFIrJqSiqAqpYCAJaADDNBBKZZRjUz7WvgGoGAD+uclBtTCTWk6drrXVlHErRFViQmovkI8mIugZLaFCq8MtUiYDJV5rULkdAqZpKyftUP4fkrn1AffH+GmOebLGiY3O44xWQeZJLcHwYy1KmAAA",
+  "color": "#cebfc0",
+  "alt": {
+   "en": "Hero apricot jam",
+   "ar": "مربى مشمش هيرو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Apricot%20Jam.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Apricot Jam”"
+ },
+ "souq/p2666-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEkAAAABYBoAYJKNCN3doXkjulOp/P8Daf5AREwAoC/ZRdk0ZW5BnO9HvjgPasY5USOrAzVRGakMrE6hLm5ONiNOj+pwgKzafhxZCmAIAFZQOCBwAAAA8AMAnQEqFAAUAD8BdrJUKyakIygIAWAgCWwAzNAJthpry0p6YpkGgAD9HhbGNXCJsq42xoOoEi+K/gA+MOTzv1N2ofDXsfQsPwyI8ZlNbyjsha+T4KQKJL1/lrPtC2R6nlwkHBHgnVc5sHkptQAAAA==",
+  "color": "#cecbc6",
+  "alt": {
+   "en": "Dr. Oetker fine dark cocoa",
+   "ar": "كاكاو خام دكتور أوتكر"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Cocoa%20Powder.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Cocoa Powder”"
+ },
+ "souq/p2667-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   849
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSH4AAAABcFpt27J8OCSqu1v/G4dIdNcN2EWHILMAmejVq7v8P/I+57BBREwA+6NM4/S7DWoxFLvwP48JJMH/fpYQ+e7XWo60+d+vGhDm6YeVqgJ8looiCSqEcFQQsVB6REWpgA0Dj9QUmVE9pE91kC5VRyKjx9dzwCGMyfROu07B/glWUDgggAAAAJADAJ0BKhQAFAA/AXi0U6snJSKoCAFgIAloAMZ8Dq028dWIr8AA9yqXGpBmXdo3yS7ksUDIvOm9c6ao3qCqumhM03bdWUeX9Zg2yE9GXl4JS6e3h5CmUEheYUY2J7YWqeqRg9j7M61v31hzmgEjxAcV14xnEIfMTwsLt2mNEoAA",
+  "color": "#cac5b4",
+  "alt": {
+   "en": "Maille Dijon mustard",
+   "ar": "مستردة ديجون مايّ"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Dijon%20Mustard.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Dijon Mustard”"
+ },
+ "souq/p2668-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   809
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGYAAAABcFpt27J8/49DdNcJPLk7jUqCyCIMxRpMwAJ0zh2Q5/s3iIgJMJ661ZSFAw8LF14x7QwR7QQx7QhxbQNp7QZXqQm8q8oaoKcMPgZK92OiND4WSv1jrmSshD9mirnDsyqZQiVoPAVWUDggUAAAALADAJ0BKhQAFAA/AXCzUasmJKKoCqlgIAlnAM7sEM9LCYZSi2IAAP7yo4cz2Nf7bHpW+KpkE5dF6zTJj5qR6Po4Z3oRQfj2Wa8hIF5AigAA",
+  "color": "#e9e6e4",
+  "alt": {
+   "en": "Tabasco pepper sauce",
+   "ar": "صوص تاباسكو"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Tabasco%20Sauce.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Tabasco Sauce”"
+ },
+ "souq/p2669-1": {
+  "kind": "product",
+  "widths": [
+   240,
+   400,
+   640,
+   767
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuAAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGwAAAABcFtr25r88aTFqVLhTqmlu8MEDAJ7MAg9HVMwgnScvEXkJRtExASIcFP2P16fCJf84sb1gCt3Bi7cHXhSWQf46cwYAOpM33ViWq4903RtmZJryWRcM8Z2TZi0a8QkXAPGejh41xghEhlNhApWUDggTgAAADADAJ0BKhQAFAA/AXSyUismpKKoCqlgIAllAAAR2zswRgAA9wgYGzWPUhVdOYVXmWX9ix5j1GoChQuJ7iY/92/MwN1t4j25JF0eWgAAAA==",
+  "color": "#ece9e5",
+  "alt": {
+   "en": "Lea & Perrins Worcestershire sauce",
+   "ar": "صوص ورشستر لي آند بيرينز"
+  },
+  "source": "https://www.themealdb.com/images/ingredients/Worcestershire%20Sauce.png",
+  "license": "TheMealDB ingredient image — placeholder, replace with tenant photography",
+  "credit": "TheMealDB (themealdb.com), ingredient “Worcestershire Sauce”"
+ },
+ "souq/promo-1": {
+  "kind": "tile",
+  "widths": [
+   240,
+   400,
+   640,
+   853
+  ],
+  "aspect": 1.3328,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRpYAAABXRUJQVlA4IIoAAACwAwCdASoUAA8APwFqrE8rJiQiMAgBYCAJbACdABIle2YQbSrCQAD+y+6QDdCwO9HXptlnvvFTWisKRRnfu1KhjKFdqTGBtRV6SvujDcdl/UsvLwBLtlorVjsmwAW6kbOjsAJBRQG53Liiw2d5ancKB9vLW+W/AvNZ0/ULpZMl5OWSQM8GwSqIAAA=",
+  "color": "#b88f85",
+  "alt": {
+   "en": "Sliced bread in a basket lined with a red-checked cloth",
+   "ar": "عيش متقطع في سبت مفروش بفوطة كاروهات حمرا"
+  },
+  "source": "https://cdn.stocksnap.io/img-thumbs/960w/912FD6384D.jpg",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "credit": "“Bread Basket” by JESHOOTS.com (https://stocksnap.io/photo/bread-basket-912FD6384D), cropped and resized (960 px preview via the Openverse API)"
+ },
+ "souq/promo-2": {
+  "kind": "tile",
+  "widths": [
+   240,
+   400,
+   640,
+   853
+  ],
+  "aspect": 1.3328,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAADQAwCdASoUAA8APwForE6rJaQiMAgBYCAJagC7MoAB3/UO6r4XpYAA/reJOzUDHrsBWEodsIGqL1irdIHWEyig6gep5q+LapXHt3MO/8XzIVC6jigGitv1YEHm2bOMeLy4hQOZT1ocW3StEhypL4IW0M6AKY8Eb+qAggAA",
+  "color": "#706047",
+  "alt": {
+   "en": "A woven basket of fresh vegetables: tomatoes, peppers, asparagus and avocados",
+   "ar": "سبت خوص مليان خضار طازة: طماطم وفلفل وهليون وأفوكادو"
+  },
+  "source": "https://cdn.stocksnap.io/img-thumbs/960w/CUPJ7AU7JD.jpg",
+  "license": "CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/)",
+  "credit": "“Basket Groceries” by leonie wise (https://stocksnap.io/photo/basket-groceries-CUPJ7AU7JD), cropped and resized (960 px preview via the Openverse API)"
+ }
+}
