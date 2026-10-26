@@ -422,3 +422,33 @@
 .order-missing__head .cart-empty__body {
   max-inline-size: 46ch;
 }
+
+/* Connection states under the timeline. */
+.net-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: var(--fw-semibold);
+}
+.net-state--lost {
+  color: var(--warning-text, var(--warning));
+}
+.net-state--offline {
+  color: var(--text-2);
+}
+.net-state .icon {
+  flex: none;
+}
+.spin-slow {
+  animation: spin-slow 1.6s linear infinite;
+}
+@keyframes spin-slow {
+  to { rotate: -360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow { animation: none; }
+}
+.order-live__foot .link-btn {
+  min-block-size: 36px;
+  margin: 0;
+}

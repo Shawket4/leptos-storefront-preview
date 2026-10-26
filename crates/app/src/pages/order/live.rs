@@ -11,7 +11,7 @@ use crate::format;
 use crate::pages::cart::store::{arrived_by_navigation, focus_soon};
 use crate::prefs::{Lang, Ui, tr, use_ui};
 use domain::OrderStatus;
-use leptos::either::Either;
+use leptos::either::EitherOf5;
 use leptos::prelude::*;
 
 fn eta_text(t: &OrderTrack, lang: Lang, ui: Ui) -> String {
@@ -45,6 +45,19 @@ fn eta_text(t: &OrderTrack, lang: Lang, ui: Ui) -> String {
     }
 }
 
+/// How the live connection is doing (only the browser ever leaves `Live`).
+#[derive(Clone, Copy, Debug, PartialEq)]
+#[cfg_attr(not(feature = "hydrate"), allow(dead_code))]
+enum Net {
+    Live,
+    /// A poll failed; the next try is at `at_ms` (client clock).
+    Retrying {
+        at_ms: f64,
+    },
+    /// The browser says it has no network.
+    Offline,
+}
+
 #[island]
 pub fn OrderLive(id: String, track: OrderTrack) -> impl IntoView {
     let ui = use_ui();
@@ -60,16 +73,30 @@ pub fn OrderLive(id: String, track: OrderTrack) -> impl IntoView {
             focus_soon("#order-headline");
         }
     });
+    let net = RwSignal::new(Net::Live);
+    // A one-second clock for the retry countdown (ticks only while retrying).
+    let clock = RwSignal::new(0.0_f64);
     #[cfg(feature = "hydrate")]
-    poll::start(poll::Poll {
-        id: StoredValue::new(id),
-        t,
-        announce,
-        root,
-        ui,
-    });
+    let retry_now = {
+        let p = poll::Poll {
+            id: StoredValue::new(id),
+            t,
+            announce,
+            root,
+            ui,
+            net,
+            clock,
+            generation: StoredValue::new(0),
+            failures: StoredValue::new(0),
+        };
+        poll::start(p);
+        Callback::new(move |_: ()| poll::now(p))
+    };
     #[cfg(not(feature = "hydrate"))]
-    let _ = id;
+    let retry_now = {
+        let _ = (id, clock);
+        Callback::new(|_: ()| {})
+    };
 
     let progress = move || {
         t.with(|t| {
@@ -123,25 +150,51 @@ pub fn OrderLive(id: String, track: OrderTrack) -> impl IntoView {
                     }
                 }).collect_view()}
             </ol>
-            <p class="order-live__foot">
+            <div class="order-live__foot">
                 {move || {
-                    let lang = ui.lang.get();
+                    let (lang, num) = (ui.lang.get(), ui.numerals.get());
                     if !mounted.get() {
                         // Server HTML (and no-JS): when this was rendered, and a way to look again.
-                        let at = t.with(|t| format::time_cairo(t.now_ms, lang, ui.numerals.get()));
-                        Either::Left(view! {
+                        let at = t.with(|t| format::time_cairo(t.now_ms, lang, num));
+                        EitherOf5::A(view! {
                             <span>{format!("{} {at}", tr(lang, "Updated", "آخر تحديث"))}</span>
                             <a class="link" href="">{tr(lang, "Refresh", "تحديث")}</a>
                         })
                     } else if terminal() {
-                        Either::Right(Either::Left(view! { <span>{tr(lang, "This order is complete.", "الطلب ده خلص.")}</span> }))
+                        EitherOf5::B(view! { <span>{tr(lang, "This order is complete.", "الطلب ده خلص.")}</span> })
                     } else {
-                        Either::Right(Either::Right(view! {
-                            <span class="live"><span class="live__dot" aria-hidden="true"></span>{tr(lang, "Live updates", "تحديثات مباشرة")}</span>
-                        }))
+                        match net.get() {
+                            Net::Live => EitherOf5::C(view! {
+                                <span class="live"><span class="live__dot" aria-hidden="true"></span>{tr(lang, "Live updates", "تحديثات مباشرة")}</span>
+                            }),
+                            Net::Retrying { at_ms, .. } => {
+                                let secs = move || (((at_ms - clock.get()) / 1000.0).ceil().max(0.0)) as u32;
+                                EitherOf5::D(view! {
+                                    <span class="net-state net-state--lost" role="status">
+                                        <Icon name="rotate-ccw" size=16 class="spin-slow"/>
+                                        <span>
+                                            {tr(lang, "Connection lost.", "انقطع الاتصال.")}
+                                            " "
+                                            <span aria-hidden="true">{move || match lang {
+                                                Lang::En => format!("Retrying in {} s…", format::count(secs(), num)),
+                                                Lang::Ar => format!("هنحاول تاني خلال {} ث…", format::count(secs(), num)),
+                                            }}</span>
+                                        </span>
+                                    </span>
+                                    <button type="button" class="link-btn" on:click=move |_| retry_now.run(())>{tr(lang, "Retry now", "حاول دلوقتي")}</button>
+                                })
+                            }
+                            Net::Offline => EitherOf5::E(view! {
+                                <span class="net-state net-state--offline" role="status">
+                                    <Icon name="triangle-alert" size=16/>
+                                    <span>{tr(lang, "You're offline. Updates resume when you're back.", "إنت مش متصل بالإنترنت. التحديثات هترجع أول ما ترجع.")}</span>
+                                </span>
+                                <button type="button" class="link-btn" on:click=move |_| retry_now.run(())>{tr(lang, "Retry", "حاول تاني")}</button>
+                            }),
+                        }
                     }
                 }}
-            </p>
+            </div>
             <p class="sr-only" aria-live="polite" aria-atomic="true">
                 {move || { let a = announce.get(); (!a.is_empty()).then(|| view! { <span>{a}</span> }) }}
             </p>
@@ -153,6 +206,7 @@ pub fn OrderLive(id: String, track: OrderTrack) -> impl IntoView {
 mod poll {
     use super::*;
     use crate::pages::order::order_status;
+    use wasm_bindgen::{JsCast, closure::Closure};
 
     #[derive(Clone, Copy)]
     pub struct Poll {
@@ -161,6 +215,15 @@ mod poll {
         pub announce: RwSignal<String>,
         pub root: NodeRef<leptos::html::Div>,
         pub ui: Ui,
+        pub net: RwSignal<Net>,
+        pub clock: RwSignal<f64>,
+        /// Bumped by every (re)schedule: a timer from an older schedule does nothing.
+        pub generation: StoredValue<u32>,
+        pub failures: StoredValue<u32>,
+    }
+
+    fn now_ms() -> f64 {
+        js_sys::Date::now()
     }
 
     /// Poll at most every 5 s, at least every 1 s; right after the next step is due if sooner.
@@ -172,20 +235,81 @@ mod poll {
         Some(due.clamp(1_000, 5_000) as u64)
     }
 
+    /// After a failure: 3 s, 6 s, 12 s, then every 20 s.
+    fn backoff_ms(failures: u32) -> u64 {
+        (3_000u64 << failures.saturating_sub(1).min(3)).min(20_000)
+    }
+
+    fn alive(p: Poll) -> bool {
+        p.root.get_untracked().is_some_and(|el| el.is_connected())
+    }
+
     pub fn start(p: Poll) {
+        // Back online → look right away; offline → say so and wait.
+        let on_online = Closure::<dyn FnMut()>::new(move || {
+            if alive(p) {
+                now(p);
+            }
+        });
+        let on_offline = Closure::<dyn FnMut()>::new(move || {
+            if alive(p) && !p.t.with_untracked(|t| t.status.is_terminal()) {
+                p.generation.update_value(|g| *g += 1);
+                p.net.set(Net::Offline);
+            }
+        });
+        let w = window();
+        let _ = w.add_event_listener_with_callback("online", on_online.as_ref().unchecked_ref());
+        let _ = w.add_event_listener_with_callback("offline", on_offline.as_ref().unchecked_ref());
+        on_online.forget();
+        on_offline.forget();
+        // The countdown's clock (cleared once the page is gone).
+        let handle: StoredValue<Option<IntervalHandle>> = StoredValue::new(None);
+        let h = set_interval_with_handle(
+            move || {
+                if !alive(p) {
+                    if let Some(h) = handle.get_value() {
+                        h.clear();
+                    }
+                    return;
+                }
+                if matches!(p.net.get_untracked(), Net::Retrying { .. }) {
+                    p.clock.set(now_ms());
+                }
+            },
+            std::time::Duration::from_millis(500),
+        );
+        handle.set_value(h.ok());
+        if !w.navigator().on_line() {
+            p.net.set(Net::Offline);
+            return;
+        }
         if let Some(ms) = wait_ms(&p.t.get_untracked()) {
             schedule(p, ms);
         }
     }
 
     fn schedule(p: Poll, ms: u64) {
-        set_timeout(move || tick(p), std::time::Duration::from_millis(ms));
+        p.generation.update_value(|g| *g += 1);
+        let mine = p.generation.get_value();
+        set_timeout(
+            move || {
+                if p.generation.get_value() == mine {
+                    tick(p);
+                }
+            },
+            std::time::Duration::from_millis(ms),
+        );
+    }
+
+    /// Poll now (the Retry button, coming back online).
+    pub fn now(p: Poll) {
+        p.generation.update_value(|g| *g += 1);
+        tick(p);
     }
 
     fn tick(p: Poll) {
         // The islands router replaced the page: stop for good.
-        let alive = p.root.get_untracked().is_some_and(|el| el.is_connected());
-        if !alive {
+        if !alive(p) {
             return;
         }
         if document().hidden() {
@@ -194,21 +318,40 @@ mod poll {
         }
         let id = p.id.get_value();
         leptos::task::spawn_local(async move {
-            if let Ok(Some(next)) = order_status(id).await {
-                let before = p.t.with_untracked(|t| t.status);
-                if next.status != before {
-                    let lang = p.ui.lang.get_untracked();
-                    let label = next.status.label();
-                    p.announce.set(match lang {
-                        Lang::En => format!("Order update: {}", label.en),
-                        Lang::Ar => format!("تحديث الطلب: {}", label.ar),
-                    });
+            match order_status(id).await {
+                Ok(Some(next)) => {
+                    p.failures.set_value(0);
+                    p.net.set(Net::Live);
+                    let before = p.t.with_untracked(|t| t.status);
+                    if next.status != before {
+                        let lang = p.ui.lang.get_untracked();
+                        let label = next.status.label();
+                        p.announce.set(match lang {
+                            Lang::En => format!("Order update: {}", label.en),
+                            Lang::Ar => format!("تحديث الطلب: {}", label.ar),
+                        });
+                    }
+                    p.t.set(next);
+                    if let Some(ms) = wait_ms(&p.t.get_untracked()) {
+                        schedule(p, ms);
+                    }
                 }
-                p.t.set(next);
-            }
-            // On a failed poll, keep the last good status and try again later.
-            if let Some(ms) = wait_ms(&p.t.get_untracked()) {
-                schedule(p, ms);
+                // Gone (expired, or the server restarted): keep what we showed and stop asking.
+                Ok(None) => {}
+                // Keep the last good status; back off and say so.
+                Err(_) => {
+                    if !window().navigator().on_line() {
+                        p.net.set(Net::Offline);
+                        return;
+                    }
+                    p.failures.update_value(|f| *f += 1);
+                    let wait = backoff_ms(p.failures.get_value());
+                    p.clock.set(now_ms());
+                    p.net.set(Net::Retrying {
+                        at_ms: now_ms() + wait as f64,
+                    });
+                    schedule(p, wait);
+                }
             }
         });
     }
