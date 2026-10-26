@@ -5,6 +5,8 @@
 //! core's drawer and stepper (`data-ts="drawer"`, `"stepper"`), the toast store, and small `kit-…`
 //! features in `client/src/features/showcase.ts` (toasts, the line total, the skeleton replay).
 
+mod parts;
+
 use crate::components::badge::{Badge, BadgeKind};
 use crate::components::breadcrumbs::Breadcrumbs;
 use crate::components::button::{Button, ButtonKind, ButtonSize, IconButton};
@@ -267,6 +269,8 @@ pub fn UiKitPage() -> impl IntoView {
                         ("price", t("Price & rating", "السعر والتقييم")), ("picture", t("Pictures", "الصور")), ("cards", t("Product cards", "كروت المنتجات")),
                         ("overlays", t("Drawers & toasts", "الأدراج والتنبيهات")), ("forms", t("Forms", "النماذج")), ("states", t("States", "الحالات")),
                         ("network", t("Network", "الشبكة")), ("skeletons", t("Skeletons", "هياكل التحميل")), ("icons", t("Icons", "الأيقونات")),
+                        ("notices", t("Notices", "التنبيهات في الصفحة")), ("chips", t("Chips", "الشرائح")), ("menus", t("Menus & pages", "القوائم والصفحات")),
+                        ("choices", t("Choices", "الاختيارات")), ("lines", t("Lines & totals", "السطور والإجماليات")), ("progress", t("Steps & progress", "الخطوات والتقدّم")),
                     ]
                         .into_iter()
                         .map(|(id, label)| view! { <a class="kit__toc-link" href=format!("#{id}") target="_self">{label}</a> })
@@ -410,6 +414,9 @@ pub fn UiKitPage() -> impl IntoView {
                 </Row>
             </Specimen>
 
+            <parts::Chips lang num/>
+            <parts::MenusAndPages lang/>
+
             <Specimen id="labels" title=t("Badges & status", "الشارات والحالات") note=t("Badges sit on photos, so they are solid. Status labels: icon + word on the tone's wash, 6px corners.", "الشارات فوق الصور، فلازم تكون مصمتة. الحالات: أيقونة وكلمة على لون فاتح من نفس الدرجة.") card=true>
                 <Row label=t("Merchandising", "تسويقية")>
                     <Badge kind=BadgeKind::Deal(20) lang=lang numerals=num/>
@@ -502,6 +509,8 @@ pub fn UiKitPage() -> impl IntoView {
                 </Row>
             </Specimen>
 
+            <parts::Notices lang num/>
+
             <Specimen id="forms" title=t("Forms", "النماذج") note=t("52px fields with 16px text, labels above, hints and errors below — and radio cards for choices that need a line of context.", "خانات ٥٢ بكسل بخط ١٦، العنوان فوق والملاحظة والخطأ تحت — وكروت اختيار للحاجات اللي محتاجة سطر شرح.") card=true>
                 <div class="kit__form">
                     <TextInput id="kit-name" name="name" label=t("Full name", "الاسم بالكامل") autocomplete="name" value="Mona Adel"/>
@@ -520,12 +529,13 @@ pub fn UiKitPage() -> impl IntoView {
                     />
                     <TextArea id="kit-notes" name="notes" label=t("Notes for the courier", "ملاحظات للمندوب") optional=true placeholder=t("Ring the bell twice", "اضرب الجرس مرتين")/>
                     <RadioGroup legend=t("Delivery time", "ميعاد التوصيل") id="kit-slot" hint=t("Express is the only paid slot.", "السريع هو الميعاد الوحيد اللي بفلوس.")>
-                        <RadioCard name="slot" value="express" label=t("Express", "سريع") description=t("Within 2 hours", "خلال ساعتين") icon="zap" trailing=crate::format::money(Piastres(4_900), lang, num) checked=true/>
-                        <RadioCard name="slot" value="today" label=t("Today, 6–9 PM", "النهارده، ٦–٩ بالليل") description=t("Pick a window at checkout", "اختار الميعاد وانت بتكمّل الطلب") icon="calendar-clock" trailing=t("Free", "مجاني")/>
-                        <RadioCard name="slot" value="tomorrow" label=t("Tomorrow", "بكرة") icon="truck" trailing=t("Free", "مجاني") disabled=true/>
+                        <RadioCard required=true name="slot" value="express" label=t("Express", "سريع") description=t("Within 2 hours", "خلال ساعتين") icon="zap" trailing=crate::format::money(Piastres(4_900), lang, num) checked=true/>
+                        <RadioCard required=true name="slot" value="today" label=t("Today, 6–9 PM", "النهارده، ٦–٩ بالليل") description=t("Pick a window at checkout", "اختار الميعاد وانت بتكمّل الطلب") icon="calendar-clock" trailing=t("Free", "مجاني")/>
+                        <RadioCard required=true name="slot" value="tomorrow" label=t("Tomorrow", "بكرة") icon="truck" trailing=t("Free", "مجاني") disabled=true/>
                     </RadioGroup>
                     <Checkbox name="save" label=t("Save this address", "احفظ العنوان ده") checked=true/>
                 </div>
+                <parts::FormGaps lang num/>
             </Specimen>
 
             <Specimen id="states" title=t("States", "الحالات") note=t("Every state says what happened and offers a way on: empty, failed, offline, not found, not built yet. Errors are worded in plain Modern Standard Arabic.", "كل حالة بتقول اللي حصل وبتديك خطوة جاية: فاضي، فشل، من غير نت، مش موجود، لسه ما اتعملش. رسايل الأخطاء بالفصحى البسيطة.") card=true>
@@ -535,6 +545,7 @@ pub fn UiKitPage() -> impl IntoView {
                     ("Galaxy S25 Ultra".to_owned(), None),
                 ]/>
                 <div class="kit__states">
+                    <parts::EmptySuggestion lang/>
                     <div class="kit__state">
                         <p class="kit__label">{t("Empty · cart", "فاضي · السلة")}</p>
                         <StateView compact=true art="empty-cart" title=t("Your cart is empty", "سلتك فاضية") body=t("Today's deals are a good place to start.", "عروض النهارده بداية حلوة.")>
@@ -596,6 +607,10 @@ pub fn UiKitPage() -> impl IntoView {
                     <Button kind=ButtonKind::Outline href="/showcase?crash=1" icon="triangle-alert">{t("Open the 500 page", "افتح صفحة 500")}</Button>
                 </Row>
             </Specimen>
+
+            <parts::Choices lang num/>
+            <parts::Lines lang num/>
+            <parts::Progress lang num/>
 
             <Specimen id="network" title=t("Network", "الشبكة") note=t("What a visitor sees when the connection drops, a page is slow or a navigation fails. The banner, the alert and the progress bar are page-wide pieces of the shell, driven by the router.", "اللي الزائر بيشوفه لما النت يقطع، أو صفحة تتأخر، أو التنقل يفشل. الشريط والتنبيه وشريط التحميل أجزاء ثابتة في إطار الصفحة، والراوتر هو اللي بيحركها.") card=true>
                 <ul class="kit__netlist" role="list">

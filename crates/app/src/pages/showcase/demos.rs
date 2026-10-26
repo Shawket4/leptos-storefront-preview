@@ -6,6 +6,7 @@ use super::{Ctx, Sample, nums};
 use crate::api::{self, types::Rail};
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
+use crate::components::link_chips::{LinkChip, LinkChips};
 use crate::components::segmented::{SegItem, Segmented, SegmentedToggle};
 use crate::format;
 use crate::pages::errors::SectionError;
@@ -405,28 +406,35 @@ fn SimDemo(cx: Arc<Ctx>) -> impl IntoView {
     let next = cx.next_here("sim");
     let widgets = ["deals", "featured", "new", "bestsellers", "express", "listing", "search", "product", "related", "nav"];
     let on = cx.fail_cookie.clone();
+    // Each fault is a link that switches it (the /__sim cookie); its icon says whether it's on.
+    let faults: Vec<LinkChip> = widgets
+        .into_iter()
+        .map(|w| {
+            let is_on = on.iter().any(|x| x == w);
+            let list: Vec<&str> = if is_on {
+                on.iter().map(String::as_str).filter(|x| *x != w).collect()
+            } else {
+                on.iter().map(String::as_str).chain([w]).collect()
+            };
+            let state = match (lang, is_on) {
+                (Lang::En, true) => "on",
+                (Lang::En, false) => "off",
+                (Lang::Ar, true) => "شغّال",
+                (Lang::Ar, false) => "مقفول",
+            };
+            LinkChip::new(w, format!("/__sim?fail={}&next={next}", list.join(",")))
+                .icon(if is_on { "triangle-alert" } else { "plus" })
+                .attr("aria-label", format!("{w}: {state}"))
+        })
+        .collect();
     view! {
         <div class="sc-row">
             <span class="sc-row__label">{tr(lang, "Base latency", "التأخير الأساسي")}</span>
             <LatencyLinks lang num current=cx.base_ms next=next.clone()/>
         </div>
         <p class="sc-note">{latency_state(&cx)}</p>
-        <div class="sc-row sc-row--wrap">
-            <span class="sc-row__label">{tr(lang, "Faults for this session", "أعطال للجلسة دي")}</span>
-            <span class="sc-toggles">
-                {widgets.into_iter().map(|w| {
-                    let is_on = on.iter().any(|x| x == w);
-                    let list: Vec<&str> = if is_on {
-                        on.iter().map(String::as_str).filter(|x| *x != w).collect()
-                    } else {
-                        on.iter().map(String::as_str).chain([w]).collect()
-                    };
-                    let href = format!("/__sim?fail={}&next={next}", list.join(","));
-                    view! { <a class="sc-toggle mono" href=href aria-pressed=if is_on { "true" } else { "false" }>{w}</a> }
-                }).collect_view()}
-            </span>
-            <a class="sc-link" href=format!("/__sim?fail=&next={next}")>{tr(lang, "Clear", "امسح")}</a>
-        </div>
+        <LinkChips items=faults label=tr(lang, "Faults for this session: tap one to switch it", "أعطال للجلسة دي: دوس على واحد عشان تشغّله أو تقفله")/>
+        <a class="sc-link" href=format!("/__sim?fail=&next={next}")>{tr(lang, "Clear every fault", "امسح كل الأعطال")}</a>
         <p class="sc-note">{tr(
             lang,
             "A fault makes that widget's read fail on every page until you clear it. Try “deals”, then open the home page.",

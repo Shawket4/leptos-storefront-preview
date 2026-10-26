@@ -33,19 +33,7 @@
   white-space: nowrap;
   text-box: trim-both cap alphabetic;
 }
-.sc-badge {
-  display: inline-grid;
-  place-items: center;
-  min-inline-size: 22px;
-  block-size: 22px;
-  padding-inline: 6px;
-  border-radius: var(--r-pill);
-  background: var(--brand);
-  color: var(--on-brand);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
-  line-height: 1;
-}
+
 .sc-link {
   display: inline-flex;
   align-items: center;
@@ -67,10 +55,7 @@
   text-decoration: none;
   cursor: default;
 }
-.sc-wrap {
-  overflow-wrap: anywhere;
-  font-size: var(--fs-xs);
-}
+
 .sc-steps {
   margin: var(--sp-4) 0 0;
   padding-inline-start: var(--sp-5);
@@ -94,7 +79,7 @@
 }
 
 /* Round icon buttons (44px targets), pressed at pointer-down. */
-.sc-ibtn {
+/* Round icon buttons (44px targets) {
   display: inline-grid;
   place-items: center;
   inline-size: 44px;
@@ -105,17 +90,6 @@
   color: var(--text);
   box-shadow: inset 0 0 0 1px var(--line-2);
   transition: background-color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
-}
-.sc-ibtn:hover:not(:disabled) {
-  background: var(--sunk);
-}
-.sc-ibtn:active:not(:disabled) {
-  scale: var(--press);
-}
-.sc-ibtn:disabled {
-  color: var(--on-disabled);
-  box-shadow: inset 0 0 0 1px var(--line);
-  cursor: default;
 }
 
 .sc-row {
@@ -163,52 +137,6 @@
   color: var(--success-text);
 }
 
-/* Forms inside demos */
-.sc-field {
-  display: grid;
-  gap: 6px;
-  min-inline-size: 0;
-}
-.sc-field__label {
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
-  color: var(--text-2);
-  letter-spacing: 0.01em;
-}
-.sc-select,
-.sc-input {
-  inline-size: 100%;
-  min-block-size: 44px;
-  padding-inline: var(--sp-3);
-  border: 0;
-  border-radius: var(--r-md);
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-  font-size: var(--fs-md);
-}
-.sc-select:focus-visible,
-.sc-input:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 1px;
-}
-.sc-check {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-block-size: 44px;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-}
-.sc-check input,
-.sc-slot input {
-  inline-size: 20px;
-  block-size: 20px;
-  margin: 0;
-  accent-color: var(--brand);
-}
-
 /* Key-value lists */
 .sc-kvs {
   display: grid;
@@ -235,12 +163,7 @@
   font-size: var(--fs-sm);
   overflow-wrap: anywhere;
 }
-.sc-kv__sub {
-  color: var(--text-2);
-}
-.sc-kv__sep {
-  color: var(--text-3);
-}
+
 @media (min-width: 560px) {
   .sc-kv {
     grid-template-columns: minmax(9rem, 32%) 1fr;
@@ -267,11 +190,7 @@
 .sc-mini__img { grid-area: img; }
 .sc-mini__name { grid-area: name; align-self: end; }
 .sc-mini__price { grid-area: price; align-self: start; justify-self: start; }
-.sc-minis--save .sc-mini {
-  grid-template-columns: 48px minmax(0, 1fr) auto;
-  grid-template-areas: "img name save" "img price save";
-}
-.sc-minis--save .sc-save { grid-area: save; }
+
 .sc-mini__img {
   inline-size: 48px;
   block-size: 48px;
@@ -409,11 +328,7 @@ a.sc-mini__name:hover {
   font-size: var(--fs-lg);
   font-weight: var(--fw-heavy);
 }
-.sc-arch__mode {
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-  color: var(--text-2);
-}
+
 .sc-arch__steps {
   position: relative;
   display: grid;
@@ -660,14 +575,6 @@ a.sc-mini__name:hover {
   font-size: var(--fs-xs);
   color: var(--text-3);
 }
-.sc-toc__item--edges a {
-  margin-block-start: var(--sp-2);
-  color: var(--warning-text);
-  font-weight: var(--fw-bold);
-}
-.sc-toc__item--edges .icon {
-  justify-self: center;
-}
 
 /* Filter chips: a scroller on phones, wrapping in the sidebar. */
 .sc-filter {
@@ -774,8 +681,7 @@ a.sc-mini__name:hover {
 }
 
 /* ── Categories and cards ────────────────────────────────────────────────── */
-.sc-cat + .sc-cat,
-.sc-edges {
+.sc-cat + .sc-cat {
   margin-block-start: var(--sp-12);
 }
 .sc-cat__head {
@@ -936,7 +842,6 @@ a.sc-mini__name:hover {
 .sc-used__link .icon {
   color: var(--text-3);
 }
-.sc-used__none,
 .sc-used__note {
   font-size: var(--fs-xs);
   line-height: var(--lh-snug);
@@ -1050,32 +955,6 @@ a.sc-mini__name:hover {
 }
 .sc-callout .seg {
   justify-self: start;
-}
-
-.sc-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.sc-toggle {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 36px;
-  padding-inline: 10px;
-  border-radius: var(--r-sm);
-  background: var(--sunk);
-  color: var(--text-2);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-  text-box: trim-both cap alphabetic;
-}
-.sc-toggle:hover {
-  background: var(--sunk-2);
-}
-.sc-toggle[aria-pressed="true"] {
-  background: var(--danger-wash);
-  color: var(--danger-text);
-  box-shadow: inset 0 0 0 1px var(--danger);
 }
 
 .sc-row--wrap .sc-row__label {
@@ -1361,9 +1240,7 @@ a.sc-mini__name:hover {
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
-.sc-sblock--blocking {
-  box-shadow: var(--shadow-sm), inset 0 0 0 1.5px var(--info);
-}
+
 .sc-sblock__head {
   display: flex;
   flex-wrap: wrap;
@@ -1410,11 +1287,7 @@ a.sc-mini__name:hover {
   display: grid;
   gap: var(--sp-2);
 }
-.sc-skel-line {
-  inline-size: 60%;
-  block-size: 22px;
-  margin-block-end: var(--sp-2);
-}
+
 .sc-skel-row {
   display: grid;
   grid-template-columns: 48px 1fr;
@@ -1422,15 +1295,6 @@ a.sc-mini__name:hover {
   gap: var(--sp-3);
   min-block-size: 56px;
 }
-.sc-skel-img {
-  inline-size: 48px;
-  block-size: 48px;
-}
-.sc-skel-text {
-  block-size: 14px;
-  inline-size: 80%;
-}
-
 
 /* Apple continuous corners where supported. */
 @supports (corner-shape: squircle) {

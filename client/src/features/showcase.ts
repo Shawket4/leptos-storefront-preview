@@ -13,6 +13,8 @@ import { onNavigate, prefetch, refresh, routing } from "../core/router";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
 import { stepperValue } from "../core/stepper";
 import type { SegChange } from "../core/segmented";
+import { setTimeline, type TimelineState } from "../core/timeline";
+import { retryIn, setLiveStatus } from "../core/live-status";
 import { add, cart, lineKey, quote, remove, serialize, type LineSnapshot } from "../stores/cart";
 import { toast, toasts } from "../stores/toasts";
 import type { CacheInfo } from "../api/types";
@@ -629,4 +631,69 @@ register("kit-net", (root) => {
     else if (v.startsWith("fail:")) previewNet({ fail: v.slice(5) as "offline" | "timeout" | "server" });
     else previewNet({ progress: Number(v.split(":")[1]) || 1800 });
   });
+});
+
+// A notice the browser reveals later: rendered hidden with `slots`, then written with `patch()`.
+register("kit-notice", (root) => {
+  reveal(root);
+  return on(root, "click", "button[data-act=reveal]", () => {
+    const n = $('[data-state="added"]', root);
+    if (!n) return;
+    patch(n, { title: t("showcase.notice_title"), body: t("showcase.notice_body") });
+    n.hidden = false;
+  });
+});
+
+// The field's error line is always there, empty: filling it moves nothing on the page.
+register("kit-check", (root) => {
+  reveal(root);
+  return on(root, "click", "button[data-act=check]", () => {
+    const input = $<HTMLInputElement>("input", root);
+    if (!input) return;
+    const bad = input.value.trim().length < 3;
+    const line = root.querySelector(`[id="${input.id}-error"]`);
+    if (line) line.textContent = bad ? t("showcase.check_error") : "";
+    input.setAttribute("aria-invalid", String(bad));
+  });
+});
+
+// The order timeline, moved the way order tracking moves it (core/timeline.ts). Times come
+// formatted from the server; the current stage says "Now".
+register("kit-timeline", (root) => {
+  let data: { times: string[]; now: string } = { times: [], now: "" };
+  try {
+    data = JSON.parse($("script[data-ts-json]", root)?.textContent ?? "{}") as typeof data;
+  } catch {
+    /* the server always renders it; keep the empty default */
+  }
+  const START = 2;
+  let cur = START;
+  const states = (): TimelineState[] => [0, 1, 2, 3, 4].map((i) => (i < cur ? "done" : i === cur ? "current" : "todo"));
+  const times = () => [0, 1, 2, 3, 4].map((i) => (i < cur ? (data.times[i] ?? null) : i === cur ? data.now : null));
+  const show = () => setTimeline(root, { progress: cur / 4, states: states(), times: times(), stopped: false });
+  reveal(root);
+  return on(root, "click", "button[data-act]", (_, b) => {
+    if (b.dataset.act === "advance") cur = Math.min(cur + 1, 4);
+    else if (b.dataset.act === "reset") cur = START;
+    else return setTimeline(root, { stopped: true });
+    show();
+  });
+});
+
+// The live status, driven by core/live-status.ts: a failed poll counts down to its retry.
+register("kit-live", (root) => {
+  let cancel: (() => void) | null = null;
+  const stop = () => {
+    cancel?.();
+    cancel = null;
+  };
+  reveal(root);
+  return offAll([
+    stop,
+    on(root, "click", "button[data-act]", (_, b) => {
+      stop();
+      if (b.dataset.act === "retry") cancel = retryIn(root, 5000, () => setLiveStatus(root, "live"));
+      else setLiveStatus(root, b.dataset.act === "offline" ? "offline" : "live");
+    }),
+  ]);
 });
