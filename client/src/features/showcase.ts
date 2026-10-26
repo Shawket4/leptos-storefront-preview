@@ -12,6 +12,7 @@ import { cached, inspect, invalidate, key as cacheKey, peek, stats } from "../co
 import { onNavigate, prefetch, refresh, routing } from "../core/router";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
 import { stepperValue } from "../core/stepper";
+import type { SegChange } from "../core/segmented";
 import { add, cart, lineKey, quote, remove, serialize } from "../stores/cart";
 import { toast, toasts } from "../stores/toasts";
 import type { CacheInfo } from "../api/types";
@@ -496,9 +497,10 @@ register("sc-spring", (root) => {
       const i = s.indexOf(nearest(spring.value));
       aim(s[Math.min(Math.max(i + (ev.key === fwd ? 1 : -1), 0), s.length - 1)] ?? 0);
     }),
-    on(root, "click", "button[data-spring]", (_, b) => {
-      preset = SPRING[(b.dataset.spring ?? "default") as keyof typeof SPRING] ?? SPRING.default;
-      for (const o of $$("button[data-spring]", root)) o.setAttribute("aria-pressed", String(o === b));
+    // The preset picker is core's SegmentedToggle: it fires `change` with the pressed value.
+    on(root, "change", "[data-ts~=seg-toggle]", (ev) => {
+      const v = (ev as CustomEvent<SegChange>).detail?.value ?? "default";
+      preset = SPRING[v as keyof typeof SPRING] ?? SPRING.default;
     }),
     // Interruptible: the second target starts from wherever the first left the dot, at its speed.
     on(root, "click", "button[data-act=interrupt]", () => {

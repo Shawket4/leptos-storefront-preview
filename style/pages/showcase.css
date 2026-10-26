@@ -118,41 +118,6 @@
   cursor: default;
 }
 
-/* A segmented control made of links (aria-current marks the chosen one). */
-.sc-seg {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  padding: 2px;
-  border-radius: var(--r-md);
-  background: var(--sunk);
-}
-.sc-seg__opt {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: 40px;
-  padding-inline: var(--sp-3);
-  border-radius: 10px;
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  white-space: nowrap;
-  text-box: trim-both cap alphabetic;
-  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
-}
-.sc-seg__opt:hover {
-  color: var(--text);
-}
-.sc-seg__opt:active {
-  scale: var(--press);
-}
-.sc-seg__opt[aria-current="true"] {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-sm);
-}
-
 .sc-row {
   display: flex;
   flex-wrap: wrap;
@@ -563,8 +528,14 @@ a.sc-mini__name:hover {
 /* ── Layout: contents + features ─────────────────────────────────────────── */
 .sc-layout {
   display: grid;
+  /* minmax(0, …): the sticky contents' chip scroller and the code excerpts must never widen the
+     column past the screen (in RTL that overflow would sit off-screen, unscrollable). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
   align-items: start;
+}
+.sc-toc {
+  min-inline-size: 0;
 }
 @media (min-width: 1100px) {
   .sc-layout {
@@ -1077,7 +1048,7 @@ a.sc-mini__name:hover {
   margin-block-start: 2px;
   color: var(--info-text);
 }
-.sc-callout .sc-seg {
+.sc-callout .seg {
   justify-self: start;
 }
 
@@ -1252,7 +1223,7 @@ a.sc-mini__name:hover {
   inset-block: -4px;
   inset-inline-start: calc(var(--age, 0) * 100% - 1px);
   inline-size: 3px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: var(--text);
 }
 .sc-ttl[data-empty] .sc-ttl__now {
@@ -1268,6 +1239,10 @@ a.sc-mini__name:hover {
 }
 
 /* Spring lab. */
+.sc-spring__presets {
+  max-inline-size: 100%;
+  font-family: var(--font-mono);
+}
 .sc-spring__track {
   position: relative;
   overflow: clip;
@@ -1283,7 +1258,7 @@ a.sc-mini__name:hover {
   inset-block: 18px;
   inset-inline-start: calc(28px + var(--at) * (100% - 56px) - 1px);
   inline-size: 2px;
-  border-radius: 1px;
+  border-radius: var(--r-xs);
   background: var(--line-strong);
 }
 .sc-spring__puck,
@@ -1473,15 +1448,5 @@ a.sc-mini__name:hover {
   .sc-mini--wide,
   .sc-spring__track {
     corner-shape: squircle;
-  }
-}
-
-/* Dark mode: cards get a faint edge instead of relying on shadow. */
-:root[data-theme="dark"] :is(.sc-routes, .sc-kvs--grid .sc-kv, .sc-json, .sc-mini--wide, .sc-spring__track) {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="system"] :is(.sc-routes, .sc-kvs--grid .sc-kv, .sc-json, .sc-mini--wide, .sc-spring__track) {
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
   }
 }

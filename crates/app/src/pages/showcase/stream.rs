@@ -10,6 +10,7 @@
 use super::demos::LatencyLinks;
 use crate::api::{self, types::Rail};
 use crate::components::icons::Icon;
+use crate::components::skeleton::Skeleton;
 use crate::format;
 use crate::pages::errors::SectionError;
 use crate::prefs::{Lang, Numerals, tr};
@@ -200,6 +201,8 @@ fn StreamBlock(
 ) -> impl IntoView {
     let data = Resource::new(move || (), move |_| api::home_rail(rail, 3));
     let name = tr(lang, label.0, label.1);
+    // The Suspend below may run more than once; the block takes its arrival rank once.
+    let seen: Arc<std::sync::OnceLock<(u64, u32)>> = Arc::new(std::sync::OnceLock::new());
     view! {
         <section class="sc-sblock" aria-label=name data-stream-block="">
             <header class="sc-sblock__head">
@@ -212,9 +215,10 @@ fn StreamBlock(
                         let clock = clock.clone();
                         move || {
                             let clock = clock.clone();
+                            let seen = seen.clone();
                             Suspend::new(async move {
                                 let r = data.await;
-                                let (ms, rank) = clock.arrived();
+                                let (ms, rank) = *seen.get_or_init(|| clock.arrived());
                                 r.map(|cards| view! {
                                     <p class="sc-sblock__meta" data-streamed="">
                                         <span class="sc-rank mono">{format!("#{}", format::count(rank, num))}</span>
@@ -246,13 +250,18 @@ fn StreamBlock(
     }
 }
 
+/// The same boxes as a resolved block (a meta line, then three 48 px rows), from the design
+/// system's skeletons.
 #[component]
 fn BlockSkeleton() -> impl IntoView {
     view! {
         <div class="sc-sblock__skel" aria-hidden="true">
-            <span class="skeleton sc-skel-line"></span>
+            <Skeleton width="60%" height="22px"/>
             {(0..3).map(|_| view! {
-                <span class="sc-skel-row"><span class="skeleton sc-skel-img"></span><span class="skeleton sc-skel-text"></span></span>
+                <span class="sc-skel-row">
+                    <Skeleton width="48px" height="48px"/>
+                    <Skeleton width="80%" height="14px"/>
+                </span>
             }).collect_view()}
         </div>
     }

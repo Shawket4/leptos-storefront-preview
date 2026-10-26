@@ -14,6 +14,7 @@
 //!
 //! Copy is clear Modern Standard Arabic (AGENTS.md: errors in MSA).
 
+use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::media::Img;
 use crate::prefs::{Lang, Theme, tr, use_ui};
@@ -140,7 +141,7 @@ pub fn NotFound() -> impl IntoView {
                         enterkeyhint="search"
                         placeholder=tr(lang, "Search products, brands…", "ابحث عن منتج أو ماركة…")
                     />
-                    <button class="err-search__go" type="submit">{tr(lang, "Search", "بحث")}</button>
+                    <Button button_type="submit" size=ButtonSize::Sm>{tr(lang, "Search", "بحث")}</Button>
                 </form>
                 <div class="err-page__links">
                     {back.map(|href| view! {
@@ -403,14 +404,8 @@ pub fn ErrorPage(
                 <h1 id="err500-title" class="err-page__title">{title}</h1>
                 <p class="err-page__body">{body}</p>
                 <div class="err-page__actions">
-                    <a class="err-btn err-btn--primary" href=retry>
-                        <Icon name="rotate-ccw" size=18/>
-                        <span>{tr(lang, "Try again", "إعادة المحاولة")}</span>
-                    </a>
-                    <a class="err-btn" href="/">
-                        <Icon name="house" size=18/>
-                        <span>{tr(lang, "Home page", "الصفحة الرئيسية")}</span>
-                    </a>
+                    <Button size=ButtonSize::Lg href=retry icon="rotate-ccw">{tr(lang, "Try again", "إعادة المحاولة")}</Button>
+                    <Button kind=ButtonKind::Secondary size=ButtonSize::Lg href="/" icon="house">{tr(lang, "Home page", "الصفحة الرئيسية")}</Button>
                 </div>
                 {detail.map(|d| view! {
                     <details class="err-page__detail">

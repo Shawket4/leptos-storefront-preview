@@ -9,14 +9,14 @@ use crate::components::badge::{Badge, BadgeKind};
 use crate::components::breadcrumbs::Breadcrumbs;
 use crate::components::button::{Button, ButtonKind, ButtonSize, IconButton};
 use crate::components::drawer::{Drawer, DrawerSide};
-use crate::components::form::{Checkbox, RadioCard, Select, TextArea, TextInput};
+use crate::components::form::{Checkbox, RadioCard, RadioGroup, Select, TextArea, TextInput};
 use crate::components::icons::{Icon, NAMES};
 use crate::components::image::Picture;
 use crate::components::layout::{Container, Rail, SectionHeader};
 use crate::components::price::{Price, PriceSize};
 use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton, ProductGrid};
 use crate::components::rating::Rating;
-use crate::components::segmented::{SegItem, Segmented};
+use crate::components::segmented::{SegItem, Segmented, SegmentedToggle};
 use crate::components::skeleton::{
     Skeleton, SkeletonField, SkeletonLines, SkeletonMedia, SkeletonRail,
 };
@@ -376,6 +376,33 @@ pub fn UiKitPage() -> impl IntoView {
                 <Row label=t("View", "العرض")>
                     <Segmented items=view_items label=t("View", "العرض")/>
                 </Row>
+                <Row label=t("Toggles (state, not pages)", "مفاتيح (حالة مش صفحات)")>
+                    <SegmentedToggle
+                        items=vec![
+                            SegItem::toggle(t("Grid", "شبكة"), "grid", true).icon("layout-grid"),
+                            SegItem::toggle(t("List", "قائمة"), "list", false).icon("list"),
+                        ]
+                        label=t("Show", "اعرض")
+                    />
+                    <SegmentedToggle
+                        items=vec![
+                            SegItem::toggle(t("In stock", "متوفر"), "stock", true),
+                            SegItem::toggle(t("On sale", "عليه خصم"), "deal", false),
+                            SegItem::toggle(t("Express", "سريع"), "express", true),
+                        ]
+                        label=t("Filters", "الفلاتر")
+                        multiple=true
+                    />
+                </Row>
+                <Row label=t("A link that needs a full load", "لينك محتاج تحميل كامل")>
+                    <Segmented
+                        items=vec![
+                            SegItem::new(t("Tour", "الجولة"), "/showcase", false),
+                            SegItem::new(t("Streaming demo", "ديمو البث"), "/showcase/stream", false).attr("data-router", "off"),
+                        ]
+                        label=t("Showcase", "العرض")
+                    />
+                </Row>
                 <Row label=t("Category chips", "شرائح الأقسام")>
                     <a class="cat-nav__link" href="/ui#segmented" aria-current="false" data-press=""><Icon name="smartphone" size=16/><span class="cat-nav__label">{t("Phones", "موبايلات")}</span></a>
                     <a class="cat-nav__link" href="/ui#segmented" aria-current="page" data-press=""><Icon name="headphones" size=16/><span class="cat-nav__label">{t("Audio", "صوتيات")}</span></a>
@@ -492,12 +519,11 @@ pub fn UiKitPage() -> impl IntoView {
                         value="giza"
                     />
                     <TextArea id="kit-notes" name="notes" label=t("Notes for the courier", "ملاحظات للمندوب") optional=true placeholder=t("Ring the bell twice", "اضرب الجرس مرتين")/>
-                    <fieldset class="radio-cards">
-                        <legend>{t("Delivery time", "ميعاد التوصيل")}</legend>
+                    <RadioGroup legend=t("Delivery time", "ميعاد التوصيل") id="kit-slot" hint=t("Express is the only paid slot.", "السريع هو الميعاد الوحيد اللي بفلوس.")>
                         <RadioCard name="slot" value="express" label=t("Express", "سريع") description=t("Within 2 hours", "خلال ساعتين") icon="zap" trailing=crate::format::money(Piastres(4_900), lang, num) checked=true/>
                         <RadioCard name="slot" value="today" label=t("Today, 6–9 PM", "النهارده، ٦–٩ بالليل") description=t("Pick a window at checkout", "اختار الميعاد وانت بتكمّل الطلب") icon="calendar-clock" trailing=t("Free", "مجاني")/>
                         <RadioCard name="slot" value="tomorrow" label=t("Tomorrow", "بكرة") icon="truck" trailing=t("Free", "مجاني") disabled=true/>
-                    </fieldset>
+                    </RadioGroup>
                     <Checkbox name="save" label=t("Save this address", "احفظ العنوان ده") checked=true/>
                 </div>
             </Specimen>
