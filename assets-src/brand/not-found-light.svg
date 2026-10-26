@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>Page not found</title>
+  <!-- Storefront empty-state art, light version (the storefront opens in light mode).
+       Global Porcelain + graphite palette, by role: line #52525B, fill #F1F1F0, fill-2 #E4E4E7,
+       surface #FFFFFF, lit face #FDFDFC, accent #111111. No gradients. The -dark file is derived
+       from this one by tools/brand/build.py (role-for-role colour swap). -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#F1F1F0"/>
+  <!-- the route it took: out of the box, round in a loop, up to a pin that is not the address -->
+  <path d="M124.00 182.00C127.67 182.00 139.00 183.67 146.00 182.00C153.00 180.33 161.00 176.67 166.00 172.00C171.00 167.33 174.67 160.33 176.00 154.00C177.33 147.67 176.67 139.00 174.00 134.00C171.33 129.00 164.67 124.67 160.00 124.00C155.33 123.33 148.33 126.33 146.00 130.00C143.67 133.67 143.67 142.33 146.00 146.00C148.33 149.67 155.33 152.33 160.00 152.00C164.67 151.67 170.67 148.67 174.00 144.00C177.33 139.33 179.83 130.33 180.00 124.00C180.17 117.67 175.83 109.00 175.00 106.00" fill="none" stroke="#52525B" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 6"/>
+  <g stroke="#52525B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- parcel (isometric, 30 deg) -->
+    <path d="M42.16 171L82 194V150L42.16 127Z" fill="#F1F1F0"/>
+    <path d="M82 194L121.84 171V127L82 150Z" fill="#E4E4E7"/>
+    <path d="M82 150L121.84 127L82 104L42.16 127Z" fill="#FDFDFC"/>
+    <path d="M106.68 135.75L97.16 141.25L57.32 118.25L66.84 112.75Z" fill="#F1F1F0"/>
+    <path d="M97.16 141.25L106.68 135.75V179.75L97.16 185.25Z" fill="#F1F1F0"/>
+    <path d="M71.61 177L56.02 168V156L71.61 165Z" fill="#FFFFFF"/>
+    <path d="M68.58 169.25L59.05 163.75" fill="none"/>
+    <!-- map pin, tilted -->
+    <g transform="translate(183.68 59.19) rotate(14)">
+      <path d="M0 40L16.07 8.1A18 18 0 1 0 -16.07 8.1Z" fill="#FFFFFF"/>
+      <circle r="7" fill="#111111"/>
+    </g>
+  </g>
+</svg>

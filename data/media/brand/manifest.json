@@ -1,0 +1,755 @@
+{
+ "brand/delivery-dark": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgLNt2/HmSbLZ2L4tnmxPHM3u5i+wvXXsnzCmHp1zZK6N1bhrd4+ICaD/3FRfX8f61DQAxVuMS/JKwnzInOO8EvE/NLokfivQX1+/UqtNENFcC73mMqTObQN4LBHtJd8gIu7FAwBMk+5S9J53oC61DuyvHm4sLrrfUnXiLlL/egLoeIvdBZQDAa9VVwGib2hm1qqbhycnh5vVtdk0/XYAVlA4IFwAAABwAwCdASoUABQAPwFyrFErJqkiqA1RYCAJaQAAJaq9pyu9HYAA7UJvQkAhB6uQn1tBm7h74bEo8HWhbuKOGZurUFEZFjsqkg33GiqBJqurW7mV5JqI9ypJzY4AAA==",
+  "color": "#dfdfe0",
+  "alt": {
+   "en": "A delivery scooter on its way",
+   "ar": "دراجة توصيل في الطريق"
+  },
+  "source": "assets-src/brand/delivery-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/delivery-light": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJ8AAAABgLNt2/HmSbLZ2L4tnmxPHM3u5i+wvXXsnzCmHp1zZK6N1bhrd4+ICaD/3FRfX8f61DQAxVuMS/JKwnzInOO8EvE/NLokfivQX1+/UqtNENFcC73mMqTObQN4LBHtJd8gIu7FAwBMk+5S9J53oC61DuyvHm4sLrrfUnXiLlL/egLoeIvdBZQDAa9VVwGib2hm1qqbhycnh5vVtdk0/XYAVlA4IGAAAADwAwCdASoUABQAPwF0rVKrJqOiqAqpYCAJaQAD4wDSle6BGxL98f8gAPcIFFjlz2Lttu7Lqqw8y+KPV8PomeW5yI0cGlWQof5+1YdazGQFJCPdVE9ilnkq53GgmXNUAAA=",
+  "color": "#f5f5f6",
+  "alt": {
+   "en": "A delivery scooter on its way",
+   "ar": "دراجة توصيل في الطريق"
+  },
+  "source": "assets-src/brand/delivery-light.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/empty-cart-dark": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIsAAAABcFpt27K8uEbp7s2dEXyDL+KRTPX8L/MvgFtzr3SH9zcWiIgJAEEqJexkWhmwVikAtTjFvzI6QJX9pYcdgCikZ6hFoPlkWMHCTIyYaI+NgWEPazCJlAs/a14mYjf8dIuYgDvvcrlceTcwJk8CQJ6EgdjgKN/ryVj5lhIjNoqerE7X62k1oSnbrz8GAFZQOCBcAAAAcAMAnQEqFAAUAD8BdK9SqyakIqgKqWAgCWkAA+OQnC53fKKAAOjesWGAc00bNWyZMflsthX2n3Pp5XZ0MFQAVImBDP7Y93vN2s4REM8eRFfVUe2Z21fdJqGAAAA=",
+  "color": "#dfdfe0",
+  "alt": {
+   "en": "An empty shopping cart",
+   "ar": "عربة تسوق فارغة"
+  },
+  "source": "assets-src/brand/empty-cart-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/empty-cart-light": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgoBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIsAAAABcFpt27K8uEbp7s2dEXyDL+KRTPX8L/MvgFtzr3SH9zcWiIgJAEEqJexkWhmwVikAtTjFvzI6QJX9pYcdgCikZ6hFoPlkWMHCTIyYaI+NgWEPazCJlAs/a14mYjf8dIuYgDvvcrlceTcwJk8CQJ6EgdjgKN/ryVj5lhIjNoqerE7X62k1oSnbrz8GAFZQOCBYAAAAkAMAnQEqFAAUAD8Bcq9SqyakIqgKqWAgCWkAACFprmjBS0c8AACTmaatwyCvwX3c6UjOwpK0JkucHGPuZsAgZJJMyt91InsIEe9OHpVzN1wRE47CVgAAAA==",
+  "color": "#f7f7f7",
+  "alt": {
+   "en": "An empty shopping cart",
+   "ar": "عربة تسوق فارغة"
+  },
+  "source": "assets-src/brand/empty-cart-light.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/empty-search-dark": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRt4AAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGoAAAABcFtr25MQS7qccxjgP1RB1/Gwi8ee1g3shRmozdnWNgcyDBAREwB1fRgVjqQi4v4unhVR75JJ7+zMOt4LvI63V4udR5a6KXnQJCmcR9OVkAchtAv8wcAHLjcGeXacZqvT9XpaZWls53UYVlA4IE4AAABwAwCdASoUABQAPwF0slOrJqQiqAgBYCAJaQAALmXXL807pSAA/rkh4rIuVcfPYX5P06LQvlUQiGCGNNzVywCOGe07bwef//aDHMv1QAA=",
+  "color": "#b6b6b7",
+  "alt": {
+   "en": "A magnifying glass over empty search results",
+   "ar": "عدسة مكبرة فوق نتائج بحث فارغة"
+  },
+  "source": "assets-src/brand/empty-search-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/empty-search-light": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSGoAAAABcFtr25MQS7qccxjgP1RB1/Gwi8ee1g3shRmozdnWNgcyDBAREwB1fRgVjqQi4v4unhVR75JJ7+zMOt4LvI63V4udR5a6KXnQJCmcR9OVkAchtAv8wcAHLjcGeXacZqvT9XpaZWls53UYVlA4IFQAAABwAwCdASoUABQAPwF0sVOrJqQiqAgBYCAJaQAALlbnOAxhzSAA/sNh+Q2987698vAes8X8LLJb9xXHJeq3CxyZAhXSQi+c8FX9ld///aDHGOyAAAA=",
+  "color": "#f6f6f7",
+  "alt": {
+   "en": "A magnifying glass over empty search results",
+   "ar": "عدسة مكبرة فوق نتائج بحث فارغة"
+  },
+  "source": "assets-src/brand/empty-search-light.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/error-dark": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABcKpt25q8G+4k75qXcJLDQSzikKk0unMCHIMeAGnX8mjuJJq75YhQ2LYNko7hEfxRSR9gTyTsMGr8A5aNXyMsrA6HXcuHxOFwGKauKB0Oh8PSJstdOOyLAIzNR6FsBEL0ozEdAvKOR2+OPGJtEUiNhXJ6PE7KoiEhase0apjqfYYbTacjjunXTVBr8UkBVlA4IHAAAADQAwCdASoUABQAPwF2r1MrJyQiqAqpYCAJaQAALnWG4Tzin1l0T6gA/vKWYZGbe1RMiqHyvQBeYWkJH9g/DgA4pW2F2TUZk5fSJ3x0YtPJd0qJ0fP//kcm4B1/1e/5711Z05r/MX29qYoK5ms9OKAA",
+  "color": "#e3e3e3",
+  "alt": {
+   "en": "An unplugged cable",
+   "ar": "كابل مفصول عن الكهرباء"
+  },
+  "source": "assets-src/brand/error-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/error-light": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRioBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABcKpt25q8G+4k75qXcJLDQSzikKk0unMCHIMeAGnX8mjuJJq75YhQ2LYNko7hEfxRSR9gTyTsMGr8A5aNXyMsrA6HXcuHxOFwGKauKB0Oh8PSJstdOOyLAIzNR6FsBEL0ozEdAvKOR2+OPGJtEUiNhXJ6PE7KoiEhase0apjqfYYbTacjjunXTVBr8UkBVlA4IHYAAAAQBACdASoUABQAPwF0r1IrJqQiqAqpYCAJaQAALnWuC6u0jTcNILzxAAD+8pZn4Y/LiUbhQk3dhEdlj43PLmYTNEi1f7SnSm3/gydbXwvBOR+VICWea+T2jj//moReXcyOmVKgOh+JAwOFlAIlIh0iB5qAAAAA",
+  "color": "#f8f8f8",
+  "alt": {
+   "en": "An unplugged cable",
+   "ar": "كابل مفصول عن الكهرباء"
+  },
+  "source": "assets-src/brand/error-light.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/madar-mark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSL0AAAABgFPbtqvqkE1EFZkSEdTXAGh4r363wwY2Mg7yz7m7LWuMf6OEiFDgto2SHDP8QlxL3cm4W5KgLf0G8FY0AywM60ypbI25naYOS449cew/4OSUWTX8Jf/gZmeYY0N8Z38P0xTR9CRkqU8hpbe1/NPQX1/a2Wb9WuqSWTSAtuR0JyjLF8CXRTFOI60SHlK3bF5L0YWkRxF9K2kcTdN700BcMY++fe/IMvhHuVL5BjMX32bxCvDq/WXgz8eBPxcAVlA4IEwAAADQAwCdASoUABQAPwFsrU8rJiQiMAgBYCAJYwDDNCnX/+KEXVh4zUAA/u+Bp+1+jc0Wx4nsVVDzPXQytagG36meEcidR8nM83zeAUAA",
+  "color": "#b8bcbe",
+  "alt": {
+   "en": "Madar",
+   "ar": "مدار"
+  },
+  "source": "MadarDashboard/site/src/assets/brand/symbol-primary.svg",
+  "license": "Madar brand asset, used for the Powered by Madar badge",
+  "credit": "Madar"
+ },
+ "brand/madar-mark-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRkIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSL0AAAABgFPbtqvqkE1EFZkSEdTXAGh4r363wwY2Mg7yz7m7LWuMf6OEiFDgto2SHDP8QlxL3cm4W5KgLf0G8FY0AywM60ypbI25naYOS449cew/4OSUWTX8Jf/gZmeYY0N8Z38P0xTR9CRkqU8hpbe1/NPQX1/a2Wb9WuqSWTSAtuR0JyjLF8CXRTFOI60SHlK3bF5L0YWkRxF9K2kcTdN700BcMY++fe/IMvhHuVL5BjMX32bxCvDq/WXgz8eBPxcAVlA4IF4AAADQAwCdASoUABQAPwFqrU8rJiQiMAgBYCAJZQAAW+qhB/BHIDMyR0AA/u1HQ9hwsbQFdz1LzM7mnRchROtO43kjJKF7YOrFcJdrImeShwWC/viEgOHOD3upXg8kIAAA",
+  "color": "#f3f7f8",
+  "alt": {
+   "en": "Madar",
+   "ar": "مدار"
+  },
+  "source": "MadarDashboard/site/src/assets/brand/symbol-reversed.svg",
+  "license": "Madar brand asset, used for the Powered by Madar badge",
+  "credit": "Madar"
+ },
+ "brand/nile-icon": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEUAAAABUBMASMNPXvLRQEtQgc+95x8RBJM0xR5oXwASi7rY6FSYENDGqQYpLki8AssKoiuoW8HFb3VLW2u11nSt/dpHa18ufQ4AVlA4IHAAAADwAwCdASoUABQAPvlmqk6qpaOiN/VYAVAfCWkAAC317cCJ0DFWxt4AAP7vtf+ZpOPU2Gb3+ZfeYbZpTlzhRYLYyv+JaamyWQS1sPUusnP+mXSh7KEqNTYbQ72DoqyKpXLu8MtCFwpaQSkIE5FbgAAA",
+  "color": "#d6d6d6",
+  "alt": {
+   "en": "Nile app icon",
+   "ar": "أيقونة تطبيق نايل"
+  },
+  "source": "assets-src/brand/nile-icon.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-icon-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEUAAAABUBMASMNPXvLRQEtQgc+95x8RBJM0xR5oXwASi7rY6FSYENDGqQYpLki8AssKoiuoW8HFb3VLW2u11nSt/dpHa18ufQ4AVlA4IGYAAADQAwCdASoUABQAPvlmqk6qpaOiN/VYAVAfCWkAAC336Rg5MkudmwAA/u6VAdAu9aErWLjC5oXOTEz6CBC+UTn9YzutnsF38TtizjDfd+AQvOErF/OMAcir14JppSaSC/Xf5dc0AAA=",
+  "color": "#414141",
+  "alt": {
+   "en": "Nile app icon",
+   "ar": "أيقونة تطبيق نايل"
+  },
+  "source": "assets-src/brand/nile-icon-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-lockup-ar": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 2.2456,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4WAoAAAAQAAAAEwAACAAAQUxQSJ0AAAABgGJb27HtfP5+29YA2B1t27YxBDvbxpt/RyPaSv7/9GEMETEBaK/riMRCagJIAImK++Nfe+FF4jIYnwLnuiW2NEy6fLt6pwlgcQ3cGrY509rPVgYahj1uDcdcVKoXSROaXC2u2fa9NdzzVHH/0E8ThCDb/7drs7n3SxMV9pMrl8qONoYi/LLQk0BDF8R9fYYQHCktzh9AVakPmJsCAFZQOCAoAAAAsAIAnQEqFAAJAD8BaKxOqyWkIjAIAWAgCWkAAHsgAP7v6ELV/wAAAA==",
+  "color": "#bbbbbb",
+  "alt": {
+   "en": "Nile",
+   "ar": "نايل"
+  },
+  "source": "assets-src/brand/nile-lockup-ar.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-lockup-ar-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 2.2456,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuoAAABXRUJQVlA4WAoAAAAQAAAAEwAACAAAQUxQSJ0AAAABgGJb27HtfP5+29YA2B1t27YxBDvbxpt/RyPaSv7/9GEMETEBaK/riMRCagJIAImK++Nfe+FF4jIYnwLnuiW2NEy6fLt6pwlgcQ3cGrY509rPVgYahj1uDcdcVKoXSROaXC2u2fa9NdzzVHH/0E8ThCDb/7drs7n3SxMV9pMrl8qONoYi/LLQk0BDF8R9fYYQHCktzh9AVakPmJsCAFZQOCAmAAAAsAIAnQEqFAAJAD8BaqxPKyYkIzAIAWAgCWkAAHsgAP7v7dRoAAA=",
+  "color": "#fcfcfc",
+  "alt": {
+   "en": "Nile",
+   "ar": "نايل"
+  },
+  "source": "assets-src/brand/nile-lockup-ar-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-lockup-en": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 2.5729,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuAAAABXRUJQVlA4WAoAAAAQAAAAEwAABwAAQUxQSJMAAAABgGNt2zHnHduqVdm2PbOA2YA9k3S21RtlTio7adPZdpbBLUTEBICagxLTePD3pvPn4Guq74eWyBLy2552PItK94PQYQEV5xSND4pgX+1bh3Q/jBxsVnsSp+TDyaP4vhr7Rf8WsU70JE5jT3Mba/tqWEjm+n5T3/r7knsqcL+9BaDRJO0o2xaRpZtlHh8FIBDBPwEAVlA4ICYAAACwAgCdASoUAAgAPwFqrE6rJiQiMAgBYCAJaQAAeyAA/vAbbiAAAA==",
+  "color": "#b8b8b8",
+  "alt": {
+   "en": "Nile",
+   "ar": "نايل"
+  },
+  "source": "assets-src/brand/nile-lockup-en.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-lockup-en-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 2.5729,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuAAAABXRUJQVlA4WAoAAAAQAAAAEwAABwAAQUxQSJMAAAABgGNt2zHnHduqVdm2PbOA2YA9k3S21RtlTio7adPZdpbBLUTEBICagxLTePD3pvPn4Guq74eWyBLy2552PItK94PQYQEV5xSND4pgX+1bh3Q/jBxsVnsSp+TDyaP4vhr7Rf8WsU70JE5jT3Mba/tqWEjm+n5T3/r7knsqcL+9BaDRJO0o2xaRpZtlHh8FIBDBPwEAVlA4ICYAAACwAgCdASoUAAgAPwFqrU8rJiQiMAgBYCAJaQAAeyAA/u/tJgAAAA==",
+  "color": "#fcfcfc",
+  "alt": {
+   "en": "Nile",
+   "ar": "نايل"
+  },
+  "source": "assets-src/brand/nile-lockup-en-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-mark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRiABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMIAAAABgFvb1rLo4g6Z5RDTApGHf4hUQAEy2gLhWMhPNt7EX8MfEY67y8G/FiJiAiQpkvFqMRWQlPJKKlz+cLMbkHq/V0U1fx2v8rcsnnj0DnsaQVYX4B6/gSUHurIhF/nBjaoMJ0pvdDxLcjCWPBPeY1pcYUsagmVWAtvMd8NTyEhH0DBrwJFZ6Ikbn5FsKJlZMDSLvTPxSOP1dAJlRV1+wutY8HbswoWyMFrmOWHxJi+v89tcpsDuDT+XBUnelNb0ZiKSBFZQOCA4AAAAkAMAnQEqFAAUAD8BdLBSqyakoqgKqWAgCWkAAD4DiLrZt0roAAD+7/yXqr5ySX7mYgHoPRsAAAA=",
+  "color": "#9d9d9d",
+  "alt": {
+   "en": "Nile logo",
+   "ar": "شعار نايل"
+  },
+  "source": "assets-src/brand/nile-mark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/nile-mark-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSMIAAAABgFvb1rLo4g6Z5RDTApGHf4hUQAEy2gLhWMhPNt7EX8MfEY67y8G/FiJiAiQpkvFqMRWQlPJKKlz+cLMbkHq/V0U1fx2v8rcsnnj0DnsaQVYX4B6/gSUHurIhF/nBjaoMJ0pvdDxLcjCWPBPeY1pcYUsagmVWAtvMd8NTyEhH0DBrwJFZ6Ikbn5FsKJlZMDSLvTPxSOP1dAJlRV1+wutY8HbswoWyMFrmOWHxJi+v89tcpsDuDT+XBUnelNb0ZiKSBFZQOCAuAAAAMAMAnQEqFAAUAD8BcrRRqyalIqgKqWAgCWkAAD557qYOAAD+7+0G0eXC/CogAA==",
+  "color": "#fafafb",
+  "alt": {
+   "en": "Nile logo",
+   "ar": "شعار نايل"
+  },
+  "source": "assets-src/brand/nile-mark-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/not-found-dark": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRgwBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIwAAAABcGJr26J8uLsnd4/uzhaILII1EK0NGyB7nAWQJmPJqicYwWUBETEB8EerHfdrARyfvObHcfQ1xm5reg16QXgypLsngcf67nVX49wIHlVOOI7jUwNIRELmgwZ+N0bngQZeAoFA+QYAwaPM8masBqaI+QgE7cu5nijnIw41/YENQbH5artdzTEUsd37YVZQOCBaAAAAkAMAnQEqFAAUAD79Zq9OqyUkojAYDAFgH4lpAAAtz8oVQ+WFGAD+8qQrTTQ7cp6B1DsR6rvkWErMp5QxcYotH4EOI14NngiNEMr4GO//7W3YqUTzr1FwAAAA",
+  "color": "#e2e2e3",
+  "alt": {
+   "en": "A parcel that lost its way to the map pin",
+   "ar": "طرد ضلّ طريقه إلى العنوان على الخريطة"
+  },
+  "source": "assets-src/brand/not-found-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/not-found-light": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRg4BAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSIwAAAABcGJr26J8uLsnd4/uzhaILII1EK0NGyB7nAWQJmPJqicYwWUBETEB8EerHfdrARyfvObHcfQ1xm5reg16QXgypLsngcf67nVX49wIHlVOOI7jUwNIRELmgwZ+N0bngQZeAoFA+QYAwaPM8masBqaI+QgE7cu5nijnIw41/YENQbH5artdzTEUsd37YVZQOCBcAAAAcAMAnQEqFAAUAD8Bcq9SqyakIqgKqWAgCWkAAC2pSe+Nw7wAAP7ypD6OD7dP3pd37+euZP3BQ21BoA7ny9dydYs2hTTppHQqtEYiH6+S//91mZ6N8o4DpNMMAAA=",
+  "color": "#f8f8f8",
+  "alt": {
+   "en": "A parcel that lost its way to the map pin",
+   "ar": "طرد ضلّ طريقه إلى العنوان على الخريطة"
+  },
+  "source": "assets-src/brand/not-found-light.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/og-nile-ar": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1200
+  ],
+  "aspect": 1.9048,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAADQAwCdASoUAAoAPwFqrU8rJiQiMAgBYCAJaQAAYXJG4/CWCvLOYAAA/A9dsq7WxOHx6eIK6cjc6tJg69HidUCiaQ9wVM1yG8208k+bChY/oA0/MhysNg7AqvReQ8bB2QAAAA==",
+  "color": "#babab9",
+  "alt": {
+   "en": "Nile: Everything, delivered across Egypt",
+   "ar": "نايل: كل حاجة توصلك لحد البيت"
+  },
+  "source": "assets-src/brand/og-nile-ar.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/og-nile-en": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1200
+  ],
+  "aspect": 1.9048,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRn4AAABXRUJQVlA4IHIAAACwAwCdASoUAAoAPwFsrU8rJiQiMAgBYCAJaQAAW/ihyuL4wqY+gAD+5+4qwW/8grQCOwTFFFc6FWmJYbm45PplOSbTqtIqVi0uz22g1hxSl7GX94P5z/LB6U1HitZhv1tP4RaPsSpgcBFW0yGBjaAAAAA=",
+  "color": "#b7b7b7",
+  "alt": {
+   "en": "Nile: Everything, delivered across Egypt",
+   "ar": "نايل: كل حاجة توصلك لحد البيت"
+  },
+  "source": "assets-src/brand/og-nile-en.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/og-souq-ar": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1200
+  ],
+  "aspect": 1.9048,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAAAQAwCdASoUAAoAPwFqrU8rJiQiMAgBYCAJaQAAJoDQT4AA/cHdaxqcIlskm7VbP61uAuHe0HlcJueuaARco7/W/UJ7qRVEu1i33X7mDNAerGS2+CedF1LBPtoEI78o833qIAAA",
+  "color": "#b8b8b8",
+  "alt": {
+   "en": "Souq: Your neighbourhood market, online",
+   "ar": "سوق: سوق الحتة... أونلاين"
+  },
+  "source": "assets-src/brand/og-souq-ar.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/og-souq-en": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1200
+  ],
+  "aspect": 1.9048,
+  "alpha": false,
+  "lqip": "data:image/webp;base64,UklGRnoAAABXRUJQVlA4IG4AAACwAwCdASoUAAoAPwFsrU8rJiQiMAgBYCAJaQAAWdKJHZFASKLAAAD+6xxsWJNy07YGfQABwXu2/P69mBvudIEKc/Wo9vQgWR/HhMtAgCsscIhcT/te8FZV5wEkP4vzdb//cRtpOVRptsgcozaAAA==",
+  "color": "#b5b5b5",
+  "alt": {
+   "en": "Souq: Your neighbourhood market, online",
+   "ar": "سوق: سوق الحتة... أونلاين"
+  },
+  "source": "assets-src/brand/og-souq-en.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/order-placed-dark": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhQBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABcGLb1rK8XyGRXJNmzRpJTIREgk4luUNkAFQS3ZJG92wP+b8PHUBETAD8S1kCFCzJYpEAeQOHZoJcLuVExCThmTEBmE+IURpv55xWQqSVFEi66hURd1EBaGconQIwmQh7Qg6AYd5B+Z4uIU4lix0RcRACWlbtCA+w6XM71CzBVmj3prPlcjbttQs2qR8GVlA4IGAAAABwAwCdASoUABQAPwF2slOrJySiqAgBYCAJaQAALqBD+KbIAZAA/ovPm01m5dvB+OYZf2s1KiYjafkm3mgriALg/BtPGsAuH3kZfYZ746//+J9oaKmkc4TzQyp4Lp4AAAA=",
+  "color": "#d7d7d8",
+  "alt": {
+   "en": "A sealed parcel with a check mark",
+   "ar": "طرد مغلق عليه علامة صح"
+  },
+  "source": "assets-src/brand/order-placed-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/order-placed-light": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRhYBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSI4AAAABcGLb1rK8XyGRXJNmzRpJTIREgk4luUNkAFQS3ZJG92wP+b8PHUBETAD8S1kCFCzJYpEAeQOHZoJcLuVExCThmTEBmE+IURpv55xWQqSVFEi66hURd1EBaGconQIwmQh7Qg6AYd5B+Z4uIU4lix0RcRACWlbtCA+w6XM71CzBVmj3prPlcjbttQs2qR8GVlA4IGIAAACQAwCdASoUABQAPwF2slOrJySiqAgBYCAJaQAALeK1ixWyE8sAAP4RKkLFOsg7uBFejpHUcQ5gGGrm+ZKufAfYJVstUB0aHSrs06S4vgffsf//pTmfGseBlp/qYpbZAAAAAA==",
+  "color": "#f7f7f7",
+  "alt": {
+   "en": "A sealed parcel with a check mark",
+   "ar": "طرد مغلق عليه علامة صح"
+  },
+  "source": "assets-src/brand/order-placed-light.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/pattern-geo": {
+  "kind": "art",
+  "widths": [
+   240,
+   400,
+   640,
+   960,
+   1280
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRvoAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSF0AAAABYNxIipzGL678EzawE0JEKHDbRsn4GH4B0GPcnMeUHOutvpzE0bjWoyLB/McNMmpMOpkT3qwWs2/yma1Gd5/zzd29geYprRi0hlRIQ9SFpLcS31R6e+WP5L+U/hwAVlA4IHYAAADQAwCdASoUABQAPwFsr0+rJiSiKA1RYCAJaQBTAHAC3fQMnOe6eAAA/Kpfj126zvbSw3irC5e4asVOUQ/AjtK5YnkxWk/3hyN+K6dcrCCyNmBrCEfp/kYFoldS3wxW7/0geD9W/9eabezmX/2FE7uShNLU2AAA",
+  "color": "#fefefe",
+  "alt": {
+   "en": "Eight-point star lattice pattern",
+   "ar": "نقش هندسي من نجوم ثمانية"
+  },
+  "source": "assets-src/brand/pattern-geo.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-icon": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRtIAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEUAAAABUBMASMNPXvLRQEtQgc+95x8RBJM0xR5oXwASi7rY6FSYENDGqQYpLki8AssKoiuoW8HFb3VLW2u11nSt/dpHa18ufQ4AVlA4IGYAAAAQBACdASoUABQAPwFwsFCrJiSisBgIAWAgCWkAAC5173M8tVGEA0XYIAD+77X+BJtWE/iSYs+pQXAYrMYCtyE+w72y56xRkBEBv1HOvuMzoMKdZnhMfZ18Q+CO0vSK9N52mp2AAAA=",
+  "color": "#e0e0df",
+  "alt": {
+   "en": "Souq app icon",
+   "ar": "أيقونة تطبيق سوق"
+  },
+  "source": "assets-src/brand/souq-icon.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-icon-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSEUAAAABUBMASMNPXvLRQEtQgc+95x8RBJM0xR5oXwASi7rY6FSYENDGqQYpLki8AssKoiuoW8HFb3VLW2u11nSt/dpHa18ufQ4AVlA4IFgAAACwAwCdASoUABQAPwFwr1CrJqQisBgIAWAgCWkAAC5173VHT1gVAAD+7ndtBQzUgE9hj7N7ZIzYjDSMC1TJfZM0/4nrdX+IYc/L/ORSUfI0MuD5umbJQAAA",
+  "color": "#383837",
+  "alt": {
+   "en": "Souq app icon",
+   "ar": "أيقونة تطبيق سوق"
+  },
+  "source": "assets-src/brand/souq-icon-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-lockup-ar": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 2.2857,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuYAAABXRUJQVlA4WAoAAAAQAAAAEwAACAAAQUxQSJYAAAABgGNt2zHnGc9UNkp7AZ7KsdmlMipbpZ1UTiqbrY0NmKXNLUTEBODfEgL+zWx+WdECkpF662/k1cmqijsFaHHhAorkp+AD+riirgXykyvX5tV07U5BNHK6GeuWqPmhvIX2zsvU99H7wRTkdgKIXJj09VyWFB/fLE4uSn9LPig7MUmGq/E9sxVA6AzchWYEyug/MFgAyHxWUDggKgAAALACAJ0BKhQACQA/AWqsTqsmJCmwCAFgIAlpAAB7IAD+8AZNVb0Yj6LAAA==",
+  "color": "#bdbdbd",
+  "alt": {
+   "en": "Souq",
+   "ar": "سوق"
+  },
+  "source": "assets-src/brand/souq-lockup-ar.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-lockup-ar-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 2.2857,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuYAAABXRUJQVlA4WAoAAAAQAAAAEwAACAAAQUxQSJYAAAABgGNt2zHnGc9UNkp7AZ7KsdmlMipbpZ1UTiqbrY0NmKXNLUTEBODfEgL+zWx+WdECkpF662/k1cmqijsFaHHhAorkp+AD+riirgXykyvX5tV07U5BNHK6GeuWqPmhvIX2zsvU99H7wRTkdgKIXJj09VyWFB/fLE4uSn9LPig7MUmGq/E9sxVA6AzchWYEyug/MFgAyHxWUDggKgAAALACAJ0BKhQACQA/AWqsTysmJCMwCAFgIAlpAAB7IAD+7/btOJ/r7QAAAA==",
+  "color": "#fcfcfc",
+  "alt": {
+   "en": "Souq",
+   "ar": "سوق"
+  },
+  "source": "assets-src/brand/souq-lockup-ar-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-lockup-en": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 3.0659,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsQAAABXRUJQVlA4WAoAAAAQAAAAEwAABgAAQUxQSHgAAAABcFpt27I8ONEhend3aw6JCVjBog3gzghuvyTcaYxkK0TEBIAVZuFv+fl9kYMXEzDCBuiggymgH6Zz6RFK9Wy1NosQIJLj9uvBWXAfcB8KNLRNAkRfge0TwBOZ8rRSn0fWxVty0nl94seEjJAeoqQVRj9hA2DDn3lWUDggJgAAALACAJ0BKhQABwA/AWqsTysmJCIwCAFgIAlpAAB7IAD+7/v6AAAA",
+  "color": "#c0c0c0",
+  "alt": {
+   "en": "Souq",
+   "ar": "سوق"
+  },
+  "source": "assets-src/brand/souq-lockup-en.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-lockup-en-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 3.0659,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRsIAAABXRUJQVlA4WAoAAAAQAAAAEwAABgAAQUxQSHgAAAABcFpt27I8ONEhend3aw6JCVjBog3gzghuvyTcaYxkK0TEBIAVZuFv+fl9kYMXEzDCBuiggymgH6Zz6RFK9Wy1NosQIJLj9uvBWXAfcB8KNLRNAkRfge0TwBOZ8rRSn0fWxVty0nl94seEjJAeoqQVRj9hA2DDn3lWUDggJAAAALACAJ0BKhQABwA/AWqsTysmJCIwCAFgIAlpAAB7IAD+7+qAAA==",
+  "color": "#fcfcfc",
+  "alt": {
+   "en": "Souq",
+   "ar": "سوق"
+  },
+  "source": "assets-src/brand/souq-lockup-en-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-mark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJYAAAABcFpt27I8//8Tid6ZQTMzEBmFRqRziCygC9Dd3SF6onGH3xI9IiZA7qGQfAdL328p6M0o3ABuBcNDrINrJ+YSWsOvVqnUfrAOOdVhl1WxqOwO6g5ZuMZlU/wKWVsV8lJqs0lKeajaZnwC0gQmUuDDzHZnKGkFS0lD7rYXXUm5wyEnqcvLi+vfa1P2UqZtCyQML0YiIAFWUDggMAAAADADAJ0BKhQAFAA/AXKwUismpKKoCqlgIAlpAAA+efEUuQAA/u/6mFEqbt2nsQAAAA==",
+  "color": "#b6b6b6",
+  "alt": {
+   "en": "Souq logo",
+   "ar": "شعار سوق"
+  },
+  "source": "assets-src/brand/souq-mark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ },
+ "brand/souq-mark-dark": {
+  "kind": "logo",
+  "widths": [
+   64,
+   128,
+   192,
+   256,
+   384,
+   512
+  ],
+  "aspect": 1.0,
+  "alpha": true,
+  "lqip": "data:image/webp;base64,UklGRuQAAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSJYAAAABcFpt27I8//8Tid6ZQTMzEBmFRqRziCygC9Dd3SF6onGH3xI9IiZA7qGQfAdL328p6M0o3ABuBcNDrINrJ+YSWsOvVqnUfrAOOdVhl1WxqOwO6g5ZuMZlU/wKWVsV8lJqs0lKeajaZnwC0gQmUuDDzHZnKGkFS0lD7rYXXUm5wyEnqcvLi+vfa1P2UqZtCyQML0YiIAFWUDggKAAAAPACAJ0BKhQAFAA/AXSuUqsmo6KoCqlgIAlpAAA+fnYAAP7v66YAAAA=",
+  "color": "#fcfcfc",
+  "alt": {
+   "en": "Souq logo",
+   "ar": "شعار سوق"
+  },
+  "source": "assets-src/brand/souq-mark-dark.svg",
+  "license": "Original artwork for this storefront",
+  "credit": "Storefront brand kit (tools/brand)"
+ }
+}

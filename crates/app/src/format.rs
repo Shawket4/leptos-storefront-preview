@@ -122,6 +122,19 @@ pub fn money(p: Piastres, lang: Lang, numerals: Numerals) -> String {
     }
 }
 
+/// Money for marketing copy ("Free delivery over EGP 1,500"): drops `.00` on whole pounds. Prices
+/// themselves always use [`money`] (two decimals, Madar's shape).
+pub fn money_short(p: Piastres, lang: Lang, numerals: Numerals) -> String {
+    if p.cents() != 0 {
+        return money(p, lang, numerals);
+    }
+    let m = MoneyParts::new(p, lang, numerals);
+    match lang {
+        Lang::En => format!("{}{} {}", m.sign, m.label, m.whole),
+        Lang::Ar => format!("{} {}", ltr(&format!("{}{}", m.sign, m.whole)), m.label),
+    }
+}
+
 /// Machine price for JSON-LD / OpenGraph: `1234.50`.
 pub fn money_plain(p: Piastres) -> String {
     let abs = p.0.unsigned_abs();

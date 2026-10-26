@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>Order placed</title>
+  <!-- Storefront empty-state art, dark version. Derived from order-placed-light.svg by tools/brand/build.py (ART_DARK); edit the light file. -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#232326"/>
+  <g stroke="#B4B4BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- sealed parcel (isometric, 30 deg) -->
+    <path d="M61.77 163L112 192V140L61.77 111Z" fill="#232326"/>
+    <path d="M112 192L162.23 163V111L112 140Z" fill="#2C2C30"/>
+    <path d="M112 140L162.23 111L112 82L61.77 111Z" fill="#36363B"/>
+    <!-- tape over the seam and down the front -->
+    <path d="M142.74 122.25L131.49 128.75L81.26 99.75L92.51 93.25Z" fill="#232326"/>
+    <path d="M131.49 128.75L142.74 122.25V174.25L131.49 180.75Z" fill="#232326"/>
+    <!-- address label -->
+    <path d="M99.88 172L80.82 161V146L99.88 157Z" fill="#18181B"/>
+    <path d="M96.41 162.5L86.02 156.5" fill="none"/>
+    <!-- confirmation -->
+    <circle cx="176" cy="70" r="22" fill="#18181B"/>
+    <path d="M165.5 70.5L172.5 77.5L186.5 63.5" fill="none"/>
+    <!-- sparkles -->
+    <path d="M60 52V64M54 58H66M204 112V120M200 116H208" fill="none"/>
+  </g>
+  <circle cx="148" cy="44" r="5" fill="#F4F4F5"/>
+</svg>

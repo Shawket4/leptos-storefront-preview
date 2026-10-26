@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>Empty cart</title>
+  <!-- Storefront empty-state art, light version (the storefront opens in light mode).
+       Global Porcelain + graphite palette, by role: line #52525B, fill #F1F1F0, fill-2 #E4E4E7,
+       surface #FFFFFF, lit face #FDFDFC, accent #111111. No gradients. The -dark file is derived
+       from this one by tools/brand/build.py (role-for-role colour swap). -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#F1F1F0"/>
+  <g stroke="#52525B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- basket -->
+    <path d="M64.53 84H198L182 136H81.51Z" fill="#F1F1F0"/>
+    <path d="M97.9 84L106.63 136M131.27 84L131.76 136M164.63 84L156.88 136M73.02 110H190" fill="none"/>
+    <!-- frame, chassis, struts -->
+    <path d="M58 64L90 162H174L198 84" fill="none"/>
+    <path d="M102 162V167M162 162V167" fill="none"/>
+    <!-- handle -->
+    <rect x="36" y="59" width="26" height="10" rx="5" fill="#F1F1F0"/>
+    <!-- wheels -->
+    <circle cx="102" cy="178" r="11" fill="#FFFFFF"/>
+    <circle cx="162" cy="178" r="11" fill="#FFFFFF"/>
+  </g>
+  <g fill="#52525B">
+    <circle cx="102" cy="178" r="3"/>
+    <circle cx="162" cy="178" r="3"/>
+  </g>
+  <!-- one item on its way in -->
+  <path d="M204 22Q180 26 160 50" fill="none" stroke="#52525B" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 6"/>
+  <circle cx="153" cy="60" r="6" fill="#111111"/>
+</svg>
