@@ -660,6 +660,12 @@
 .lx-notice--block {
   margin-block-start: var(--sp-4);
 }
+.lx-notice--offline {
+  background: var(--info-wash);
+}
+.lx-notice--offline .lx-notice-icon {
+  color: var(--info-text);
+}
 
 /* ── Pagination ──────────────────────────────────────────────────────────── */
 .lx-pages {
@@ -737,20 +743,18 @@ a.lx-page:active {
   }
 }
 
-/* ── The phone sheet's contents (inside the Drawer) ──────────────────────── */
-.lx-form--sheet {
-  padding-inline: var(--gutter);
-}
+/* ── The phone sheet's contents (inside the Drawer, whose body pads --sp-5) ── */
 .lx-form--sheet > .lx-group:first-child {
   border-block-start: 0;
   padding-block-start: var(--sp-2);
 }
 .lx-sheet-foot {
   position: sticky;
-  inset-block-end: 0;
+  inset-block-end: calc(var(--sp-5) * -1);
   display: flex;
   gap: var(--sp-2);
-  padding: var(--sp-3) var(--gutter) calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  margin: 0 calc(var(--sp-5) * -1) calc(var(--sp-5) * -1);
+  padding: var(--sp-3) var(--sp-5);
   background: var(--surface);
   box-shadow: 0 -1px 0 var(--rule);
 }
@@ -828,27 +832,135 @@ a.lx-page:active {
   }
 }
 
-/* ── The skeleton (only shown if the route ever streams out of order) ────── */
+/* ── The first-paint skeleton: the explorer's own frame, pulsing ────────────
+   (Only drawn if the route ever streams out of order; same classes and rows as
+   the real thing, so nothing moves when it is replaced.) */
 .lx--skeleton .lx-skel-btn {
-  display: block;
-  inline-size: 7.5rem;
   block-size: 44px;
   border-radius: var(--r-md);
 }
-.lx--skeleton .lx-skel-total {
-  display: block;
-  inline-size: 6rem;
+.lx--skeleton .lx-skel-btn--filters {
+  inline-size: 7.5rem;
+}
+.lx--skeleton .lx-skel-btn--sort {
+  inline-size: 11rem;
+  margin-inline-start: auto;
+}
+.lx--skeleton .lx-skel-line {
+  inline-size: 8rem;
   block-size: 1rem;
 }
-.lx--skeleton .lx-skel-panel {
-  display: block;
-  block-size: 24rem;
-  border-radius: var(--r-lg);
+.lx--skeleton .lx-skel-title {
+  inline-size: 5rem;
+  block-size: 1.25rem;
+}
+.lx--skeleton .lx-skel-legend {
+  inline-size: 4.5rem;
+  block-size: 0.875rem;
+  margin-block-end: var(--sp-3);
+}
+.lx--skeleton .lx-skel-input {
+  block-size: 44px;
+  border-radius: var(--r-md);
+}
+.lx--skeleton .lx-skel-row {
+  block-size: 1.25rem;
+  margin-block: 0.75rem;
+  border-radius: var(--r-xs);
+}
+@media (min-width: 769px) {
+  .lx--skeleton .lx-bar {
+    justify-self: end;
+  }
+  .lx--skeleton .lx-skel-btn--filters {
+    display: none;
+  }
+}
+
+/* Another page or listing on its way: its skeleton stands in at the grid's size. */
+.lx-results-body.is-jumping > .lx-grid:not(.lx-grid--skel) {
+  display: none;
+}
+.lx-results-body.is-pending.is-jumping {
+  opacity: 1;
+}
+
+/* Nothing to filter or sort (a search with no base results): the state alone. */
+.lx--bare .lx-bar,
+.lx--bare .lx-total,
+.lx--bare .lx-filters {
+  display: none;
+}
+@media (min-width: 769px) {
+  .lx--bare .lx-results {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Empty results: the state, then other ways forward ────────────────────── */
+.lx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-6);
+  padding-block: var(--sp-4) var(--sp-8);
+}
+.lx-more-ways {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  max-inline-size: 40rem;
+}
+.lx-more-ways__title {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.lx-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  padding-inline: var(--sp-4);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.lx-pill .icon {
+  color: var(--text-2);
+}
+.lx-pill:hover {
+  box-shadow: var(--shadow-md);
+}
+.lx-pill:active {
+  scale: var(--press);
 }
 
 /* ── Not found ───────────────────────────────────────────────────────────── */
 .listing--missing {
   padding-block-start: var(--sp-12);
+}
+.listing-missing__search {
+  max-inline-size: 36rem;
+  margin: var(--sp-6) auto 0;
 }
 .cat-pills {
   display: flex;
@@ -882,175 +994,4 @@ a.lx-page:active {
 }
 .cat-pill:active {
   scale: var(--press);
-}
-
-/* ═════════════════════════════════════════════════════════════════════════════
-   TEMPORARY — styles for pages/category/shim.rs (Breadcrumbs, EmptyState,
-   Drawer). Delete this section with the shim when the tier-3 components land.
-   ═════════════════════════════════════════════════════════════════════════════ */
-.crumbs ol {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: var(--text-3);
-  font-size: var(--fs-sm);
-}
-.crumbs li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-}
-.crumbs li + li::before {
-  content: "/";
-  color: var(--line-strong);
-}
-.crumbs a {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 32px;
-  color: var(--text-2);
-  text-decoration: none;
-}
-.crumbs a:hover {
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.crumbs [aria-current="page"] {
-  color: var(--text);
-  font-weight: var(--fw-semibold);
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-2);
-  max-inline-size: 28rem;
-  margin: var(--sp-8) auto;
-  text-align: center;
-}
-.empty-state__art {
-  display: grid;
-  place-items: center;
-  inline-size: 4rem;
-  block-size: 4rem;
-  margin-block-end: var(--sp-2);
-  border-radius: 50%;
-  background: var(--sunk);
-  color: var(--text-2);
-}
-.empty-state__title {
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-bold);
-  text-wrap: balance;
-}
-.empty-state__body {
-  color: var(--text-2);
-}
-.empty-state__action {
-  margin-block-start: var(--sp-3);
-}
-
-:root.drawer-lock {
-  overflow: hidden;
-}
-/* The sheet is the <dialog> itself (top layer); its panel fills it, so a click
-   that lands on the dialog element is a click on the backdrop. */
-.shim-drawer {
-  position: fixed;
-  inset: auto 0 0;
-  inline-size: 100%;
-  max-inline-size: none;
-  max-block-size: 88dvh;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-start-start-radius: var(--r-2xl);
-  border-start-end-radius: var(--r-2xl);
-  corner-shape: squircle;
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-modal);
-  overflow: hidden;
-}
-.shim-drawer[open] {
-  display: flex;
-  flex-direction: column;
-  animation: lx-sheet-in var(--spring-default-dur, var(--dur-slow)) var(--spring-default, var(--ease-drawer));
-}
-.shim-drawer::backdrop {
-  background: var(--scrim);
-  animation: fade-in var(--dur-base) var(--ease-out);
-}
-.shim-drawer[data-side="end"] {
-  inset: 0 0 0 auto;
-  inline-size: min(26rem, 100%);
-  max-block-size: none;
-  block-size: 100dvh;
-  border-radius: 0;
-}
-.shim-drawer__panel {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-block-size: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-@keyframes lx-sheet-in {
-  from {
-    transform: translateY(100%);
-  }
-}
-.shim-drawer__head {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding-block: var(--sp-4) var(--sp-2);
-  padding-inline: var(--gutter) var(--sp-2);
-  background: var(--surface);
-}
-.shim-drawer__head::before {
-  content: "";
-  position: absolute;
-  inset-block-start: var(--sp-2);
-  inset-inline-start: 50%;
-  inline-size: 2.25rem;
-  block-size: 4px;
-  margin-inline-start: -1.125rem;
-  border-radius: var(--r-pill);
-  background: var(--line-strong);
-}
-.shim-drawer__title {
-  font-size: var(--fs-lg);
-  font-weight: var(--fw-heavy);
-}
-.shim-drawer__close {
-  display: grid;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-}
-.shim-drawer__close:hover {
-  background: var(--sunk);
-  color: var(--text);
-}
-@media (prefers-reduced-motion: reduce) {
-  .shim-drawer[open] {
-    animation: fade-in var(--dur-base) var(--ease-out);
-  }
 }
