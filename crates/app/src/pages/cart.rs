@@ -1,29 +1,28 @@
-//! Cart page, cart drawer, header cart button, quick-add, and the client cart store.
-//! (Stubs — replaced by the commerce agent.)
+//! The cart: the `/cart` page, the header button, the slide-over drawer, quick-add, and the
+//! client cart store.
+//!
+//! Two progressive-enhancement styles, side by side:
+//!
+//! - **`/cart` is a server component** (`page`). Its steppers and remove buttons are stock
+//!   `<ActionForm>`s: plain POSTs without JS; with JS, posts the islands router follows and diffs.
+//! - **The drawer, the header badge and quick-add are islands** (`islands`), sharing one store
+//!   (`stores::CartStore` + `store::CartOps`): optimistic, sequenced, rolled back on error. Their
+//!   controls are still real forms that post to the same server functions without JS.
+//!
+//! Names mounted by other agents: [`CartButton`] (header), [`CartDrawer`] (once, by the shell),
+//! [`QuickAdd`] (product cards), [`provide_store`] (from `stores::provide_all`).
 
-use domain::{ProductId, VariantId};
-use leptos::prelude::*;
+mod copy;
+mod islands;
+pub mod math;
+mod page;
+pub mod shim;
+pub mod store;
 
-#[component]
-pub fn CartPage() -> impl IntoView {
-    view! { <section class="stub"><h1>"Cart"</h1></section> }
-}
-
-/// Header cart button (link to `/cart`; the commerce agent makes it an island with the badge).
-#[component]
-pub fn CartButton() -> impl IntoView {
-    view! { <a class="cart-button" href="/cart">"Cart"</a> }
-}
-
-/// The slide-over cart, mounted once by the app shell.
-#[component]
-pub fn CartDrawer() -> impl IntoView {}
-
-/// The round "+" on product cards for single-variant, in-stock products.
-#[component]
-pub fn QuickAdd(product: ProductId, variant: VariantId) -> impl IntoView {
-    let _ = (product, variant);
-}
+pub use islands::{CartButton, CartDrawer, CartForm, FreeDeliveryMeter, QuickAdd};
+pub use page::{Art, ArtImage, CartPage, ShipMeter, Totals, art};
 
 /// Provide the client cart store (called on the server per request and once on the client).
-pub fn provide_store() {}
+pub fn provide_store() {
+    store::provide();
+}
