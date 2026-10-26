@@ -114,6 +114,9 @@ mounts the new regions.
 | `core/cache.ts` | `cached(key, {ttl, swr}, fetcher, onUpdate?)`, `key(...parts)`, `peek`, `invalidate`, `noteGeneration` |
 | `core/router.ts` | `startRouter`, `navigate(url, {replace, scroll: "top"|"keep"})`, `refresh()`, `prefetch(url)`, `onNavigate(fn)`, `routing` (store: `pending`, `to`) |
 | `core/motion.ts` | `SpringValue`, `SPRING`, `project`, `rubberband`, `VelocityTracker` |
+| `core/drawer.ts` (core agent) | **The one drawer/sheet.** Markup: `components::drawer::Drawer` (Rust) → `data-ts="drawer"` with an `id` and `data-side="end"|"start"|"bottom"`; triggers anywhere: `[data-drawer-open="<id>"]`; inside: `[data-drawer-close]`. TS: `openDrawer(id)`, `closeDrawer(id)`; the element fires `drawer:open` / `drawer:close`. Springs, swipe to dismiss, focus trap, Esc, scroll lock, `inert` background, reduced motion — features never write their own |
+| `core/stepper.ts` (core agent) | **The one quantity stepper.** Markup: `components::stepper::Stepper` → `data-ts="stepper"` with `data-min`/`data-max` around − / input / +; TS clamps and fires `change` on the input. Features listen; they don't build steppers |
+| `core/cache.ts` additions (core agent) | `inspect()` → `{key, ageMs, ttl, swr}[]` and `stats()` → `{hits, misses, stale}` (read-only, for the showcase) |
 | `stores/cart.ts` | `cart` (store: `lines`, `count`), `add(item, snapshot?)`, `setQty(key, n)`, `remove(key)` → undo, `clear()`, `lineKey`, `snapshot(key)`, `quote(onUpdate?)`, `syncFromCookie()` |
 | `stores/toasts.ts` | `toast(msg, kind, action?)`, `dismiss(id)` |
 | `features/cart.ts` (cart agent) | `addAndConfirm(item, snapshot)`: the one "add to cart" with its feedback (toast, badge pulse) — quick add and the product page both use it |

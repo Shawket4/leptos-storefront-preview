@@ -90,8 +90,8 @@ pub async fn search_products(q: String, limit: u32) -> Result<SearchResults, Ser
     Ok((*v).clone())
 }
 
-/// Read-cache statistics for this process (showcase).
-#[server]
+/// Read-cache statistics for this process (showcase). `GET /api/cache/stats`.
+#[server(endpoint = "cache/stats", input = leptos::server_fn::codec::GetUrl)]
 pub async fn cache_stats() -> Result<CacheInfo, ServerFnError> {
     let rq = crate::request::init();
     crate::server::cache::private();
@@ -108,7 +108,7 @@ pub async fn cache_stats() -> Result<CacheInfo, ServerFnError> {
 
 /// Invalidate every cached read of the current tenant by bumping its generation (what a catalogue
 /// edit does; in production you would also purge the CDN by `Cache-Tag: t{tenant}`).
-#[server]
+#[server(endpoint = "cache/bump")]
 pub async fn cache_bump() -> Result<CacheInfo, ServerFnError> {
     let rq = crate::request::init();
     state().reads().bump(&rq.tenant.id);
