@@ -271,8 +271,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
     let ar = lang.is_rtl();
     view! {
         <section id="categories" class="home-section home-cats" aria-labelledby="cats-title">
-            <SectionHeader title=tr(lang, "Shop by category", "تسوّق حسب القسم").to_string() />
-            <h2 id="cats-title" class="sr-only">{tr(lang, "Shop by category", "تسوّق حسب القسم")}</h2>
+            <SectionHeader title=tr(lang, "Shop by category", "تسوّق حسب القسم") id="cats-title"/>
             <Suspense fallback=move || view! { <CategoryRailSkeleton/> }>
                 <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
                     {move || Suspend::new(async move {
@@ -290,7 +289,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
                                                                 alt="" width="96" height="96" loading="lazy" decoding="async"
                                                                 style=format!("background-image:url({})", img.lqip)/>
                                                         }.into_any(),
-                                                        None => view! { <Icon name=Box::leak(c.icon.clone().into_boxed_str()) size=28/> }.into_any(),
+                                                        None => view! { <Icon name=c.icon.clone() size=28/> }.into_any(),
                                                     }}
                                                 </span>
                                                 <span class="cat-tile__name">{name}</span>
@@ -337,12 +336,12 @@ fn RailSection(
         <section class="home-section home-rail" aria-labelledby=labelled_by>
             <div class="home-rail__head">
                 <SectionHeader
-                    title=title.to_string()
-                    subtitle=subtitle.to_string()
-                    href=href.to_string()
-                    link_label=tr(lang, "See all", "عرض الكل").to_string()
+                    title=title
+                    subtitle=subtitle
+                    href=href
+                    link_label=tr(lang, "See all", "عرض الكل")
+                    id=id
                 />
-                <h2 id=id class="sr-only">{title}</h2>
                 {countdown.then(|| view! { <DealsCountdown ends_at_ms=next_cairo_midnight_ms()/> })}
             </div>
             <Suspense fallback=move || view! { <RailSkeleton/> }>
