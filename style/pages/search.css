@@ -1,1 +1,443 @@
-/* search page — owned by that page's agent (see AGENTS.md). Tokens only: style/tokens.css. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Search: the instant-search combobox (pages::search::HeaderSearch — in the site
+   header and at the top of /search) and the search page. Owner: browse agent.
+   Tokens only, logical properties only.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* `container` makes this a stacking context, so it is lifted as a whole: the popover inside
+   must paint over the sticky listing bar and the cards that follow it. */
+.hs {
+  position: relative;
+  z-index: calc(var(--z-popover) + 1);
+  container: hs / inline-size;
+  inline-size: 100%;
+}
+
+/* ── Phones: the header shows a search row that opens the overlay ─────────── */
+.hs-trigger {
+  display: none;
+}
+@media (max-width: 600px) {
+  .hs:not(.hs--page) .hs-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    inline-size: 100%;
+    min-block-size: 44px;
+    padding-inline: var(--sp-3);
+    border-radius: var(--r-md);
+    corner-shape: squircle;
+    background: var(--sunk);
+    color: var(--text-3);
+    font-size: var(--fs-md);
+    text-decoration: none;
+    transition: scale 100ms var(--ease-out);
+  }
+  .hs:not(.hs--page) .hs-trigger:active {
+    scale: var(--press);
+  }
+  .hs:not(.hs--page) .hs-trigger .icon {
+    flex: none;
+    color: var(--text-2);
+  }
+  .hs:not(.hs--page) .hs-form:not(.is-overlay) {
+    display: none;
+  }
+}
+.hs-trigger__text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hs-trigger__text.is-filled {
+  color: var(--text);
+}
+/* Squeezed by the header: just the glass, as a round button. */
+@container hs (max-width: 140px) {
+  .hs-trigger {
+    justify-content: center;
+    inline-size: 44px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .hs-trigger__text {
+    display: none;
+  }
+}
+
+/* ── The field ───────────────────────────────────────────────────────────── */
+.hs-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  block-size: 44px;
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+.hs-field:focus-within {
+  box-shadow:
+    inset 0 0 0 1px var(--text),
+    0 0 0 3px var(--focus);
+}
+.hs-lead {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2.5rem;
+  color: var(--text-3);
+}
+.hs-lead > .icon {
+  grid-area: 1 / 1;
+}
+.hs-busy {
+  visibility: hidden;
+}
+.hs.is-loading .hs-busy {
+  visibility: visible;
+}
+.hs.is-loading .hs-glass {
+  visibility: hidden;
+}
+/* `input.hs-input` matches the header's interim rules for a bare search input
+   (header.css) in specificity, and wins by coming later. */
+.hs input.hs-input {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  outline: none;
+  appearance: none;
+}
+.hs-input::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}
+.hs-input::-webkit-search-cancel-button,
+.hs-input::-webkit-search-decoration {
+  appearance: none;
+}
+.hs-clear,
+.hs-back {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.hs-clear:hover,
+.hs-back:hover {
+  color: var(--text);
+}
+.hs-clear:active,
+.hs-back:active {
+  scale: 0.9;
+}
+.hs-clear[hidden] {
+  display: none;
+}
+.hs-back {
+  display: none;
+}
+/* ── The suggestions popover, anchored to the field ──────────────────────── */
+.hs-panel {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(100% + var(--sp-2));
+  z-index: var(--z-popover);
+  max-block-size: min(70dvh, 36rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sp-1);
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-float);
+  transform-origin: top center;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur, var(--dur-base)) var(--spring-snappy, var(--ease-out));
+}
+@starting-style {
+  .hs-panel {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
+.hs-panel[hidden] {
+  display: none;
+}
+.hs-list {
+  display: flex;
+  flex-direction: column;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+/* Refining: the previous answer stays, quieter, until the next one is in. */
+.hs.is-loading .hs-list {
+  opacity: 0.6;
+  transition-delay: 90ms;
+}
+.hs-group {
+  display: flex;
+  flex-direction: column;
+}
+.hs-group + .hs-group {
+  margin-block-start: var(--sp-1);
+  padding-block-start: var(--sp-1);
+  border-block-start: 1px solid var(--rule);
+}
+.hs-group::before {
+  content: attr(data-label);
+  padding: var(--sp-2) var(--sp-3) var(--sp-1);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-caps);
+}
+:root[lang="en"] .hs-group::before {
+  text-transform: uppercase;
+}
+
+.hs-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-block-size: 44px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+.hs-opt[aria-selected="true"] {
+  background: var(--sunk);
+}
+.hs-opt:active {
+  background: var(--sunk-2);
+}
+.hs-opt__ic {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--r-sm);
+  corner-shape: squircle;
+  background: var(--sunk);
+  color: var(--text-2);
+}
+.hs-opt[aria-selected="true"] .hs-opt__ic {
+  background: var(--surface);
+}
+.hs-opt__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+  font-size: 0.9375rem;
+  line-height: var(--lh-snug);
+}
+.hs-opt--cat .hs-opt__main,
+.hs-opt--all .hs-opt__main {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hs-opt--all .hs-opt__main {
+  font-weight: var(--fw-semibold);
+}
+.hs-opt__go {
+  flex: none;
+  color: var(--text-3);
+}
+.hs-thumb {
+  display: block;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  overflow: hidden;
+  border-radius: var(--r-sm);
+  corner-shape: squircle;
+  background: var(--well);
+}
+.hs-thumb img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.hs-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* The matched part is the weight that changes, not a highlighter: calm, and it
+   reads in both scripts. */
+.hs-mark {
+  background: none;
+  color: inherit;
+  font-weight: var(--fw-heavy);
+}
+.hs-meta {
+  overflow: hidden;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hs-price {
+  flex: none;
+  text-align: end;
+}
+.hs-note {
+  padding: var(--sp-4) var(--sp-3);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.hs-note__title {
+  margin-block-end: var(--sp-1);
+  color: var(--text);
+  font-weight: var(--fw-bold);
+}
+
+/* Rows the size of real ones while the first answer is on its way. */
+.hs-opt--skel {
+  cursor: default;
+}
+.hs-skel-line {
+  display: block;
+  inline-size: 70%;
+  block-size: 0.75rem;
+  margin-block: 0.25rem;
+  border-radius: var(--r-xs);
+}
+.hs-skel-line--short {
+  inline-size: 35%;
+}
+
+/* ── Phones: the overlay ─────────────────────────────────────────────────────
+   While open, the form is a manual popover: in the top layer, above every
+   stacking context and positioned against the viewport (the header's material
+   would otherwise contain a fixed child). These rules undo the UA popover box. */
+:root.hs-lock {
+  overflow: hidden;
+}
+.hs-form.is-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding: max(var(--sp-3), env(safe-area-inset-top, 0px)) var(--sp-3) 0;
+  border: 0;
+  overflow: hidden;
+  background: var(--page);
+  color: var(--text);
+  animation: hs-in var(--dur-base) var(--ease-out);
+}
+.hs-form.is-overlay::backdrop {
+  background: transparent;
+}
+.hs-form.is-overlay .hs-field {
+  flex: none;
+}
+.hs-form.is-overlay .hs-back {
+  display: grid;
+}
+.hs-form.is-overlay .hs-lead {
+  display: none;
+}
+.hs-form.is-overlay .hs-panel {
+  position: static;
+  flex: 1;
+  max-block-size: none;
+  margin-block-start: var(--sp-2);
+  padding: 0 0 calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+@keyframes hs-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hs-form.is-overlay {
+    animation-name: fade-in;
+  }
+}
+
+/* ── The box at the top of /search: bigger, its button labelled ──────────── */
+.hs--page .hs-field {
+  block-size: 52px;
+  background: var(--surface);
+  box-shadow:
+    var(--shadow-sm),
+    inset 0 0 0 1px var(--line-strong);
+}
+.hs--page .hs-lead {
+  inline-size: 3rem;
+}
+.hs--page input.hs-input {
+  font-size: var(--fs-lg);
+}
+.hs--page .hs-submit {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  block-size: 40px;
+  margin-inline-end: var(--sp-1);
+  padding-inline: var(--sp-4);
+  border: 0;
+  border-radius: var(--r-sm);
+  corner-shape: squircle;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: scale 100ms var(--ease-out);
+}
+.hs--page .hs-submit:active {
+  scale: var(--press);
+}
+.hs-submit__label {
+  text-box: trim-both cap alphabetic;
+}
+
+/* Phones: the header shows a search button, so the page carries the box (and is the
+   no-JS fallback behind that button). Wider screens have it in the header bar. */
+.search-page__box {
+  max-inline-size: 45rem;
+  margin-block: var(--sp-2) var(--sp-6);
+}
+@media (min-width: 601px) {
+  .search-page__box {
+    display: none;
+  }
+}
