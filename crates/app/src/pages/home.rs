@@ -274,7 +274,6 @@ fn PromoPanel(panel: Panel, lang: Lang, #[prop(optional)] hero: bool) -> impl In
                     loading=if hero { "eager" } else { "lazy" }
                     fetchpriority=if hero { "high" } else { "auto" }
                     decoding="async"
-                    style=format!("background-image:url({})", panel.img.lqip)
                 />
             </a>
         </section>
@@ -302,8 +301,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
                                                     {match c.img {
                                                         Some(img) => view! {
                                                             <img src=img.src_near(240) srcset=img.srcset() sizes="96px"
-                                                                alt="" width="96" height="96" loading="lazy" decoding="async"
-                                                                style=format!("background-image:url({})", img.lqip)/>
+                                                                alt="" width="96" height="96" loading="lazy" decoding="async"/>
                                                         }.into_any(),
                                                         None => view! { <Icon name=c.icon.clone() size=28/> }.into_any(),
                                                     }}
