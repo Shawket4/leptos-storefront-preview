@@ -89,9 +89,10 @@
 .cline {
   display: grid;
   grid-template-columns: 72px minmax(0, 1fr);
+  /* The quantity and the total get the whole width under the picture (a 320px drawer). */
   grid-template-areas:
     "media main"
-    "media side"
+    "side side"
     "issue issue";
   column-gap: var(--sp-3);
   row-gap: var(--sp-2);
