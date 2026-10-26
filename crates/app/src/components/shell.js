@@ -12,48 +12,103 @@
     return u.origin === location.origin ? u : null;
   };
 
-  // ── Prefetch on press ─────────────────────────────────────────────────────
-  // A tap takes ~100 ms from touch-down to click; on a slow link that is a third of the trip.
-  // Start the router's own request on pointer-down (and after 65 ms of hover with a mouse), and
-  // hand it to the router when the click arrives. A press that moves more than 10 px is a scroll
-  // or a drag, not a tap: its request is dropped. /__ links change state (prefs): never early.
-  const PRE_TTL = 10000;
-  const pre = new Map(); // url → { at, ctrl, promise }
-  const early = (u) => !u.pathname.startsWith("/__") && keyOf(u.href) !== keyOf(location.href);
-  const prefetch = (u) => {
-    const key = keyOf(u.href);
-    const hit = pre.get(key);
-    if (hit && Date.now() - hit.at < PRE_TTL) return;
-    const ctrl = new AbortController();
-    const promise = ofetch(new Request(key, { headers: { "Islands-Router": "true" }, cache: "no-cache", signal: ctrl.signal }));
-    promise.catch(() => { if (pre.get(key)?.promise === promise) pre.delete(key); });
-    pre.set(key, { at: Date.now(), ctrl, promise });
+  // ── Prefetch: Madar's gesture model (MadarDashboard/src/lib/prefetch/intent.ts) ──────────
+  // One delegated listener set for every router-eligible link, so no link wires anything:
+  // - a mouse or pen hover warms after HOVER_DELAY_MS (a pass-over warms nothing); one pending
+  //   hover at a time — entering another target or leaving cancels it;
+  // - keyboard focus waits the same; blur cancels;
+  // - pointerdown warms at once (a phone's only signal; on desktop it buys the ~100 ms to the
+  //   click) and is never throttled;
+  // - the same href is warmed at most once per DEDUPE_MS; hovers and focus warm at most
+  //   HOVER_BUDGET_PER_S targets a second; nothing is warmed on Save-Data or 2G.
+  // Warming is reading: the router's own GET (Islands-Router header), kept fresh 30 s (Madar's
+  // staleTime) and single-use — the router's fetch of that href gets it and it is dropped.
+  // /__ links set preferences (state-changing GETs): never warmed. A failed warm costs nothing.
+  const HOVER_DELAY_MS = 65, DEDUPE_MS = 2000, HOVER_BUDGET_PER_S = 6, STALE_MS = 30000;
+  const stats = { warmed: 0, reused: 0, skipped: 0 };
+  w.__lspPrefetch = { HOVER_DELAY_MS, DEDUPE_MS, HOVER_BUDGET_PER_S, stats };
+  const connectionAllowsPrefetch = () => {
+    const c = navigator.connection;
+    return !c || (!c.saveData && !/(^|-)2g$/.test(c.effectiveType || ""));
   };
-  const drop = (key) => { const hit = pre.get(key); if (hit) { hit.ctrl.abort(); pre.delete(key); } };
-  let press = null;
-  d.addEventListener("pointerdown", (e) => {
-    if (e.button) return;
-    const u = routable(e.target.closest && e.target.closest("a[href]"));
-    if (!u || !early(u)) return;
-    press = { x: e.clientX, y: e.clientY, key: keyOf(u.href) };
-    prefetch(u);
-  }, { capture: true, passive: true });
-  d.addEventListener("pointermove", (e) => {
-    if (press && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) { drop(press.key); press = null; }
-  }, { capture: true, passive: true });
-  d.addEventListener("pointerup", () => { press = null; }, true);
-  d.addEventListener("pointercancel", () => { if (press) { drop(press.key); press = null; } }, true);
-  let hoverTimer = 0;
+  const warmable = (a) => {
+    const u = routable(a);
+    if (!u || u.pathname.startsWith("/__")) return null;
+    // Not the page we're on (nor a hash-only jump within it).
+    if (u.pathname === location.pathname && u.search === location.search) return null;
+    return keyOf(u.href);
+  };
+  // Warmed pages are whole documents (Madar's are small JSON), so few are kept: the stale and
+  // then the oldest are dropped, their unread bodies cancelled.
+  const PRE_MAX = 8;
+  const pre = new Map(); // href → { at, promise }, oldest first
+  const drop = (entry) => entry.promise.then((r) => { if (r.body) r.body.cancel().catch(() => {}); }, () => {});
+  const keep = (key, entry) => {
+    const old = pre.get(key);
+    if (old) { pre.delete(key); drop(old); }
+    for (const [k, v] of pre) if (entry.at - v.at >= STALE_MS) { pre.delete(k); drop(v); }
+    while (pre.size >= PRE_MAX) { const [k, v] = pre.entries().next().value; pre.delete(k); drop(v); }
+    pre.set(key, entry);
+  };
+  const lastRun = new Map();
+  const warmOnce = (key) => {
+    if (!connectionAllowsPrefetch()) { stats.skipped++; return; }
+    const now = Date.now();
+    const at = lastRun.get(key);
+    if (at !== undefined && now - at < DEDUPE_MS) { stats.skipped++; return; }
+    lastRun.set(key, now);
+    if (lastRun.size > 500) for (const [k, t] of lastRun) if (now - t >= DEDUPE_MS) lastRun.delete(k);
+    const hit = pre.get(key);
+    if (hit && now - hit.at < STALE_MS) return; // still fresh: nothing to do
+    const promise = ofetch(new Request(key, { headers: { "Islands-Router": "true" }, cache: "no-cache" }));
+    promise.catch(() => { if (pre.get(key)?.promise === promise) pre.delete(key); });
+    keep(key, { at: now, promise });
+    stats.warmed++;
+  };
+  let hoverPending = null;
+  const cancelPending = () => { if (hoverPending !== null) { clearTimeout(hoverPending); hoverPending = null; } };
+  const hoverWarms = [];
+  const hoverBudget = () => {
+    const now = Date.now();
+    while (hoverWarms.length && now - hoverWarms[0] >= 1000) hoverWarms.shift();
+    if (hoverWarms.length >= HOVER_BUDGET_PER_S) return false;
+    hoverWarms.push(now);
+    return true;
+  };
+  const schedule = (key) => {
+    cancelPending();
+    hoverPending = setTimeout(() => {
+      hoverPending = null;
+      if (hoverBudget()) warmOnce(key);
+      else stats.skipped++;
+    }, HOVER_DELAY_MS);
+  };
+  const linkOf = (t) => (t && t.closest ? t.closest("a[href]") : null);
+  let hovered = null;
   d.addEventListener("pointerover", (e) => {
-    if (e.pointerType !== "mouse") return;
-    const u = routable(e.target.closest && e.target.closest("a[href]"));
-    clearTimeout(hoverTimer);
-    if (u && early(u)) hoverTimer = setTimeout(() => prefetch(u), 65);
+    // Touch has no hover: its pointerenter comes with the press, handled below.
+    if (e.pointerType === "touch") return;
+    const a = linkOf(e.target);
+    if (a === hovered) return; // moving within the same link is not a new enter
+    hovered = a;
+    cancelPending();
+    const key = warmable(a);
+    if (key) schedule(key);
   }, true);
   d.addEventListener("pointerout", (e) => {
-    const a = e.target.closest && e.target.closest("a[href]");
-    if (a && !a.contains(e.relatedTarget)) clearTimeout(hoverTimer);
+    const a = linkOf(e.target);
+    if (a && a === hovered && !a.contains(e.relatedTarget)) { hovered = null; cancelPending(); }
   }, true);
+  d.addEventListener("pointerdown", (e) => {
+    cancelPending();
+    const key = warmable(linkOf(e.target));
+    if (key) warmOnce(key);
+  }, { capture: true, passive: true });
+  d.addEventListener("focusin", (e) => {
+    const key = warmable(linkOf(e.target));
+    if (key) schedule(key);
+  });
+  d.addEventListener("focusout", () => cancelPending());
 
   // ── Navigation progress ───────────────────────────────────────────────────
   // A thin bar at the top, only when a navigation takes longer than 150 ms; it completes when
@@ -139,10 +194,17 @@
     const timeout = new Promise((_, no) => ctrl.signal.addEventListener("abort", () => no(Object.assign(new Error("timeout"), { name: "AbortError" }))));
     let resp = null;
     try {
+      // A warm for this href, still fresh: hand the router a clone, once.
       const hit = method === "GET" ? pre.get(key) : null;
       pre.delete(key);
-      if (hit && Date.now() - hit.at < PRE_TTL) {
-        try { resp = await Promise.race([hit.promise, timeout]); } catch (err) { if (err.name === "AbortError" && ctrl.signal.aborted) throw err; resp = null; }
+      if (hit && Date.now() - hit.at < STALE_MS) {
+        try {
+          resp = (await Promise.race([hit.promise, timeout])).clone();
+          stats.reused++;
+        } catch (err) {
+          if (err.name === "AbortError" && ctrl.signal.aborted) throw err;
+          resp = null; // a failed warm: fetch as usual
+        }
       }
       // Pages vary by the language/numeral/theme cookies: router navigations always revalidate.
       if (!resp) resp = await Promise.race([ofetch(new Request(input, { cache: "no-cache", signal: ctrl.signal })), timeout]);
