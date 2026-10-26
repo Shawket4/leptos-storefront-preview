@@ -1,0 +1,54 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Choice lists (components::choice_list): form::RadioGroup's fieldset holding
+   one inset list (16px squircle, a hairline edge) of form::Checkbox rows — or
+   the radio version of the row — 52px tall, divided by hairlines that start
+   at the label (as on iOS). The figure at the end reads as a price here.
+   Invalid (aria-invalid on the fieldset): the danger edge, the hint in red.
+   ───────────────────────────────────────────────────────────────────────────── */
+.choice-list__rows {
+  display: grid;
+  min-inline-size: 0;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+.choice-list__rows > .check {
+  padding: 0.9375rem var(--sp-4);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.choice-list__rows > .check + .check::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: calc(var(--sp-4) + 1.375rem + var(--sp-3)) 0;
+  block-size: 1px;
+  background: var(--line);
+}
+.choice-list__rows > .check:hover {
+  background: color-mix(in oklab, var(--sunk) 60%, transparent);
+}
+.choice-list__rows > .check:active {
+  background: var(--sunk);
+}
+.choice-list__rows > .check:has(> .check__input:disabled) {
+  background: transparent;
+}
+/* Pressing a row moves the whole row; inside a clipped list it shouldn't shrink. */
+.choice-list__rows > .check[data-press]:active {
+  scale: 1;
+}
+.choice-list .check__meta {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.choice-list[aria-invalid="true"] .choice-list__rows {
+  box-shadow: inset 0 0 0 1.5px var(--danger);
+}
+.choice-list[aria-invalid="true"] > .field__hint {
+  color: var(--danger-text);
+  font-weight: var(--fw-semibold);
+}

@@ -6,20 +6,37 @@
 //!
 //! Ids: a control with `id = "phone"` describes itself with `phone-hint` and `phone-error`;
 //! use the same convention when wrapping a custom control in [`Field`].
+//!
+//! The error line is always in the page — empty, its text slot hidden, while there's no error — so
+//! browser checks show their message inline: `patch(document.getElementById("phone-error"),
+//! { error: "…" })` (core/dom.ts) and set `aria-invalid`. Clear it with `{ error: "" }`, not
+//! `null`: the control's `aria-describedby` always names the line, and screen readers read a
+//! described-by element even when it is hidden, so it must be empty, not just hidden.
 
 use super::icons::Icon;
 use crate::prefs::{lang_now, tr};
 use leptos::prelude::*;
 
-fn described_by(id: &str, hint: bool, error: bool) -> Option<String> {
-    let mut v = Vec::new();
+/// `{id}-hint` (when there is one) and `{id}-error`, always: the error line is always rendered and
+/// empty while there's no error, so it adds nothing to the description until there is one.
+fn described_by(id: &str, hint: bool) -> String {
     if hint {
-        v.push(format!("{id}-hint"));
+        format!("{id}-hint {id}-error")
+    } else {
+        format!("{id}-error")
     }
-    if error {
-        v.push(format!("{id}-error"));
+}
+
+/// The inline error line, `{id}-error`: always rendered, its text in a `data-slot="error"` that is
+/// hidden (and empty) while there's no error; CSS hides the line with it.
+pub(super) fn error_line(id: Option<String>, error: Option<String>) -> impl IntoView {
+    let none = error.is_none();
+    view! {
+        <p class="field__error" id=id>
+            <Icon name="circle-alert" size=16/>
+            <span data-slot="error" hidden=none>{error}</span>
+        </p>
     }
-    (!v.is_empty()).then(|| v.join(" "))
 }
 
 /// The frame every control shares: label (with "(optional)"), the control, hint, error.
@@ -39,6 +56,7 @@ fn frame(
     };
     let hint_id = format!("{id}-hint");
     let error_id = format!("{id}-error");
+    let err = error.get_untracked().filter(|e| !e.is_empty());
     let opt = optional.then(|| tr(lang_now(), "(optional)", "(اختياري)"));
     view! {
         <div class=cls>
@@ -48,25 +66,14 @@ fn frame(
             </label>
             {control}
             {hint.map(|h| view! { <p class="field__hint" id=hint_id>{move || h.get()}</p> })}
-            {move || {
-                error
-                    .get()
-                    .filter(|e| !e.is_empty())
-                    .map(|e| {
-                        view! {
-                            <p class="field__error" id=error_id.clone()>
-                                <Icon name="circle-alert" size=16/>
-                                <span>{e}</span>
-                            </p>
-                        }
-                    })
-            }}
+            {error_line(Some(error_id), err)}
         </div>
     }
 }
 
 /// Label + control + hint + error, for a custom control. The control (children) must carry
-/// `id`, and `aria-describedby="{id}-hint {id}-error"` / `aria-invalid` itself.
+/// `id`, and `aria-describedby="{id}-hint {id}-error"` (the error line is always there) and
+/// `aria-invalid` itself.
 #[component]
 pub fn Field(
     #[prop(into)] id: String,
@@ -106,12 +113,13 @@ pub fn TextInput(
     /// A lucide icon inside the field, at the start.
     #[prop(optional)]
     icon: Option<&'static str>,
+    /// The browser's length checks, in characters.
+    #[prop(optional)]
+    minlength: Option<u32>,
+    #[prop(optional)] maxlength: Option<u32>,
 ) -> impl IntoView {
     let has_hint = hint.is_some();
-    let describe = {
-        let id = id.clone();
-        move || described_by(&id, has_hint, error.get().is_some_and(|e| !e.is_empty()))
-    };
+    let describe = described_by(&id, has_hint);
     let invalid = move || error.get().is_some_and(|e| !e.is_empty()).then_some("true");
     let t = if input_type.is_empty() {
         "text"
@@ -139,6 +147,8 @@ pub fn TextInput(
                     autocomplete=(!autocomplete.is_empty()).then_some(autocomplete)
                     inputmode=(!inputmode.is_empty()).then_some(inputmode)
                     required=required
+                    minlength=minlength
+                    maxlength=maxlength
                     disabled=move || disabled.get().unwrap_or(false)
                     dir=dir
                     aria-invalid=invalid
@@ -162,12 +172,13 @@ pub fn TextArea(
     #[prop(optional, into)] placeholder: Option<TextProp>,
     #[prop(optional)] rows: Option<u32>,
     #[prop(optional)] optional: bool,
+    /// The browser's length checks, in characters.
+    #[prop(optional)]
+    minlength: Option<u32>,
+    #[prop(optional)] maxlength: Option<u32>,
 ) -> impl IntoView {
     let has_hint = hint.is_some();
-    let describe = {
-        let id = id.clone();
-        move || described_by(&id, has_hint, error.get().is_some_and(|e| !e.is_empty()))
-    };
+    let describe = described_by(&id, has_hint);
     let invalid = move || error.get().is_some_and(|e| !e.is_empty()).then_some("true");
     let input_id = id.clone();
     let initial = value.get_untracked().unwrap_or_default();
@@ -177,6 +188,8 @@ pub fn TextArea(
                 id=input_id
                 name=name
                 rows=rows.unwrap_or(3)
+                minlength=minlength
+                maxlength=maxlength
                 placeholder=move || placeholder.as_ref().map(|p| p.get())
                 aria-invalid=invalid
                 aria-describedby=describe
@@ -189,24 +202,26 @@ pub fn TextArea(
 }
 
 /// A native select, styled (its menu stays the platform's, which is what people expect on
-/// phones).
+/// phones). Options first (a "Choose…" with an empty value), then any labelled groups.
 #[component]
 pub fn Select(
     #[prop(into)] id: String,
     #[prop(into)] name: String,
     #[prop(into)] label: TextProp,
     /// `(value, label)` pairs.
+    #[prop(optional)]
     options: Vec<(String, String)>,
+    /// `(label, options)`: options under a heading (`<optgroup>`), after `options`.
+    #[prop(optional)]
+    groups: Vec<(String, Vec<(String, String)>)>,
     #[prop(optional, into)] value: MaybeProp<String>,
     #[prop(optional, into)] hint: Option<TextProp>,
     #[prop(optional, into)] error: MaybeProp<String>,
+    #[prop(optional)] required: bool,
     #[prop(optional)] optional: bool,
 ) -> impl IntoView {
     let has_hint = hint.is_some();
-    let describe = {
-        let id = id.clone();
-        move || described_by(&id, has_hint, error.get().is_some_and(|e| !e.is_empty()))
-    };
+    let describe = described_by(&id, has_hint);
     let invalid = move || error.get().is_some_and(|e| !e.is_empty()).then_some("true");
     let input_id = id.clone();
     let current = value.get_untracked().unwrap_or_default();
@@ -216,14 +231,15 @@ pub fn Select(
                     class="input input--select"
                     id=input_id
                     name=name
+                    required=required
                     aria-invalid=invalid
                     aria-describedby=describe
                 >
-                    {options
+                    {option_list(options, &current)}
+                    {groups
                         .into_iter()
-                        .map(|(v, l)| {
-                            let selected = v == current;
-                            view! { <option value=v selected=selected>{l}</option> }
+                        .map(|(label, options)| {
+                            view! { <optgroup label=label>{option_list(options, &current)}</optgroup> }
                         })
                         .collect_view()}
                 </select>
@@ -234,9 +250,20 @@ pub fn Select(
     frame(id, label, hint, error, optional, String::new(), control)
 }
 
+fn option_list(options: Vec<(String, String)>, current: &str) -> impl IntoView + use<> {
+    options
+        .into_iter()
+        .map(|(v, l)| {
+            let selected = v == current;
+            view! { <option value=v selected=selected>{l}</option> }
+        })
+        .collect_view()
+}
+
 /// A group of [`RadioCard`]s (delivery slots, payment methods): a `<fieldset>` with its legend, an
 /// optional hint under it and an inline error after the cards, wired with `aria-describedby`.
-/// Give it an `id` when it has a hint or an error (they're `{id}-hint` / `{id}-error`).
+/// Give it an `id` when it has a hint or an error (they're `{id}-hint` / `{id}-error`); with an
+/// `id` the error line is always rendered, for browser checks. `required` goes on the cards.
 #[component]
 pub fn RadioGroup(
     #[prop(into)] legend: TextProp,
@@ -248,9 +275,7 @@ pub fn RadioGroup(
 ) -> impl IntoView {
     let err = error.get_untracked().filter(|e| !e.is_empty());
     let base = id.clone().unwrap_or_default();
-    let describe = (!base.is_empty())
-        .then(|| described_by(&base, hint.is_some(), err.is_some()))
-        .flatten();
+    let describe = (!base.is_empty()).then(|| described_by(&base, hint.is_some()));
     let cls = if class.is_empty() {
         "radio-cards".to_owned()
     } else {
@@ -264,14 +289,7 @@ pub fn RadioGroup(
             <legend>{move || legend.get()}</legend>
             {hint.map(|h| view! { <p class="field__hint" id=hint_id>{move || h.get()}</p> })}
             {children()}
-            {err.map(|e| {
-                view! {
-                    <p class="field__error" id=error_id>
-                        <Icon name="circle-alert" size=16/>
-                        <span>{e}</span>
-                    </p>
-                }
-            })}
+            {(error_id.is_some() || err.is_some()).then(|| error_line(error_id, err))}
         </fieldset>
     }
 }
@@ -289,6 +307,9 @@ pub fn RadioCard(
     trailing: Option<TextProp>,
     #[prop(optional, into)] checked: MaybeProp<bool>,
     #[prop(optional, into)] disabled: MaybeProp<bool>,
+    /// One of the group must be chosen (put it on every card of the group).
+    #[prop(optional)]
+    required: bool,
 ) -> impl IntoView {
     view! {
         <label class="radio-card" data-press="">
@@ -297,6 +318,7 @@ pub fn RadioCard(
                 type="radio"
                 name=name
                 value=value
+                required=required
                 checked=checked.get_untracked().unwrap_or(false)
                 disabled=move || disabled.get().unwrap_or(false)
             />
@@ -313,12 +335,15 @@ pub fn RadioCard(
     }
 }
 
-/// A checkbox with its label (and an optional line under it).
+/// A checkbox with its label (and an optional line under it, and an optional figure at the end).
 #[component]
 pub fn Checkbox(
     #[prop(into)] name: String,
     #[prop(into)] label: TextProp,
     #[prop(optional, into)] description: Option<TextProp>,
+    /// Trailing, quiet: a count ("12") or a price ("+ EGP 10"), formatted.
+    #[prop(optional, into)]
+    meta: Option<TextProp>,
     #[prop(optional, into)] value: Option<String>,
     #[prop(optional, into)] checked: MaybeProp<bool>,
     #[prop(optional, into)] disabled: MaybeProp<bool>,
@@ -340,6 +365,7 @@ pub fn Checkbox(
                 <span class="check__label">{move || label.get()}</span>
                 {description.map(|d| view! { <span class="check__desc">{move || d.get()}</span> })}
             </span>
+            {meta.map(|m| view! { <span class="check__meta">{move || m.get()}</span> })}
         </label>
     }
 }

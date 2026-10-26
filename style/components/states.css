@@ -112,3 +112,11 @@
   font-size: var(--fs-xs);
   color: var(--text-2);
 }
+/* EmptyState's "Did you mean …?": its own line above the action. */
+.state__suggest {
+  flex-basis: 100%;
+  color: var(--text-2);
+}
+.state__suggest .link {
+  font-weight: var(--fw-bold);
+}

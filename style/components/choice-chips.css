@@ -1,0 +1,161 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Choice chips (components::choice_chips). Chips: 44px squircles (12px) on the
+   surface with a hairline; chosen = the radio card's look (2px accent ring on
+   the accent wash). Swatches: 44px circles, a 32px dot, a 2px ring when chosen.
+   Unavailable: the disabled grey, struck through (chips) or crossed (swatches).
+   States key off aria-checked / aria-disabled (links) and :checked / :disabled
+   (radios), so browser code only sets attributes.
+   ───────────────────────────────────────────────────────────────────────────── */
+.choice-chips {
+  display: grid;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+}
+.choice-chips__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.choice-chips__label {
+  font-weight: var(--fw-bold);
+}
+.choice-chips__value {
+  color: var(--text-2);
+}
+.choice-chips__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+}
+.choice-chips--full .choice-chips__items {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+.choice-chips__note {
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  line-height: var(--lh-snug);
+}
+.choice-chips__note:empty {
+  display: none;
+}
+
+/* ── A chip ── */
+.choice-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 4rem;
+  min-block-size: 2.75rem;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.choice-chips--full .choice-chip {
+  min-inline-size: 0;
+  padding-inline: var(--sp-2);
+}
+:root:not([lang="ar"]) .choice-chip__label {
+  text-box: trim-both cap alphabetic;
+}
+.choice-chip:hover {
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--text) 30%, transparent);
+}
+.choice-chip[aria-checked="true"],
+.choice-chip:has(> .choice-chip__input:checked) {
+  background: var(--brand-wash);
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.choice-chip[aria-disabled="true"],
+.choice-chip:has(> .choice-chip__input:disabled) {
+  background: var(--disabled);
+  box-shadow: none;
+  color: var(--on-disabled);
+  cursor: default;
+}
+.choice-chip[aria-disabled="true"] .choice-chip__label,
+.choice-chip:has(> .choice-chip__input:disabled) .choice-chip__label {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.choice-chip:has(> .choice-chip__input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+/* Invalid (no choice yet): the chips take the danger edge. */
+.choice-chips[aria-invalid="true"] .choice-chip:not(:has(> :checked)) {
+  box-shadow: inset 0 0 0 1px var(--danger);
+}
+/* Radios: the native input stays in the form and the accessibility tree. */
+.choice-chip__input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── A swatch ── */
+.choice-chip--swatch {
+  min-inline-size: 2.75rem;
+  inline-size: 2.75rem;
+  padding: 0;
+  border-radius: 50%;
+  corner-shape: round;
+  background: transparent;
+  box-shadow: none;
+}
+.choice-chip--swatch:hover {
+  box-shadow: inset 0 0 0 2px var(--line-strong);
+}
+.choice-chip--swatch[aria-checked="true"],
+.choice-chip--swatch:has(> .choice-chip__input:checked) {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--text);
+}
+.choice-chip--swatch[aria-disabled="true"],
+.choice-chip--swatch:has(> .choice-chip__input:disabled) {
+  background: transparent;
+}
+.choice-chip__dot {
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--swatch, var(--sunk));
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+.choice-chip--swatch[aria-disabled="true"] .choice-chip__dot,
+.choice-chip--swatch:has(> .choice-chip__input:disabled) .choice-chip__dot {
+  opacity: 0.4;
+}
+/* Crossed out: one solid diagonal stroke (no gradient). */
+.choice-chip--swatch[aria-disabled="true"]::after,
+.choice-chip--swatch:has(> .choice-chip__input:disabled)::after {
+  content: "";
+  position: absolute;
+  inline-size: 2px;
+  block-size: 2.125rem;
+  border-radius: var(--r-xs);
+  background: var(--text-2);
+  rotate: 45deg;
+}

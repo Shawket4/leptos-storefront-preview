@@ -1,0 +1,109 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Pager (components::pager): 44px squircle links (12px corners), figures in
+   Plex Mono, the current page filled with the accent. Sized by its own width
+   (a container query): narrow, it shows the first, current and last pages and
+   icon-only steps (their words kept for screen readers); from 31rem every
+   page in the window; from 40rem the steps say "Previous" / "Next".
+   ───────────────────────────────────────────────────────────────────────────── */
+.pager {
+  container: pager / inline-size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-inline-size: 0;
+}
+.pager__list {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pager__page,
+.pager__step {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding-inline: var(--sp-2);
+  border-radius: var(--r-md);
+  color: var(--text);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.pager__page {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+a.pager__page:hover,
+a.pager__step:hover {
+  background: var(--sunk);
+}
+.pager__page[aria-current="page"] {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.pager__step {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+}
+.pager__step.is-off {
+  color: var(--on-disabled);
+}
+.pager__gap {
+  min-inline-size: 1.5rem;
+  color: var(--text-3);
+  text-align: center;
+}
+:root:not([lang="ar"]) .pager__step-label {
+  text-box: trim-both cap alphabetic;
+}
+
+/* Narrow (the default): first, current, last; words on the steps for screen
+   readers only. */
+.pager__wide {
+  display: none;
+}
+.pager__step-label {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@container pager (min-width: 31rem) {
+  .pager__wide {
+    display: block;
+  }
+  .pager__gap--narrow {
+    display: none;
+  }
+}
+@container pager (min-width: 40rem) {
+  .pager__step {
+    padding-inline: var(--sp-3);
+  }
+  .pager__step--prev {
+    padding-inline-start: var(--sp-2);
+  }
+  .pager__step--next {
+    padding-inline-end: var(--sp-2);
+  }
+  .pager__step-label {
+    position: static;
+    inline-size: auto;
+    block-size: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+}

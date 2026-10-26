@@ -1,0 +1,101 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Active-filter chips (components::filter_chips): 32px squircles (8px) on the
+   sunk grey, semibold label, a quiet × at the end; the hit area reaches 44px
+   above and below (::after), so rows sit 12px apart and targets never overlap.
+   "Clear all" is the same height, text only. --scroll: one sideways line on
+   phones, bleeding to the edges of the page column.
+   ───────────────────────────────────────────────────────────────────────────── */
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-2);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.filter-chips > li {
+  display: flex;
+  flex: none;
+  max-inline-size: 100%;
+}
+
+.filter-chip,
+.filter-chips__clear {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-inline-size: 0;
+  block-size: 2rem;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.filter-chip::after,
+.filter-chips__clear::after {
+  content: "";
+  position: absolute;
+  inset: -0.375rem 0;
+}
+.filter-chip {
+  max-inline-size: 100%;
+  padding-inline: var(--sp-3) var(--sp-2);
+  background: var(--sunk);
+  color: var(--text);
+}
+.filter-chip:hover {
+  background: var(--sunk-2);
+}
+.filter-chip .icon {
+  flex: none;
+  color: var(--text-2);
+}
+/* A long label ends in an ellipsis. Latin labels are trimmed to cap height so
+   they sit mid-chip; the clip box is padded out (and the padding taken back)
+   so descenders and marks hanging outside the trimmed box are never cut. */
+.filter-chip__label {
+  min-inline-size: 0;
+  margin-block: -0.3em;
+  padding-block: 0.3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:root:not([lang="ar"]) .filter-chip__label {
+  text-box: trim-both cap alphabetic;
+}
+.filter-chips__clear {
+  padding-inline: var(--sp-2);
+  color: var(--text-2);
+}
+.filter-chips__clear:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+@media (max-width: 767.98px) {
+  .filter-chips--scroll {
+    flex-wrap: nowrap;
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 0.375rem var(--gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .filter-chips--scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .filter-chips--scroll > li {
+    max-inline-size: none;
+  }
+}
