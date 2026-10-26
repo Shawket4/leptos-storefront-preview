@@ -663,7 +663,7 @@ html.pv-open {
   corner-shape: round;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-out);
 }
 .pp-swatch__dot {
   inline-size: 32px;
@@ -703,7 +703,7 @@ html.pv-open {
   position: absolute;
   inline-size: 2px;
   block-size: 34px;
-  border-radius: 1px;
+  border-radius: var(--r-xs); /* clamps to the 2px stroke's round ends */
   background: var(--text-2);
   rotate: 45deg;
 }
@@ -937,7 +937,7 @@ html.pv-open {
   color: var(--text);
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-out);
 }
 .pp-msg__action:active {
   scale: var(--press);
@@ -1188,9 +1188,9 @@ html.pv-open {
   }
   .pp-bar {
     translate: 0 0;
-    transition: opacity var(--dur-fast) linear;
+    transition: opacity var(--dur-fast) var(--ease-out);
   }
   .pv[open] {
-    animation: fade-in var(--dur-fast) linear;
+    animation: fade-in var(--dur-fast) var(--ease-out);
   }
 }
