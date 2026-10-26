@@ -90,16 +90,13 @@ pub fn App() -> impl IntoView {
         <Router>
             <components::shell::AppShell>
                 <Routes fallback=|| view! { <pages::NotFound/> }>
-                    // Out-of-order streaming: fastest first paint, sections land as their data
-                    // does — but placing them needs JS (each arrives as a <template> + script).
+                    // Every page renders in order: one complete document that works without JS
+                    // and that the client router can swap in (out-of-order chunks need scripts a
+                    // fetched document never runs). The out-of-order demo has its own route.
                     <Route path=path!("") view=pages::HomePage ssr=SsrMode::InOrder/>
-                    // The same home page streamed in order, for visitors without JS (see shell).
-                    // Must work fully without JS → in-order streaming (no script needed).
                     <Route path=path!("c/:slug") view=pages::CategoryPage ssr=SsrMode::InOrder/>
                     <Route path=path!("search") view=pages::SearchPage ssr=SsrMode::InOrder/>
-                    // Blocking product resource: <head> waits for it (title/OG/JSON-LD are data),
-                    // and its HTML is rendered inline; the rest still streams.
-                    <Route path=path!("p/:slug") view=pages::ProductPage ssr=SsrMode::PartiallyBlocked/>
+                    <Route path=path!("p/:slug") view=pages::ProductPage ssr=SsrMode::InOrder/>
                     <Route path=path!("cart") view=pages::CartPage ssr=SsrMode::InOrder/>
                     <Route path=path!("checkout") view=pages::CheckoutPage ssr=SsrMode::InOrder/>
                     <Route path=path!("orders") view=pages::OrdersLookupPage ssr=SsrMode::InOrder/>

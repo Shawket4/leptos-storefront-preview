@@ -9,7 +9,6 @@ pub fn provide_all() {
     provide_context(CartStore::new());
     crate::components::toast::provide();
     crate::pages::cart::provide_store();
-    crate::pages::product::provide_store();
 }
 
 /// The cart, as one store every island reads: the header badge, the drawer, add-to-cart buttons.
