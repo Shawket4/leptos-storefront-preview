@@ -93,6 +93,54 @@ fn url_error(lang: Lang) -> Option<String> {
     Some(copy::message(&copy::code(&e), lang))
 }
 
+/// What an empty cart offers instead: the illustration and a few things to start with.
+#[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Suggestions {
+    pub art_light: Option<Img>,
+    pub art_dark: Option<Img>,
+    pub picks: Vec<CardData>,
+}
+
+/// Quick-addable products (one variant, nothing required, in stock): bestsellers, then featured.
+pub fn pick_quick_adds(
+    pool: Vec<CardData>,
+    exclude: &[domain::ProductId],
+    n: usize,
+) -> Vec<CardData> {
+    let mut seen = Vec::new();
+    pool.into_iter()
+        .filter(|c| c.in_stock && c.single_variant && !exclude.contains(&c.id))
+        .filter(|c| {
+            !seen.contains(&c.id) && {
+                seen.push(c.id);
+                true
+            }
+        })
+        .take(n)
+        .collect()
+}
+
+/// For the drawer's empty state (fetched once, when the drawer first shows an empty cart).
+#[server]
+pub async fn cart_suggestions() -> Result<Suggestions, ServerFnError> {
+    crate::request::init();
+    crate::server::cache::private();
+    let mut pool = crate::api::home_rail(Rail::Bestsellers, 24)
+        .await
+        .unwrap_or_default();
+    pool.extend(
+        crate::api::home_rail(Rail::Featured, 24)
+            .await
+            .unwrap_or_default(),
+    );
+    let a = art("empty-cart");
+    Ok(Suggestions {
+        art_light: a.light,
+        art_dark: a.dark,
+        picks: pick_quick_adds(pool, &[], 3),
+    })
+}
+
 #[component]
 pub fn CartPage() -> impl IntoView {
     // Personal: never cached anywhere. Set before the first chunk streams.
@@ -198,18 +246,7 @@ fn CartBody(
     add: ServerAction<CartAdd>,
 ) -> impl IntoView {
     let in_cart: Vec<_> = v.lines.iter().map(|l| l.product).collect();
-    let mut seen = Vec::new();
-    let picks: Vec<CardData> = picks
-        .into_iter()
-        .filter(|c| c.in_stock && c.single_variant && !in_cart.contains(&c.id))
-        .filter(|c| {
-            !seen.contains(&c.id) && {
-                seen.push(c.id);
-                true
-            }
-        })
-        .take(4)
-        .collect();
+    let picks = pick_quick_adds(picks, &in_cart, 4);
     let empty = v.lines.is_empty();
     let count = v.count;
     let body = if empty {

@@ -121,6 +121,9 @@ pub struct CartOps {
     pub drawer_error: RwSignal<Option<String>>,
     /// Per-line problems (offline, failed, capped).
     pub issues: RwSignal<Vec<LineIssue>>,
+    /// The empty drawer's illustration and suggestions (fetched once).
+    pub suggestions: RwSignal<Option<super::page::Suggestions>>,
+    suggestions_asked: StoredValue<bool>,
 }
 
 pub fn use_ops() -> CartOps {
@@ -158,6 +161,8 @@ impl CartOps {
             next_removed: StoredValue::new(1),
             drawer_error: RwSignal::new(None),
             issues: RwSignal::new(Vec::new()),
+            suggestions: RwSignal::new(None),
+            suggestions_asked: StoredValue::new(false),
         }
     }
 
@@ -424,6 +429,20 @@ impl CartOps {
                 Err(_) => self
                     .load_failed
                     .set(self.confirmed.with_untracked(Option::is_none)),
+            }
+        });
+    }
+
+    /// Fetch the empty-cart suggestions once (a failure just leaves them out).
+    pub fn load_suggestions(self) {
+        if self.suggestions_asked.get_value() {
+            return;
+        }
+        self.suggestions_asked.set_value(true);
+        leptos::task::spawn_local(async move {
+            match super::page::cart_suggestions().await {
+                Ok(s) => self.suggestions.set(Some(s)),
+                Err(_) => self.suggestions_asked.set_value(false),
             }
         });
     }

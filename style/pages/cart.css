@@ -760,3 +760,39 @@ html:has(dialog.drawer[data-cart][open]) {
   background: var(--info-wash);
   color: var(--info-text, var(--info));
 }
+
+/* The empty drawer: art (box reserved), a way back, suggestions. */
+.cart-empty--drawer {
+  padding-block: var(--sp-6) var(--sp-4);
+}
+.cart-empty__artbox {
+  display: grid;
+  place-items: center;
+  inline-size: 140px;
+  block-size: 140px;
+}
+.cart-empty__artbox .art {
+  inline-size: 140px;
+  block-size: 140px;
+}
+.cart-empty__artbox .art--icon {
+  inline-size: 96px;
+  block-size: 96px;
+}
+.drawer-picks {
+  margin-block: var(--sp-4) var(--sp-6);
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--rule);
+}
+.drawer-picks__title {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+}
+.mini-line__add {
+  display: contents;
+}
+a.mini-line__name {
+  color: var(--text);
+  text-decoration: none;
+}

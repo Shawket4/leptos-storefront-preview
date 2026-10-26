@@ -3,6 +3,7 @@
 //! through the op queue (`store`) for an instant, sequenced, roll-back-able update.
 
 use super::math::{self, Op};
+use super::page::{Art, ArtImage};
 use super::store::{CartOps, IssueKind, OpResult, Removed, use_ops};
 use crate::api::cart::{CartAdd, CartRemove, CartSetQty};
 use crate::api::types::CartLineView;
@@ -264,18 +265,7 @@ fn DrawerContent() -> impl IntoView {
                 </button>
             </div>
         }),
-        Body::Empty => EitherOf4::C(view! {
-            <div class="cart-empty">
-                <span class="cart-empty__art" aria-hidden="true"><Icon name="shopping-bag" size=36/></span>
-                <h3 class="cart-empty__title">{move || tr(ui.lang.get(), "Your cart is empty", "سلتك فاضية")}</h3>
-                <p class="cart-empty__body">
-                    {move || tr(ui.lang.get(), "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")}
-                </p>
-                <a class="btn btn--primary btn--md" href="/" data-press="" on:click=move |_| close_drawer()>
-                    {move || tr(ui.lang.get(), "Start shopping", "ابدأ التسوق")}
-                </a>
-            </div>
-        }),
+        Body::Empty => EitherOf4::C(view! { <DrawerEmpty/> }),
         Body::Lines => EitherOf4::D(view! {
             <div class="cart-drawer__scroll">
                 {move || ops.drawer_error.get().map(|m| view! {
@@ -285,6 +275,102 @@ fn DrawerContent() -> impl IntoView {
             </div>
             <DrawerSummary/>
         }),
+    }
+}
+
+/// An empty cart: the illustration, a way back to the shop, and a few things to start with.
+#[component]
+fn DrawerEmpty() -> impl IntoView {
+    let ops = use_ops();
+    let ui = use_ui();
+    Effect::new(move |_| ops.load_suggestions());
+    let picks = move || {
+        ops.suggestions
+            .with(|s| s.as_ref().map(|s| s.picks.clone()).unwrap_or_default())
+    };
+    view! {
+        <div class="cart-drawer__scroll">
+            <div class="cart-empty cart-empty--drawer">
+                // The art's box is reserved before it arrives, so nothing moves when it does.
+                <span class="cart-empty__artbox">
+                    {move || {
+                        let sg = ops.suggestions.get();
+                        let lang = ui.lang.get();
+                        match sg.and_then(|s| s.art_light.map(|l| (l, s.art_dark))) {
+                            Some((light, dark)) => Either::Left(view! { <ArtImage art=Art { light: Some(light), dark } lang/> }),
+                            None => Either::Right(view! { <span class="art art--icon"><Icon name="shopping-bag" size=36/></span> }),
+                        }
+                    }}
+                </span>
+                <h3 class="cart-empty__title">{move || tr(ui.lang.get(), "Your cart is empty", "سلتك فاضية")}</h3>
+                <p class="cart-empty__body">
+                    {move || tr(ui.lang.get(), "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")}
+                </p>
+                <a class="btn btn--primary btn--md" href="/" data-press="" on:click=move |_| close_drawer()>
+                    {move || tr(ui.lang.get(), "Start shopping", "ابدأ التسوق")}
+                </a>
+            </div>
+            {move || {
+                let picks = picks();
+                (!picks.is_empty()).then(|| view! {
+                    <section class="drawer-picks" aria-labelledby="drawer-picks-title">
+                        <h4 class="drawer-picks__title" id="drawer-picks-title">{tr(ui.lang.get(), "Popular right now", "الأكثر طلبًا دلوقتي")}</h4>
+                        <ul class="mini-lines" role="list">
+                            {picks.into_iter().map(|c| view! { <DrawerPick c/> }).collect_view()}
+                        </ul>
+                    </section>
+                })
+            }}
+        </div>
+    }
+}
+
+#[component]
+fn DrawerPick(c: crate::components::product_card::CardData) -> impl IntoView {
+    let ops = use_ops();
+    let ui = use_ui();
+    let href = format!("/p/{}", c.slug);
+    let (name, img) = (c.name.clone(), c.img.clone());
+    let (product, variant) = (c.id, c.default_variant);
+    let on_add = move |input: CartAdd| {
+        ops.submit(
+            Op::Add {
+                product: input.product,
+                variant: input.variant,
+                qty: 1,
+                addons: vec![],
+                line: None,
+            },
+            None,
+        );
+    };
+    let label = {
+        let name = name.clone();
+        move || {
+            format!(
+                "{}: {}",
+                tr(ui.lang.get(), "Add to cart", "أضف للسلة"),
+                name.pick(ui.lang.get().is_rtl())
+            )
+        }
+    };
+    view! {
+        <li class="mini-line">
+            <a class="mini-line__media" href=href.clone() tabindex="-1" aria-hidden="true" on:click=move |_| close_drawer()>
+                {move || view! { <Picture img=img.clone() sizes="48px" lang=ui.lang.get()/> }}
+            </a>
+            <span class="mini-line__main">
+                <a class="mini-line__name" href=href on:click=move |_| close_drawer()>{move || name.pick(ui.lang.get().is_rtl()).to_owned()}</a>
+                <PriceLive amount=Signal::stored(c.price) compare_at=Signal::stored(c.compare_at) size=PriceSize::Sm/>
+            </span>
+            <CartForm class="mini-line__add" on_input=Callback::new(on_add)>
+                <input type="hidden" name="product" value=product.0/>
+                <input type="hidden" name="variant" value=variant.0/>
+                <button type="submit" class="icon-btn icon-btn--outline" aria-label=label data-press="">
+                    <Icon name="plus" size=18/>
+                </button>
+            </CartForm>
+        </li>
     }
 }
 
