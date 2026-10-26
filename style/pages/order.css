@@ -1,1 +1,454 @@
-/* order page — owned by that page's agent (see AGENTS.md). Tokens only: style/tokens.css. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Order tracking (/orders/:id). Owner: commerce agent.
+   The timeline's line fills continuously (transform only); the current step
+   breathes gently (off under prefers-reduced-motion).
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.order-page {
+  padding-block: var(--sp-6) var(--section-y);
+}
+.order-page__more {
+  margin-block-start: var(--sp-6);
+  text-align: center;
+}
+
+/* "Thank you" banner right after placing. */
+.placed {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-block-end: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  animation: placed-in var(--spring-gentle-dur, var(--dur-brand)) var(--spring-gentle, var(--ease-out)) both;
+}
+.placed .art {
+  flex: none;
+  inline-size: 88px;
+  block-size: 88px;
+}
+.placed__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+}
+.placed__sub {
+  margin: var(--sp-1) 0 0;
+  color: var(--text-2);
+}
+@keyframes placed-in {
+  from { opacity: 0; translate: 0 12px; }
+}
+
+.order-layout {
+  display: grid;
+  gap: var(--sp-4);
+  align-items: start;
+}
+@media (min-width: 960px) {
+  .order-layout {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: var(--sp-6);
+  }
+  .order-side {
+    position: sticky;
+    inset-block-start: calc(var(--header-h) + var(--sp-4));
+  }
+}
+.order-track,
+.order-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+@media (min-width: 600px) {
+  .order-track {
+    padding: var(--sp-6);
+  }
+}
+.order-track__kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-1) var(--sp-2);
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.order-id {
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.order-track__dot {
+  color: var(--text-3);
+}
+.order-track__body {
+  display: grid;
+  gap: var(--sp-4);
+}
+.order-track__body > .art {
+  inline-size: 120px;
+  block-size: 120px;
+}
+@media (min-width: 600px) {
+  .order-track__body {
+    grid-template-columns: 140px minmax(0, 1fr);
+    gap: var(--sp-6);
+    align-items: start;
+  }
+  .order-track__body > .art {
+    inline-size: 140px;
+    block-size: 140px;
+  }
+}
+
+/* ── The live part (island) ─────────────────────────────────────────────────── */
+.order-live {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-inline-size: 0;
+}
+.order-live__headline {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight, 0);
+  scroll-margin-block-start: calc(var(--header-h) + var(--sp-6));
+}
+.order-live__headline:focus {
+  outline: none;
+}
+.order-live__eta {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+}
+.order-live[data-status="delivered"] .order-live__eta {
+  color: var(--success-text, var(--success));
+}
+.order-live__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+}
+.live__dot {
+  corner-shape: round;
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: var(--r-pill);
+  background: var(--success);
+  animation: live-breathe 2.4s var(--ease-in-out) infinite;
+}
+@keyframes live-breathe {
+  50% { opacity: 0.35; }
+}
+
+/* Timeline: vertical; a track behind the dots, filled up to the current step. */
+.timeline {
+  position: relative;
+  list-style: none;
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+.timeline::before,
+.timeline::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 11px;
+  inset-block: 12px;
+  inline-size: 2px;
+  border-radius: var(--r-pill);
+  background: var(--rule);
+}
+.timeline::after {
+  background: var(--brand);
+  transform-origin: 50% 0;
+  scale: 1 var(--p, 0);
+  transition: scale var(--spring-gentle-dur, var(--dur-brand)) var(--spring-gentle, var(--ease-out));
+}
+.timeline[data-cancelled="true"]::after {
+  scale: 1 0;
+}
+.timeline__step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  min-block-size: 24px;
+}
+.timeline__dot {
+  corner-shape: round;
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--rule);
+  color: transparent;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    scale var(--spring-bouncy-dur, var(--dur-base)) var(--spring-bouncy, var(--ease-pop));
+}
+.timeline__step.is-done .timeline__dot {
+  background: var(--brand);
+  box-shadow: none;
+  color: var(--on-brand);
+}
+.timeline__step.is-current .timeline__dot {
+  background: var(--brand);
+  box-shadow: 0 0 0 5px var(--brand-wash);
+  scale: 1.1;
+}
+.timeline__step.is-current .timeline__dot::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--brand);
+  opacity: 0;
+  animation: step-ring 2s var(--ease-out) infinite;
+}
+@keyframes step-ring {
+  0% { opacity: 0.5; scale: 0.9; }
+  100% { opacity: 0; scale: 1.5; }
+}
+/* The last step, done: success green. */
+.timeline__step.is-done:last-child .timeline__dot {
+  background: var(--success);
+}
+.timeline__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-block-start: 1px;
+}
+.timeline__label {
+  font-weight: var(--fw-semibold);
+  color: var(--text-3);
+  transition: color var(--dur-base) var(--ease-out);
+}
+.timeline__step.is-done .timeline__label,
+.timeline__step.is-current .timeline__label {
+  color: var(--text);
+}
+.timeline__step.is-current .timeline__label {
+  font-weight: var(--fw-bold);
+}
+.timeline__time {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.timeline__step.is-current .timeline__time,
+.timeline__step.is-todo .timeline__time {
+  color: var(--text-2);
+}
+
+.order-side .totals {
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--rule);
+}
+.order-side .co-sub {
+  margin-block: var(--sp-2) 0;
+}
+
+.order-missing {
+  margin-block-start: var(--sp-6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .placed { animation: none; }
+  .live__dot,
+  .timeline__step.is-current .timeline__dot::after { animation: none; }
+}
+
+/* ── /orders: find an order ────────────────────────────────────────────────── */
+.orders-lookup {
+  padding-block: var(--sp-8) var(--section-y);
+}
+.orders-lookup__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-5);
+}
+.orders-lookup__head h1 {
+  margin: 0;
+}
+.orders-lookup__icon {
+  display: grid;
+  place-items: center;
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--sunk);
+  color: var(--text);
+}
+.orders-lookup__sub {
+  margin: 0;
+  color: var(--text-2);
+}
+.lookup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+}
+.lookup__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.lookup__input {
+  font-size: var(--fs-lg);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lookup__input::placeholder {
+  text-transform: none;
+}
+@media (min-width: 480px) {
+  .lookup__row {
+    flex-direction: row;
+  }
+  .lookup__input {
+    flex: 1;
+    min-block-size: 52px;
+  }
+}
+
+.recent {
+  margin-block-start: var(--sp-8);
+}
+.recent h2 {
+  margin: 0 0 var(--sp-3);
+}
+.recent__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.recent__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "top total"
+    "meta total";
+  gap: var(--sp-1) var(--sp-4);
+  padding: var(--sp-4);
+  padding-inline-end: var(--sp-10);
+  color: var(--text);
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
+}
+.recent__item:hover {
+  box-shadow: var(--shadow-md);
+}
+.recent__item:active {
+  scale: 0.99;
+}
+.recent__top {
+  grid-area: top;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+.recent__id {
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+}
+.recent__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+.recent__total {
+  grid-area: total;
+  align-self: center;
+}
+.recent__chev {
+  position: absolute;
+  inset-inline-end: var(--sp-4);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  color: var(--text-3);
+}
+
+.order-missing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  max-inline-size: 640px;
+  margin-inline: auto;
+}
+.order-missing__head {
+  padding-block: var(--sp-6) var(--sp-2);
+}
+.order-missing__head .cart-empty__body {
+  max-inline-size: 46ch;
+}
+
+/* Connection states under the timeline. */
+.net-state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-weight: var(--fw-semibold);
+}
+.net-state--lost {
+  color: var(--warning-text, var(--warning));
+}
+.net-state--offline {
+  color: var(--text-2);
+}
+.net-state .icon {
+  flex: none;
+}
+.spin-slow {
+  animation: spin-slow 1.6s linear infinite;
+}
+@keyframes spin-slow {
+  to { rotate: -360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow { animation: none; }
+}
+.order-live__foot .link-btn {
+  min-block-size: 36px;
+  margin: 0;
+}
