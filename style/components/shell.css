@@ -54,3 +54,169 @@ main:focus {
   line-height: 1;
   color: var(--text);
 }
+
+/* ── Navigation progress (shell.js: only past 150 ms) ─────────────────────── */
+.nav-progress {
+  position: fixed;
+  z-index: var(--z-toast);
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 3px;
+  pointer-events: none;
+}
+.nav-progress__bar {
+  display: block;
+  block-size: 100%;
+  background: var(--brand);
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+}
+[dir="rtl"] .nav-progress__bar {
+  transform-origin: right center;
+}
+/* Loading: creep toward 85% (fast at first, then slower), never claiming to be done. */
+.nav-progress[data-state="loading"] .nav-progress__bar {
+  opacity: 1;
+  transform: scaleX(0.85);
+  transition:
+    transform 6s cubic-bezier(0.08, 0.7, 0.2, 1),
+    opacity var(--dur-fast) var(--ease-out);
+}
+.nav-progress[data-state="done"] .nav-progress__bar {
+  opacity: 0;
+  transform: scaleX(1);
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out) 120ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-progress[data-state="loading"] .nav-progress__bar {
+    transform: scaleX(1);
+    opacity: 0.5;
+  }
+}
+
+/* ── A navigation that failed (shell.js) ──────────────────────────────────── */
+.nav-alert {
+  position: fixed;
+  z-index: var(--z-toast);
+  inset-inline: var(--gutter);
+  inset-block-end: calc(var(--bottom-nav-h) + var(--sp-4));
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  padding: 0.625rem 0.5rem 0.625rem 0.875rem;
+  border-radius: var(--r-lg);
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: var(--shadow-float);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  animation: toast-in var(--spring-default-dur) var(--spring-default) both;
+}
+[dir="rtl"] .nav-alert {
+  padding: 0.625rem 0.875rem 0.625rem 0.5rem;
+}
+.nav-alert[data-open="false"] {
+  display: none;
+}
+.nav-alert__icon {
+  flex: none;
+  color: var(--warning-on-ink);
+}
+.nav-alert__text {
+  flex: 1;
+  min-inline-size: 0;
+}
+.nav-alert__why {
+  color: var(--on-ink-2);
+}
+.nav-alert__retry {
+  flex: none;
+  min-block-size: 2.25rem;
+  padding: 0 0.75rem;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--on-ink) 14%, transparent);
+  color: var(--on-ink);
+  font-weight: var(--fw-bold);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.nav-alert__retry:hover {
+  background: color-mix(in oklab, var(--on-ink) 22%, transparent);
+}
+.nav-alert__retry[hidden] {
+  display: none;
+}
+.nav-alert__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 50%;
+  corner-shape: round;
+  color: var(--on-ink-2);
+}
+.nav-alert__close:hover {
+  color: var(--on-ink);
+}
+
+/* ── Offline banner (components::offline) ─────────────────────────────────── */
+.offline {
+  position: fixed;
+  z-index: var(--z-toast);
+  inset-block-start: max(env(safe-area-inset-top, 0px), var(--sp-2));
+  inset-inline: var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  max-inline-size: 30rem;
+  margin-inline: auto;
+  padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+  border-radius: var(--r-lg);
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: var(--shadow-float);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  animation: offline-in var(--spring-default-dur) var(--spring-default) both;
+}
+[dir="rtl"] .offline {
+  padding: 0.5rem 0.875rem 0.5rem 0.5rem;
+}
+.offline[data-open="false"] {
+  display: none;
+}
+@keyframes offline-in {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem) scale(0.96);
+  }
+}
+.offline__icon {
+  flex: none;
+  color: var(--warning-on-ink);
+}
+.offline__text {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+.offline__text span {
+  color: var(--on-ink-2);
+}
+.offline__retry {
+  flex: none;
+  min-block-size: 2.25rem;
+  padding: 0 0.75rem;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--on-ink) 14%, transparent);
+  color: var(--on-ink);
+  font-weight: var(--fw-bold);
+}
+.offline__retry:hover {
+  background: color-mix(in oklab, var(--on-ink) 22%, transparent);
+}
