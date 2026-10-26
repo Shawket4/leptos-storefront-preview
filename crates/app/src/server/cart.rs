@@ -1,7 +1,8 @@
 //! The cart on the server. The browser owns it — the `cart` cookie (`domain::cart`, the same
 //! format as `client/src/stores/cart.ts`) — so the server *reads* it to price it (the drawer's
 //! quote, /cart, checkout) and *writes* it in two cases only: the no-JS cart forms
-//! (`POST /cart/add|set|remove`, the axum handlers in [`forms`]) and placing an order (cleared).
+//! (`POST /cart/add|set|remove|update`, the axum handlers in [`forms`]) and placing an order
+//! (cleared).
 //!
 //! Every line is priced with Madar's rules (`pricing::unit_price` → `madar_catalog::price_line`),
 //! the way Madar re-prices every order at intake instead of trusting the client.
@@ -180,6 +181,7 @@ pub fn price(
             // The struck price carries the same add-ons as the unit price beside it.
             compare_at: was.map(|c| c + (unit - v.price)),
             line_total,
+            editable: p.has_choices(),
         });
     }
     let count = out.iter().map(|l| l.qty).sum();
@@ -243,6 +245,7 @@ pub fn snapshot(
         compare_at: v.compare_at.filter(|c| *c > v.price).map(|c| c.0),
         addon_prices: opts.iter().map(|o| o.price.0).collect(),
         max_qty: v.stock.min(dc::MAX_QTY),
+        editable: p.has_choices(),
     })
 }
 
@@ -267,6 +270,8 @@ pub enum FormError {
     AddonRequired,
     BadAddon,
     UnknownProduct,
+    /// The line to change isn't in the cart (changed in another tab, or an order was placed).
+    LineGone,
     BadRequest,
 }
 
@@ -279,6 +284,7 @@ impl FormError {
             FormError::AddonRequired => "addon_required",
             FormError::BadAddon => "bad_addon",
             FormError::UnknownProduct => "unknown_product",
+            FormError::LineGone => "line_gone",
             FormError::BadRequest => "bad_request",
         }
     }
@@ -378,7 +384,53 @@ pub fn remove(lines: &mut Vec<CartLine>, key: &str) {
     lines.retain(|l| l.key() != key);
 }
 
-/// `POST /cart/add|set|remove`: plain `application/x-www-form-urlencoded` forms (repeated keys —
+/// Change line `key` to another variant, other add-ons and/or another quantity (the line editor),
+/// checked like an add. The line keeps its place; if it becomes identical to another line, the
+/// two merge (at most stock and `MAX_QTY`). Returns the line's new key.
+pub fn replace(
+    lines: &mut Vec<CartLine>,
+    catalog: &TenantCatalog,
+    key: &str,
+    variant: VariantId,
+    qty: u32,
+    mut addons: Vec<String>,
+) -> Result<String, FormError> {
+    let at = lines
+        .iter()
+        .position(|l| l.key() == key)
+        .ok_or(FormError::LineGone)?;
+    if qty == 0 {
+        return Err(FormError::BadRequest);
+    }
+    let product = lines[at].product;
+    let (p, v) = catalog
+        .variant(product, variant)
+        .ok_or(FormError::UnknownProduct)?;
+    if v.stock == 0 {
+        return Err(FormError::OutOfStock);
+    }
+    addons.sort();
+    addons.dedup();
+    check_addons(p, &addons)?;
+    let cap = v.stock.min(dc::MAX_QTY);
+    let line = CartLine {
+        product,
+        variant,
+        qty: qty.min(cap),
+        addons,
+    };
+    let next = line.key();
+    match lines.iter().position(|l| l.key() == next) {
+        Some(other) if other != at => {
+            lines[other].qty = (lines[other].qty + line.qty).min(cap);
+            lines.remove(at);
+        }
+        _ => lines[at] = line,
+    }
+    Ok(next)
+}
+
+/// `POST /cart/add|set|remove|update`: plain `application/x-www-form-urlencoded` forms (repeated keys —
 /// `addon` — rule out the server-function decoder). Each answers `303` to `next` (a same-site
 /// path), else the Referer, else `/cart`, with `?added=<qty>` or `?cart_err=<code>`.
 pub mod forms {
@@ -475,7 +527,7 @@ pub mod forms {
             .unwrap_or_else(|| "/cart".into())
     }
 
-    /// `target` with our `added` / `cart_err` replaced by `param` (before any `#fragment`), and
+    /// `target` with our `added` / `updated` / `cart_err` replaced by `param` (before any `#fragment`), and
     /// anything outside visible ASCII percent-encoded so it fits a `Location` header.
     fn with_param(target: &str, param: Option<(&str, &str)>) -> String {
         let (base, frag) = match target.split_once('#') {
@@ -486,7 +538,8 @@ pub mod forms {
         let mut q: Vec<String> = query
             .split('&')
             .filter(|kv| {
-                !kv.is_empty() && !matches!(kv.split('=').next(), Some("added" | "cart_err"))
+                !kv.is_empty()
+                    && !matches!(kv.split('=').next(), Some("added" | "updated" | "cart_err"))
             })
             .map(str::to_owned)
             .collect();
@@ -598,6 +651,47 @@ pub mod forms {
             None => Err(FormError::BadRequest),
         };
         answer(&headers, &f, &lines, r)
+    }
+
+    /// `POST /cart/update` (the line editor without JS): `key` (the line), `variant`, `qty`, the
+    /// add-ons as for an add, `next` (where to go once done: `/cart`) and `back` (the editor, to
+    /// come back to with `?cart_err=` when the choice can't be made). Done: `303` to `next` with
+    /// `?updated=1`; the line gone: to `next` with `?cart_err=line_gone`.
+    pub async fn update(headers: HeaderMap, body: Bytes) -> Response {
+        let f = Form::parse(&body);
+        let catalog = crate::server::state().catalog(tenant_id(&headers));
+        let mut lines = from_headers(&headers);
+        let r = (|| {
+            let key = f.get("key").ok_or(FormError::BadRequest)?;
+            let variant = f.num("variant")?.ok_or(FormError::BadRequest)?;
+            let qty = f.num("qty")?.unwrap_or(1);
+            super::replace(
+                &mut lines,
+                &catalog,
+                key,
+                VariantId(variant),
+                qty,
+                f.addons(),
+            )
+        })();
+        let done = back(&headers, f.get("next").or(Some("/cart")));
+        match r {
+            Ok(_) => see_other(
+                with_param(&done, Some(("updated", "1"))),
+                Some(set_cookie(&lines)),
+            ),
+            Err(FormError::LineGone) => see_other(
+                with_param(&done, Some(("cart_err", FormError::LineGone.code()))),
+                None,
+            ),
+            Err(e) => {
+                let to = f
+                    .get("back")
+                    .filter(|b| same_site(b))
+                    .unwrap_or(done.as_str());
+                see_other(with_param(to, Some(("cart_err", e.code()))), None)
+            }
+        }
     }
 
     #[cfg(test)]

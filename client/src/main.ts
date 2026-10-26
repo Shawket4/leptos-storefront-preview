@@ -27,11 +27,14 @@ lazyOnIntent(["search-box"], () => import("./features/search"), {
 lazy(["listing"], () => import("./features/listing"));
 lazy(["countdown"], () => import("./features/home"));
 lazy(["variant-picker", "gallery"], () => import("./features/product"));
+// The cart's line editor: /cart/edit, and the sheet a cart line's "Edit" fills.
+lazy(["line-editor"], () => import("./features/line-editor"));
 lazy(["checkout-form", "checkout", "order-track"], () => import("./features/checkout"));
 // The cart's renderer: on /cart, and for the drawer's content on the intent to open the cart.
 lazy(["cart-page"], () => import("./features/cart-view"));
 lazyOnIntent(["cart-drawer"], () => import("./features/cart-view"), { triggers: '[data-drawer-open="cart-drawer"]' });
-lazy(["sc-*", "kit-*"], () => import("./features/showcase"));
+lazy(["sc-*"], () => import("./features/showcase"));
+lazy(["kit-*"], () => import("./features/ui-kit"));
 
 readPage();
 syncFromCookie();

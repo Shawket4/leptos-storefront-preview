@@ -1,6 +1,7 @@
 //! `/cart` — rendered from the `cart` cookie, priced now, complete without JS: each line's
-//! quantity and Remove are plain forms (`/cart/set`, `/cart/remove`), and a no-JS form's outcome
-//! comes back as `?added=` / `?cart_err=` and is shown here. With JS, `features/cart.ts`
+//! quantity and Remove are plain forms (`/cart/set`, `/cart/remove`), Edit a link to the line editor
+//! (`/cart/edit`), and a no-JS form's outcome comes back as `?added=` / `?updated=` / `?cart_err=`
+//! and is shown here. With JS, `features/cart.ts`
 //! (`data-ts="cart-page"`) takes the forms over: changes go to the cart store at once, and the
 //! lines are re-rendered by the same renderer as the drawer, with the server's quote.
 
@@ -105,6 +106,7 @@ pub fn CartPage() -> impl IntoView {
     let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
     let q = use_query_map();
     let added = q.with_untracked(|q| q.get("added")).is_some();
+    let updated = q.with_untracked(|q| q.get("updated")).is_some();
     let err = q.with_untracked(|q| q.get("cart_err")).filter(|c| {
         matches!(
             c.as_str(),
@@ -114,6 +116,7 @@ pub fn CartPage() -> impl IntoView {
                 | "addon_required"
                 | "bad_addon"
                 | "unknown_product"
+                | "line_gone"
                 | "bad_request"
         )
     });
@@ -166,6 +169,7 @@ pub fn CartPage() -> impl IntoView {
                 <p class="cart-page__count" data-slot="count" hidden=empty>{count}</p>
             </header>
             {added.then(|| view! { <Notice tone=Tone::Success title=strings::get("cart.added", lang) attr:data-cart-notice=""/> })}
+            {updated.then(|| view! { <Notice tone=Tone::Success title=strings::get("cart.updated", lang) attr:data-cart-notice=""/> })}
             {err.map(|code| view! {
                 <Notice tone=Tone::Danger title=strings::get(&format!("cart.err.{code}"), lang)
                     attr:tabindex="-1" attr:data-cart-notice=""/>

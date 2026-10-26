@@ -488,7 +488,8 @@ function onPop(ev: PopStateEvent): void {
 // ── Prefetch: the gesture model ─────────────────────────────────────────────────────────────────
 // - a mouse or pen hover warms after HOVER_DELAY_MS (a pass-over warms nothing); one pending
 //   hover at a time — entering another target or leaving cancels it;
-// - keyboard focus waits the same; blur cancels;
+// - keyboard focus (`:focus-visible`) waits the same; blur cancels; focus moved by code warms
+//   nothing;
 // - pointerdown warms at once (a phone's only signal; on desktop it buys the ~100 ms to the click)
 //   and is never throttled;
 // - the same href is warmed at most once per DEDUPE_MS; hovers and focus warm at most
@@ -592,7 +593,11 @@ function startPrefetch(): void {
     { capture: true, passive: true },
   );
   document.addEventListener("focusin", (e) => {
-    const href = warmable(linkOf(e.target));
+    // Keyboard focus only: focus moved by code (back to a cart line after its editor closed) or by
+    // a press (warmed on pointer-down already) is not a visitor heading somewhere.
+    const a = linkOf(e.target);
+    if (!a?.matches(":focus-visible")) return;
+    const href = warmable(a);
     if (href) scheduleHover(href);
   });
   document.addEventListener("focusout", cancelHover);
@@ -666,6 +671,19 @@ export function prefetch(url: string): void {
   a.href = url;
   const href = warmable(a);
   if (href) warm(href);
+}
+
+/**
+ * A page's document without showing it, for a part of it shown elsewhere (the cart's line editor,
+ * in a sheet). The same loader as a navigation: the page cache, and a page warmed by intent
+ * (finger-down) is used. Throws like a navigation would (`NetError`); `null` for a page of another
+ * build (a deploy: its markup may not match this code).
+ */
+export async function fetchDocument(url: string): Promise<Document | null> {
+  const page = await loadGet(noHash(new URL(url, location.href)));
+  consumed.add(page);
+  const doc = parse(page.html);
+  return build(doc) === build(document) ? doc : null;
 }
 
 /** After every client-side navigation, once the new page's regions are in. */

@@ -40,9 +40,9 @@ fragile hydration). Ask the lead before departing from anything here.
 | `client/src/main.ts`, `client/src/api/types.ts`, `client/build.mjs`, `crates/app/build.rs` | client entry, API shapes, build | lead |
 | `client/src/core/*`, `client/src/stores/{toasts,prefs}.ts`, `client/src/features/core.ts`, `client/legacy/` | router, page cache, net, motion, mount, toasts, offline, nav feedback | core agent |
 | `crates/app/src/components/*` (design system, shell parts, header, toaster, offline), `style/components/*`, `style/{tokens,base,main}.css`, `crates/server/src/main.rs` | design system + static serving | core agent |
-| `client/src/stores/cart.ts` (API by the lead), `client/src/features/{cart,checkout}.ts`, `crates/app/src/pages/{cart*,checkout*,order*,orders_lookup.rs}`, `api/cart.rs`, `server/{cart,orders}.rs`, `components/product_card.rs` (its quick-add part), `strings/{cart,checkout}.rs`, `style/pages/{cart,checkout,order}.css` | cart, checkout, orders | cart agent |
-| `client/src/features/{browse,product}.ts`, `crates/app/src/pages/{home,category*,search*,product*}`, `strings/{browse,product}.rs`, `style/pages/{home,category,search,product}.css` | home, listing, search, product page | browse agent |
-| `client/src/features/showcase.ts`, `crates/app/src/pages/{showcase*,ui_kit.rs,errors.rs}`, `strings/showcase.rs`, `style/pages/{showcase,ui-kit,errors}.css` | /showcase, /ui, error pages | showcase agent |
+| `client/src/stores/cart.ts` (API by the lead), `client/src/features/{cart,cart-view,line-editor,checkout}.ts`, `crates/app/src/pages/{cart*,checkout*,order*,orders_lookup.rs}`, `api/cart.rs`, `server/{cart,orders}.rs`, `components/product_card.rs` (its quick-add part), `strings/{cart,checkout}.rs`, `style/pages/{cart,checkout,order}.css` | cart (and its line editor), checkout, orders | cart agent |
+| `client/src/features/{browse,product,picker}.ts`, `crates/app/src/pages/{home,category*,search*,product*}`, `strings/{browse,product}.rs`, `style/pages/{home,category,search,product}.css` | home, listing, search, product page; the variant picker (`picker.ts` + `pages/product/picker.rs`, shared with the line editor) | browse agent |
+| `client/src/features/{showcase,ui-kit}.ts`, `crates/app/src/pages/{showcase*,ui_kit.rs,errors.rs}`, `strings/showcase.rs`, `style/pages/{showcase,ui-kit,errors}.css` | /showcase, /ui, error pages | showcase agent |
 | `data/`, `tools/media/`, `tools/catalog/` | fixtures and images | — (don't edit) |
 
 Only edit files you own. Need something from a file you don't own (a core API, a data-layer
@@ -109,20 +109,22 @@ mounts the new regions.
 | Module | API (stable — ask the lead before changing it) |
 |---|---|
 | `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()`, `digits(n)` (counts and clocks in the visitor's numerals — never money) |
-| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)` (clone a template), `patch(root, values)` (update `[data-slot]`s in place, focus kept), `prefersReducedMotion()` |
+| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)` (clone a template), `patch(root, values)` (update `[data-slot]`s in place, focus kept), `prefersReducedMotion()`, `reveal(root)` (show the `[data-needs-js]` controls), `offAll(offs)` (one cleanup for several) |
 | `core/mount.ts` | `register(feature, el => cleanup?)`; `mountAll(root)`, `unmountAll(root)` (router); `lazy(names, loader)` (a chunk loaded the first time a page has one of `names`; `"sc-*"` prefixes); `lazyOnIntent(names, loader, {now?(el), idle?, triggers?})` (on every page but loaded when the visitor reaches for it: pointer over / touch starts the import, focus / press / key loads it; as soon as it's in, every waiting element mounts and the listeners go; events are never cancelled — a press on a link still follows it; `now(el)` loads at once, `idle` imports once the page has settled, `triggers` is a selector for other intent targets anywhere); `ensure(name)` → loads and mounts it now (resolves when mounted); `preload(names, {intent?})` |
 | `core/store.ts` | `createStore(initial)` → `get/set/update/subscribe` — only `stores/*` create stores |
 | `core/net.ts` | `request`, `getJSON<T>(url, opts)`, `NetError` (`offline/timeout/http/parse/aborted`), `isOnline`, `onOnline` |
 | `core/cache.ts` | `cached(key, {ttl, swr}, fetcher, onUpdate?)`, `key(...parts)`, `peek`, `invalidate`, `noteGeneration` |
-| `core/router.ts` | `startRouter`, `navigate(url, {replace, scroll: "top"|"keep"})`, `refresh()`, `prefetch(url)`, `onNavigate(fn)`, `routing` (store: `pending`, `to`) |
+| `core/router.ts` | `startRouter`, `navigate(url, {replace, scroll: "top"|"keep"})`, `refresh()`, `prefetch(url)`, `onNavigate(fn)`, `routing` (store: `pending`, `to`), `fetchDocument(url)` (a page's document without showing it — part of it goes in a sheet; same cache and warm-on-intent as a navigation; `null` for another build). Links warm on hover, finger-down and keyboard focus (`:focus-visible`), never on focus moved by code |
 | `core/motion.ts` | `SpringValue`, `SPRING`, `project`, `rubberband`, `VelocityTracker` |
-| `core/drawer.ts` (core agent) | **The one drawer/sheet.** Markup: `components::drawer::Drawer` (Rust) → `data-ts="drawer"` with an `id` and `data-side="end"|"start"|"bottom"`; triggers anywhere: `[data-drawer-open="<id>"]`; inside: `[data-drawer-close]`. TS: `openDrawer(id)`, `closeDrawer(id)`; the element fires `drawer:open` / `drawer:close`. Springs, swipe to dismiss, focus trap, Esc, scroll lock, `inert` background, reduced motion — features never write their own. **A drawer open when a navigation swaps it out comes back open in the new page (same `id`), instantly, with its scroll position** (the listing's filter sheet re-renders on every filter tap) |
+| `core/drawer.ts` (core agent) | **The one drawer/sheet.** Markup: `components::drawer::Drawer` (Rust) → `data-ts="drawer"` with an `id` and `data-side="end"|"start"|"bottom"`; triggers anywhere: `[data-drawer-open="<id>"]`; inside: `[data-drawer-close]`. TS: `openDrawer(id)`, `closeDrawer(id)`; the element fires `drawer:open` / `drawer:close`. Springs, swipe to dismiss, focus trap, Esc, scroll lock, `inert` background, reduced motion — features never write their own. A link inside closes the drawer (the router takes it) unless it's in `[data-drawer-keep]` (it opens another drawer over this one, or the page's code takes it). Drawers stack: one opened over another is a modal over a modal (Esc closes the top one); the toaster follows the top open one. **A drawer open when a navigation swaps it out comes back open in the new page (same `id`), instantly, with its scroll position** (the listing's filter sheet re-renders on every filter tap) |
 | `core/stepper.ts` (core agent) | **The one quantity stepper.** Markup: `components::stepper::Stepper(name, value, min, max, label)` → `data-ts="stepper"` with `data-min`/`data-max` around − / `<input type=number name=… value=…>` / + (works in a plain form without JS); TS clamps and fires `change` on the input. Features listen; they don't build steppers |
 | `previewNet(state)` (core agent, `features/core.ts`) | Stages the *real* offline banner, navigation-failure alert or progress bar without a navigation — for /ui specimens only: `"offline" \| "online" \| {fail: "offline"\|"timeout"\|"server"} \| {progress: ms}` |
 | `core/cache.ts` additions (core agent) | `inspect()` → `{key, ageMs, ttl, swr}[]` and `stats()` → `{hits, misses, stale}` (read-only, for the showcase) |
-| `stores/cart.ts` | `cart` (store: `lines`, `count`), `add(item, snapshot?)`, `setQty(key, n)`, `remove(key)` → undo, `clear()`, `lineKey`, `snapshot(key)`, `quote(onUpdate?)`, `syncFromCookie()` |
+| `stores/cart.ts` | `cart` (store: `lines`, `count`), `add(item, snapshot?)`, `setQty(key, n)`, `remove(key)` → undo, `replace(key, item, snapshot?)` → `{key, changed, undo}` or `{ok: false, reason: "gone"}` (the line editor: another variant, add-ons or quantity; the line keeps its place and merges with an identical one), `clear()`, `lineKey`, `snapshot(key)`, `quote(onUpdate?)`, `syncFromCookie()` |
 | `stores/toasts.ts` | `toast(msg, kind, action?)`, `dismiss(id)` |
 | `features/cart.ts` (cart agent) | `addAndConfirm(item, snapshot)`: the one "add to cart" with its feedback (toast, badge pulse) — quick add and the product page both use it |
+| `features/picker.ts` (browse agent) | `createPicker(root, {okLabel, onSelect?, onChange?})` → `{current(), addons(), qty(), unit(), line(), resetLabels(), destroy()}`: the variant picker and add-on groups over `pages::product::picker`'s markup and JSON; `line()` is the cart line the form describes with its priced snapshot (`null`: sold out, or a group unmet — marked and focused). The product page and the line editor both use it |
+| `features/line-editor.ts` (cart agent) | `openEditor(href)`: the line editor (`/cart/edit?key=`) in the sheet over the cart (`pages::cart::LineEditorSheet`, in the shell). Cart lines' Edit links call it (cart-view.ts); `data-ts="line-editor"` is the editor form, in the sheet or as the page |
 
 Rules: features register in their own `features/<area>.ts`; they touch the DOM only inside the
 element they're mounted on (plus the page singletons: header badge, drawer, toaster); they subscribe
@@ -192,15 +194,23 @@ ChoiceChips' `value` and `note`, every error line's `error`, a Notice's `title`/
 drawer and quick add, the header search) with the page; a feature only some pages have (product,
 checkout, listing, showcase) is a separate chunk loaded the first time its `data-ts` name appears
 (`lazy([...names], () => import("./features/x"))` in `main.ts`). esbuild puts shared code in shared
-chunks, so nothing loads twice. Keep a feature's `data-ts` names in its own file.
+chunks, so nothing loads twice. Keep a feature's `data-ts` names in its own file. A page that loads
+a feature whose chunk imports a shared one (the product page: its chunk and the picker's) hints them
+all in `<head>` with `<client_js::PreloadFeature module="features/product.ts"/>`, so they come in one
+round trip instead of one after the other. The size budget counts a feature that another on-demand
+chunk loads (the line editor, from the cart drawer) as an extra on every page.
 
 ## The cart (contract)
 
 - The browser owns the cart. It lives in the **`cart` cookie** (not HttpOnly):
   `product:variant:qty[:addon+addon]` lines joined by `|` — `crates/domain/src/cart.rs` and
   `client/src/stores/cart.ts` are the two (identical) implementations. Limits: 50 lines, 99 each.
-- Add / remove / change quantity = `stores/cart.ts` → cookie + store, instantly, **no request**.
-  Remove is immediate (Undo puts the line back).
+- Add / remove / change quantity / edit a line = `stores/cart.ts` → cookie + store, instantly, **no
+  request**. Remove is immediate (Undo puts the line back); so is an edit (`replace`; Undo too).
+- **Editing a line** (variant, add-ons, quantity): `/cart/edit?key=<line key>[&v=<variant>]` is the
+  editor as a page (personal: the quantity comes from the cookie; works without JS, values are
+  `&v=` links). With JS a line's Edit opens it in a sheet over the cart: its markup is fetched
+  once (the one request), the product page's picker runs it, and the change is local.
 - **The client computes the cart** (owner, 2026-10-26): every line carries its display data and
   prices in piastres (unit, compare-at, add-ons, stock cap), taken from the card or product page it
   was added from and kept with the cart (the line snapshot). Line totals, subtotal, savings and the
@@ -217,13 +227,14 @@ chunks, so nothing loads twice. Keep a feature's `data-ts` names in its own file
   | `POST /cart/add` | `product`, `variant`, `qty` (default 1), add-ons: `addon` (repeated, one per chosen add-on; checkboxes) and/or `addon.<group>` (a single-choice group's radios: one name per group, so groups don't uncheck each other), `next` |
   | `POST /cart/set` | `key` (a line key, `product:variant[:addons]`), `qty` (0 removes), `next` |
   | `POST /cart/remove` | `key`, `next` |
+  | `POST /cart/update` | `key` (the line), `variant`, `qty`, add-ons as for an add, `next` (where to go once done: `/cart`), `back` (the editor, for `?cart_err=`) — answers `303` to `next` with `?updated=1`, to `back` with `?cart_err=<code>`, or to `next` with `?cart_err=line_gone` when the line isn't in the cart |
 
   Every form carries a hidden `next` (a same-site path; the page's own URL). The server answers
   `303` to `next` (else the Referer, else `/cart`) with `?added=<qty>` after a successful add, or
   `?cart_err=<code>` on failure — codes: `out_of_stock`, `max_qty`, `full`, `addon_required`,
-  `bad_addon`, `unknown_product`, `bad_request`. The receiving page renders the notice server-side
-  (strings in `strings/cart.rs`: `cart.err.<code>`, `cart.added`) and drops the param with
-  `history.replaceState`.
+  `bad_addon`, `unknown_product`, `line_gone`, `bad_request`. The receiving page renders the notice
+  server-side (strings in `strings/cart.rs`: `cart.err.<code>`, `cart.added`, `cart.updated`) and
+  drops the param with `history.replaceState`.
 - Personal → never in a public page's HTML: the header badge is filled by TS from the cookie.
 
 ## Strings (catalogue)

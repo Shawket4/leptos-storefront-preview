@@ -70,9 +70,14 @@ export function mountToaster(): void {
     raise(region);
   });
   document.addEventListener("drawer:close", () => {
-    const open = document.querySelector<HTMLDialogElement>("dialog[open]");
-    if (open && region.parentElement === open) return; // another drawer still holds it
-    if (region.parentElement !== home.parent && home.parent?.isConnected) home.parent.insertBefore(region, home.next?.parentNode === home.parent ? home.next : null);
+    // Another drawer still open (the cart under a line editor): into it, or the toaster would be
+    // inert there; none: back home.
+    const open = Array.from(document.querySelectorAll<HTMLDialogElement>("dialog[open]")).pop();
+    if (open) {
+      if (region.parentElement !== open) open.append(region);
+    } else if (region.parentElement !== home.parent && home.parent?.isConnected) {
+      home.parent.insertBefore(region, home.next?.parentNode === home.parent ? home.next : null);
+    }
     raise(region);
   });
   region.addEventListener("pointerenter", () => (paused = true));

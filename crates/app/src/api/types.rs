@@ -303,6 +303,9 @@ pub struct CartLineView {
     pub unit_price: Piastres,
     pub compare_at: Option<Piastres>,
     pub line_total: Piastres,
+    /// The product has something to choose (variants, add-ons): the line can be edited.
+    #[serde(default)]
+    pub editable: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]

@@ -1,7 +1,8 @@
 // The cart: owned by the browser and kept in the `cart` cookie, so the server reads the very same
 // state whenever it needs to price it (/cart, the drawer's quote, checkout) and no-JS forms can
-// change it too. Adding, removing and changing quantities are local and instant; the server is
-// asked only for data the client doesn't have (prices, stock, totals) via `quote()`.
+// change it too. Adding, removing, changing quantities and editing a line (`replace`) are local and
+// instant; the server is asked only for data the client doesn't have (prices, stock, totals) via
+// `quote()`.
 //
 // Cookie format (crates/domain/src/cart.rs is the Rust side — keep them identical):
 //   lines joined by "|", fields by ":", add-on ids by "+"
@@ -47,6 +48,9 @@ export interface LineSnapshot {
   addonPrices?: number[];
   /** The most that can be ordered (stock when it was added, at most the cart's limit). */
   maxQty?: number;
+  /** The product has something to choose (variants, add-ons): the line offers "Edit". Older
+   * snapshots don't say; they offer it too. */
+  editable?: boolean;
 }
 
 /** A snapshot the cart can be computed from (older or partial ones are filled by `quote()`). */
@@ -135,6 +139,55 @@ export function setQty(k: string, qty: number): void {
   }
   const max = cfg().cart.maxQty;
   commit(cart.get().lines.map((l) => (lineKey(l) === k ? { ...l, qty: Math.min(max, qty) } : l)));
+}
+
+export type ReplaceResult = { ok: true; key: string; changed: boolean; undo: () => void } | { ok: false; reason: "gone" };
+
+/**
+ * Change line `k` into `item` (the line editor: another variant, other add-ons, another quantity).
+ * The line keeps its place; if it becomes identical to another line, the two merge. Returns the
+ * line's key now and an undo that puts the cart's lines back as they were (leaving later changes to
+ * other lines alone).
+ */
+export function replace(
+  k: string,
+  item: { product: number; variant: number; qty: number; addons: string[] },
+  snap?: LineSnapshot,
+): ReplaceResult {
+  const before = cart.get().lines;
+  const at = before.findIndex((l) => lineKey(l) === k);
+  if (at < 0) return { ok: false, reason: "gone" };
+  const max = cfg().cart.maxQty;
+  const old = before[at]!;
+  const addons = [...item.addons].sort();
+  const next = { product: old.product, variant: item.variant, qty: Math.min(max, Math.max(1, item.qty)), addons };
+  const nk = lineKey(next);
+  if (snap) saveSnapshot(nk, snap);
+  if (nk === k && next.qty === old.qty) return { ok: true, key: k, changed: false, undo: () => {} };
+  const lines = before.map((l) => ({ ...l }));
+  const other = lines.findIndex((l) => lineKey(l) === nk);
+  /** What the merge added to the other line (the undo takes it back). */
+  let merged = 0;
+  if (other >= 0 && other !== at) {
+    const was = lines[other]!.qty;
+    lines[other]!.qty = Math.min(max, was + next.qty);
+    merged = lines[other]!.qty - was;
+    lines.splice(at, 1);
+  } else lines[at] = next;
+  commit(lines);
+  const undo = () => {
+    const now = cart.get().lines.map((l) => ({ ...l }));
+    const i = now.findIndex((l) => lineKey(l) === nk);
+    if (nk !== k && i >= 0) {
+      if (merged) now[i]!.qty -= merged;
+      else now.splice(i, 1);
+    }
+    const j = now.findIndex((l) => lineKey(l) === k);
+    if (j >= 0) now[j] = { ...old };
+    else now.splice(Math.min(at, now.length), 0, { ...old });
+    commit(now.filter((l) => l.qty > 0));
+  };
+  return { ok: true, key: nk, changed: true, undo };
 }
 
 /** Remove a line; returns a function that puts it back where it was (for "Undo"). */

@@ -4,77 +4,21 @@
 // quantity are form state, and adding goes into the cookie cart — no request.
 
 import { register } from "../core/mount";
-import { $, $$, fill, on, patch, prefersReducedMotion } from "../core/dom";
+import { $, $$, on } from "../core/dom";
 import { digits, t } from "../core/page";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
-import { setStepper, stepperValue } from "../core/stepper";
 import { onOnline } from "../core/net";
-import type { LineSnapshot } from "../stores/cart";
 import { addAndConfirm } from "./cart";
-
-
-/** The page's JSON (`pages/product/panel.rs`, `PickerData`). */
-interface PickerData {
-  product: number;
-  href: string;
-  name: string;
-  selected: number;
-  maxQty: number;
-  variants: VariantData[];
-  /** Every add-on option, by id: name and surcharge in piastres. */
-  addons: Record<string, { name: string; price: number }>;
-  /** The add-on groups' rules (`ChoiceList` ids). */
-  groups: GroupData[];
-}
-interface GroupData {
-  id: string;
-  min: number;
-  max: number | null;
-  problem: string;
-}
-interface VariantData {
-  id: number;
-  sku: string;
-  stock: number;
-  stockState: "in" | "low" | "out";
-  stockText: string;
-  price: string;
-  was: string | null;
-  save: string | null;
-  priceTpl: string;
-  image: number | null;
-  /** The cart line's priced snapshot (piastres): `api::cart::Snapshot`. */
-  unit: number;
-  compareAt: number | null;
-  snapMax: number;
-  label: string | null;
-  img: string | null;
-  labels: string[];
-  values: { s: "on" | "open" | "out" | "none"; v?: number; why?: string }[][];
-  notes: string[];
-}
+import { createPicker, plainClick, type VariantData } from "./picker";
 
 /** The gallery listens for this on the page (`.pdp`): a variant whose photo differs. */
 const VARIANT_EVENT = "pdp:variant";
 
-const plainClick = (ev: MouseEvent) => ev.button === 0 && !ev.metaKey && !ev.ctrlKey && !ev.shiftKey && !ev.altKey;
-
+// The picker itself (variants, add-on groups, the line it describes) is `features/picker.ts`,
+// shared with the cart's line editor; this is what the product page adds: its address follows the
+// variant, the gallery its photo, the add goes into the cart with a moment's "Added", and the
+// phone's sticky bar.
 register("variant-picker", (root) => {
-  const json = $("script[data-ts-json]", root)?.textContent;
-  if (!json) return;
-  const data = JSON.parse(json) as PickerData;
-  const byId = new Map(data.variants.map((v) => [v.id, v]));
-  const form = $<HTMLFormElement>("form.pp-form", root);
-  const stepper = $("[data-ts~=stepper]", root);
-  const buyRow = $(".pp-buy", root);
-  const bar = $(".pp-bar", root);
-  let cur = byId.get(data.selected) ?? data.variants[0]!;
-  let addedTimer = 0;
-  /** An add was tried with this variant: group problems show (and follow the answers live). */
-  let attempted = false;
-
-  const pageHref = (v: VariantData) => `${data.href}?v=${v.id}`;
-
   /** The address says which variant (no history entry; one-off notices dropped). */
   const writeUrl = (v: VariantData | null) => {
     const url = new URL(location.href);
@@ -83,187 +27,39 @@ register("variant-picker", (root) => {
     const next = url.pathname + (url.search === "?" ? "" : url.search) + url.hash;
     if (next !== location.pathname + location.search + location.hash) history.replaceState(history.state, "", next);
   };
-
-  const select = (v: VariantData) => {
-    if (v.id === cur.id) return;
-    cur = v;
-    // Price: the design system's Price for this variant, from its server-rendered template.
-    $("[data-price]", root)?.replaceChildren(fill(v.priceTpl, {}));
-    const save = $("[data-save]", root);
-    if (save) {
-      save.textContent = v.save ?? "";
-      save.classList.toggle("is-empty", !v.save);
-    }
-    const stock = $("[data-stock]", root);
-    stock?.classList.toggle("is-low", v.stockState === "low");
-    stock?.classList.toggle("is-out", v.stockState === "out");
-    const stockText = $("[data-stock-text]", root);
-    if (stockText) stockText.textContent = v.stockText;
-    const sku = $("[data-sku]", root);
-    if (sku) sku.textContent = v.sku;
-    // Every axis (`ChoiceChips`): the picked value's name, each value's state — the look follows
-    // aria-checked / aria-disabled — and why the others can't be picked (the group's note).
-    for (const axis of $$(".choice-chips[data-axis]", root)) {
-      const ai = Number(axis.dataset.axis);
-      const noteText = v.notes[ai] ?? "";
-      patch(axis, { value: v.labels[ai] ?? "", note: noteText || null });
-      const noteId = `${axis.id}-note`;
-      for (const a of $$<HTMLAnchorElement>("a[data-index]", axis)) {
-        const st = v.values[ai]?.[Number(a.dataset.index)];
-        if (!st) continue;
-        const enabled = st.s === "on" || st.s === "open";
-        a.setAttribute("aria-checked", String(st.s === "on"));
-        a.tabIndex = st.s === "on" ? 0 : -1;
-        if (enabled && st.v !== undefined) a.setAttribute("href", `${data.href}?v=${st.v}`);
-        else a.removeAttribute("href");
-        const swatch = a.classList.contains("choice-chip--swatch");
-        if (enabled) {
-          a.removeAttribute("aria-disabled");
-          a.removeAttribute("aria-describedby");
-          if (swatch) a.title = a.getAttribute("aria-label") ?? "";
-          else a.removeAttribute("title");
-        } else {
-          a.setAttribute("aria-disabled", "true");
-          a.setAttribute("aria-describedby", noteId);
-          a.title = st.why ?? "";
-        }
-      }
-    }
-    // The form posts what's on screen (no-JS twin), and the quantity follows the stock.
-    const variantInput = form?.querySelector<HTMLInputElement>("input[name=variant]");
-    if (variantInput) variantInput.value = String(v.id);
-    const next = form?.querySelector<HTMLInputElement>("input[name=next]");
-    if (next) next.value = pageHref(v);
-    const out = v.stock === 0;
-    if (stepper) setStepper(stepper, { max: Math.max(1, Math.min(v.stock, data.maxQty)), disabled: out });
-    for (const b of $$<HTMLButtonElement>("button[data-add]", root)) b.disabled = out;
-    for (const l of $$("[data-add-label]", root)) l.textContent = t(out ? "product.out" : "product.add");
-    const barPrice = $("[data-bar-price]", root);
-    if (barPrice) barPrice.textContent = v.price;
-    $(".pp-msgs", root)?.replaceChildren();
-    // A new variant is a fresh start: no add-on message until the next try to add.
-    attempted = false;
-    validate();
-    writeUrl(v);
-    if (v.image !== null) root.dispatchEvent(new CustomEvent(VARIANT_EVENT, { bubbles: true, detail: { image: v.image } }));
-  };
-
-  // ── Add-on groups: limits as you pick. A group's problem shows only once an add was tried
-  // (like checkout): then on every unmet group at once, and from there it follows the answers
-  // live. Changing the variant starts over. ──
-  const groups = data.groups
-    .map((g) => ({ ...g, el: document.getElementById(g.id) }))
-    .filter((g): g is GroupData & { el: HTMLElement } => !!g.el && root.contains(g.el));
-  const picked = (g: { el: HTMLElement }) => $$<HTMLInputElement>("input:checked", g.el).filter((i) => i.value !== "").length;
-  const groupOk = (g: GroupData & { el: HTMLElement }) => {
-    const n = picked(g);
-    return n >= g.min && (g.max === null || n <= g.max);
-  };
-  /** `ChoiceList`'s invalid state: the danger edge, a red hint, the problem in its error line. */
-  const markGroup = (g: GroupData & { el: HTMLElement }, bad: boolean) => {
-    if (bad) g.el.setAttribute("aria-invalid", "true");
-    else g.el.removeAttribute("aria-invalid");
-    const line = document.getElementById(`${g.id}-error`);
-    if (line) patch(line, { error: bad ? g.problem : "" });
-  };
-  /** A group with a maximum: once it's reached, the rest can't be ticked. */
-  const limitGroup = (g: GroupData & { el: HTMLElement }) => {
-    if (g.max === null) return;
-    const full = picked(g) >= g.max;
-    for (const box of $$<HTMLInputElement>("input[type=checkbox]", g.el)) box.disabled = full && !box.checked;
-  };
-  for (const g of groups) limitGroup(g);
-  /** Mark the unmet groups (only after an attempt); returns them. */
-  const validate = () => {
-    const bad = groups.filter((g) => !groupOk(g));
-    for (const g of groups) markGroup(g, attempted && bad.includes(g));
-    return bad;
-  };
+  const form = $<HTMLFormElement>("form.pp-form", root);
+  const picker = createPicker(root, {
+    okLabel: "product.add",
+    onSelect: (v) => {
+      const next = form?.querySelector<HTMLInputElement>("input[name=next]");
+      if (next) next.value = `${picker?.data.href ?? ""}?v=${v.id}`;
+      writeUrl(v);
+      if (v.image !== null) root.dispatchEvent(new CustomEvent(VARIANT_EVENT, { bubbles: true, detail: { image: v.image } }));
+    },
+  });
+  if (!picker) return;
+  const buyRow = $(".pp-buy", root);
+  const bar = $(".pp-bar", root);
+  let addedTimer = 0;
 
   const submit = (ev: SubmitEvent) => {
     ev.preventDefault();
-    if (cur.stock === 0) return;
-    attempted = true;
-    const first = validate()[0]?.el;
-    if (first) {
-      first.scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "auto" : "smooth" });
-      $<HTMLInputElement>("input:not(:disabled)", first)?.focus({ preventScroll: true });
-      return;
-    }
-    // The line's add-ons in the cart's order (sorted ids), names and prices alike.
-    const addons = $$<HTMLInputElement>(".pp-groups input:checked", root)
-      .map((i) => i.value)
-      .filter(Boolean)
-      .sort();
-    const qty = stepper ? Math.max(1, stepperValue(stepper)) : 1;
-    // Priced: the cart computes the line from this, so the add needs no request at all.
-    const snap: LineSnapshot = { name: data.name, href: pageHref(cur), unit: cur.unit, maxQty: cur.snapMax };
-    if (cur.img) snap.img = cur.img;
-    if (cur.label) snap.variant = cur.label;
-    if (cur.compareAt !== null) snap.compareAt = cur.compareAt;
-    if (addons.length) {
-      snap.addons = addons.map((id) => data.addons[id]?.name ?? id);
-      snap.addonPrices = addons.map((id) => data.addons[id]?.price ?? 0);
-    }
-    const r = addAndConfirm({ product: data.product, variant: cur.id, qty, addons }, snap);
+    const l = picker.line();
+    if (!l) return;
+    const r = addAndConfirm(l.item, l.snap);
     if (!r.ok) return;
-    attempted = false;
     // The button says it worked, for a moment.
     for (const b of $$("button[data-add]", root)) b.classList.add("is-added");
-    for (const l of $$("[data-add-label]", root)) l.textContent = t("product.added_short");
+    for (const el of $$("[data-add-label]", root)) el.textContent = t("product.added_short");
     clearTimeout(addedTimer);
     addedTimer = window.setTimeout(() => {
       for (const b of $$("button[data-add]", root)) b.classList.remove("is-added");
-      for (const l of $$("[data-add-label]", root)) l.textContent = t(cur.stock === 0 ? "product.out" : "product.add");
+      picker.resetLabels();
     }, 1800);
   };
 
-  // Arrow keys move the choice to the next value that can be picked (radio semantics).
-  const onKey = (ev: KeyboardEvent, a: HTMLElement) => {
-    const rtl = document.documentElement.dir === "rtl";
-    const fwd = { ArrowDown: true, ArrowUp: false, ArrowRight: !rtl, ArrowLeft: rtl }[ev.key];
-    if (fwd === undefined) return;
-    ev.preventDefault();
-    const axis = a.closest<HTMLElement>(".choice-chips[data-axis]");
-    if (!axis) return;
-    const ai = Number(axis.dataset.axis);
-    const states = cur.values[ai] ?? [];
-    const at = states.findIndex((s) => s.s === "on");
-    const n = states.length;
-    for (let k = 1; k < n; k++) {
-      const i = (((at + (fwd ? k : -k)) % n) + n) % n;
-      const st = states[i];
-      if (st?.s === "open" && st.v !== undefined) {
-        const v = byId.get(st.v);
-        if (!v) return;
-        select(v);
-        $<HTMLElement>(`a[data-index="${i}"]`, axis)?.focus();
-        return;
-      }
-    }
-  };
-
   // A notice from the no-JS add was rendered for this visit only: drop its parameter.
-  writeUrl(new URL(location.href).searchParams.has("v") ? cur : null);
-  for (const a of $$<HTMLAnchorElement>(".choice-chips a[data-index]", root))
-    a.tabIndex = a.getAttribute("aria-checked") === "true" ? 0 : -1;
-
-  const offs = [
-    on(root, "click", "a[data-axis][data-index]", (ev, a) => {
-      if (!plainClick(ev)) return;
-      ev.preventDefault();
-      const st = cur.values[Number(a.dataset.axis)]?.[Number(a.dataset.index)];
-      const v = st?.s === "open" && st.v !== undefined ? byId.get(st.v) : undefined;
-      if (v) select(v);
-    }),
-    on(root, "keydown", "a[data-axis][data-index]", onKey),
-    on(root, "change", ".pp-groups input", (_ev, el) => {
-      const g = groups.find((x) => x.el.contains(el));
-      if (!g) return;
-      limitGroup(g);
-      validate(); // live, once an add was tried
-    }),
-  ];
+  writeUrl(new URL(location.href).searchParams.has("v") ? picker.current() : null);
   form?.addEventListener("submit", submit);
 
   // The phone's bar appears once the main button has scrolled away above.
@@ -281,7 +77,7 @@ register("variant-picker", (root) => {
   }
 
   return () => {
-    for (const off of offs) off();
+    picker.destroy();
     form?.removeEventListener("submit", submit);
     io?.disconnect();
     clearTimeout(addedTimer);

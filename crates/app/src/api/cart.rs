@@ -48,6 +48,9 @@ pub struct Snapshot {
     pub addon_prices: Vec<i64>,
     /// The most that can be ordered now (stock, at most the cart's limit).
     pub max_qty: u32,
+    /// The product has something to choose (variants, add-ons): the line offers "Edit".
+    #[serde(default)]
+    pub editable: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]

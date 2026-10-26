@@ -64,6 +64,26 @@ pub fn parse(raw: &str) -> Vec<CartLine> {
     lines
 }
 
+impl CartLine {
+    /// The line a key names (`product:variant[:addons]`, as `key()` writes it), with `qty`. Add-on
+    /// ids are checked and sorted like the cookie's; `None` for anything else.
+    pub fn from_key(key: &str, qty: u32) -> Option<CartLine> {
+        let mut f = key.split(':');
+        let (Some(p), Some(v)) = (f.next(), f.next()) else { return None };
+        let (Ok(p), Ok(v)) = (p.parse::<u32>(), v.parse::<u32>()) else { return None };
+        let mut addons: Vec<String> = match f.next() {
+            Some(a) => a.split('+').map(str::to_owned).collect(),
+            None => Vec::new(),
+        };
+        if f.next().is_some() || !addons.iter().all(|a| addon_ok(a)) {
+            return None;
+        }
+        addons.sort();
+        addons.dedup();
+        Some(CartLine { product: ProductId(p), variant: VariantId(v), qty, addons })
+    }
+}
+
 pub fn serialize(lines: &[CartLine]) -> String {
     lines
         .iter()
@@ -89,5 +109,15 @@ mod tests {
         let lines = parse(raw);
         assert_eq!(serialize(&lines), "2307:1:99|2501:3:1:as-is+pro-install|1:1:1");
         assert_eq!(lines[1].key(), "2501:3:as-is+pro-install");
+    }
+
+    #[test]
+    fn keys_name_lines() {
+        let l = CartLine::from_key("2501:3:pro-install+as-is", 2).unwrap();
+        assert_eq!((l.product.0, l.variant.0, l.qty), (2501, 3, 2));
+        assert_eq!(l.key(), "2501:3:as-is+pro-install");
+        assert!(CartLine::from_key("2501:3:x<y", 1).is_none());
+        assert!(CartLine::from_key("2501", 1).is_none());
+        assert!(CartLine::from_key("2501:3:a:b", 1).is_none());
     }
 }

@@ -24,7 +24,7 @@ impl Tab {
         match path {
             "/" | "/nojs" => Some(Tab::Home),
             "/search" if query.split('&').any(|kv| kv == "deal=1") => Some(Tab::Deals),
-            "/cart" | "/checkout" => Some(Tab::Cart),
+            "/cart" | "/cart/edit" | "/checkout" => Some(Tab::Cart),
             p if p.starts_with("/c/") => Some(Tab::Categories),
             p if p == "/orders" || p.starts_with("/orders/") => Some(Tab::Account),
             _ => None,

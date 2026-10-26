@@ -47,6 +47,11 @@ pub const ALL: &[Entry] = &[
         "هذا المنتج لم يعد متاحًا.",
     ),
     s(
+        "cart.err.line_gone",
+        "That item isn't in your cart any more.",
+        "هذا المنتج لم يعد في سلتك.",
+    ),
+    s(
         "cart.err.bad_request",
         "We couldn't update your cart. Please try again.",
         "تعذّر تحديث السلة. يرجى المحاولة مرة أخرى.",
@@ -57,6 +62,24 @@ pub const ALL: &[Entry] = &[
     s("cart.remove", "Remove", "شيل"),
     s("cart.remove_item", "Remove {name}", "شيل {name}"),
     s("cart.update", "Update", "حدّث"),
+    // Editing a line (variant, add-ons, quantity): the sheet over the cart, or /cart/edit
+    s("cart.edit", "Edit", "عدّل"),
+    s("cart.edit_item", "Edit {name}", "عدّل {name}"),
+    s("cart.edit_title", "Edit item", "عدّل المنتج"),
+    s("cart.back_to_cart", "Back to cart", "ارجع للسلة"),
+    s("cart.update_item", "Update item", "حدّث المنتج"),
+    s("cart.updated", "Your cart is updated.", "اتحدّثت سلتك."),
+    s("cart.updated_item", "Updated {name}", "اتعدّل {name}"),
+    s(
+        "cart.edit_failed",
+        "We couldn't load this item's options.",
+        "تعذّر تحميل خيارات هذا المنتج.",
+    ),
+    s(
+        "cart.edit_offline",
+        "You're offline. Connect to change this item.",
+        "أنت غير متصل بالإنترنت. اتصل بالإنترنت لتعديل هذا المنتج.",
+    ),
     s("cart.qty_of", "Quantity of {name}", "كمية {name}"),
     s("cart.breakdown", "{qty} × {unit}", "{qty} × {unit}"),
     s("cart.low_stock", "Only {n} in stock", "المتاح {n} بس"),

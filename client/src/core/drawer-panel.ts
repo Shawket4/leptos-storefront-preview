@@ -7,8 +7,10 @@
 // flick). Reduced motion: a short cross-fade.
 //
 // Close: `[data-drawer-close]` inside, Escape, the scrim, a swipe, `closeDrawer(id)`, or following a
-// link inside it. The element fires `drawer:open` (as it starts opening) and `drawer:close` (once
-// closed), both bubbling.
+// link inside it (except in `[data-drawer-keep]`: one opening another drawer over this one, or
+// choices the page's code takes over). Drawers stack: one opened over another is a modal over a
+// modal; Escape closes the top one. The element fires `drawer:open` (as it starts opening) and
+// `drawer:close` (once closed), both bubbling.
 //
 // A drawer that is open when the router swaps its region out comes back open in the new page
 // (same `id`), instantly, with its scroll position and focus (by id, else name+value, else name).
@@ -145,8 +147,10 @@ function mountDrawer(node: HTMLElement): () => void {
     if (t.closest("[data-drawer-close]")) {
       ev.preventDefault();
       hide();
-    } else if (t.closest("a[href]") && !ev.defaultPrevented) {
+    } else if (t.closest("a[href]") && !t.closest("[data-drawer-keep]") && !ev.defaultPrevented) {
       // A link inside (a product in the cart): the router takes it; the drawer gets out of the way.
+      // Links in `[data-drawer-keep]` stay in it: one opening another drawer over this one (a cart
+      // line's Edit), or choices the page's code takes over (the line editor's variant values).
       hide();
     }
   };

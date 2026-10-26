@@ -84,6 +84,7 @@ async fn main() {
         .route("/cart/add", post(app::server::cart::forms::add))
         .route("/cart/set", post(app::server::cart::forms::set))
         .route("/cart/remove", post(app::server::cart::forms::remove))
+        .route("/cart/update", post(app::server::cart::forms::update))
         .nest("/media", media)
         .leptos_routes_with_context(
             &leptos_options,

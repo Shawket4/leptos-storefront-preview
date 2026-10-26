@@ -10,10 +10,12 @@
 // without JS, storage cleared: `quote()` once), and checkout re-prices everything on the server.
 
 import { $, $$, fill, patch } from "../core/dom";
+import { openDrawer } from "../core/drawer";
 import { money } from "../core/money";
 import { mountAll, register, unmountAll } from "../core/mount";
 import { NetError, onOnline } from "../core/net";
 import { cfg, digits, t } from "../core/page";
+import { navigate } from "../core/router";
 import { setStepper, stepperValue } from "../core/stepper";
 import {
   adoptSnapshots,
@@ -51,6 +53,8 @@ function lineValues(l: CartLine, key: string, s: LineSnapshot | undefined, gone:
     img: s?.img ?? null,
     rm_label: t("cart.remove_item", { name }),
     detail: [s?.variant, ...(s?.addons ?? [])].filter(Boolean).join(" · ") || null,
+    // "Edit" for a product with something to choose (older snapshots don't say: offered too).
+    edit: isPriced(s) && !gone && s.editable !== false ? t("cart.edit") : null,
   };
   if (!isPriced(s) || gone) {
     return { ...base, meta: gone ? t("cart.issue.unavailable") : null, price: null, fix: null };
@@ -107,6 +111,11 @@ function paintLine(el: HTMLElement, l: CartLine, s: LineSnapshot | undefined, v:
   el.dataset.issue = gone ? "unavailable" : isPriced(s) ? (issueOf(l, s) ?? "") : "";
   el.toggleAttribute("data-loading", !v.name);
   $(".cline__remove button", el)?.setAttribute("aria-label", v.rm_label);
+  const edit = $<HTMLAnchorElement>("a[data-cart-edit]", el);
+  if (edit) {
+    edit.setAttribute("href", editHref(v.key));
+    edit.setAttribute("aria-label", t("cart.edit_item", { name: v.name }));
+  }
   const stepper = $("[data-ts~=stepper]", el);
   if (stepper && v.name) {
     const label = t("cart.qty_of", { name: v.name });
@@ -118,6 +127,9 @@ function paintLine(el: HTMLElement, l: CartLine, s: LineSnapshot | undefined, v:
   const fixQty = $<HTMLInputElement>("[data-fix-qty]", el);
   if (fixQty && isPriced(s)) fixQty.value = String(s.maxQty);
 }
+
+/** The line editor's page (`pages::cart::edit_href`: the same address, so the same cache entry). */
+const editHref = (key: string) => `/cart/edit?key=${encodeURIComponent(key)}`;
 
 /** Put `want` in `list`, in order, moving only what's out of place; drop the rest. */
 function reconcile(list: HTMLElement, want: HTMLElement[]): void {
@@ -296,6 +308,17 @@ class CartView {
       const el = ev.target instanceof Element ? ev.target : null;
       if (el?.closest("[data-quote-retry]")) return this.retry();
       if (el?.closest("[data-checkout][aria-disabled=true]")) ev.preventDefault();
+      // A line's Edit: the editor's sheet over the cart, open at once (its skeleton) while the
+      // editor's code and markup come (features/line-editor.ts); the editor's page if they can't.
+      const edit = el?.closest<HTMLAnchorElement>("a[data-cart-edit]");
+      if (edit && ev.button === 0 && !ev.metaKey && !ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+        ev.preventDefault();
+        openDrawer("line-editor");
+        import("./line-editor").then(
+          (m) => m.openEditor(edit.href),
+          () => void navigate(edit.href),
+        );
+      }
     };
     r.addEventListener("change", onChange);
     r.addEventListener("submit", onSubmit);
@@ -368,9 +391,8 @@ register("cart-page", (el) => {
   });
   // A no-JS form's outcome was shown by the server; don't show it again on reload or back.
   const url = new URL(location.href);
-  if (url.searchParams.has("added") || url.searchParams.has("cart_err")) {
-    url.searchParams.delete("added");
-    url.searchParams.delete("cart_err");
+  if (["added", "updated", "cart_err"].some((k) => url.searchParams.has(k))) {
+    for (const k of ["added", "updated", "cart_err"]) url.searchParams.delete(k);
     history.replaceState(history.state, "", url.pathname + url.search + url.hash);
   }
   // A quantity changed with the stepper before this chunk arrived: that's what the shopper meant.

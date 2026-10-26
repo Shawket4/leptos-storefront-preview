@@ -2,7 +2,7 @@
 //! `openDrawer("cart-drawer")`). Rendered empty in every page's shell (the cart is personal and
 //! public pages are cached); `features/cart.ts` (`data-ts="cart-drawer"`) fills it from the cart
 //! store at once and from the server's quote when it lands. It also carries the line templates
-//! the drawer and /cart share.
+//! the drawer and /cart share, and the sheet a line's "Edit" opens over them.
 
 use super::line::{CartSummary, LineData, LineRow, SummaryData};
 use crate::components::button::{Button, ButtonKind};
@@ -36,5 +36,6 @@ pub fn CartDrawer() -> impl IntoView {
         <template id="tpl-cart-line">
             <LineRow d=LineData { max: domain::cart::MAX_QTY, qty: 1, ..Default::default() } lang next=super::line::CART_PATH/>
         </template>
+        <super::edit::LineEditorSheet/>
     }
 }

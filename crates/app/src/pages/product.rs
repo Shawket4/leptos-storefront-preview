@@ -14,8 +14,9 @@
 
 mod gallery;
 mod head;
-mod model;
+pub(crate) mod model;
 mod panel;
+pub(crate) mod picker;
 mod parts;
 
 use crate::api;
@@ -96,6 +97,7 @@ pub fn ProductPage() -> impl IntoView {
 
     Either::Right(view! {
         <ProductHead h=head/>
+        <crate::client_js::PreloadFeature module="features/product.ts"/>
         <div class="pdp" data-product=id>
             <div class="container">
                 <div class="pdp-crumbs">

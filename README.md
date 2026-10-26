@@ -98,7 +98,8 @@ TypeScript makes it instant:
 | `/c/:slug` | Listing with facets, chips, sort, result count and server-side pages, all from the URL (`ListingQuery`) | Filter sheet; a filter or sort change becomes a debounced in-app navigation that keeps the scroll position and dims the old results while the new ones load |
 | `/search?q=` | Bilingual search results (below) with "did you mean" | Instant search in the header: an ARIA combobox fed by `/api/search/suggest`, cached for 60 s |
 | `/p/:slug` | Product page, its SEO head (OpenGraph, JSON-LD) and a real 404 with suggestions | Variant picker (price, stock and photo switch with **no request**), add-ons, quantity, add to cart; gallery swipe, zoom and fullscreen on springs |
-| `/cart` | Priced lines from the `cart` cookie; forms that work without JS | The same line renderer as the drawer. Quantity, remove and Undo are local: lines, totals, savings and delivery are computed in the browser, with no request |
+| `/cart` | Priced lines from the `cart` cookie; forms that work without JS | The same line renderer as the drawer. Quantity, remove and Undo are local: lines, totals, savings and delivery are computed in the browser, with no request. Edit opens the line editor in a sheet |
+| `/cart/edit?key=` | A cart line's editor: the product's variants, add-ons and quantity, set to the line's choices; without JS a form posting `/cart/update` | Opened in a sheet over the drawer or /cart by a line's Edit: the product page's own picker, the line's new total on the button, Update and Undo. The editor's markup is the one request; the change is local |
 | `/checkout` | Four steps, each a real POST validated by the server. Placing an order re-prices, re-checks stock and clears the cart | Inline validation messages, pending state, double-submit guard |
 | `/orders`, `/orders/:id` | Order lookup and the status timeline | Live status polling with backoff and Retry |
 | `/showcase` | A guided tour of this architecture: Leptos's server features and the TypeScript client, with live demos | Spring lab, cache inspector, toast stack |
@@ -200,8 +201,10 @@ The format has two identical implementations, `crates/domain/src/cart.rs` and
 - Each line also keeps a **snapshot** from the card or product page it was added from: name,
   image, variant, add-ons, and prices in piastres (unit, was, add-ons, stock cap). Snapshots are
   kept in `localStorage`, per shop and language.
-- Adding, removing and changing quantities write the cookie. The browser computes line totals,
-  subtotal, savings and the delivery rule from the snapshots: instant, with no request.
+- Adding, removing, changing quantities and editing a line (another variant, other add-ons) write
+  the cookie. The browser computes line totals, subtotal, savings and the delivery rule from the
+  snapshots: instant, with no request. Editing fetches the line's editor once (`/cart/edit`, the
+  product's choices); the change itself is local and keeps the line's place.
 - The server is asked only for what the browser lacks. `/api/cart/quote` fills lines that have no
   snapshot (added without JS, or storage cleared).
 - `/cart` and checkout render the server's prices from the cookie. Checkout re-prices with
@@ -239,20 +242,25 @@ download.
 
 | JavaScript | Raw · gzip · **brotli** | When it loads |
 |---|---|---|
-| **First load** (entry + one shared chunk) | 31.6 KB · 12.1 KB · **10.9 KB** | With every page |
+| **First load** (entry + one shared chunk) | 32.6 KB · 12.4 KB · **11.2 KB** | With every page |
 | Listing (filters, sort) | 3.3 · 1.6 · 1.4 KB | On listings |
 | Home | 0.4 · 0.3 · 0.3 KB | On the home page |
-| Product (gallery, variants, add-ons) | 16.2 · 6.8 · 6.2 KB | On product pages |
+| Product (gallery, variants, add-ons) | 16.9 · 7.4 · 6.7 KB | On product pages |
 | Checkout | 5.7 · 2.6 · 2.3 KB | On checkout and tracking |
-| Showcase | 16.8 · 7.0 · 6.3 KB | On /showcase and /ui |
-| Cart drawer and /cart renderer | 7.2 · 3.1 · 2.7 KB | On /cart; elsewhere on the first reach for the cart, or after a quick add |
+| Showcase tour | 12.5 · 5.3 · 4.8 KB | On /showcase |
+| Design-system kit specimens | 4.3 · 2.0 · 1.8 KB | On /ui |
+| Cart drawer and /cart renderer | 7.7 · 3.4 · 3.1 KB | On /cart; elsewhere on the first reach for the cart, or after a quick add |
+| Line editor (with the picker it shares with the product page) | 7.3 · 3.6 · 3.3 KB | On /cart/edit, or a line's first Edit |
 | Instant search | 4.5 · 2.1 · 1.9 KB | On first use of the search box, or once the page is idle |
 | Sheet gestures, rails, pull-to-refresh, toggles | 10.7 · 5.1 · 4.6 KB | Where they're used |
-| **Heaviest page** (showcase + every extra) | 67.1 · 27.6 · **24.8 KB** | An upper bound |
-| **CSS** (one file for every page) | 169.7 · 29.4 · **25.0 KB** | Cached `immutable` |
+| **Heaviest page** (product + every extra, the line editor included) | 71.0 · 29.9 · **26.9 KB** | An upper bound |
+| **CSS** (one file for every page) | 171.5 · 29.7 · **25.3 KB** | Cached `immutable` |
 
 The budgets are 15 KB gzip for the first load, 30 KB for the heaviest page and 35 KB for the CSS.
-The script fails when any is exceeded. Three things got the first load from 18.5 to 12.1 KB:
+The script fails when any is exceeded. The line editor counts as an extra on every page, since a
+cart line's Edit can open it anywhere; with it the heaviest page sits just under its budget. The
+showcase's code was split in two (the tour, the kit) so that neither page carries the other's.
+Three things got the first load from 18.5 to 12.1 KB (12.4 KB since the line editor):
 - **Features load on demand.** Product code loads only on `/p/*` and listing code only on
   listings. Back and forward fetch no JavaScript.
 - **The cart drawer and instant search load on first use** (`lazyOnIntent` in `core/mount.ts`).
@@ -263,8 +271,8 @@ The script fails when any is exceeded. Three things got the first load from 18.5
   `client/build.mjs` now runs twice so that this code lands in one shared chunk.
 
 **What each page downloads** on a first visit, measured in Chromium against the release server
-(phone viewport, cold cache, KB as sent, headers included). Nile pages are English, Souq pages
-Arabic:
+(phone viewport, cold cache, KB as sent, headers included) for v0.1.2, before the line editor; it
+added about 0.3 KB to every page's JS at load. Nile pages are English, Souq pages Arabic:
 
 | Page | HTML | JS at load (files) | JS once idle | CSS | Fonts | Images |
 |---|---:|---:|---:|---:|---:|---:|
@@ -294,8 +302,8 @@ included. They vary by up to about 2× with what else the machine is doing.
 
 | | Stage 1, islands (split build) | Stage 2, SSR + TypeScript |
 |---|---|---|
-| Code for a first visit | 379 KB WASM + 13 KB JS | **10.9 KB** JS |
-| Code for the product page | 581 KB WASM in 107 files + 13 KB JS | **17.1 KB** JS in 4 files |
+| Code for a first visit | 379 KB WASM + 13 KB JS | **11.2 KB** JS |
+| Code for the product page | 581 KB WASM in 107 files + 13 KB JS | **17.9 KB** JS in 5 files |
 | Works without JavaScript | Yes, with a `/nojs` twin for the streamed home page | Yes, every page as is |
 
 ### Stage 1: the islands build (measured before the rebuild)
@@ -532,8 +540,8 @@ Use it the way Stage 2 does: Leptos SSR on Axum for every page, with a small Typ
 
 **In the browser, it isn't ready yet.**
 - Stage 1 (islands) shipped 379–769 KB of WASM, brotli, to every first visit. Stage 2 does the
-  same jobs with **10.9 KB** of JavaScript on the first load and 24.8 KB on the heaviest page
-  (brotli). That's 35–70 times less, and every page still renders on the server first.
+  same jobs with **11.2 KB** of JavaScript on the first load and 26.9 KB on the heaviest page
+  (brotli). That's about 34–69 times less, and every page still renders on the server first.
 - The islands router is marked work in progress and needed a client shim. Hydration had races we
   never root-caused: toasts and cart updates were lost after navigation. Lazy islands traded one
   379 KB file for over 100 requests.

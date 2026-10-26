@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // End-to-end walk of the storefront under phone conditions, logging every request the page makes.
-// It checks the architecture's promise: state changes (add to cart, variant, quantity) send no
-// request; only data needs do (navigations, the cart quote, search suggestions, order status).
+// It checks the architecture's promise: state changes (add to cart, variant, quantity, editing a
+// line) send no request; only data needs do (navigations, the cart quote, search suggestions, order
+// status, a line's choices for its editor).
 //
 //   node tools/shots/walk.mjs --base http://souq.localhost:3000 [--out <dir>] [--fast]
 //
@@ -142,6 +143,26 @@ await check("+1 in drawer (no request)", async () => {
   await page.waitForTimeout(800);
   return `badge ${before} → ${await badge()}`;
 }, { expectRequests: none });
+// Editing a line (variant, add-ons, quantity): the sheet over the drawer needs the product's
+// choices, the one data request (`GET /cart/edit`, warmed on finger-down); the change itself is local.
+await check("edit a line (one data request)", async () => {
+  const edit = page.locator("#cart-drawer a[data-cart-edit]:not([hidden])").first();
+  if (!(await edit.count())) return "no line with choices";
+  await edit.tap();
+  await page.waitForSelector("#line-editor [data-ts~=line-editor]", { timeout: 10000 });
+  await page.waitForTimeout(400);
+  const chip = page.locator('#line-editor .pp-axes a[aria-checked="false"]:not([aria-disabled])').first();
+  const box = page.locator("#line-editor .pp-groups label.check").first();
+  if (await chip.count()) await chip.tap();
+  else if (await box.count()) await box.tap();
+  else await page.locator('#line-editor [data-step="1"]:not([disabled])').first().tap();
+  await page.waitForTimeout(300);
+  await page.locator("#line-editor button[data-add]").tap();
+  await page.waitForTimeout(900);
+  const open = await page.evaluate(() => document.getElementById("line-editor")?.hasAttribute("open"));
+  if (open) throw new Error("the sheet stayed open");
+  return `toast="${await toastText()}"`;
+}, { expectRequests: (r) => r.length <= 1 && r.every((x) => /^GET \/cart\/edit\?key=/.test(x)) });
 await check("back (from cache)", async () => {
   await page.keyboard.press("Escape");
   await page.goBack();

@@ -111,8 +111,16 @@
   display: flex;
 }
 /* A 44px target that doesn't push the line apart. */
-.cline__remove .link-btn {
+.cline__remove .link-btn,
+.cline__edit {
   margin-block: -8px -10px;
+}
+.cline__edit {
+  display: inline-flex;
+  align-items: center;
+}
+.cline__edit[hidden] {
+  display: none;
 }
 .link-btn {
   min-block-size: 44px;
@@ -340,4 +348,120 @@
 }
 .pick {
   padding: var(--sp-3);
+}
+
+/* ── The line editor (pages::cart::edit): the sheet over the cart, and /cart/edit ── */
+.le {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.le__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+.le__img {
+  flex: none;
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--well);
+  object-fit: contain;
+}
+.le__title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-inline-size: 0;
+}
+.le__title p {
+  margin: 0;
+}
+.le__name {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.le__save .btn__label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+}
+.le__save-total {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  opacity: 0.8;
+}
+.le__save-total[hidden] {
+  display: none;
+}
+
+/* In the sheet: the quantity and "Update item" stay in reach under the scrolling choices. */
+.le-sheet .drawer__body {
+  padding-block-end: 0;
+}
+.le-sheet .le__foot {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  margin-inline: calc(var(--sp-5) * -1);
+  padding: var(--sp-3) var(--sp-5) var(--sp-4);
+  background: var(--surface);
+  border-block-start: 1px solid var(--line);
+}
+.le-sheet__slot[hidden] {
+  display: none;
+}
+/* Toasts in the sheet sit above its quantity and "Update item", not on them. */
+.le-sheet .toaster {
+  inset-block-end: calc(max(env(safe-area-inset-bottom, 0px), var(--sp-4)) + 5.5rem);
+}
+.le-sheet [data-le-error] {
+  margin-block-end: var(--sp-5);
+}
+/* Waiting for the editor: the same boxes, pulsing. */
+.le--skeleton {
+  padding-block-end: var(--sp-5);
+}
+.le--skeleton .le__title {
+  flex: 1;
+}
+.le--skeleton .le__name {
+  inline-size: 70%;
+}
+.le__skel-chips {
+  display: block;
+  block-size: 4.75rem;
+  border-radius: var(--r-md);
+}
+.le__skel-list {
+  display: block;
+  block-size: 9rem;
+  border-radius: var(--r-lg);
+}
+
+/* /cart/edit (the editor as a page). */
+.container.le-page {
+  max-inline-size: calc(40rem + var(--gutter) * 2);
+  padding-block: var(--sp-6) var(--section-y);
+}
+.le-page__head h1 {
+  margin: 0 0 var(--sp-4);
+}
+.le-page__head h1:focus {
+  outline: none;
+}
+.le-page .callout {
+  margin-block-end: var(--sp-4);
+}
+.le-page__card {
+  padding: var(--sp-5);
+}
+.le-page__cancel {
+  margin-block-start: var(--sp-3);
 }

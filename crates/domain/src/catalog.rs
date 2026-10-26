@@ -204,6 +204,11 @@ impl Product {
     pub fn has(&self, tag: Tag) -> bool {
         self.tags.contains(&tag)
     }
+    /// Something to choose besides the quantity (more than one variant, or add-ons): its cart line
+    /// can be edited.
+    pub fn has_choices(&self) -> bool {
+        self.variants.len() > 1 || !self.modifier_groups.is_empty()
+    }
 }
 
 /// A whole tenant catalogue, as stored in `data/catalog/<tenant>.json`.

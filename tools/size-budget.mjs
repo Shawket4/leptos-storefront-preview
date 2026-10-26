@@ -62,7 +62,10 @@ const loadedBy = (fn) => new Set([...mainTs.matchAll(new RegExp(`\\b${fn}\\(\\s*
 // A feature also loaded on intent (lazyOnIntent: the cart drawer, search) can load on any page.
 const onIntent = loadedBy("lazyOnIntent");
 const pageFeatures = new Set([...loadedBy("lazy")].filter((m) => !onIntent.has(m)));
-const isFeature = (f) => pageFeatures.has(source.get(f));
+// A page feature that another on-demand chunk loads too can come on any page that one does (the
+// cart drawer opens the line editor's sheet anywhere): an extra.
+const loadedElsewhere = new Set(edges.filter((e) => e.kind === "dynamic" && e.from !== entry).map((e) => e.to));
+const isFeature = (f) => pageFeatures.has(source.get(f)) && !loadedElsewhere.has(f);
 const label = (f) => (source.get(f) ?? f).replace(/^features\//, "").replace(/\.ts$/, "");
 const lazyChunks = [...dynamic.filter(isFeature), ...dynamic.filter((f) => !isFeature(f))];
 

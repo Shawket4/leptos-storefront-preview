@@ -2,8 +2,9 @@
 //! `ItemRow` (its slots are what the browser code fills), the summary's figures are `Totals`. The
 //! same components render the drawer's and /cart's `<template>` (empty; `features/cart-view.ts`
 //! fills it) and /cart's lines on the server (filled), so the page looks the same before and after
-//! the browser code takes over. Every control is a real form (`/cart/set`, `/cart/remove`), so
-//! /cart works without JS; with JS the TS intercepts them and nothing is sent.
+//! the browser code takes over. Every control is a real form (`/cart/set`, `/cart/remove`) or link
+//! (Edit: `/cart/edit`), so /cart works without JS; with JS the TS intercepts them and nothing is
+//! sent (Edit opens the editor's sheet).
 
 use super::tx;
 use crate::api::types::CartLineView;
@@ -39,6 +40,8 @@ pub struct LineData {
     pub issue_code: Option<&'static str>,
     /// "Change to 3" (a capped line's fix) and the quantity it sets.
     pub fix: Option<(String, u32)>,
+    /// The line editor (`/cart/edit?key=`), for a product with something to choose.
+    pub edit_href: Option<String>,
 }
 
 pub fn percent(n: u32, num: Numerals) -> String {
@@ -100,6 +103,7 @@ impl LineData {
             price: Some(m(l.line_total)),
             issue_code,
             fix,
+            edit_href: l.editable.then(|| super::edit_href(&l.key)),
         }
     }
 
@@ -127,6 +131,8 @@ pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
         tx("cart.remove_item", lang, &[("name", &d.name)])
     };
     let qty_label = (!template).then(|| tx("cart.qty_of", lang, &[("name", &d.name)]));
+    let edit_label = (!template).then(|| tx("cart.edit_item", lang, &[("name", &d.name)]));
+    let edit_href = d.edit_href.clone();
     let (fix_label, fix_qty) = d
         .fix
         .clone()
@@ -145,6 +151,12 @@ pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
                     {strings::get("cart.update", lang)}
                 </Button>
             </form>
+            // The line editor: a page without JS; with JS the sheet over the cart (cart-view.ts),
+            // so it doesn't close the drawer (`data-drawer-keep`).
+            <a class="link-btn cline__edit" href=edit_href.clone() data-attr-href="edit_href" data-cart-edit=""
+                data-drawer-keep="" aria-label=edit_label.clone() data-slot="edit" hidden=edit_href.is_none()>
+                {strings::get("cart.edit", lang)}
+            </a>
             <form class="cline__remove" method="post" action="/cart/remove" data-cart-form="remove">
                 <input type="hidden" name="key" value=key.clone() data-attr-value="key"/>
                 <input type="hidden" name="next" value=next/>

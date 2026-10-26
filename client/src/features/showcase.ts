@@ -1,24 +1,20 @@
-// The showcase's live demos (/showcase, /showcase/stream) and the interactive specimens on /ui.
-// Each feature is mounted on server-rendered markup (`data-ts="sc-…"` / `"kit-…"`), reads its
+// The showcase's live demos (/showcase, /showcase/stream); /ui's specimens are features/ui-kit.ts.
+// Each feature is mounted on server-rendered markup (`data-ts="sc-…"`), reads its
 // inputs from `data-*`, writes text through `patch()` into `[data-slot]`s, and adds rows only by
 // filling server-rendered templates (`tpl-sc-logline`, `tpl-sc-kv`, `tpl-sc-row`). Strings come
 // from `strings/showcase.rs` through `t()`; counts and timings go through `digits()`.
 
 import { register } from "../core/mount";
-import { $, $$, fill, on, patch, prefersReducedMotion } from "../core/dom";
+import { $, $$, fill, offAll, on, patch, prefersReducedMotion, reveal } from "../core/dom";
 import { cfg, digits, t } from "../core/page";
 import { NetError, getJSON, request } from "../core/net";
 import { cached, inspect, invalidate, key as cacheKey, peek, stats } from "../core/cache";
 import { onNavigate, prefetch, refresh, routing } from "../core/router";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
-import { stepperValue } from "../core/stepper";
 import type { SegChange } from "../core/segmented";
-import { setTimeline, type TimelineState } from "../core/timeline";
-import { retryIn, setLiveStatus } from "../core/live-status";
 import { add, cart, lineKey, quote, remove, serialize, type LineSnapshot } from "../stores/cart";
 import { toast, toasts } from "../stores/toasts";
 import type { CacheInfo } from "../api/types";
-import { previewNet } from "./core";
 
 // ── Small shared helpers ───────────────────────────────────────────────────────────────────────
 
@@ -30,11 +26,6 @@ function why(e: unknown): string {
   return t("showcase.failed", { why: String(e) });
 }
 
-/** Show the controls that only work with JS (`[data-needs-js]`, `[data-act]` rendered hidden). */
-function reveal(root: ParentNode): void {
-  for (const el of $$("[data-needs-js], [data-act][hidden]", root)) el.hidden = false;
-}
-
 /** A capped log, newest first, of `tpl-sc-logline` rows. */
 function logger(list: HTMLElement | null, max = 6): (text: string) => void {
   return (text) => {
@@ -43,8 +34,6 @@ function logger(list: HTMLElement | null, max = 6): (text: string) => void {
     while (list.children.length > max) list.lastElementChild?.remove();
   };
 }
-
-const offAll = (offs: Array<() => void>) => () => offs.forEach((f) => f());
 
 // Router timing for the whole tab: when a navigation started (the routing store) and how long the
 // last one took, so a demo mounted on the new page can say how the trip went.
@@ -554,146 +543,4 @@ register("sc-bundle", (root) => {
     })
     .catch((e) => alive && patch(root, { gzip: why(e) }));
   return () => (alive = false);
-});
-
-// ── /ui: the kit's interactive specimens ───────────────────────────────────────────────────────
-
-register("kit-toasts", (root) => {
-  reveal(root);
-  return on(root, "click", "button[data-toast]", (_, b) => {
-    const kind = b.dataset.toast;
-    if (kind === "success") toast(t("showcase.toast_success"), "success");
-    else if (kind === "error") toast(t("showcase.toast_error"), "error");
-    else if (kind === "action")
-      toast(t("showcase.toast_removed"), "info", { label: t("showcase.undo"), run: () => toast(t("showcase.toast_back"), "success") });
-    else toast(t("showcase.toast_info", { n: digits(14) }), "info");
-  });
-});
-
-// A stepper with a line total: the totals for each quantity come formatted from the server (the
-// client never computes money); the stepper itself is core's.
-register("kit-total", (root) => {
-  let totals: Record<string, string> = {};
-  try {
-    totals = JSON.parse($("script[data-ts-json]", root)?.textContent ?? "{}") as Record<string, string>;
-  } catch {
-    totals = {};
-  }
-  const show = () => {
-    const step = $("[data-ts~=stepper]", root);
-    if (step) patch(root, { total: totals[String(stepperValue(step))] ?? "" });
-  };
-  return on(root, "change", "input", show);
-});
-
-register("kit-remove", (root) =>
-  on(root, "change", "input", (_, input) => {
-    if ((input as HTMLInputElement).valueAsNumber === 0) toast(t("showcase.toast_removed"), "info");
-  }),
-);
-
-// Skeleton pairs: replay the load in place and measure the layout shift it causes (should be 0).
-register("kit-skeletons", (root) => {
-  reveal(root);
-  let shift = 0;
-  let timer = 0;
-  const po =
-    "PerformanceObserver" in self && PerformanceObserver.supportedEntryTypes?.includes("layout-shift")
-      ? new PerformanceObserver((list) => {
-          for (const e of list.getEntries() as Array<PerformanceEntry & { value: number; hadRecentInput: boolean }>)
-            if (!e.hadRecentInput) shift += e.value;
-        })
-      : null;
-  const play = () => {
-    clearTimeout(timer);
-    shift = 0;
-    po?.observe({ type: "layout-shift", buffered: false });
-    root.dataset.replay = "loading";
-    patch(root, { cls: t("showcase.loading") });
-    timer = window.setTimeout(() => {
-      root.dataset.replay = "loaded";
-      window.setTimeout(() => {
-        po?.disconnect();
-        patch(root, { cls: po ? t("showcase.cls", { n: digits(shift.toFixed(3)) }) : "—" });
-      }, 300);
-    }, 1200);
-  };
-  return offAll([() => clearTimeout(timer), () => po?.disconnect(), on(root, "click", "button[data-act=replay]", play)]);
-});
-
-// Network states: stage the real offline banner, failure alert and progress bar through core's
-// `previewNet` (features/core.ts); nothing is really disconnected.
-register("kit-net", (root) => {
-  reveal(root);
-  return on(root, "click", "button[data-net]", (_, b) => {
-    const v = b.dataset.net ?? "";
-    if (v === "offline" || v === "online") previewNet(v);
-    else if (v.startsWith("fail:")) previewNet({ fail: v.slice(5) as "offline" | "timeout" | "server" });
-    else previewNet({ progress: Number(v.split(":")[1]) || 1800 });
-  });
-});
-
-// A notice the browser reveals later: rendered hidden with `slots`, then written with `patch()`.
-register("kit-notice", (root) => {
-  reveal(root);
-  return on(root, "click", "button[data-act=reveal]", () => {
-    const n = $('[data-state="added"]', root);
-    if (!n) return;
-    patch(n, { title: t("showcase.notice_title"), body: t("showcase.notice_body") });
-    n.hidden = false;
-  });
-});
-
-// The field's error line is always there, empty: filling it moves nothing on the page.
-register("kit-check", (root) => {
-  reveal(root);
-  return on(root, "click", "button[data-act=check]", () => {
-    const input = $<HTMLInputElement>("input", root);
-    if (!input) return;
-    const bad = input.value.trim().length < 3;
-    const line = root.querySelector(`[id="${input.id}-error"]`);
-    if (line) line.textContent = bad ? t("showcase.check_error") : "";
-    input.setAttribute("aria-invalid", String(bad));
-  });
-});
-
-// The order timeline, moved the way order tracking moves it (core/timeline.ts). Times come
-// formatted from the server; the current stage says "Now".
-register("kit-timeline", (root) => {
-  let data: { times: string[]; now: string } = { times: [], now: "" };
-  try {
-    data = JSON.parse($("script[data-ts-json]", root)?.textContent ?? "{}") as typeof data;
-  } catch {
-    /* the server always renders it; keep the empty default */
-  }
-  const START = 2;
-  let cur = START;
-  const states = (): TimelineState[] => [0, 1, 2, 3, 4].map((i) => (i < cur ? "done" : i === cur ? "current" : "todo"));
-  const times = () => [0, 1, 2, 3, 4].map((i) => (i < cur ? (data.times[i] ?? null) : i === cur ? data.now : null));
-  const show = () => setTimeline(root, { progress: cur / 4, states: states(), times: times(), stopped: false });
-  reveal(root);
-  return on(root, "click", "button[data-act]", (_, b) => {
-    if (b.dataset.act === "advance") cur = Math.min(cur + 1, 4);
-    else if (b.dataset.act === "reset") cur = START;
-    else return setTimeline(root, { stopped: true });
-    show();
-  });
-});
-
-// The live status, driven by core/live-status.ts: a failed poll counts down to its retry.
-register("kit-live", (root) => {
-  let cancel: (() => void) | null = null;
-  const stop = () => {
-    cancel?.();
-    cancel = null;
-  };
-  reveal(root);
-  return offAll([
-    stop,
-    on(root, "click", "button[data-act]", (_, b) => {
-      stop();
-      if (b.dataset.act === "retry") cancel = retryIn(root, 5000, () => setLiveStatus(root, "live"));
-      else setLiveStatus(root, b.dataset.act === "offline" ? "offline" : "live");
-    }),
-  ]);
 });

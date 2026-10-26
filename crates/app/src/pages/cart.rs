@@ -2,15 +2,17 @@
 //! markup that the browser code (`client/src/features/cart.ts`) fills and keeps current. The cart
 //! itself is the browser's (`cart` cookie); the server prices it (`server::cart`).
 //!
-//! Names mounted by other agents: [`CartButton`] (header), [`CartDrawer`] (once, by the shell),
-//! [`QuickAdd`] (product cards).
+//! Names mounted by other agents: [`CartButton`] (header), [`CartDrawer`] (once, by the shell, with
+//! the line editor's sheet), [`QuickAdd`] (product cards).
 
 mod drawer;
+mod edit;
 mod line;
 mod page;
 mod parts;
 
 pub use drawer::CartDrawer;
+pub use edit::{CartEditPage, LineEditor, LineEditorSheet, edit_href};
 pub use line::{CartSummary, LineData, LineRow, SummaryData};
 pub use page::{Art, ArtImage, CartPage, PriceChanged, Totals, art, snapshots_json, vat_note};
 pub use parts::{CartButton, QuickAdd};

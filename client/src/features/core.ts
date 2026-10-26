@@ -147,13 +147,6 @@ export function previewNet(state: PreviewNet): void {
     window.setTimeout(() => progress(false), Math.max(200, state.progress));
   }
 }
-// The /ui page's buttons (`data-preview="offline|online|alert:<why>|progress:<ms>"`).
-on(document, "click", "button[data-preview]", (_ev, b) => {
-  const [what, arg] = (b.dataset.preview ?? "").split(":");
-  if (what === "offline" || what === "online") previewNet(what);
-  else if (what === "alert") previewNet({ fail: arg === "offline" || arg === "timeout" ? arg : "server" });
-  else if (what === "progress") previewNet({ progress: Number(arg) || 1500 });
-});
 
 // ── Preference and shop links come back to where you are ─────────────────────────────────────
 // Their `next` is the page as the server rendered it, and the address may have moved since (the

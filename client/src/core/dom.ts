@@ -60,3 +60,11 @@ export function patch(root: ParentNode, values: Record<string, string | number |
     if (!el.hidden && el.textContent !== String(v)) el.textContent = String(v);
   }
 }
+
+/** Show the controls that only work with JS (`[data-needs-js]`, `[data-act]` rendered hidden). */
+export function reveal(root: ParentNode): void {
+  for (const el of $$("[data-needs-js], [data-act][hidden]", root)) el.hidden = false;
+}
+
+/** One cleanup for several (`register`'s return value). */
+export const offAll = (offs: Array<() => void>) => () => offs.forEach((f) => f());
