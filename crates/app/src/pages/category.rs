@@ -9,18 +9,22 @@
 pub(crate) mod explorer;
 pub(crate) mod listing;
 
+use crate::api::types::{ListingPage, PER_PAGE};
 use crate::api::{
     self,
     types::{ListingQuery, NavCategory},
 };
+use crate::components::button::{Button, ButtonKind};
 use crate::components::{
     breadcrumbs::Breadcrumbs, empty_state::EmptyState, icons::Icon,
     product_card::ProductGridSkeleton,
 };
 use crate::format;
+use crate::pages::search::suggest::{CatLink, Suggestions};
+use crate::pages::search::{HeaderSearch, SearchBox};
 use crate::prefs::{Lang, tr};
 use crate::request::req;
-use explorer::CatalogExplorer;
+use explorer::{CatalogExplorer, Extras};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_meta::{Link, Meta, Title};
@@ -107,26 +111,64 @@ pub fn CategoryPage() -> impl IntoView {
                 </div>
                 <p class="cat-head__count">{format::items(cat.count, lang, num)}</p>
             </header>
-            <ListingResults data site lang/>
+            <ListingResults data site lang aisles=aisles(Some(&slug)) expected=cat.count.min(PER_PAGE)/>
         </div>
     })
+}
+
+/// The busiest aisles (except `except`), offered by empty states and the 404.
+pub(crate) fn aisles(except: Option<&str>) -> Vec<CatLink> {
+    #[cfg(feature = "ssr")]
+    {
+        crate::pages::search::suggest::popular_categories(6, except)
+    }
+    #[cfg(not(feature = "ssr"))]
+    {
+        let _ = except;
+        Vec::new()
+    }
+}
+
+/// A search that found nothing gets its suggestions with the first page (so no JS is needed).
+fn first_suggestions(page: &ListingPage) -> Option<Suggestions> {
+    #[cfg(feature = "ssr")]
+    {
+        page.query
+            .q
+            .as_deref()
+            .filter(|_| page.items.is_empty() && page.query.category.is_none())
+            .map(crate::pages::search::suggest::suggestions_now)
+    }
+    #[cfg(not(feature = "ssr"))]
+    {
+        let _ = page;
+        None
+    }
 }
 
 /// The explorer, once its first page is in. In order (no JS needed) it is simply part of the
 /// page; the fallback only shows if the route is ever switched to out-of-order streaming.
 #[component]
 pub(crate) fn ListingResults(
-    data: Resource<Result<crate::api::types::ListingPage, ServerFnError>>,
+    data: Resource<Result<ListingPage, ServerFnError>>,
     site: String,
     lang: Lang,
+    /// Aisles the empty states offer.
+    aisles: Vec<CatLink>,
+    /// How many cards the first page will hold (the skeleton draws as many).
+    expected: u32,
 ) -> impl IntoView {
     view! {
-        <Suspense fallback=|| view! { <ListingSkeleton/> }>
+        <Suspense fallback=move || view! { <ListingSkeleton cards=expected lang/> }>
             <ErrorBoundary fallback=move |_| view! { <ListingFailed lang/> }>
                 {move || {
-                    let site = site.clone();
+                    let (site, aisles) = (site.clone(), aisles.clone());
                     Suspend::new(async move {
-                        data.await.map(|page| view! { <CatalogExplorer initial=page site_name=site/> })
+                        data.await.map(|page| {
+                            let suggest = first_suggestions(&page);
+                            let extras = Extras { aisles, suggest };
+                            view! { <CatalogExplorer initial=page site_name=site extras/> }
+                        })
                     })
                 }}
             </ErrorBoundary>
@@ -134,32 +176,49 @@ pub(crate) fn ListingResults(
     }
 }
 
-/// The explorer's frame with pulsing cards, the same size as what replaces it.
+/// The explorer's exact frame — bar, filter panel, grid — pulsing, at the size of what replaces
+/// it (same classes, same rows, as many cards as the first page will hold).
 #[component]
-fn ListingSkeleton() -> impl IntoView {
+fn ListingSkeleton(cards: u32, lang: Lang) -> impl IntoView {
+    let rows = |n: usize| {
+        (0..n)
+            .map(|_| view! { <span class="skeleton lx-skel-row"></span> })
+            .collect_view()
+    };
     view! {
-        <div class="lx lx--skeleton" aria-hidden="true">
+        <div class="lx lx--skeleton" aria-busy="true" aria-label=tr(lang, "Loading products", "جاري تحميل المنتجات")>
             <div class="lx-bar">
-                <span class="skeleton lx-skel-btn"></span>
-                <span class="skeleton lx-skel-total"></span>
-                <span class="skeleton lx-skel-btn"></span>
+                <span class="skeleton lx-skel-btn lx-skel-btn--filters"></span>
+                <span class="skeleton lx-skel-btn lx-skel-btn--sort"></span>
             </div>
+            <p class="lx-total"><span class="skeleton lx-skel-line"></span></p>
             <div class="lx-body">
                 <div class="lx-filters">
                     <div class="lx-form">
-                        <span class="skeleton lx-skel-panel"></span>
+                        <div class="lx-form-head"><span class="skeleton lx-skel-title"></span></div>
+                        <div class="lx-group">
+                            <span class="skeleton lx-skel-legend"></span>
+                            <div class="lx-price">
+                                <span class="skeleton lx-skel-input"></span>
+                                <span class="lx-price-dash" aria-hidden="true">"–"</span>
+                                <span class="skeleton lx-skel-input"></span>
+                            </div>
+                        </div>
+                        <div class="lx-group"><span class="skeleton lx-skel-legend"></span>{rows(5)}</div>
+                        <div class="lx-group"><span class="skeleton lx-skel-legend"></span>{rows(2)}</div>
                     </div>
                 </div>
                 <div class="lx-results">
-                    <ProductGridSkeleton count=8 class="lx-grid"/>
+                    <ProductGridSkeleton count=cards.max(1) as usize class="lx-grid"/>
                 </div>
             </div>
         </div>
     }
 }
 
-/// The first page of results failed to load (`?fail=listing` demonstrates it). The retry link is
-/// the same listing without the `fail` parameter.
+/// The first page of results failed to load (`?fail=listing` demonstrates it). Retry is a link to
+/// the same listing without the `fail` parameter: without JS the browser loads it, with JS the
+/// islands router fetches it and patches this section in place.
 #[component]
 fn ListingFailed(lang: Lang) -> impl IntoView {
     let rq = req();
@@ -186,9 +245,9 @@ fn ListingFailed(lang: Lang) -> impl IntoView {
                 " "
                 <span>{tr(lang, "The rest of the shop is working normally.", "باقي المتجر يعمل بشكل طبيعي.")}</span>
             </p>
-            <a class="btn btn--secondary btn--md" href=retry data-press="">
-                <span class="btn__label">{tr(lang, "Try again", "حاول مرة أخرى")}</span>
-            </a>
+            <Button kind=ButtonKind::Secondary href=retry icon="rotate-ccw">
+                {tr(lang, "Try again", "حاول مرة أخرى")}
+            </Button>
         </div>
     }
 }
@@ -220,6 +279,9 @@ fn CategoryNotFound() -> impl IntoView {
                 body=tr(lang, "It may have moved or been renamed. Here's everything we stock:", "ممكن يكون اتنقل أو اسمه اتغيّر. دي كل الأقسام اللي عندنا:")
                 page=true
             />
+            <div class="listing-missing__search">
+                <HeaderSearch kind=SearchBox::Page/>
+            </div>
             <ul class="cat-pills" role="list">
                 {cats
                     .into_iter()

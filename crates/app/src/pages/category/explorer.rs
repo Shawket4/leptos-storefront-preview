@@ -23,7 +23,7 @@
 use super::listing::*;
 use crate::api::{
     self,
-    types::{BrandFacet, ListingPage, ListingQuery, Sort},
+    types::{BrandFacet, ListingPage, ListingQuery, PER_PAGE, Sort},
 };
 use crate::components::{
     button::{Button, ButtonKind},
@@ -33,12 +33,14 @@ use crate::components::{
     product_card::{CardData, ProductCard, ProductGrid, ProductGridSkeleton},
 };
 use crate::format;
+use crate::pages::search::suggest::{CatLink, Suggestions, search_suggestions};
 use crate::prefs::{Lang, Numerals, Ui, tr, use_ui};
 use domain::ProductId;
 use leptos::either::{Either, EitherOf3};
 use leptos::ev;
 use leptos::html;
 use leptos::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use wasm_bindgen::JsCast;
 
@@ -64,6 +66,15 @@ impl Seen {
     }
 }
 
+/// What the empty states can offer, sent with the first page.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct Extras {
+    /// The busiest other aisles.
+    pub aisles: Vec<CatLink>,
+    /// Suggestions for the first page's search, when it found nothing.
+    pub suggest: Option<Suggestions>,
+}
+
 /// The island's state, `Copy` so every handler can take it.
 #[derive(Clone, Copy)]
 struct Cx {
@@ -77,7 +88,14 @@ struct Cx {
     failed: Memo<bool>,
     brands: Memo<Vec<BrandFacet>>,
     pending: RwSignal<bool>,
+    /// A load that replaces what is on screen (another page or listing) has taken a moment:
+    /// show the grid's skeleton instead of dimmed, unrelated cards.
+    jumping: RwSignal<bool>,
+    /// The last load failed because the device is offline.
+    offline: RwSignal<bool>,
     retry: RwSignal<u32>,
+    suggest: RwSignal<Option<Suggestions>>,
+    aisles: StoredValue<Vec<CatLink>>,
     drawer: RwSignal<bool>,
     hydrated: RwSignal<bool>,
     min_text: RwSignal<String>,
@@ -189,7 +207,7 @@ impl Cx {
 }
 
 #[island]
-pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView {
+pub fn CatalogExplorer(initial: ListingPage, site_name: String, extras: Extras) -> impl IntoView {
     let ui = use_ui();
     let is_search = initial.query.category.is_none();
     let query = RwSignal::new(initial.query.clone());
@@ -241,7 +259,11 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
         failed,
         brands: Memo::new(move |_| shown.with(|s| s.facets.brands.clone())),
         pending: RwSignal::new(false),
+        jumping: RwSignal::new(false),
+        offline: RwSignal::new(false),
         retry,
+        suggest: RwSignal::new(extras.suggest),
+        aisles: StoredValue::new(extras.aisles),
         drawer: RwSignal::new(false),
         hydrated: RwSignal::new(false),
         min_text: RwSignal::new(initial.query.min.map(|v| v.to_string()).unwrap_or_default()),
@@ -277,6 +299,48 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
     });
     // Live from here on: the no-JS affordances (Apply, the sheet's close link) step aside.
     Effect::new(move |_| cx.hydrated.set(true));
+    // A failed load: offline, or the server? (Offline retries by itself, see `connect`.)
+    Effect::new(move |_| {
+        let failed = cx.failed.get();
+        cx.offline.set(failed && !window().navigator().on_line());
+    });
+    // Another page or listing on its way: after a beat (fast answers never flash), its skeleton
+    // takes the grid's place at the grid's size.
+    Effect::new(move |_| {
+        let pending = cx.pending.get();
+        let jump = cx.query.with(|q| {
+            cx.shown
+                .with(|s| q.page != s.page || q.category != s.query.category || q.q != s.query.q)
+        });
+        if !pending {
+            cx.jumping.set(false);
+        } else if jump {
+            let _ = set_timeout_with_handle(
+                move || {
+                    if cx.pending.get_untracked() {
+                        cx.jumping.set(true);
+                    }
+                },
+                Duration::from_millis(120),
+            );
+        }
+    });
+    // A search that found nothing: fetch what to offer instead (once per query).
+    Effect::new(move |_| {
+        let (empty, q) = cx.shown.with(|s| (s.items.is_empty(), s.query.q.clone()));
+        let Some(q) = q.filter(|_| empty) else { return };
+        if cx
+            .suggest
+            .with_untracked(|s| s.as_ref().is_some_and(|s| s.q == q))
+        {
+            return;
+        }
+        leptos::task::spawn_local(async move {
+            if let Ok(s) = search_suggestions(q).await {
+                cx.suggest.set(Some(s));
+            }
+        });
+    });
 
     let sort = NodeRef::<html::Details>::new();
     Effect::new(move |done: Option<bool>| {
@@ -341,7 +405,15 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
     };
 
     view! {
-        <div class="lx" class:lx--search=is_search node_ref=cx.root on:click=on_click>
+        // Bare: the search's base set is empty, so there is nothing to filter or sort — the empty
+        // state takes the whole width.
+        <div
+            class="lx"
+            class:lx--search=is_search
+            class:lx--bare=move || cx.shown.with(|s| s.total == 0 && s.facets.price_max == 0 && !s.query.has_filters())
+            node_ref=cx.root
+            on:click=on_click
+        >
             {is_search.then(|| search_head(cx))}
             <div class="lx-bar" id="lx-bar">
                 <Button
@@ -428,8 +500,18 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
                             let _ = page.await;
                         })}
                         {move || cx.failed.get().then(|| failed_notice(cx))}
-                        <div class="lx-results-body" class:is-pending=move || cx.pending.get()>
+                        <div
+                            class="lx-results-body"
+                            class:is-pending=move || cx.pending.get()
+                            class:is-jumping=move || cx.jumping.get()
+                        >
                             {move || cx.shown.with(|s| s.items.is_empty()).then(|| empty_view(cx))}
+                            {move || {
+                                cx.jumping.get().then(|| {
+                                    let n = cx.shown.with(|s| s.items.len().clamp(4, PER_PAGE as usize));
+                                    view! { <ProductGridSkeleton count=n class="lx-grid lx-grid--skel"/> }
+                                })
+                            }}
                             <ProductGrid class="lx-grid">
                                 <For
                                     each=cards
@@ -541,6 +623,13 @@ fn connect(cx: Cx, root: web_sys::Element, sort: NodeRef<html::Details>) {
         );
         registered.set_value(Some(on_pop));
     }
+
+    // Back online after a load failed offline: try again by itself.
+    while_connected(&root, ev::online, move |_| {
+        if cx.failed.get_untracked() {
+            cx.retry.update(|n| *n += 1);
+        }
+    });
 
     // Close the sort menu on a click elsewhere.
     while_connected(&root, ev::pointerdown, move |ev| {
@@ -919,7 +1008,13 @@ fn toggle_row(
 /// Nothing matched: say why, and offer the way out.
 fn empty_view(cx: Cx) -> AnyView {
     let lang = cx.lang();
+    let ar = lang.is_rtl();
     let q = cx.shown.with(|s| s.query.clone());
+    // Suggestions for this very search, once they are in.
+    let suggest = cx
+        .suggest
+        .get()
+        .filter(|s| q.q.as_deref() == Some(s.q.as_str()) && q.category.is_none());
     let (title, body, action) = if q.has_filters() {
         (
             tr(
@@ -933,19 +1028,40 @@ fn empty_view(cx: Cx) -> AnyView {
                 "Try removing a filter or widening the price range.",
                 "جرّب تشيل فلتر أو توسّع نطاق السعر.",
             ),
-            Some((tr(lang, "Clear filters", "امسح الفلاتر"), cleared(&q).href())),
+            Some((
+                cleared(&q).href(),
+                tr(lang, "Clear filters", "امسح الفلاتر").to_owned(),
+            )),
         )
     } else if let Some(text) = &q.q {
-        let back = if q.category.is_some() {
-            (
-                tr(lang, "Show the whole aisle", "اعرض القسم كله"),
+        let respelt = suggest.as_ref().and_then(|s| s.did_you_mean.clone());
+        let action = match (&respelt, q.category.is_some()) {
+            // "Did you mean": the respelling has results, so it is the way forward.
+            (Some(r), _) => (
+                ListingQuery {
+                    q: Some(r.clone()),
+                    page: 1,
+                    ..Default::default()
+                }
+                .href(),
+                format!("{} {}", tr(lang, "Search for", "دوّر على"), quoted(r, lang)),
+            ),
+            (None, true) => (
                 without_text(&q).href(),
-            )
-        } else {
-            (
-                tr(lang, "Browse all products", "تصفّح كل المنتجات"),
+                tr(lang, "Show the whole aisle", "اعرض القسم كله").to_owned(),
+            ),
+            (None, false) => (
                 "/search".to_owned(),
-            )
+                tr(lang, "Browse all products", "تصفّح كل المنتجات").to_owned(),
+            ),
+        };
+        let body = match &respelt {
+            Some(_) => tr(lang, "Did you mean this instead?", "تقصد دي؟"),
+            None => tr(
+                lang,
+                "Check the spelling, or try a shorter or more general word.",
+                "اتأكد من الكلمة، أو جرّب كلمة أقصر أو أعم.",
+            ),
         };
         (
             format!(
@@ -953,20 +1069,16 @@ fn empty_view(cx: Cx) -> AnyView {
                 tr(lang, "No results for", "مفيش نتائج لـ"),
                 quoted(text, lang)
             ),
-            tr(
-                lang,
-                "Check the spelling, or try a shorter or more general word.",
-                "اتأكد من الكلمة، أو جرّب كلمة أقصر أو أعم.",
-            ),
-            Some(back),
+            body,
+            Some(action),
         )
     } else {
         (
             tr(lang, "Nothing here yet", "لسه مفيش منتجات هنا").to_owned(),
             tr(
                 lang,
-                "New stock lands every week — check back soon.",
-                "بضاعة جديدة بتنزل كل أسبوع — ارجع لنا قريب.",
+                "New stock lands every week — have a look around meanwhile.",
+                "بضاعة جديدة بتنزل كل أسبوع — لف في باقي الأقسام لحد ما توصل.",
             ),
             None,
         )
@@ -976,25 +1088,107 @@ fn empty_view(cx: Cx) -> AnyView {
     } else {
         "delivery"
     };
-    match action {
-        Some((label, href)) => {
-            view! { <EmptyState art=art title=title body=body action=(href, label.to_owned())/> }
-                .into_any()
+    let state = match action {
+        Some(action) => {
+            view! { <EmptyState art=art title=title body=body action=action/> }.into_any()
         }
         None => view! { <EmptyState art=art title=title body=body/> }.into_any(),
+    };
+    // Popular searches (a search page only: they search the whole shop).
+    let popular = suggest.map(|s| s.popular).filter(|p| !p.is_empty()).map(|popular| {
+        view! {
+            <div class="lx-more-ways">
+                <p class="lx-more-ways__title">{tr(lang, "Popular searches", "الناس بتدوّر على")}</p>
+                <ul class="lx-pills" role="list">
+                    {popular
+                        .into_iter()
+                        .map(|label| {
+                            let text = label.pick(ar).to_owned();
+                            let href = ListingQuery { q: Some(text.clone()), page: 1, ..Default::default() }.href();
+                            view! {
+                                <li>
+                                    <a class="lx-pill" href=href>
+                                        <Icon name="search" size=16/>
+                                        <span>{text}</span>
+                                    </a>
+                                </li>
+                            }
+                        })
+                        .collect_view()}
+                </ul>
+            </div>
+        }
+    });
+    let aisles = cx.aisles.get_value();
+    let aisles = (!aisles.is_empty()).then(|| {
+        view! {
+            <div class="lx-more-ways">
+                <p class="lx-more-ways__title">{tr(lang, "Popular aisles", "أقسام عليها الطلب")}</p>
+                <ul class="lx-pills" role="list">
+                    {aisles
+                        .into_iter()
+                        .map(|c| {
+                            view! {
+                                <li>
+                                    <a class="lx-pill" href=format!("/c/{}", c.slug)>
+                                        <Icon name=c.icon size=16/>
+                                        <span>{c.name.pick(ar).to_owned()}</span>
+                                    </a>
+                                </li>
+                            }
+                        })
+                        .collect_view()}
+                </ul>
+            </div>
+        }
+    });
+    view! {
+        <div class="lx-empty">
+            {state}
+            {popular}
+            {aisles}
+        </div>
     }
+    .into_any()
 }
 
-/// The latest load failed: keep what is on screen, say so, offer a retry.
+/// The latest load failed: keep what is on screen, say so, offer a retry. Offline, it says so
+/// and tries again by itself when the connection is back (see `connect`).
 fn failed_notice(cx: Cx) -> impl IntoView {
     let lang = cx.lang();
+    let offline = cx.offline.get();
+    let (icon, title, body) = if offline {
+        (
+            "circle-alert",
+            tr(lang, "You're offline.", "لا يوجد اتصال بالإنترنت."),
+            tr(
+                lang,
+                "These are the earlier results; they'll update when you're back online.",
+                "تُعرض النتائج السابقة، وستتحدّث تلقائيًا عند عودة الاتصال.",
+            ),
+        )
+    } else {
+        (
+            "triangle-alert",
+            tr(
+                lang,
+                "These results couldn't be updated.",
+                "تعذّر تحديث النتائج.",
+            ),
+            tr(
+                lang,
+                "You're seeing the previous ones.",
+                "المعروض هو النتائج السابقة.",
+            ),
+        )
+    };
     view! {
-        <div class="lx-notice" role="alert">
-            <Icon name="triangle-alert" size=20 class="lx-notice-icon"/>
+        <div class="lx-notice" class:lx-notice--offline=offline role="alert">
+            <Icon name=icon size=20 class="lx-notice-icon"/>
             <p class="lx-notice-text">
-                <strong>{tr(lang, "These results couldn't be updated.", "تعذّر تحديث النتائج.")}</strong>
+                <strong>{title}</strong>
                 " "
-                <span>{tr(lang, "You're seeing the previous ones.", "المعروض هو النتائج السابقة.")}</span>
+                <span>{body}</span>
             </p>
             <Button kind=ButtonKind::Secondary on:click=move |_| cx.retry.update(|n| *n += 1)>
                 {tr(lang, "Try again", "حاول مرة أخرى")}

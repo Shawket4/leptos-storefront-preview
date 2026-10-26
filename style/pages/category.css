@@ -660,6 +660,12 @@
 .lx-notice--block {
   margin-block-start: var(--sp-4);
 }
+.lx-notice--offline {
+  background: var(--info-wash);
+}
+.lx-notice--offline .lx-notice-icon {
+  color: var(--info-text);
+}
 
 /* ── Pagination ──────────────────────────────────────────────────────────── */
 .lx-pages {
@@ -828,27 +834,135 @@ a.lx-page:active {
   }
 }
 
-/* ── The skeleton (only shown if the route ever streams out of order) ────── */
+/* ── The first-paint skeleton: the explorer's own frame, pulsing ────────────
+   (Only drawn if the route ever streams out of order; same classes and rows as
+   the real thing, so nothing moves when it is replaced.) */
 .lx--skeleton .lx-skel-btn {
-  display: block;
-  inline-size: 7.5rem;
   block-size: 44px;
   border-radius: var(--r-md);
 }
-.lx--skeleton .lx-skel-total {
-  display: block;
-  inline-size: 6rem;
+.lx--skeleton .lx-skel-btn--filters {
+  inline-size: 7.5rem;
+}
+.lx--skeleton .lx-skel-btn--sort {
+  inline-size: 11rem;
+  margin-inline-start: auto;
+}
+.lx--skeleton .lx-skel-line {
+  inline-size: 8rem;
   block-size: 1rem;
 }
-.lx--skeleton .lx-skel-panel {
-  display: block;
-  block-size: 24rem;
-  border-radius: var(--r-lg);
+.lx--skeleton .lx-skel-title {
+  inline-size: 5rem;
+  block-size: 1.25rem;
+}
+.lx--skeleton .lx-skel-legend {
+  inline-size: 4.5rem;
+  block-size: 0.875rem;
+  margin-block-end: var(--sp-3);
+}
+.lx--skeleton .lx-skel-input {
+  block-size: 44px;
+  border-radius: var(--r-md);
+}
+.lx--skeleton .lx-skel-row {
+  block-size: 1.25rem;
+  margin-block: 0.75rem;
+  border-radius: var(--r-xs);
+}
+@media (min-width: 769px) {
+  .lx--skeleton .lx-bar {
+    justify-self: end;
+  }
+  .lx--skeleton .lx-skel-btn--filters {
+    display: none;
+  }
+}
+
+/* Another page or listing on its way: its skeleton stands in at the grid's size. */
+.lx-results-body.is-jumping > .lx-grid:not(.lx-grid--skel) {
+  display: none;
+}
+.lx-results-body.is-pending.is-jumping {
+  opacity: 1;
+}
+
+/* Nothing to filter or sort (a search with no base results): the state alone. */
+.lx--bare .lx-bar,
+.lx--bare .lx-total,
+.lx--bare .lx-filters {
+  display: none;
+}
+@media (min-width: 769px) {
+  .lx--bare .lx-results {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Empty results: the state, then other ways forward ────────────────────── */
+.lx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-6);
+  padding-block: var(--sp-4) var(--sp-8);
+}
+.lx-more-ways {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  max-inline-size: 40rem;
+}
+.lx-more-ways__title {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.lx-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  padding-inline: var(--sp-4);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.lx-pill .icon {
+  color: var(--text-2);
+}
+.lx-pill:hover {
+  box-shadow: var(--shadow-md);
+}
+.lx-pill:active {
+  scale: var(--press);
 }
 
 /* ── Not found ───────────────────────────────────────────────────────────── */
 .listing--missing {
   padding-block-start: var(--sp-12);
+}
+.listing-missing__search {
+  max-inline-size: 36rem;
+  margin: var(--sp-6) auto 0;
 }
 .cat-pills {
   display: flex;
