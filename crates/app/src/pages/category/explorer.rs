@@ -361,11 +361,13 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
                         (n > 0).then(|| view! { <span class="lx-badge">{format::count(n, cx.num())}</span> })
                     }}
                 </Button>
-                <p class="lx-total" role="status">
-                    {move || cx.shown.with(|s| range_label(s.page, s.total, cx.lang(), cx.num()))}
-                </p>
                 {sort_menu(cx, sort)}
             </div>
+            // Outside the (sticky, on phones) bar so it scrolls away; on wide screens it shares
+            // the bar's grid row.
+            <p class="lx-total" role="status">
+                {move || cx.shown.with(|s| range_label(s.page, s.total, cx.lang(), cx.num()))}
+            </p>
             {move || chips(cx)}
             <div class="lx-body">
                 <aside class="lx-filters" id="lx-filters" aria-labelledby="lx-filters-title">
