@@ -19,20 +19,24 @@
   }
 }
 .toaster__list {
+  --gap: var(--sp-2);
+  --peek: 0.5rem;
   display: grid;
-  gap: var(--sp-2);
-  justify-items: inherit;
+  inline-size: min(24rem, calc(100vw - var(--gutter) * 2));
   margin: 0;
   padding: 0;
   list-style: none;
 }
+
+/* The stack: every toast in the same cell, bottoms aligned; the newest (data-depth 0, set by the
+   island) in front, the next two tucked behind, scaled from their top edge and lifted, so 8px of
+   each peeks out above. Those behind take the front one's height (--front-h) and hide their
+   content, so every strip is the same. */
 .toast {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  min-block-size: 3rem;
-  max-inline-size: min(26rem, calc(100vw - var(--gutter) * 2));
-  padding: 0.5rem 0.375rem 0.5rem 0.875rem;
+  grid-area: 1 / 1;
+  align-self: end;
+  position: relative;
+  block-size: var(--h, auto);
   border-radius: var(--r-lg);
   background: var(--ink);
   color: var(--on-ink);
@@ -40,14 +44,94 @@
   font-size: 0.9375rem;
   font-weight: var(--fw-semibold);
   line-height: var(--lh-snug);
+  transform-origin: 50% 0;
   pointer-events: auto;
-  animation: toast-in var(--spring-default-dur) var(--spring-default) both;
+  transition:
+    transform var(--spring-default-dur) var(--spring-default),
+    block-size var(--spring-default-dur) var(--spring-default),
+    background-color var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
+  animation: toast-in var(--spring-default-dur) var(--spring-default) backwards;
 }
-[dir="rtl"] .toast {
+.toast__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-block-size: 3rem;
+  padding: 0.5rem 0.375rem 0.5rem 0.875rem;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+[dir="rtl"] .toast__inner {
   padding: 0.5rem 0.875rem 0.5rem 0.375rem;
 }
+.toast:is([data-depth="1"], [data-depth="2"], [data-depth="3"]) {
+  block-size: var(--front-h, auto);
+  overflow: clip;
+  box-shadow: var(--shadow-sm);
+}
+.toast:is([data-depth="1"], [data-depth="2"], [data-depth="3"]) > .toast__inner {
+  opacity: 0;
+  visibility: hidden;
+}
+.toast[data-depth="1"] {
+  transform: translateY(calc(var(--peek) * -1)) scale(0.94);
+  background: color-mix(in oklab, var(--ink) 80%, var(--page));
+}
+.toast[data-depth="2"] {
+  transform: translateY(calc(var(--peek) * -2)) scale(0.88);
+  background: color-mix(in oklab, var(--ink) 62%, var(--page));
+}
+.toast[data-depth="3"] {
+  transform: translateY(calc(var(--peek) * -2)) scale(0.82);
+  opacity: 0;
+}
+
+/* Fanned out: a mouse over the stack, or focus inside it — each toast at full size, the older
+   ones above the newer (--y, measured), with the gap bridged so the pointer never falls out. */
+@media (hover: hover) {
+  .toaster__list:hover > .toast:not([data-leaving="true"]) {
+    block-size: var(--h, auto);
+    overflow: visible;
+    transform: translateY(calc(var(--y, 0px) * -1));
+    background: var(--ink);
+    box-shadow: var(--shadow-float);
+  }
+  .toaster__list:hover > .toast:not([data-leaving="true"]) > .toast__inner {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+.toaster__list:focus-within > .toast:not([data-leaving="true"]) {
+  block-size: var(--h, auto);
+  overflow: visible;
+  transform: translateY(calc(var(--y, 0px) * -1));
+  background: var(--ink);
+  box-shadow: var(--shadow-float);
+}
+.toaster__list:focus-within > .toast:not([data-leaving="true"]) > .toast__inner {
+  opacity: 1;
+  visibility: visible;
+}
+.toast::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  block-size: var(--gap);
+  pointer-events: none;
+}
+.toaster__list:is(:hover, :focus-within) > .toast::after {
+  pointer-events: auto;
+}
+
+/* Leaving: the front one drops back the way it came; one behind fades where it is. */
 .toast[data-leaving="true"] {
+  pointer-events: none;
   animation: toast-out 180ms var(--ease-in) both;
+}
+.toast[data-leaving="true"]:is([data-depth="1"], [data-depth="2"], [data-depth="3"]) {
+  animation: none;
+  opacity: 0;
 }
 @keyframes toast-in {
   from {
@@ -59,6 +143,12 @@
   to {
     opacity: 0;
     transform: translateY(0.75rem) scale(0.97);
+  }
+}
+/* Reduced motion: places change at once; arrivals and exits fade (base.css). */
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: opacity var(--dur-fast) linear;
   }
 }
 .toast__icon {
