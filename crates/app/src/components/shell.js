@@ -232,6 +232,11 @@
       throw tag(new Error("HTTP " + resp.status));
     }
     fails.delete(key);
+    // A submission goes to the top only if it lands on another page (not a server function
+    // that redirects back here).
+    if (pending && pending.top === "if-moved") {
+      pending = new URL(resp.url || key, location.href).pathname !== location.pathname ? { top: true } : null;
+    }
     const type = resp.headers.get("content-type") || "";
     if (!resp.ok || !type.includes("text/html")) return resp;
     quiet();
@@ -272,7 +277,7 @@
     const alert = d.querySelector(".nav-alert");
     if (alert) alert.dataset.open = "false";
     if (p && p.hash) d.getElementById(p.hash)?.scrollIntoView({ block: "start", behavior: "instant" });
-    else if (p && p.top) w.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    else if (p && p.top === true) w.scrollTo({ top: 0, left: 0, behavior: "instant" });
     else if (p && p.y != null) w.scrollTo({ top: p.y, left: 0, behavior: "instant" });
     rails();
   };
@@ -318,7 +323,9 @@
     const u = new URL(f.action, location.href);
     if (u.origin !== location.origin) return;
     save();
-    if (u.pathname !== location.pathname) pending = { top: true };
+    // Where a submission lands is known only from the response (a server function posts to
+    // /api/… and redirects back): the fetch below decides.
+    pending = { top: "if-moved" };
   }, true);
 
   // ── The button that submitted a form ──────────────────────────────────────
