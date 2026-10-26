@@ -1,9 +1,10 @@
 # sccache + mold for host builds (same setup as the Madar repos' scripts/dev-env.sh).
 [build]
 rustc-wrapper = "sccache"
-# Intermediate artifacts live in one shared dir on the SSD so agent worktrees reuse compiled
-# dependencies; final binaries/wasm still land in each worktree's own target/.
-build-dir = "/home/apex/work/lsp-build"
+# One build dir per worktree (keyed by its path). A single shared dir looked attractive, but every
+# worktree has the same relative layout, so cargo gave each worktree's `app` the same artifact name
+# and dev servers silently linked another worktree's code. sccache keeps dependency rebuilds cheap.
+build-dir = "/home/apex/work/lsp-build/{workspace-path-hash}"
 
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
