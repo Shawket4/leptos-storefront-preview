@@ -163,7 +163,7 @@ async function go(g: Go): Promise<void> {
   }
   consumed.add(page);
   if (id !== seq) return; // a newer navigation took over
-  preload(featuresIn(page.html)); // the page's feature chunks load while it's being swapped in
+  preload(featuresIn(page.html), { intent: false }); // its feature chunks load while it's swapped in
   fails.delete(href);
   if (g.method === "GET" && !g.pop && !g.url.pathname.startsWith("/__") && !landingWarmed) warmLanding();
   await show(page, g);
@@ -529,7 +529,7 @@ function warm(href: string): void {
   loadGet(href).then(
     (p) => {
       if (p.personal && !consumed.has(p)) warmPersonal.set(pageKey(href), { page: p, at: Date.now() });
-      preload(featuresIn(p.html)); // and the chunks it needs, so the tap finds them ready
+      preload(featuresIn(p.html), { intent: false }); // and the chunks it needs, so the tap finds them ready
     },
     () => {}, // a failed warm costs nothing
   );

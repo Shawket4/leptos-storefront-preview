@@ -103,6 +103,8 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("orders/:id") view=pages::OrderPage ssr=SsrMode::InOrder/>
                     <Route path=path!("showcase") view=pages::ShowcasePage ssr=SsrMode::InOrder/>
                     <Route path=path!("ui") view=pages::UiKitPage ssr=SsrMode::InOrder/>
+                    // The core agent's scratch route (dev checks of core behaviour and components).
+                    <Route path=path!("core-scratch") view=pages::core_scratch::CoreScratchPage ssr=SsrMode::InOrder/>
                     // Showcase agent (agreed with the lead): the one out-of-order route, the demo.
                     <Route path=path!("showcase/stream") view=pages::showcase::StreamDemoPage ssr=SsrMode::OutOfOrder/>
                 </Routes>
