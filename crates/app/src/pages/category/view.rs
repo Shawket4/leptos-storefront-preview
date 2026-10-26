@@ -161,7 +161,7 @@ fn search_head(q: &ListingQuery, lang: Lang) -> impl IntoView + use<> {
 fn sort_menu(q: &ListingQuery, lang: Lang) -> impl IntoView + use<> {
     let ar = lang.is_rtl();
     view! {
-        <details class="lx-sort">
+        <details class="lx-sort" data-router="off">
             <summary class="lx-sort-btn">
                 <Icon name="arrow-up-down" size=16/>
                 <span class="lx-sort-k">{tr(lang, "Sort", "الترتيب")}</span>
@@ -191,7 +191,8 @@ fn sort_menu(q: &ListingQuery, lang: Lang) -> impl IntoView + use<> {
 }
 
 /// The active filters as removable chips. `data-clear` names the field a chip resets, so the
-/// browser code can apply it to the form at once and send one navigation for several taps.
+/// browser code can apply it to the form at once and send one navigation for several taps (so
+/// the router neither follows nor prefetches these links: `data-router="off"`).
 fn chips(page: &ListingPage, lang: Lang, num: Numerals) -> Option<impl IntoView + use<>> {
     let q = &page.query;
     let ar = lang.is_rtl();
@@ -247,7 +248,7 @@ fn chips(page: &ListingPage, lang: Lang, num: Numerals) -> Option<impl IntoView 
     let remove = tr(lang, "Remove filter", "شيل الفلتر");
     let clear_all = (items.len() > 1).then(|| cleared(q).href());
     Some(view! {
-        <ul class="lx-chips" aria-label=tr(lang, "Active filters", "الفلاتر المختارة")>
+        <ul class="lx-chips" aria-label=tr(lang, "Active filters", "الفلاتر المختارة") data-router="off">
             {items
                 .into_iter()
                 .map(|(label, href, field, value)| {
