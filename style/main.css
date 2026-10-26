@@ -1,4 +1,3 @@
-/* Scaffold placeholder — replaced by the design system. */
-:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
-body { margin: 0; padding: 24px; background: #F1F3F3; color: #101820; }
-.probe { font: inherit; padding: 8px 16px; border-radius: 10px; border: 1px solid #ccc; }
+/* Interim stylesheet on main until the design system lands (agent/design replaces this file). */
+@import "shim.css";
+@import "pages/home.css";
