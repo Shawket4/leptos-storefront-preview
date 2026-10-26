@@ -5,8 +5,9 @@
 //! the drawer and /cart share.
 
 use super::line::{CartSummary, GoneTemplate, LineData, LineRow, SummaryData};
-use super::page::{ArtImage, art};
+use crate::components::button::{Button, ButtonKind};
 use crate::components::drawer::{Drawer, DrawerSide};
+use crate::components::states::{StateTone, StateView};
 use crate::prefs::use_ui;
 use crate::strings;
 use leptos::prelude::*;
@@ -23,10 +24,10 @@ pub fn CartDrawer() -> impl IntoView {
         <Drawer id="cart-drawer" side=DrawerSide::End title=g("cart.title").to_owned() class="cart-drawer" footer>
             <div class="cart-drawer__content" data-ts="cart-drawer">
                 <div class="cart-empty" data-cart-empty="" hidden="">
-                    <ArtImage art=art("empty-cart") fallback_icon="shopping-bag" lang/>
-                    <p class="cart-empty__title">{g("cart.empty_title")}</p>
-                    <p class="cart-empty__body">{g("cart.empty_body")}</p>
-                    <a class="btn btn--primary btn--md" href="/" data-drawer-close="">{g("cart.start")}</a>
+                    <StateView tone=StateTone::Empty art="empty-cart" compact=true
+                        title=g("cart.empty_title") body=g("cart.empty_body")>
+                        <Button href="/" kind=ButtonKind::Primary attr:data-drawer-close="">{g("cart.start")}</Button>
+                    </StateView>
                 </div>
                 <ul class="clines" data-cart-lines="" aria-label=g("cart.lines_label")></ul>
             </div>

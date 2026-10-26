@@ -8,7 +8,9 @@ use super::line::{CART_PATH, CartSummary, LineData, LineRow, SummaryData, percen
 use super::parts::QuickAdd;
 use super::tx;
 use crate::api::types::{CartView, Rail};
+use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
+use crate::components::states::{StateTone, StateView};
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
 use crate::components::product_card::CardData;
@@ -170,10 +172,10 @@ pub fn CartPage() -> impl IntoView {
                 </p>
             })}
             <div class="cart-empty card" data-cart-empty="" hidden=!empty>
-                <ArtImage art=art("empty-cart") fallback_icon="shopping-bag" lang/>
-                <p class="cart-empty__title">{strings::get("cart.empty_title", lang)}</p>
-                <p class="cart-empty__body">{strings::get("cart.empty_body", lang)}</p>
-                <a class="btn btn--primary btn--lg" href="/">{strings::get("cart.start", lang)}</a>
+                <StateView tone=StateTone::Empty art="empty-cart"
+                    title=strings::get("cart.empty_title", lang) body=strings::get("cart.empty_body", lang)>
+                    <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{strings::get("cart.start", lang)}</Button>
+                </StateView>
             </div>
             <div class="cart-layout" data-cart-full="" hidden=empty>
                 <section class="cart-lines card" aria-labelledby="cart-title">

@@ -6,6 +6,7 @@
 
 use super::tx;
 use crate::api::types::CartLineView;
+use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::components::stepper::Stepper;
 use crate::format;
@@ -214,7 +215,7 @@ pub fn CartSummary(
     num: Numerals,
     #[prop(optional)] in_drawer: bool,
 ) -> impl IntoView {
-    let g = |k: &str| strings::get(k, lang);
+    let g = move |k: &str| strings::get(k, lang);
     let vat = tx("cart.vat", lang, &[("pct", &percent(14, num))]);
     let (vat_a, vat_b) = vat
         .split_once("{vat}")
@@ -258,15 +259,22 @@ pub fn CartSummary(
             </div>
             <div class="csum__actions">
                 <p class="csum__blocked" data-slot="blocked" hidden=!blocked>{g("cart.blocked")}</p>
-                <a class="btn btn--primary btn--lg btn--block" href="/checkout" data-checkout=""
-                    aria-disabled=blocked.to_string()>
-                    <span class="btn__label">{g("cart.checkout")}</span>
-                    <Icon name="arrow-right" size=18 class="flip-rtl btn__end"/>
-                </a>
+                // Blocked is toggled by the browser code as the quote changes, so the link keeps
+                // its href (Button's `disabled` would drop it).
+                <Button href="/checkout" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true
+                    icon_end="arrow-right" attr:data-checkout="" attr:aria-disabled=blocked.to_string()>
+                    {g("cart.checkout")}
+                </Button>
                 {if in_drawer {
-                    view! { <a class="btn btn--ghost btn--md btn--block" href="/cart">{g("cart.view")}</a> }.into_any()
+                    view! {
+                        <Button href="/cart" kind=ButtonKind::Ghost full_width=true>{g("cart.view")}</Button>
+                    }
+                    .into_any()
                 } else {
-                    view! { <a class="btn btn--ghost btn--md btn--block" href="/">{g("cart.continue")}</a> }.into_any()
+                    view! {
+                        <Button href="/" kind=ButtonKind::Ghost full_width=true>{g("cart.continue")}</Button>
+                    }
+                    .into_any()
                 }}
             </div>
         </div>

@@ -1,5 +1,6 @@
 //! The header's cart button and the quick-add "+" on product cards.
 
+use crate::components::button::{ButtonKind, IconButton};
 use crate::components::icons::Icon;
 use crate::components::product_card::CardData;
 use crate::format;
@@ -14,11 +15,11 @@ use leptos::prelude::*;
 pub fn CartButton() -> impl IntoView {
     let lang = use_ui().lang.get_untracked();
     view! {
-        <a href="/cart" class="icon-btn icon-btn--ghost cart-btn" data-ts="cart-badge" data-count="0"
-            aria-label=strings::get("cart.title", lang) aria-haspopup="dialog" aria-controls="cart-drawer">
-            <Icon name="shopping-bag" size=22/>
+        <IconButton icon="shopping-bag" label=strings::get("cart.title", lang) href="/cart"
+            kind=ButtonKind::Ghost class="cart-btn" attr:data-ts="cart-badge" attr:data-count="0"
+            attr:aria-haspopup="dialog" attr:aria-controls="cart-drawer">
             <span class="icon-btn__badge cart-btn__badge" aria-hidden="true"></span>
-        </a>
+        </IconButton>
     }
 }
 
