@@ -106,8 +106,8 @@ mounts the new regions.
 
 | Module | API (stable — ask the lead before changing it) |
 |---|---|
-| `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()` |
-| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)`, `prefersReducedMotion()` |
+| `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()`, `digits(n)` (counts and clocks in the visitor's numerals — never money) |
+| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)` (clone a template), `patch(root, values)` (update `[data-slot]`s in place, focus kept), `prefersReducedMotion()` |
 | `core/mount.ts` | `register(feature, el => cleanup?)`; `mountAll(root)`, `unmountAll(root)` (router) |
 | `core/store.ts` | `createStore(initial)` → `get/set/update/subscribe` — only `stores/*` create stores |
 | `core/net.ts` | `request`, `getJSON<T>(url, opts)`, `NetError` (`offline/timeout/http/parse/aborted`), `isOnline`, `onOnline` |
