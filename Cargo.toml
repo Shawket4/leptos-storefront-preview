@@ -61,6 +61,9 @@ output-name = "storefront"
 site-root = "target/site"
 site-pkg-dir = "pkg"
 style-file = "style/main.css"
+# Content-hashed CSS (pkg/storefront.<hash>.css, linked by leptos_meta's HashedStylesheet), so the
+# server can mark it immutable; cargo-leptos writes the hashes to hash.txt beside the binary.
+hash-files = true
 # Bundle the @import partials in style/ into one file with Lightning CSS.
 style-bundle = true
 assets-dir = "public"

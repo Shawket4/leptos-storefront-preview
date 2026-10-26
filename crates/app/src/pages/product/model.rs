@@ -1,15 +1,11 @@
-//! What the product page's islands receive as props, and the rules both the server render (the
-//! no-JS links and form) and the islands apply: which variant a pick leads to, why a value is
-//! unavailable, how add-on groups validate and price. One implementation, so they can't disagree.
+//! The product page's rules, applied once on the server: which variant a pick leads to, why a
+//! value is unavailable (and where it is in stock), stock wording, how add-on groups validate.
+//! The server renders the page with them and precomputes every variant's outcome into the page's
+//! JSON, so the browser switches variants without asking (`features/product.ts`).
 
 use crate::format;
-use crate::media::Img;
 use crate::prefs::{Lang, Numerals, tr};
 use domain::{L10n, ModifierGroup, Piastres, ProductOption, SelectionType, Variant};
-use serde::{Deserialize, Serialize};
-
-/// Most of one line a cart takes (mirrors `server::cart::MAX_PER_LINE`, which is ssr-only).
-pub const MAX_QTY: u32 = 20;
 
 /// `sizes` of the main gallery image; the `<head>` preload uses the same string so the browser
 /// picks the same file twice.
@@ -19,34 +15,12 @@ pub const STAGE_SIZES: &str =
 /// "Only N left" from this many down.
 pub const LOW_STOCK: u32 = 5;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct GalleryData {
-    pub product: u32,
-    pub name: L10n,
-    pub images: Vec<Img>,
-    /// The image the selected variant shows first.
-    pub start: usize,
-}
-
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct PanelData {
-    pub product: u32,
-    pub slug: String,
-    pub name: L10n,
-    pub axes: Vec<ProductOption>,
-    pub variants: Vec<Variant>,
-    pub groups: Vec<ModifierGroup>,
-    /// Variant id selected on load (`?v=` or the default variant).
-    pub selected: u32,
-    /// The outcome of a no-JS add (the server function redirected back here).
-    pub notice: Option<Notice>,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+/// The outcome of a no-JS add, from the cart's 303 back here (AGENTS.md, "No-JS cart forms").
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Notice {
     /// `?added=<qty>`.
     Added(u32),
-    /// `?__err=` decoded to its code (`out_of_stock`, `addon_required`, …).
+    /// `?cart_err=<code>`.
     Error(String),
 }
 
@@ -215,12 +189,6 @@ pub fn bounds(g: &ModifierGroup) -> (u32, u32) {
     (min, max)
 }
 
-pub fn group_ok(g: &ModifierGroup, picked: &[String]) -> bool {
-    let (min, max) = bounds(g);
-    let n = g.options.iter().filter(|o| picked.contains(&o.id)).count() as u32;
-    n >= min && n <= max
-}
-
 /// "Required" / "Optional" / "Choose up to 2" / "Choose 1–3".
 pub fn group_hint(g: &ModifierGroup, lang: Lang, numerals: Numerals) -> String {
     let (min, max) = bounds(g);
@@ -266,103 +234,11 @@ pub fn group_problem(g: &ModifierGroup, lang: Lang, numerals: Numerals) -> Strin
     }
 }
 
-pub fn addons_total(groups: &[ModifierGroup], picks: &[Vec<String>]) -> Piastres {
-    groups
-        .iter()
-        .zip(picks)
-        .flat_map(|(g, p)| {
-            g.options
-                .iter()
-                .filter(|o| p.contains(&o.id))
-                .map(|o| o.price)
-        })
-        .sum()
-}
-
-/// Form field name of an add-on input, so a plain (no-JS) form post deserializes into
-/// `addons: Vec<String>`: serde_qs takes `addons[3]=…` as an ordered sequence (gaps are fine) but
-/// rejects a repeated `addons=…` key. Radios of one group share an index; checkboxes get one each.
-pub fn input_name(groups: &[ModifierGroup], group: usize, option: usize) -> String {
-    let base: usize = groups[..group]
-        .iter()
-        .map(|g| match g.selection {
-            SelectionType::Single => 1,
-            SelectionType::Multi => g.options.len(),
-        })
-        .sum();
-    let k = match groups[group].selection {
-        SelectionType::Single => base,
-        SelectionType::Multi => base + option,
-    };
-    format!("addons[{k}]")
-}
-
 /// `+ EGP 15.00` / `مجانًا`.
 pub fn surcharge(p: Piastres, lang: Lang, numerals: Numerals) -> String {
     if p.0 == 0 {
         tr(lang, "Free", "مجانًا").to_owned()
     } else {
         format!("+ {}", format::money(p, lang, numerals))
-    }
-}
-
-// ── Errors from `cart_add` (codes listed in api/cart.rs) ───────────────────────────────────
-
-/// User-facing copy for an add-to-cart failure (clear MSA in Arabic, as for every error).
-pub fn error_text(code: &str, lang: Lang) -> &'static str {
-    match code {
-        "out_of_stock" => tr(
-            lang,
-            "Sorry — this option just sold out. Please pick another one.",
-            "عذرًا، نفدت كمية هذا الاختيار للتو. يُرجى اختيار خيار آخر.",
-        ),
-        "addon_required" => tr(
-            lang,
-            "Please choose the required options first.",
-            "يُرجى اختيار الخيارات المطلوبة أولًا.",
-        ),
-        "bad_addon" => tr(
-            lang,
-            "One of the extras isn't available with this item. Please check your choices.",
-            "إحدى الإضافات غير متاحة مع هذا المنتج. يُرجى مراجعة اختياراتك.",
-        ),
-        "unknown_product" => tr(
-            lang,
-            "This product is no longer available.",
-            "هذا المنتج لم يعد متاحًا.",
-        ),
-        "offline" => tr(
-            lang,
-            "You're offline. Check your connection, then try again.",
-            "لا يوجد اتصال بالإنترنت. تحقّق من الاتصال ثم أعد المحاولة.",
-        ),
-        "back_online" => tr(lang, "You're back online.", "عاد الاتصال بالإنترنت."),
-        "network" => tr(
-            lang,
-            "We couldn't reach the store. Check your connection and try again.",
-            "تعذّر الوصول إلى المتجر. تحقّق من الاتصال وأعد المحاولة.",
-        ),
-        _ => tr(
-            lang,
-            "We couldn't add this to your cart. Please try again.",
-            "تعذّرت إضافة المنتج إلى السلة. يُرجى المحاولة مرة أخرى.",
-        ),
-    }
-}
-
-/// Whether trying the same add again can help (not for stock or add-on problems: those need a
-/// different choice, and the message says which).
-pub fn retryable(code: &str) -> bool {
-    !matches!(
-        code,
-        "out_of_stock" | "addon_required" | "bad_addon" | "unknown_product"
-    )
-}
-
-/// The code inside a `ServerFnError` (`ServerFnError::new("out_of_stock")` → `"out_of_stock"`).
-pub fn error_code(e: &leptos::prelude::ServerFnError) -> String {
-    match e {
-        leptos::prelude::ServerFnError::ServerError(m) => m.clone(),
-        _ => "network".into(),
     }
 }

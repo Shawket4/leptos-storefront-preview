@@ -74,7 +74,7 @@ pub fn BottomNav(
     ];
     let mut cart_badge = cart_badge;
     view! {
-        <nav class="bottom-nav" aria-label=tr(lang, "Main", "التنقل الرئيسي")>
+        <nav class="bottom-nav" aria-label=tr(lang, "Main", "التنقل الرئيسي") data-region="bottom-nav">
             <ul class="bottom-nav__list" role="list">
                 {tabs
                     .into_iter()

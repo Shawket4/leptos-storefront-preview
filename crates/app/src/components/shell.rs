@@ -1,9 +1,14 @@
 //! The page frame around every route: skip link, header, category strip, main, footer, phone tab
-//! bar, and the global mounts (cart drawer, toaster), plus the shell's small script.
+//! bar, and the page-wide singletons (cart drawer, toaster, offline banner, navigation feedback,
+//! pull-to-refresh), plus the JSON the browser code reads (`#app-config`, `#app-strings`).
 //!
 //! A server component: it reads the request (`RequestCtx`) and the catalogue's categories
 //! synchronously, so the frame is in the first streamed chunk. During route-list generation there
 //! is no request; then it renders the routes alone.
+//!
+//! Client-side navigations (client/src/core/router.ts) swap `<main>` and every
+//! `[data-region=<name>]` (category strip, footer, tab bar); the header with its search box, the
+//! cart drawer and the toaster stay. A language, numerals or theme change swaps the whole `.app`.
 
 use super::bottom_nav::{BottomNav, Tab};
 use super::footer::SiteFooter;
@@ -13,11 +18,8 @@ use super::offline::OfflineBanner;
 use super::toast::Toaster;
 use crate::prefs::tr;
 use crate::request::RequestCtx;
+use crate::strings;
 use leptos::prelude::*;
-
-/// Progressive enhancement for the whole frame (see shell.js; cargo-leptos only rebuilds on .rs
-/// edits, so touch this comment after changing it: prefetch, progress, failures, prefs next,
-/// previews, submitter, scroll, bare ?).
 
 /// The tenant's categories for the header strip and the footer, in display order.
 fn nav_items() -> Vec<NavItem> {
@@ -64,9 +66,7 @@ pub fn AppShell(children: Children) -> impl IntoView {
 
     view! {
         <div class="app">
-            // target="_self" keeps the skip link native: the islands router would otherwise
-            // re-fetch the page instead of moving focus to the content.
-            <a class="skip-link" href="#main" target="_self">
+            <a class="skip-link" href="#main">
                 {tr(lang, "Skip to content", "انتقل للمحتوى")}
             </a>
             <SiteHeader tenant=rq.tenant.clone() lang=lang theme=p.theme/>
@@ -78,40 +78,48 @@ pub fn AppShell(children: Children) -> impl IntoView {
             <Toaster/>
             <OfflineBanner/>
             <NavFeedback lang=lang/>
+            <PullToRefresh/>
             <AppData rq=rq.clone()/>
         </div>
     }
     .into_any()
 }
 
-/// What shell.js drives during router navigations: the progress bar (shown only past 150 ms) and
-/// the alert for a navigation that failed (offline, 5xx, 12 s timeout), its words rendered here in
-/// the visitor's language so the script needs none of its own.
+/// What the router's feedback drives (features/core.ts): the progress bar (only past 150 ms) and
+/// the alert for a navigation that failed (5xx, 12 s timeout, a dropped connection; offline shows
+/// the offline banner instead). The reason (`nav.why.*`) is put in by the browser code.
 #[component]
 fn NavFeedback(lang: crate::prefs::Lang) -> impl IntoView {
+    let s = |k| strings::get(k, lang);
     view! {
         <div class="nav-progress" data-state="idle" aria-hidden="true">
             <span class="nav-progress__bar"></span>
         </div>
-        <div
-            class="nav-alert"
-            data-open="false"
-            role="alert"
-            data-why-offline=tr(lang, "You're offline.", "أنت غير متصل بالإنترنت.")
-            data-why-timeout=tr(lang, "It took too long to answer.", "استغرق الرد وقتًا طويلًا.")
-            data-why-network=tr(lang, "The connection dropped.", "انقطع الاتصال.")
-            data-why-server=tr(lang, "The store had a problem.", "حدثت مشكلة في المتجر.")
-        >
+        <div class="nav-alert" data-open="false" role="alert">
             <Icon name="triangle-alert" size=20 class="nav-alert__icon"/>
             <p class="nav-alert__text">
-                <strong>{tr(lang, "Couldn't open that page", "تعذّر فتح هذه الصفحة")}</strong>
+                <strong>{s("nav.failed")}</strong>
                 " "
                 <span class="nav-alert__why"></span>
             </p>
-            <button type="button" class="nav-alert__retry">{tr(lang, "Try again", "إعادة المحاولة")}</button>
-            <button type="button" class="nav-alert__close" aria-label=tr(lang, "Dismiss", "إغلاق")>
+            <button type="button" class="nav-alert__retry">{s("net.retry")}</button>
+            <button type="button" class="nav-alert__close" aria-label=s("toast.dismiss")>
                 <Icon name="x" size=16/>
             </button>
+        </div>
+    }
+}
+
+/// The pull-to-refresh disc (touch, at the top of the page): follows the finger down, turns its
+/// arrow when letting go would refresh, spins while the page reloads in place.
+#[component]
+fn PullToRefresh() -> impl IntoView {
+    view! {
+        <div class="ptr" aria-hidden="true">
+            <span class="ptr__disc">
+                <Icon name="arrow-down" size=18 class="ptr__arrow"/>
+                <Icon name="loader-circle" size=18 class="ptr__spin"/>
+            </span>
         </div>
     }
 }

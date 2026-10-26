@@ -26,10 +26,12 @@ export interface RequestOpts {
   retries?: number;
   signal?: AbortSignal;
   init?: RequestInit;
+  /** Which responses count as success (default: 2xx). The router keeps 4xx pages (a 404 is a page). */
+  ok?: (res: Response) => boolean;
 }
 
 export async function request(url: string, opts: RequestOpts = {}): Promise<Response> {
-  const { timeoutMs = 10_000, retries = 1, signal, init } = opts;
+  const { timeoutMs = 10_000, retries = 1, signal, init, ok = (r: Response) => r.ok } = opts;
   for (let attempt = 0; ; attempt++) {
     if (!isOnline()) throw new NetError("offline");
     const ctrl = new AbortController();
@@ -38,7 +40,7 @@ export async function request(url: string, opts: RequestOpts = {}): Promise<Resp
     try {
       const res = await fetch(url, { credentials: "same-origin", ...init, signal: ctrl.signal });
       if (res.status >= 500 && attempt < retries) throw new NetError("http", res.status);
-      if (!res.ok) throw new NetError("http", res.status);
+      if (!ok(res)) throw new NetError("http", res.status);
       return res;
     } catch (e) {
       const err =

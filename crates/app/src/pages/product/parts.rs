@@ -1,17 +1,16 @@
-//! The server-rendered parts of the product page (no WASM): the two-column layout, title block,
-//! delivery promise, highlights, specs, description, related products, and the not-found and
-//! error views. The two islands are mounted here.
+//! The rest of the product page: the two-column layout, title block, delivery promise,
+//! highlights, specs, description, related products, and the not-found and error views.
 
-use super::gallery::{Gallery, GalleryBody};
-use super::model::{GalleryData, Notice, PanelData, text};
-use super::panel::{PanelBody, PurchasePanel};
+use super::gallery::Gallery;
+use super::model::{Notice, text};
+use super::panel::PurchasePanel;
 use crate::api;
 use crate::api::types::{ListingQuery, NavCategory, ProductView};
 use crate::components::badge::{Badge, BadgeKind};
 use crate::components::button::{Button, ButtonKind};
 use crate::components::icons::Icon;
 use crate::components::layout::{Rail, SectionHeader};
-use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton};
+use crate::components::product_card::{CardData, ProductCard};
 use crate::components::rating::Rating;
 use crate::components::states::{SectionError, StateTone, StateView};
 use crate::format;
@@ -21,57 +20,25 @@ use domain::{ProductId, Tag};
 use leptos::either::Either;
 use leptos::prelude::*;
 
-/// Gallery + info column. `live` mounts the islands; otherwise their bodies render as plain
-/// server HTML (the Suspense fallback: identical markup, nothing to hydrate).
+/// Gallery + info column, for the variant in the URL.
 #[component]
 pub fn ProductBody(
     pv: ProductView,
     selected: u32,
     start: usize,
     notice: Option<Notice>,
-    live: bool,
 ) -> impl IntoView {
     let rq = req();
     let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
     let p = &pv.product;
-    // A product without photos still gets one (neutral) slide, so the layout holds.
-    let images = if pv.images.is_empty() {
-        vec![crate::media::Img::missing("")]
-    } else {
-        pv.images.clone()
-    };
-    let gallery = GalleryData {
-        product: p.id.0,
-        name: p.name.clone(),
-        images,
-        start,
-    };
-    let panel = PanelData {
-        product: p.id.0,
-        slug: p.slug.clone(),
-        name: p.name.clone(),
-        axes: p.options.clone(),
-        variants: p.variants.clone(),
-        groups: p.modifier_groups.clone(),
-        selected,
-        notice,
-    };
-    let media = if live {
-        Either::Left(view! { <Gallery data=gallery/> })
-    } else {
-        Either::Right(view! { <GalleryBody data=gallery/> })
-    };
-    let buy = if live {
-        Either::Left(view! { <PurchasePanel data=panel/> })
-    } else {
-        Either::Right(view! { <PanelBody data=panel/> })
-    };
     view! {
         <div class="pdp-grid">
-            <div class="pdp-media">{media}</div>
+            <div class="pdp-media">
+                <Gallery product=p.id.0 name=p.name.clone() images=pv.images.clone() start=start lang num/>
+            </div>
             <div class="pdp-info">
                 <TitleBlock pv=pv.clone() lang=lang numerals=num/>
-                {buy}
+                <PurchasePanel pv=pv.clone() selected=selected notice=notice lang num/>
                 <Promise express=p.has(Tag::Express) lang=lang numerals=num/>
                 <Details pv=pv.clone() lang=lang/>
             </div>
@@ -260,8 +227,8 @@ pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -
     }
 }
 
-/// A rail of product cards from a resource: the rail's exact skeleton while it streams, an
-/// error that offers a retry, and a quiet line when there is nothing to show.
+/// A rail of product cards from a resource: an error that offers a retry, and a quiet line when
+/// there is nothing to show. (The page renders in order, so there is no loading state to draw.)
 #[component]
 pub fn CardRail(
     data: Resource<Result<Vec<CardData>, ServerFnError>>,
@@ -274,7 +241,7 @@ pub fn CardRail(
     numerals: Numerals,
 ) -> impl IntoView {
     view! {
-        <Suspense fallback=move || view! { <RailSkeleton/> }>
+        <Suspense fallback=|| ()>
             <ErrorBoundary fallback=move |errors| view! { <SectionError errors=errors what=what.clone()/> }>
                 {move || {
                     let (label, empty_href) = (label.clone(), empty_href.clone());
@@ -291,11 +258,10 @@ pub fn CardRail(
                             }
                             Either::Right(view! {
                                 <Rail label=label>
-                                    <For
-                                        each=move || cards.clone()
-                                        key=|card| card.id.0
-                                        children=move |card| view! { <ProductCard card=card lang=lang numerals=numerals/> }
-                                    />
+                                    {cards
+                                        .into_iter()
+                                        .map(|card| view! { <ProductCard card=card lang=lang numerals=numerals/> })
+                                        .collect_view()}
                                 </Rail>
                             })
                         })
@@ -303,16 +269,6 @@ pub fn CardRail(
                 }}
             </ErrorBoundary>
         </Suspense>
-    }
-}
-
-/// The rail's exact box (the design system's card skeletons in the rail's track), pulsing.
-#[component]
-fn RailSkeleton() -> impl IntoView {
-    view! {
-        <div class="rail pdp-rail-sk" aria-hidden="true">
-            <div class="rail__track">{(0..6).map(|_| view! { <ProductCardSkeleton/> }).collect_view()}</div>
-        </div>
     }
 }
 

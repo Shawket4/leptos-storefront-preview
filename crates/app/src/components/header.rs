@@ -59,14 +59,12 @@ pub fn CatNav(
     let ar = lang.is_rtl();
     let label = tr(lang, "Categories", "الأقسام");
     view! {
-        <nav class="cat-nav" aria-label=label>
+        <nav class="cat-nav" aria-label=label data-region="cat-nav">
             <div class="container">
                 <ul class="cat-nav__list" role="list">
                     {categories
                         .into_iter()
                         .map(|c| {
-                            // Always render aria-current (page/false): the islands router only
-                            // ever adds or updates attributes when it patches the next page in.
                             let is_current = current.as_deref() == Some(c.slug.as_str());
                             let aria = if is_current { "page" } else { "false" };
                             let href = format!("/c/{}", c.slug);
