@@ -2,39 +2,29 @@
 //! ribbon of store promises, the category rail, then today's deals, picks and bestsellers — real
 //! products above the fold, no hero banner (owner's call).
 //! Every merchandising rail is its own `<Suspense>` + `<ErrorBoundary>` around its own server
-//! function, so with out-of-order streaming each rail arrives the moment its data does — the slow
-//! "deals" rail sits *above* "featured" yet lands after it — and a failing rail (`?fail=deals`)
-//! degrades to an inline notice without touching the rest of the page.
+//! function. The page renders in order (one complete document, no JS needed), and a failing rail
+//! (`?fail=deals`) degrades to an inline notice without touching the rest of the page. The deals
+//! countdown is rendered by the server and ticked by `features/browse.ts` (`data-ts="countdown"`).
 
 use crate::api::{self, types::Rail};
 use crate::components::{
     icons::Icon,
     layout::{Container, Rail as Row, SectionHeader},
-    product_card::{ProductCard, ProductCardSkeleton},
+    product_card::ProductCard,
 };
 use crate::format;
 use crate::media::Img;
-use crate::prefs::{Lang, Numerals, tr, use_ui};
+use crate::prefs::{Lang, Numerals, tr};
 use crate::request::req;
 use domain::L10n;
 use leptos::prelude::*;
 use leptos_meta::{Link, Meta, Script, Title};
 
-/// Images resolved on the server (the hydrate build never renders this page).
-#[derive(Clone, Default)]
-struct HomeArt {
-    og: Option<Img>,
-}
-
-#[cfg(feature = "ssr")]
-fn home_art(tenant: &str, lang: Lang) -> HomeArt {
-    let st = crate::server::state();
-    HomeArt { og: st.media().try_img(&format!("brand/og-{tenant}-{}", lang.code())) }
-}
-
-#[cfg(not(feature = "ssr"))]
-fn home_art(_: &str, _: Lang) -> HomeArt {
-    HomeArt::default()
+/// The share image for this shop and language.
+fn og_image(tenant: &str, lang: Lang) -> Option<Img> {
+    crate::server::state()
+        .media()
+        .try_img(&format!("brand/og-{tenant}-{}", lang.code()))
 }
 
 /// The meta description (in production: CMS content per tenant).
@@ -55,18 +45,16 @@ fn description(tenant: &str) -> L10n {
 pub fn HomePage() -> impl IntoView {
     let rq = req();
     // Headers go out with the first chunk, so the caching decision is made before any Suspense.
-    #[cfg(feature = "ssr")]
     crate::server::cache::public(&[]);
 
     let lang = rq.prefs.lang;
     let num = rq.prefs.numerals;
     let ar = lang.is_rtl();
     let t = rq.tenant.clone();
-    let art = home_art(&t.id, lang);
 
     let title = format!("{} · {}", t.name.pick(ar), t.tagline.pick(ar));
     let description = description(&t.id).pick(ar).to_owned();
-    let og_image = art.og.as_ref().map(|i| rq.absolute(&i.largest()));
+    let og_image = og_image(&t.id, lang).map(|i| rq.absolute(&i.largest()));
     let website_ld = serde_json::json!({
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -86,12 +74,24 @@ pub fn HomePage() -> impl IntoView {
     // The ribbon carries figures, so it goes through `format` like every number.
     let ribbon = match t.express_minutes {
         Some(m) => match lang {
-            Lang::En => format!("Express delivery in {} minutes · Cash on delivery", format::count(m, num)),
-            Lang::Ar => format!("توصيل سريع في {} دقيقة · الدفع عند الاستلام", format::count(m, num)),
+            Lang::En => format!(
+                "Express delivery in {} minutes · Cash on delivery",
+                format::count(m, num)
+            ),
+            Lang::Ar => format!(
+                "توصيل سريع في {} دقيقة · الدفع عند الاستلام",
+                format::count(m, num)
+            ),
         },
         None => match lang {
-            Lang::En => format!("Free delivery over {} · Cash on delivery", format::money_short(t.free_delivery_over, lang, num)),
-            Lang::Ar => format!("توصيل مجاني فوق {} · الدفع عند الاستلام", format::money_short(t.free_delivery_over, lang, num)),
+            Lang::En => format!(
+                "Free delivery over {} · Cash on delivery",
+                format::money_short(t.free_delivery_over, lang, num)
+            ),
+            Lang::Ar => format!(
+                "توصيل مجاني فوق {} · الدفع عند الاستلام",
+                format::money_short(t.free_delivery_over, lang, num)
+            ),
         },
     };
 
@@ -113,7 +113,6 @@ pub fn HomePage() -> impl IntoView {
         <Meta name="twitter:card" content="summary_large_image"/>
         <Script type_="application/ld+json">{website_ld}</Script>
 
-        <NoJsNote lang/>
         <p class="ribbon">{ribbon}</p>
 
         <Container>
@@ -141,29 +140,6 @@ pub fn HomePage() -> impl IntoView {
     }
 }
 
-/// Out-of-order streamed sections need JS to be put in place (each arrives as a <template> plus a
-/// script). Visitors without JS get a link to `/nojs`, the same page streamed in order. Not a meta
-/// refresh: the islands router parses pages with DOMParser (scripting off), where <noscript> markup
-/// is live — a refresh there would fire for JS users too. Also never sent on router fetches.
-#[component]
-fn NoJsNote(lang: Lang) -> impl IntoView {
-    #[cfg(feature = "ssr")]
-    let show = false
-        && !req().path_and_query.starts_with("/nojs");
-    #[cfg(not(feature = "ssr"))]
-    let show = false;
-    show.then(|| {
-        view! {
-            <noscript>
-                <p class="nojs-note">
-                    {tr(lang, "JavaScript is off, so some sections can't load here. ", "الجافاسكريبت مقفول، فبعض الأقسام مش هتظهر هنا. ")}
-                    <a href="/nojs">{tr(lang, "Open the version that works without it", "افتح النسخة اللي بتشتغل من غيره")}</a>
-                </p>
-            </noscript>
-        }
-    })
-}
-
 #[component]
 fn CategoryRail(lang: Lang) -> impl IntoView {
     let cats = Resource::new(|| (), |_| api::nav_categories());
@@ -171,7 +147,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
     view! {
         <section id="categories" class="home-section home-cats" aria-labelledby="cats-title">
             <SectionHeader title=tr(lang, "Shop by category", "تسوّق حسب القسم") id="cats-title"/>
-            <Suspense fallback=move || view! { <CategoryRailSkeleton/> }>
+            <Suspense fallback=|| ()>
                 <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
                     {move || Suspend::new(async move {
                         cats.await.map(|cats| view! {
@@ -204,18 +180,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
     }
 }
 
-#[component]
-fn CategoryRailSkeleton() -> impl IntoView {
-    view! {
-        <ul class="cat-rail" aria-hidden="true">
-            {(0..10).map(|_| view! {
-                <li><span class="cat-tile"><span class="cat-tile__well skeleton"></span><span class="cat-tile__name skeleton skeleton--text"></span></span></li>
-            }).collect_view()}
-        </ul>
-    }
-}
-
-/// One merchandising rail, streamed on its own.
+/// One merchandising rail, with its own data and its own error boundary.
 #[component]
 fn RailSection(
     rail: Rail,
@@ -240,9 +205,9 @@ fn RailSection(
                     link_label=tr(lang, "See all", "عرض الكل")
                     id=id
                 />
-                {countdown.then(|| view! { <DealsCountdown ends_at_ms=next_cairo_midnight_ms()/> })}
+                {countdown.then(|| view! { <DealsCountdown ends_at_ms=next_cairo_midnight_ms() lang num/> })}
             </div>
-            <Suspense fallback=move || view! { <RailSkeleton/> }>
+            <Suspense fallback=|| ()>
                 <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
                     {move || Suspend::new(async move {
                         data.await.map(|cards| {
@@ -272,15 +237,6 @@ fn RailSection(
     }
 }
 
-#[component]
-fn RailSkeleton() -> impl IntoView {
-    view! {
-        <div aria-hidden="true">
-            <Row>{(0..6).map(|_| view! { <ProductCardSkeleton/> }).collect_view()}</Row>
-        </div>
-    }
-}
-
 /// A section's data failed: say so, offer a retry, keep the rest of the page.
 #[component]
 fn WidgetError(lang: Lang) -> impl IntoView {
@@ -291,7 +247,11 @@ fn WidgetError(lang: Lang) -> impl IntoView {
         .split_once('?')
         .map(|(p, q)| {
             let kept: Vec<&str> = q.split('&').filter(|kv| !kv.starts_with("fail=")).collect();
-            if kept.is_empty() { p.to_owned() } else { format!("{p}?{}", kept.join("&")) }
+            if kept.is_empty() {
+                p.to_owned()
+            } else {
+                format!("{p}?{}", kept.join("&"))
+            }
         })
         .unwrap_or_else(|| rq.path_and_query.clone());
     view! {
@@ -309,58 +269,26 @@ fn WidgetError(lang: Lang) -> impl IntoView {
 
 /// Midnight Cairo time, as Unix ms (deals "end" daily).
 fn next_cairo_midnight_ms() -> i64 {
-    #[cfg(feature = "ssr")]
-    {
-        let now = crate::server::orders::now_ms();
-        let off = format::cairo_offset_hours(now) * 3_600_000;
-        let local_day = (now + off).div_euclid(86_400_000);
-        (local_day + 1) * 86_400_000 - off
-    }
-    #[cfg(not(feature = "ssr"))]
-    {
-        0
-    }
+    let now = crate::server::orders::now_ms();
+    let off = format::cairo_offset_hours(now) * 3_600_000;
+    let local_day = (now + off).div_euclid(86_400_000);
+    (local_day + 1) * 86_400_000 - off
 }
 
-/// A live HH:MM:SS countdown. The server renders the starting value, so it is correct without JS;
-/// the island only ticks it. Re-renders on language/numeral changes.
+/// A live HH:MM:SS countdown to `ends_at_ms`. The server renders the time left, so it is right
+/// without JS; the browser ticks it (`data-ts="countdown"`), in the visitor's numerals.
 #[component]
-fn DealsCountdown(ends_at_ms: i64) -> impl IntoView {
-    let ui = use_ui();
-    let now = RwSignal::new(now_ms());
-    #[cfg(feature = "hydrate")]
-    {
-        let handle = set_interval_with_handle(move || now.set(now_ms()), std::time::Duration::from_secs(1));
-        on_cleanup(move || {
-            if let Ok(h) = handle {
-                h.clear();
-            }
-        });
-    }
-    let left = move || ((ends_at_ms - now.get()) / 1000).max(0);
-    let clock = move || {
-        let s = left();
-        format::digits(&format!("{:02}:{:02}:{:02}", s / 3600, (s / 60) % 60, s % 60), ui.numerals.get())
-    };
+fn DealsCountdown(ends_at_ms: i64, lang: Lang, num: Numerals) -> impl IntoView {
+    let s = ((ends_at_ms - crate::server::orders::now_ms()) / 1000).max(0);
+    let clock = format::digits(
+        &format!("{:02}:{:02}:{:02}", s / 3600, (s / 60) % 60, s % 60),
+        num,
+    );
     view! {
-        <p class="countdown" aria-hidden="true">
+        <p class="countdown" aria-hidden="true" data-ts="countdown" data-ends=ends_at_ms>
             <Icon name="clock" size=16/>
-            <span>{move || tr(ui.lang.get(), "Ends in", "تنتهي خلال")}</span>
-            <span class="countdown__clock mono" dir="ltr">{clock}</span>
+            <span>{tr(lang, "Ends in", "تنتهي خلال")}</span>
+            <span class="countdown__clock mono" dir="ltr" data-clock="">{clock}</span>
         </p>
-    }
-}
-
-fn now_ms() -> i64 {
-    #[cfg(feature = "hydrate")]
-    {
-        js_sys::Date::now() as i64
-    }
-    #[cfg(not(feature = "hydrate"))]
-    {
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_millis() as i64)
-            .unwrap_or(0)
     }
 }

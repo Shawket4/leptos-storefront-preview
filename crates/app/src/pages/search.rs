@@ -3,18 +3,16 @@
 //!
 //! `/search` is the no-JS fallback for the instant search and its "see all results" page, and,
 //! without `q`, the all-products listing the home page links to (`?deal=1&sort=discount` for the
-//! deals, `?sort=newest` for new arrivals). It reuses the category page's explorer island with
-//! `ListingQuery { category: None, q }`; the island names itself from the query.
+//! deals, `?sort=newest` for new arrivals). It renders the category page's listing with
+//! `ListingQuery { category: None, q }`, which names itself from the query; a search that finds
+//! nothing comes with "did you mean" and popular searches (`suggest.rs`).
 
 mod instant;
 pub(crate) mod suggest;
 
 pub use instant::{HeaderSearch, SearchBox};
 
-use crate::api::{
-    self,
-    types::{ListingQuery, PER_PAGE},
-};
+use crate::api::{self, types::ListingQuery};
 use crate::pages::category::{ListingResults, listing};
 use crate::request::req;
 use leptos::prelude::*;
@@ -52,7 +50,6 @@ pub fn SearchPage() -> impl IntoView {
     let canonical = rq.absolute(&query.href());
     // Result pages for typed queries are thin and endless: keep them out of the index, follow links.
     let noindex = query.q.is_some();
-    let href = query.href();
     let data = Resource::new(|| (), move |_| api::list_products(query.clone()));
 
     view! {
@@ -61,12 +58,11 @@ pub fn SearchPage() -> impl IntoView {
         <Link rel="canonical" href=canonical/>
         {noindex.then(|| view! { <Meta name="robots" content="noindex, follow"/> })}
 
-        // `data-listing-href`: see the category page (same-route navigations reach the island).
-        <div class="listing container search-page" data-listing-href=href>
+        <div class="listing container search-page">
             <div class="search-page__box">
                 <HeaderSearch kind=SearchBox::Page/>
             </div>
-            <ListingResults data site lang aisles=crate::pages::category::aisles(None) expected=PER_PAGE/>
+            <ListingResults data aisles=crate::pages::category::aisles(None)/>
         </div>
     }
 }
