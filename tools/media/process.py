@@ -37,7 +37,7 @@ import json
 import os
 import sys
 
-from PIL import Image
+from PIL import Image, ImageChops
 
 # Pillow < 9.1 has no Image.Resampling enum (this machine ships 9.0.1).
 Resampling = getattr(Image, "Resampling", Image)
@@ -82,9 +82,23 @@ def crop_to_aspect(im: Image.Image, aw: int, ah: int, focus=(0.5, 0.5)) -> Image
     return im.crop((0, y, w, y + nh))
 
 
+def drop_baked_shadow(im: Image.Image) -> Image.Image:
+    """Remove a drop shadow baked into a cut-out's alpha: weak, dark pixels (alpha < 110 and
+    luminance < 70). Stock cut-outs often carry one, and lossy alpha turns it into grey blocks. The
+    product's own anti-aliased edge keeps its colour, so it survives."""
+    im = im.convert("RGBA")
+    r, g, b, a = im.split()
+    lum = Image.merge("RGB", (r, g, b)).convert("L")
+    dark = lum.point(lambda v: 255 if v < 70 else 0)
+    weak = a.point(lambda v: 255 if v < 110 else 0)
+    a = ImageChops.subtract(a, ImageChops.multiply(dark, weak))
+    im.putalpha(a)
+    return im
+
+
 def square_packshot(im: Image.Image, fill: float) -> Image.Image:
     """Trim transparent margins, then centre on a transparent square canvas."""
-    im = im.convert("RGBA")
+    im = drop_baked_shadow(im)
     bbox = im.getchannel("A").point(lambda a: 255 if a > 8 else 0).getbbox()
     if bbox:
         im = im.crop(bbox)
@@ -127,7 +141,8 @@ def save_ladder(im: Image.Image, key: str, kind: str, alpha: bool) -> list[int]:
         path = os.path.join(MEDIA, f"{key}-{w}.webp")
         params = dict(quality=QUALITY[kind], method=6)
         if alpha:
-            params["exact"] = False
+            # Lossless alpha plane: lossy alpha is what turns soft edges into visible blocks.
+            params["alpha_quality"] = 100
         rung.save(path, "WEBP", **params)
     return widths
 

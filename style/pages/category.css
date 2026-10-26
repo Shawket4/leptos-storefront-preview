@@ -1,1 +1,997 @@
-/* category page — owned by that page's agent (see AGENTS.md). Tokens only: style/tokens.css. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Category listing + the CatalogExplorer island (also used by /search).
+   Owner: browse agent. Tokens only; logical properties only (the same rules lay
+   out English and Arabic). Springs fall back to the motion tokens until
+   --spring-* land in tokens.css.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+.listing {
+  padding-block: var(--sp-4) var(--sp-16);
+}
+@media (min-width: 769px) {
+  .listing {
+    padding-block-start: var(--sp-6);
+  }
+}
+
+/* ── Category header ─────────────────────────────────────────────────────── */
+.cat-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--sp-4);
+  row-gap: var(--sp-1);
+  margin-block: var(--sp-4) var(--sp-5);
+}
+.cat-head__icon {
+  display: grid;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+}
+.cat-head__title {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-heavy);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--lh-tight);
+}
+.cat-head__blurb {
+  margin-block-start: var(--sp-1);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+.cat-head__count {
+  grid-column: 2;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+@media (min-width: 769px) {
+  .cat-head {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: var(--sp-5);
+    margin-block: var(--sp-5) var(--sp-8);
+  }
+  .cat-head__icon {
+    inline-size: 4rem;
+    block-size: 4rem;
+  }
+  .cat-head__title {
+    font-size: var(--fs-3xl);
+  }
+  .cat-head__blurb {
+    font-size: var(--fs-md);
+  }
+  .cat-head__count {
+    grid-column: 3;
+    align-self: end;
+  }
+}
+
+/* ── Explorer frame ──────────────────────────────────────────────────────── */
+.lx {
+  display: flex;
+  flex-direction: column;
+}
+.lx-head {
+  margin-block: var(--sp-2) var(--sp-5);
+}
+.lx-kicker {
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.lx-title {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-heavy);
+  letter-spacing: var(--tracking-display);
+  overflow-wrap: anywhere;
+}
+.lx-sub {
+  margin-block-start: var(--sp-1);
+  color: var(--text-2);
+}
+@media (min-width: 769px) {
+  .lx-title {
+    font-size: var(--fs-3xl);
+  }
+}
+
+/* The bar: Filters + Sort on phones (pinned under the header, on a material),
+   the total + Sort above the results on wider screens. */
+.lx-bar {
+  position: sticky;
+  inset-block-start: var(--header-h);
+  z-index: var(--z-popover);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-inline: calc(var(--gutter) * -1);
+  padding: var(--sp-2) var(--gutter);
+  background: var(--material);
+  backdrop-filter: var(--material-filter);
+  -webkit-backdrop-filter: var(--material-filter);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .lx-bar {
+    background: var(--page);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+.lx-total {
+  margin-block: var(--sp-2) var(--sp-1);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.lx-filter-btn {
+  flex: none;
+}
+.lx-badge {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.375rem;
+  block-size: 1.375rem;
+  padding-inline: 0.375rem;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sort: a disclosure (works without JS) styled as a secondary button, its menu a
+   popover anchored to it. */
+.lx-sort {
+  position: relative;
+  min-inline-size: 0;
+  margin-inline-start: auto;
+}
+.lx-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  padding-inline: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--sunk);
+  color: var(--text);
+  max-inline-size: 100%;
+  font-size: 0.9375rem;
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.lx-sort-btn::-webkit-details-marker {
+  display: none;
+}
+.lx-sort-btn:hover {
+  background: var(--sunk-2);
+}
+.lx-sort-btn:active {
+  scale: var(--press);
+}
+.lx-sort-btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.lx-sort-k {
+  color: var(--text-2);
+  font-weight: var(--fw-semibold);
+}
+.lx-sort-v {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Narrow phones: the glyph says "sort", the value says which; the word stays
+   for screen readers. */
+@media (max-width: 479.98px) {
+  .lx-sort-k {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+.lx-sort-chev {
+  color: var(--text-3);
+  transition: rotate var(--dur-fast) var(--ease-out);
+}
+.lx-sort[open] .lx-sort-chev {
+  rotate: 180deg;
+}
+.lx-sort-menu {
+  position: absolute;
+  inset-block-start: calc(100% + var(--sp-2));
+  inset-inline-end: 0;
+  z-index: var(--z-popover);
+  min-inline-size: 15rem;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--surface-2);
+  box-shadow: var(--shadow-float);
+  transform-origin: top right;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur, var(--dur-base)) var(--spring-snappy, var(--ease-out));
+}
+[dir="rtl"] .lx-sort-menu {
+  transform-origin: top left;
+}
+@starting-style {
+  .lx-sort[open] .lx-sort-menu {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+.lx-sort-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-block-size: 44px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-sm);
+  corner-shape: squircle;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+}
+.lx-sort-opt:hover {
+  background: var(--sunk);
+}
+.lx-sort-opt:active {
+  background: var(--sunk-2);
+}
+.lx-sort-opt[aria-current="true"] {
+  font-weight: var(--fw-bold);
+}
+.lx-sort-tick {
+  visibility: hidden;
+}
+.lx-sort-opt[aria-current="true"] .lx-sort-tick {
+  visibility: visible;
+}
+
+/* Active filters: removable chips. Squircles, 32px, never pills. */
+.lx-chips {
+  display: flex;
+  gap: var(--sp-2);
+  margin: var(--sp-1) calc(var(--gutter) * -1) var(--sp-3);
+  padding: var(--sp-1) var(--gutter);
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.lx-chips::-webkit-scrollbar {
+  display: none;
+}
+.lx-chips > li {
+  flex: none;
+}
+.lx-chip,
+.lx-chip-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  block-size: 2rem;
+  padding-inline: var(--sp-3) var(--sp-2);
+  border-radius: var(--r-sm);
+  corner-shape: squircle;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  text-decoration: none;
+  text-box: trim-both cap alphabetic;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.lx-chip {
+  background: var(--sunk);
+  color: var(--text);
+}
+.lx-chip:hover {
+  background: var(--sunk-2);
+}
+.lx-chip .icon {
+  color: var(--text-2);
+}
+.lx-chip-clear {
+  padding-inline: var(--sp-2);
+  color: var(--text-2);
+}
+.lx-chip-clear:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.lx-chip:active,
+.lx-chip-clear:active {
+  scale: var(--press);
+}
+
+/* ── Filters ─────────────────────────────────────────────────────────────── */
+.lx-form {
+  display: flex;
+  flex-direction: column;
+}
+.lx-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block-end: var(--sp-2);
+}
+.lx-form-title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-heavy);
+}
+.lx-group {
+  margin: 0;
+  padding: var(--sp-4) 0;
+  border: 0;
+  border-block-start: 1px solid var(--rule);
+  min-inline-size: 0;
+}
+.lx-legend {
+  float: inline-start;
+  inline-size: 100%;
+  margin-block-end: var(--sp-3);
+  padding: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+}
+.lx-legend + * {
+  clear: both;
+}
+
+.lx-price {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: end;
+  gap: var(--sp-2);
+}
+.lx-price-dash {
+  padding-block-end: 0.75rem;
+  color: var(--text-3);
+}
+.lx-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.lx-field-label {
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+}
+.lx-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  block-size: 44px;
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: box-shadow var(--dur-fast) var(--ease-out);
+}
+.lx-input:focus-within {
+  box-shadow:
+    inset 0 0 0 1px var(--text),
+    0 0 0 3px var(--focus);
+}
+.lx-input input {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 100%;
+  padding-inline: var(--sp-3);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.lx-input input::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}
+
+.lx-checks {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lx-check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-block-size: 44px;
+  margin-inline: calc(var(--sp-2) * -1);
+  padding-inline: var(--sp-2);
+  border-radius: var(--r-sm);
+  corner-shape: squircle;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.lx-check:hover {
+  background: var(--sunk);
+}
+.lx-check input {
+  flex: none;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  margin: 0;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+.lx-check input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.lx-check-label {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: 0.9375rem;
+  line-height: var(--lh-snug);
+}
+.lx-check-n {
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+.lx-more {
+  margin-block-start: var(--sp-1);
+}
+.lx-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-block-size: 44px;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  list-style: none;
+}
+.lx-more-btn::-webkit-details-marker {
+  display: none;
+}
+.lx-more-btn .icon {
+  color: var(--text-3);
+  transition: rotate var(--dur-fast) var(--ease-out);
+}
+.lx-more[open] > .lx-more-btn .icon {
+  rotate: 180deg;
+}
+.lx-more[open] > .lx-more-btn {
+  margin-block-end: var(--sp-1);
+}
+
+.lx-form-foot {
+  display: flex;
+  gap: var(--sp-2);
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--rule);
+}
+.lx-form-foot > :last-child {
+  flex: 1;
+}
+.lx-form-foot[hidden],
+.lx-sheet-close[hidden] {
+  display: none;
+}
+
+/* Phones: the sidebar is off-canvas. With JS the explorer opens a sheet (the
+   Drawer, in the top layer); without JS, "Filters" is a link to #lx-filters and
+   :target opens this very panel in the page flow — the browser scrolls to it —
+   with its own Close link and Apply button. (A fixed overlay can't rise above
+   the header and tab bar from inside <main> without JS.) */
+.lx-sheet-close {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: var(--sp-2);
+  color: var(--text);
+  font-weight: var(--fw-bold);
+}
+@media (max-width: 768px) {
+  .lx-filters {
+    display: none;
+  }
+  .lx-filters:target {
+    display: block;
+    margin-block: var(--sp-2) var(--sp-5);
+    padding: var(--sp-4);
+    border-radius: var(--r-xl);
+    corner-shape: squircle;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+/* ── Results ─────────────────────────────────────────────────────────────── */
+.lx-results {
+  position: relative;
+  min-inline-size: 0;
+  scroll-margin-block-start: calc(var(--header-h) + 4.5rem);
+}
+.lx-results:focus {
+  outline: none;
+}
+.lx-results:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 6px;
+  border-radius: var(--r-lg);
+}
+.lx-results-body {
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+/* A short delay, so an instant answer (a page seen before) doesn't blink. */
+.lx-results-body.is-pending {
+  opacity: 0.5;
+  transition-delay: 90ms;
+}
+
+/* A thin indeterminate bar while the next page loads; it never moves layout. */
+.lx-progress {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(var(--sp-2) * -1);
+  block-size: 2px;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.lx-progress > span {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 40%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+.lx-progress.is-on {
+  opacity: 1;
+  transition-delay: 90ms;
+}
+.lx-progress.is-on > span {
+  animation: lx-slide 1.1s var(--ease-in-out) infinite;
+}
+@keyframes lx-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+@keyframes lx-slide-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-250%);
+  }
+}
+[dir="rtl"] .lx-progress.is-on > span {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  animation-name: lx-slide-rtl;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-progress > span {
+    inline-size: 100%;
+    opacity: 0.5;
+  }
+}
+
+/* The grid beside the sidebar has room for fewer columns than a full-width one. */
+@media (min-width: 769px) {
+  .lx-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 960px) {
+  .lx-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .lx-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* A failed load: the previous results stay, under this. */
+.lx-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--warning-wash);
+  color: var(--text);
+}
+.lx-notice-icon {
+  color: var(--warning-text);
+  flex: none;
+}
+.lx-notice-text {
+  flex: 1 1 14rem;
+  font-size: var(--fs-sm);
+}
+.lx-notice-text span {
+  color: var(--text-2);
+}
+.lx-notice--block {
+  margin-block-start: var(--sp-4);
+}
+.lx-notice--offline {
+  background: var(--info-wash);
+}
+.lx-notice--offline .lx-notice-icon {
+  color: var(--info-text);
+}
+
+/* ── Pagination ──────────────────────────────────────────────────────────── */
+.lx-pages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  margin-block-start: var(--sp-10);
+}
+.lx-page-list {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lx-page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-inline-size: 44px;
+  block-size: 44px;
+  padding-inline: var(--sp-2);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+a.lx-page:hover {
+  background: var(--sunk);
+}
+a.lx-page:active {
+  scale: var(--press);
+}
+.lx-page.is-current {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.lx-page--step {
+  padding-inline: var(--sp-3);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+}
+.lx-page--step.is-disabled {
+  color: var(--on-disabled);
+}
+.lx-gap {
+  min-inline-size: 1.5rem;
+  color: var(--text-3);
+  text-align: center;
+}
+@media (max-width: 479.98px) {
+  .lx-page-list > .is-far {
+    display: none;
+  }
+  .lx-step-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .lx-page--step {
+    padding-inline: var(--sp-2);
+  }
+}
+
+/* ── The phone sheet's contents (inside the Drawer, whose body pads --sp-5) ── */
+.lx-form--sheet > .lx-group:first-child {
+  border-block-start: 0;
+  padding-block-start: var(--sp-2);
+}
+.lx-sheet-foot {
+  position: sticky;
+  inset-block-end: calc(var(--sp-5) * -1);
+  display: flex;
+  gap: var(--sp-2);
+  margin: 0 calc(var(--sp-5) * -1) calc(var(--sp-5) * -1);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  box-shadow: 0 -1px 0 var(--rule);
+}
+.lx-sheet-foot > .lx-show {
+  flex: 1;
+}
+
+/* ── Wide screens: sidebar + results, the bar over the results column ────── */
+@media (min-width: 769px) {
+  .lx {
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+    grid-template-areas:
+      "head head"
+      "side bar"
+      "side chips"
+      "side results";
+    grid-template-rows: auto auto auto 1fr;
+    column-gap: var(--sp-8);
+  }
+  .lx-head {
+    grid-area: head;
+  }
+  .lx-bar {
+    grid-area: bar;
+    justify-self: end;
+    position: static;
+    margin: 0 0 var(--sp-3);
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .lx-total {
+    grid-area: bar;
+    align-self: center;
+    justify-self: start;
+    margin: 0 0 var(--sp-3);
+    font-size: var(--fs-md);
+  }
+  .lx-filter-btn {
+    display: none;
+  }
+  .lx-chips {
+    grid-area: chips;
+    flex-wrap: wrap;
+    margin: 0 0 var(--sp-4);
+    padding: 0;
+    overflow: visible;
+  }
+  .lx-body {
+    display: contents;
+  }
+  .lx-filters {
+    grid-area: side;
+    position: sticky;
+    inset-block-start: calc(var(--header-h) + var(--sp-4));
+    align-self: start;
+    max-block-size: calc(100dvh - var(--header-h) - var(--sp-8));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding-inline-end: var(--sp-2);
+  }
+  .lx-results {
+    grid-area: results;
+  }
+  .lx-sheet-close {
+    display: none;
+  }
+  /* Seven-figure prices fit the sidebar's half-width boxes (phones keep 16px: no iOS zoom). */
+  .lx-filters .lx-input input {
+    padding-inline: var(--sp-2);
+    font-size: var(--fs-sm);
+  }
+}
+
+/* ── The first-paint skeleton: the explorer's own frame, pulsing ────────────
+   (Only drawn if the route ever streams out of order; same classes and rows as
+   the real thing, so nothing moves when it is replaced.) */
+.lx--skeleton .lx-skel-btn {
+  block-size: 44px;
+  border-radius: var(--r-md);
+}
+.lx--skeleton .lx-skel-btn--filters {
+  inline-size: 7.5rem;
+}
+.lx--skeleton .lx-skel-btn--sort {
+  inline-size: 11rem;
+  margin-inline-start: auto;
+}
+.lx--skeleton .lx-skel-line {
+  inline-size: 8rem;
+  block-size: 1rem;
+}
+.lx--skeleton .lx-skel-title {
+  inline-size: 5rem;
+  block-size: 1.25rem;
+}
+.lx--skeleton .lx-skel-legend {
+  inline-size: 4.5rem;
+  block-size: 0.875rem;
+  margin-block-end: var(--sp-3);
+}
+.lx--skeleton .lx-skel-input {
+  block-size: 44px;
+  border-radius: var(--r-md);
+}
+.lx--skeleton .lx-skel-row {
+  block-size: 1.25rem;
+  margin-block: 0.75rem;
+  border-radius: var(--r-xs);
+}
+@media (min-width: 769px) {
+  .lx--skeleton .lx-bar {
+    justify-self: end;
+  }
+  .lx--skeleton .lx-skel-btn--filters {
+    display: none;
+  }
+}
+
+/* Another page or listing on its way: its skeleton stands in at the grid's size. */
+.lx-results-body.is-jumping > .lx-grid:not(.lx-grid--skel) {
+  display: none;
+}
+.lx-results-body.is-pending.is-jumping {
+  opacity: 1;
+}
+
+/* Nothing to filter or sort (a search with no base results): the state alone. */
+.lx--bare .lx-bar,
+.lx--bare .lx-total,
+.lx--bare .lx-filters {
+  display: none;
+}
+@media (min-width: 769px) {
+  .lx--bare .lx-results {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ── Empty results: the state, then other ways forward ────────────────────── */
+.lx-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-6);
+  padding-block: var(--sp-4) var(--sp-8);
+}
+.lx-more-ways {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  max-inline-size: 40rem;
+}
+.lx-more-ways__title {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.lx-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  padding-inline: var(--sp-4);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.lx-pill .icon {
+  color: var(--text-2);
+}
+.lx-pill:hover {
+  box-shadow: var(--shadow-md);
+}
+.lx-pill:active {
+  scale: var(--press);
+}
+
+/* ── Not found ───────────────────────────────────────────────────────────── */
+.listing--missing {
+  padding-block-start: var(--sp-12);
+}
+.listing-missing__search {
+  max-inline-size: 36rem;
+  margin: var(--sp-6) auto 0;
+}
+.cat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-2);
+  max-inline-size: 48rem;
+  margin: var(--sp-8) auto 0;
+  padding: 0;
+  list-style: none;
+}
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  padding-inline: var(--sp-4);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    scale 100ms var(--ease-out);
+}
+.cat-pill:hover {
+  box-shadow: var(--shadow-md);
+}
+.cat-pill:active {
+  scale: var(--press);
+}

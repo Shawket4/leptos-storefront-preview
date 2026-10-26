@@ -90,18 +90,10 @@
 }
 .btn--danger {
   background: var(--danger);
-  color: #fff;
+  color: var(--on-danger);
 }
 .btn--danger:hover {
-  background: color-mix(in oklab, var(--danger) 88%, #000);
-}
-:root[data-theme="dark"] .btn--danger {
-  color: var(--on-ink);
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="system"] .btn--danger {
-    color: var(--on-ink);
-  }
+  background: var(--danger-hover);
 }
 
 .btn:disabled,
@@ -200,7 +192,7 @@
   padding-inline: 0.3rem;
   border-radius: var(--r-pill);
   background: var(--danger);
-  color: #fff;
+  color: var(--on-danger);
   box-shadow: 0 0 0 2px var(--page);
   font-family: var(--font-mono);
   font-size: 0.6875rem;

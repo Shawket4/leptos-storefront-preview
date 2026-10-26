@@ -53,6 +53,8 @@
   --warning: #B45309;
   --warning-wash: #FDF3E7;
   --danger: #DC2626;             /* sale prices and discount badges */
+  --on-danger: #FFFFFF;          /* text on a danger fill (buttons, count badges) */
+  --danger-hover: #C21F1F;
   --danger-wash: #FDECEC;
   --info: #2563EB;
   --info-wash: #EAF1FE;
@@ -80,6 +82,7 @@
 
   --scrim: rgb(9 9 11 / 0.36);           /* behind modal drawers and sheets */
   --veil: rgb(255 255 255 / 0.58);       /* out-of-stock veil over a packshot (no text on it) */
+  --rim: rgb(255 255 255 / 0.5);         /* dark mode: light along a packshot's silhouette */
 
   /* Translucent material for floating chrome (header, tab bar, sheets' grabbers):
      a semi-transparent solid + blur. Solid under prefers-reduced-transparency. */
@@ -252,6 +255,8 @@
   --success: #4ADE80;
   --warning: #FBBF24;
   --danger: #F87171;
+  --on-danger: #0B0B0C;
+  --danger-hover: #FA8C8C;
   --info: #60A5FA;
   --success-wash: color-mix(in oklab, var(--success) 14%, var(--surface));
   --warning-wash: color-mix(in oklab, var(--warning) 14%, var(--surface));
@@ -312,6 +317,8 @@
     --success: #4ADE80;
     --warning: #FBBF24;
     --danger: #F87171;
+    --on-danger: #0B0B0C;
+    --danger-hover: #FA8C8C;
     --info: #60A5FA;
     --success-wash: color-mix(in oklab, var(--success) 14%, var(--surface));
     --warning-wash: color-mix(in oklab, var(--warning) 14%, var(--surface));
@@ -347,6 +354,19 @@
    their specificity, so it wins in every theme). */
 @media (prefers-reduced-transparency: reduce) {
   :root[data-theme] {
+    --material: var(--page);
+    --material-thick: var(--surface);
+    --material-filter: none;
+  }
+}
+
+/* More contrast asked for: firmer edges, no faint text, solid chrome. */
+@media (prefers-contrast: more) {
+  :root[data-theme] {
+    --line: color-mix(in oklab, var(--text) 28%, transparent);
+    --line-2: color-mix(in oklab, var(--text) 36%, transparent);
+    --line-strong: color-mix(in oklab, var(--text) 55%, transparent);
+    --text-3: var(--text-2);
     --material: var(--page);
     --material-thick: var(--surface);
     --material-filter: none;

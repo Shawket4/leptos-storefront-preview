@@ -103,6 +103,13 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   navigations always get in-order HTML (leptos_axum disables OOO for them).
   **Response headers and status must be set before the first chunk** — synchronously at the top of
   the page component (or, in PartiallyBlocked pages, before the blocking resource resolves).
+- **Islands must never be pending at hydration** (found 2026-10-26): an island whose
+  `<Suspense>`/`<Transition>` wraps a `Resource`/`LocalResource` that isn't ready synchronously
+  hydrates on a full load, but PANICS after an islands-router navigation into that page (its
+  resolved-resource inline scripts never run in DOMParser-inserted HTML, and the hydration-id
+  sequence breaks) — and the panic cascades to every island hydrated after it (header badge
+  included). Seed island data from PROPS (an `AsyncDerived`/signal ready on first poll); fetch only
+  in response to user actions after hydration (e.g. opening the drawer).
 - Data: `Resource::new(source, fetcher)` + `<Suspense fallback=…>` / `<Transition>`;
   `Suspend::new(async move { … })` inside the view; `ErrorBoundary` per section;
   `ServerAction::<Fn>::new()` + `<ActionForm action=…>` (works without JS: a plain POST to the
@@ -179,8 +186,9 @@ WWDC design principles translated for the web) and apply it to every component a
 
 ## Caching (lead's helpers, in `crate::server::cache` — ssr only)
 
-- Catalogue pages: `cache::public(&[tags])` → `Cache-Control: public, max-age=0, s-maxage=300,
-  stale-while-revalidate=60` and `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
+- Catalogue pages: `cache::public(&[tags])` → browsers `Cache-Control: no-cache` + `Vary: Cookie`
+  (prefs are cookies), edge `CDN-Cache-Control: public, s-maxage=300, stale-while-revalidate=60`,
+  `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
 - Anything personalised (cart, checkout, orders): `cache::private()` → `Cache-Control: private,
   no-store`. Never render cart contents into a public page; personal bits are islands fed by
   cookies or server functions.
@@ -206,7 +214,8 @@ are the single source of truth for listing URLs (server and islands). Errors are
 Server-only (`#[cfg(feature = "ssr")]`): `server::state()`, `server::current_catalog()`
 (synchronous, in-memory — use it to compute cache tags before streaming starts),
 `server::cache::{public, private, tag_product, tag_category}`, `server::sim::{delay, check_fail,
-Widget}` (every read already waits its simulated latency; `?fail=<widget>` on the page URL makes it
+Widget}` (simulated latency is OFF by default — `SIM_LATENCY_MS=350` env for the server, or the
+`sim` cookie via `/__sim?ms=350&next=…` per visitor; `?fail=<widget>` on the page URL makes a read
 fail — use that to demo error boundaries), `state().orders()` (`place`, `get`, `next_step_at`) and
 `server::orders::slots(&tenant, now_ms)`, `server::cart::{view, cookies}`,
 `TenantCatalog::variant_label`.

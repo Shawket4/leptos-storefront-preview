@@ -1,1 +1,103 @@
-/* drawer */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Drawer (components::drawer): a modal <dialog> that fills the viewport; its
+   own scrim and panel are moved by the Rust spring (transform + opacity set per
+   frame), so CSS only lays them out. The panel enters from the inline end (the
+   left in Arabic) or from the bottom.
+   ───────────────────────────────────────────────────────────────────────────── */
+.drawer {
+  position: fixed;
+  inset: 0;
+  inline-size: 100%;
+  max-inline-size: none;
+  block-size: 100%;
+  max-block-size: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  overflow: hidden;
+}
+.drawer::backdrop {
+  background: transparent;
+}
+.drawer:not([open]) {
+  display: none;
+}
+/* The page behind doesn't scroll while a drawer is open. */
+html:has(.drawer[open]) {
+  overflow: hidden;
+}
+.drawer__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+}
+.drawer__panel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+  touch-action: pan-y;
+  will-change: transform;
+}
+.drawer--end .drawer__panel {
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(26rem, calc(100vw - 2.5rem));
+  border-start-start-radius: var(--r-2xl);
+  border-end-start-radius: var(--r-2xl);
+}
+.drawer--bottom .drawer__panel {
+  inset-inline: 0;
+  inset-block-end: 0;
+  max-block-size: 88dvh;
+  margin-inline: auto;
+  max-inline-size: 40rem;
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+  border-start-start-radius: var(--r-2xl);
+  border-start-end-radius: var(--r-2xl);
+  touch-action: none;
+}
+.drawer--bottom .drawer__body {
+  touch-action: pan-y;
+}
+.drawer__grabber {
+  flex: none;
+  inline-size: 2.25rem;
+  block-size: 0.3125rem;
+  margin: 0.5rem auto 0;
+  border-radius: 3px;
+  background: var(--line-strong);
+}
+.drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  flex: none;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2) var(--sp-5);
+}
+[dir="rtl"] .drawer__head {
+  padding: var(--sp-3) var(--sp-5) var(--sp-2) var(--sp-3);
+}
+.drawer__title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+.drawer__body {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--sp-5) var(--sp-5);
+}
+/* Reduced motion: no slide — the panel is placed at once (the spring jumps) and
+   simply fades in. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer[open] .drawer__panel {
+    animation: fade-in var(--dur-base) var(--ease-out) both;
+  }
+}

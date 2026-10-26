@@ -23,7 +23,7 @@
 @import "./components/stepper.css";
 @import "./components/segmented.css";
 @import "./components/breadcrumbs.css";
-@import "./components/empty-state.css";
+@import "./components/states.css";
 
 /* Composites */
 @import "./components/product-card.css";

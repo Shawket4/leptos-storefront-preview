@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Picture (components::image): the box reserves the aspect ratio; the LQIP
-   (blurred) sits on the dominant colour until the WebP arrives. Transparent
-   packshots rest on the flat --well. The fade-in only exists with scripting,
-   so with JS off images are simply there.
+   Picture (components::image): the box reserves the aspect ratio; for photos the
+   blurred LQIP sits on the dominant colour until the WebP paints over it;
+   transparent packshots rest on the flat --well. Images are never hidden while
+   they load (no opacity gate, no blend modes — see the notes below).
    ───────────────────────────────────────────────────────────────────────────── */
 .pic {
   position: relative;
@@ -33,8 +33,15 @@
 .pic--alpha {
   background-color: var(--well);
 }
+/* No blurred stand-in behind cut-outs: it shows through the transparent pixels as a halo. The
+   flat --well is the placeholder. */
 .pic--alpha::before {
-  opacity: 0.55;
+  content: none;
+}
+/* Once the image is in, its blurred stand-in leaves (it would halo a cut-out). */
+.pic:has(img[data-loaded])::before {
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
 }
 .pic--alpha img {
   object-fit: contain;
@@ -52,22 +59,16 @@
   content: none;
 }
 
-@media (scripting: enabled) {
-  .pic img {
-    transition: opacity var(--dur-slow) var(--ease-out);
-  }
-  .pic img:not([data-loaded], [fetchpriority="high"]) {
-    opacity: 0;
-  }
-}
+/* (No opacity:0 fade-in gate: an image must never depend on an inline onload having run — pages
+   the islands router patches in come from DOMParser, where inline handlers may never fire.) */
 
 /* Dark mode: transparent packshots get a rim light — a hairline of light along
    their own silhouette — so dark products keep their edges on the dark well. */
 :root[data-theme="dark"] .pic--alpha img {
-  filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.55)) drop-shadow(0 0 8px rgb(255 255 255 / 0.07));
+  filter: drop-shadow(0 0 0.5px var(--rim));
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"] .pic--alpha img {
-    filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.55)) drop-shadow(0 0 8px rgb(255 255 255 / 0.07));
+    filter: drop-shadow(0 0 0.5px var(--rim));
   }
 }

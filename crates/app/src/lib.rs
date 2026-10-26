@@ -52,7 +52,17 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
                 <meta name="color-scheme" content=color_scheme/>
-                {home_nojs_fallback(&rq.path_and_query)}
+                // The two faces the first screen needs, per language (Arabic pages set Arabic words).
+                {match p.lang {
+                    prefs::Lang::Ar => view! {
+                        <link rel="preload" href="/fonts/cairo-arabic-wght-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                        <link rel="preload" href="/fonts/cairo-latin-wght-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                    }.into_any(),
+                    prefs::Lang::En => view! {
+                        <link rel="preload" href="/fonts/cairo-latin-wght-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                        <link rel="preload" href="/fonts/ibm-plex-mono-latin-600-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                    }.into_any(),
+                }}
                 <link rel="stylesheet" id="leptos" href="/pkg/storefront.css"/>
                 // Per-tenant icons (WebP, like every image asset here).
                 <link rel="icon" type="image/webp" sizes="64x64" href=format!("/media/brand/{}-icon-64.webp", t.id)/>
@@ -98,18 +108,4 @@ pub fn App() -> impl IntoView {
             </components::shell::AppShell>
         </Router>
     }
-}
-
-/// Out-of-order streamed sections only appear with JS. On the home page, visitors without JS are
-/// sent to `/nojs`, the same page streamed in order. (A `<noscript>` in `<head>` only runs when
-/// scripting is off, so everyone else never sees it.)
-#[cfg(feature = "ssr")]
-fn home_nojs_fallback(path_and_query: &str) -> Option<impl IntoView + use<>> {
-    let query = match path_and_query.split_once('?') {
-        Some(("/", q)) => format!("?{q}"),
-        None if path_and_query == "/" => String::new(),
-        _ => return None,
-    };
-    let content = format!("0; url=/nojs{query}");
-    Some(view! { <noscript><meta http-equiv="refresh" content=content/></noscript> })
 }
