@@ -1,14 +1,18 @@
-//! The markup of a cart line and of the cart summary, written once. The same components render
-//! the drawer's and /cart's `<template>`s (empty; `features/cart.ts` fills them through `fill()` /
-//! `patch()`) and /cart's lines on the server (filled), so the page looks the same before and
-//! after the browser code takes over. Every control is a real form (`/cart/set`, `/cart/remove`),
-//! so /cart works without JS; with JS the TS intercepts them and nothing is sent.
+//! The cart line and the cart summary, written once with the design system: a line is an
+//! `ItemRow` (its slots are what the browser code fills), the summary's figures are `Totals`. The
+//! same components render the drawer's and /cart's `<template>` (empty; `features/cart-view.ts`
+//! fills it) and /cart's lines on the server (filled), so the page looks the same before and after
+//! the browser code takes over. Every control is a real form (`/cart/set`, `/cart/remove`), so
+//! /cart works without JS; with JS the TS intercepts them and nothing is sent.
 
 use super::tx;
 use crate::api::types::CartLineView;
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
+use crate::components::item_row::ItemRow;
+use crate::components::notice::{Notice, Tone};
 use crate::components::stepper::Stepper;
+use crate::components::totals::{TotalRow, TotalTone, Totals};
 use crate::format;
 use crate::prefs::{Lang, Numerals};
 use crate::strings;
@@ -24,18 +28,15 @@ pub struct LineData {
     pub name: String,
     /// Variant and add-ons, e.g. "256 GB · Gift wrap".
     pub detail: Option<String>,
-    pub href: String,
+    /// `None` for a line the catalogue lost.
+    pub href: Option<String>,
     pub img: Option<String>,
-    pub unit: Option<String>,
-    pub was: Option<String>,
-    pub total: Option<String>,
-    /// "2 × EGP 1,899.00".
-    pub breakdown: Option<String>,
-    /// "Only 3 in stock".
-    pub low: Option<String>,
+    /// The line's note: its problem, else "2 × EGP 59.99 · Only 3 in stock".
+    pub meta: Option<String>,
+    /// The line total.
+    pub price: Option<String>,
     /// `out_of_stock` / `capped` / `unavailable`.
     pub issue_code: Option<&'static str>,
-    pub issue: Option<String>,
     /// "Change to 3" (a capped line's fix) and the quantity it sets.
     pub fix: Option<(String, u32)>,
 }
@@ -50,7 +51,7 @@ pub fn percent(n: u32, num: Numerals) -> String {
 }
 
 impl LineData {
-    /// A priced line (/cart on the server).
+    /// A priced line (/cart on the server). Same words as `features/cart-view.ts` writes.
     pub fn from_view(l: &CartLineView, lang: Lang, num: Numerals) -> LineData {
         let ar = lang.is_rtl();
         let n = |x: u32| format::count(x, num);
@@ -73,28 +74,31 @@ impl LineData {
             ),
             None => (None, None, None),
         };
+        let note = {
+            let mut bits = Vec::new();
+            if l.qty > 1 {
+                bits.push(tx(
+                    "cart.breakdown",
+                    lang,
+                    &[("qty", &n(l.qty)), ("unit", &m(l.unit_price))],
+                ));
+            }
+            if l.max_qty <= 5 {
+                bits.push(tx("cart.low_stock", lang, &[("n", &n(l.max_qty))]));
+            }
+            (!bits.is_empty()).then(|| bits.join(" · "))
+        };
         LineData {
             key: l.key.clone(),
             qty: l.qty,
             max: l.max_qty.max(l.qty).max(1),
             name: l.name.pick(ar).to_owned(),
             detail: (!detail.is_empty()).then(|| detail.join(" · ")),
-            href: format!("/p/{}", l.slug),
+            href: Some(format!("/p/{}", l.slug)),
             img: (!l.img.is_missing()).then(|| l.img.src_near(192)),
-            unit: Some(m(l.unit_price)),
-            was: l.compare_at.map(m),
-            total: Some(m(l.line_total)),
-            breakdown: (l.qty > 1).then(|| {
-                tx(
-                    "cart.breakdown",
-                    lang,
-                    &[("qty", &n(l.qty)), ("unit", &m(l.unit_price))],
-                )
-            }),
-            low: (issue_code.is_none() && l.max_qty <= 5)
-                .then(|| tx("cart.low_stock", lang, &[("n", &n(l.max_qty))])),
+            meta: issue.or(note),
+            price: Some(m(l.line_total)),
             issue_code,
-            issue,
             fix,
         }
     }
@@ -106,14 +110,14 @@ impl LineData {
             qty: l.qty,
             max: l.qty.max(1),
             name: strings::get("cart.unavailable_name", lang).to_owned(),
+            meta: Some(strings::get("cart.issue.unavailable", lang).to_owned()),
             issue_code: Some("unavailable"),
-            issue: Some(strings::get("cart.issue.unavailable", lang).to_owned()),
             ..Default::default()
         }
     }
 }
 
-/// One line. `next` is where the no-JS forms come back to.
+/// One line: an `ItemRow` with the line's controls. `next` is where the no-JS forms come back to.
 #[component]
 pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
     let template = d.key.is_empty();
@@ -129,54 +133,62 @@ pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
         .map(|(l, q)| (Some(l), q))
         .unwrap_or((None, 0));
     let key = d.key.clone();
-    view! {
-        <li class="cline" data-key=d.key.clone() data-issue=d.issue_code.unwrap_or("")>
-            <a class="cline__media" href=d.href.clone() data-attr-href="href" tabindex="-1" aria-hidden="true">
-                <img class="cline__img" src=d.img.clone() data-attr-src="img" alt="" width="96" height="96"
-                    loading="lazy" decoding="async"/>
-            </a>
-            <div class="cline__main">
-                <a class="cline__name" href=d.href.clone() data-attr-href="href" data-slot="name">{d.name.clone()}</a>
-                <p class="cline__detail" data-slot="detail" hidden=d.detail.is_none()>{d.detail.clone()}</p>
-                <p class="cline__unit">
-                    <span class="cline__price mono" data-slot="unit">{d.unit.clone()}</span>
-                    <s class="cline__was mono" data-slot="was" hidden=d.was.is_none()>{d.was.clone()}</s>
-                </p>
-                <p class="cline__stock" data-slot="low" hidden=d.low.is_none()>{d.low.clone()}</p>
-                <form class="cline__remove" method="post" action="/cart/remove" data-cart-form="remove">
-                    <input type="hidden" name="key" value=key.clone() data-attr-value="key"/>
-                    <input type="hidden" name="next" value=next/>
-                    <button type="submit" class="link-btn" aria-label=rm_label data-attr-aria-label="rm_label">
-                        {strings::get("cart.remove", lang)}
-                    </button>
-                </form>
-            </div>
-            <div class="cline__side">
-                <form class="cline__qty" method="post" action="/cart/set" data-cart-form="set">
-                    <input type="hidden" name="key" value=key.clone() data-attr-value="key"/>
-                    <input type="hidden" name="next" value=next/>
-                    <Stepper name="qty" value=d.qty.max(1) min=1 max=d.max.max(1) removable=true label=qty_label/>
-                    // No-JS only: with scripting on, every change is instant (cart.css hides it).
-                    <Button button_type="submit" kind=ButtonKind::Secondary size=ButtonSize::Sm class="cline__update">
-                        {strings::get("cart.update", lang)}
-                    </Button>
-                </form>
-                <p class="cline__total">
-                    <span class="mono" data-slot="total">{d.total.clone()}</span>
-                    <span class="cline__breakdown" data-slot="breakdown" hidden=d.breakdown.is_none()>{d.breakdown.clone()}</span>
-                </p>
-            </div>
-            <div class="line-issue cline__issue" role="status">
-                <Icon name="triangle-alert" size=16/>
-                <span data-slot="issue" hidden=d.issue.is_none()>{d.issue.clone()}</span>
-                <form class="line-issue__fix" method="post" action="/cart/set" data-cart-form="set">
-                    <input type="hidden" name="key" value=key data-attr-value="key"/>
-                    <input type="hidden" name="qty" value=fix_qty.to_string() data-fix-qty=""/>
-                    <input type="hidden" name="next" value=next/>
-                    <button type="submit" class="link-btn" data-slot="fix" hidden=fix_label.is_none()>{fix_label.clone()}</button>
-                </form>
-            </div>
-        </li>
+    let controls = move || {
+        let key = key.clone();
+        view! {
+            <form class="cline__qty" method="post" action="/cart/set" data-cart-form="set">
+                <input type="hidden" name="key" value=key.clone() data-attr-value="key"/>
+                <input type="hidden" name="next" value=next/>
+                <Stepper name="qty" value=d.qty.max(1) min=1 max=d.max.max(1) removable=true label=qty_label.clone()/>
+                // No-JS only: with scripting on, every change is instant (cart.css hides it).
+                <Button button_type="submit" kind=ButtonKind::Secondary size=ButtonSize::Sm class="cline__update">
+                    {strings::get("cart.update", lang)}
+                </Button>
+            </form>
+            <form class="cline__remove" method="post" action="/cart/remove" data-cart-form="remove">
+                <input type="hidden" name="key" value=key.clone() data-attr-value="key"/>
+                <input type="hidden" name="next" value=next/>
+                <button type="submit" class="link-btn" aria-label=rm_label.clone() data-attr-aria-label="rm_label">
+                    {strings::get("cart.remove", lang)}
+                </button>
+            </form>
+            <form class="cline__fix" method="post" action="/cart/set" data-cart-form="set">
+                <input type="hidden" name="key" value=key data-attr-value="key"/>
+                <input type="hidden" name="qty" value=fix_qty.to_string() data-fix-qty=""/>
+                <input type="hidden" name="next" value=next/>
+                <button type="submit" class="link-btn" data-slot="fix" hidden=fix_label.is_none()>{fix_label.clone()}</button>
+            </form>
+        }
+    };
+    let (detail, meta, price) = (
+        d.detail.unwrap_or_default(),
+        d.meta.unwrap_or_default(),
+        d.price.unwrap_or_default(),
+    );
+    let issue = d.issue_code.unwrap_or("");
+    // A lost line has no picture or page to link (ItemRow takes them as plain values).
+    match (d.img, d.href) {
+        (Some(img), Some(href)) => view! {
+            <ItemRow name=d.name img href detail meta price slots=true class="cline"
+                attr:data-key=d.key attr:data-issue=issue>
+                {controls()}
+            </ItemRow>
+        }
+        .into_any(),
+        (None, Some(href)) => view! {
+            <ItemRow name=d.name href detail meta price slots=true class="cline"
+                attr:data-key=d.key attr:data-issue=issue>
+                {controls()}
+            </ItemRow>
+        }
+        .into_any(),
+        _ => view! {
+            <ItemRow name=d.name detail meta price slots=true class="cline"
+                attr:data-key=d.key attr:data-issue=issue>
+                {controls()}
+            </ItemRow>
+        }
+        .into_any(),
     }
 }
 
@@ -193,7 +205,8 @@ pub struct SummaryData {
     pub empty: bool,
 }
 
-/// Free-delivery hint, totals, VAT and the way on. One markup for the drawer's footer and /cart.
+/// Free-delivery hint, totals, "VAT included" and the way on. One markup for the drawer's footer
+/// and /cart; the browser code fills the `Totals` slots (subtotal, savings, delivery/free, total).
 #[component]
 pub fn CartSummary(
     d: SummaryData,
@@ -206,6 +219,23 @@ pub fn CartSummary(
     let vat = tx("cart.vat_included", lang, &[("pct", &percent(14, num))]);
     let done = !d.empty && d.hint.is_none();
     let blocked = !d.empty && !d.can_checkout;
+    let rows = vec![
+        TotalRow::new(g("cart.subtotal"), d.subtotal.clone()).slot("subtotal"),
+        TotalRow::new(g("cart.savings"), d.savings.clone().unwrap_or_default())
+            .tone(TotalTone::Saving)
+            .slot("savings")
+            .hidden(d.savings.is_none()),
+        TotalRow::new(g("cart.delivery"), d.delivery.clone())
+            .slot("delivery")
+            .hidden(d.delivery_free),
+        TotalRow::new(g("cart.delivery"), g("cart.free"))
+            .tone(TotalTone::Free)
+            .slot("free")
+            .hidden(!d.delivery_free),
+        TotalRow::new(g("cart.total"), d.total.clone())
+            .tone(TotalTone::Total)
+            .slot("total"),
+    ];
     view! {
         <div class="csum" data-cart-summary="" aria-busy="false">
             <p class="ship">
@@ -213,51 +243,22 @@ pub fn CartSummary(
                 <span data-slot="hint" hidden=d.hint.is_none()>{d.hint.clone()}</span>
                 <span class="ship__done" data-slot="ship_done" hidden=!done>{g("cart.free_done")}</span>
             </p>
-            <dl class="totals">
-                <div class="totals__row">
-                    <dt>{g("cart.subtotal")}</dt>
-                    <dd class="mono" data-slot="subtotal">{d.subtotal.clone()}</dd>
-                </div>
-                <div class="totals__row totals__row--save">
-                    <dt>{g("cart.savings")}</dt>
-                    <dd class="mono" data-slot="savings" hidden=d.savings.is_none()>{d.savings.clone()}</dd>
-                </div>
-                <div class="totals__row">
-                    <dt>{g("cart.delivery")}</dt>
-                    <dd>
-                        <span class="mono" data-slot="delivery" hidden=d.delivery_free>{d.delivery.clone()}</span>
-                        <span class="totals__free" data-slot="free" hidden=!d.delivery_free>{g("cart.free")}</span>
-                    </dd>
-                </div>
-                <div class="totals__row totals__row--total">
-                    <dt>{g("cart.total")}</dt>
-                    <dd class="mono" data-slot="total">{d.total.clone()}</dd>
-                </div>
-            </dl>
-            <p class="totals__vat">{vat}</p>
-            <div class="notice notice--error csum__err" data-quote-error="" role="alert" hidden="">
-                <Icon name="circle-alert" size=20/>
-                <span data-slot="qerr">{g("cart.quote_failed")}</span>
+            <Totals rows note=vat/>
+            <Notice tone=Tone::Danger title=g("cart.quote_failed") slots=true attr:data-quote-error="" attr:hidden=true>
                 <button type="button" class="link-btn" data-quote-retry="">{g("cart.retry")}</button>
-            </div>
+            </Notice>
             <div class="csum__actions">
                 <p class="csum__blocked" data-slot="blocked" hidden=!blocked>{g("cart.blocked")}</p>
-                // Blocked is toggled by the browser code as the quote changes, so the link keeps
-                // its href (Button's `disabled` would drop it).
+                // Blocked is toggled by the browser code as the cart changes, so the link keeps its
+                // href (Button's `disabled` would drop it).
                 <Button href="/checkout" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true
                     icon_end="arrow-right" attr:data-checkout="" attr:aria-disabled=blocked.to_string()>
                     {g("cart.checkout")}
                 </Button>
                 {if in_drawer {
-                    view! {
-                        <Button href="/cart" kind=ButtonKind::Ghost full_width=true>{g("cart.view")}</Button>
-                    }
-                    .into_any()
+                    view! { <Button href="/cart" kind=ButtonKind::Ghost full_width=true>{g("cart.view")}</Button> }.into_any()
                 } else {
-                    view! {
-                        <Button href="/" kind=ButtonKind::Ghost full_width=true>{g("cart.continue")}</Button>
-                    }
-                    .into_any()
+                    view! { <Button href="/" kind=ButtonKind::Ghost full_width=true>{g("cart.continue")}</Button> }.into_any()
                 }}
             </div>
         </div>

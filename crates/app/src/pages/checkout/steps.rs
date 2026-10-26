@@ -6,7 +6,9 @@ use crate::api::types::{CartView, DeliverySlot};
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::form::{RadioCard, RadioGroup};
 use crate::components::icons::Icon;
-use crate::components::image::Picture;
+use crate::components::item_row::{ItemList, ItemRow, ItemSize};
+use crate::components::kv::{KeyValueList, KvRow};
+use crate::components::notice::Notice;
 use crate::components::price::{Price, PriceSize};
 use crate::components::states::{StateTone, StateView};
 use crate::components::status_pill::{StatusPill, Tone};
@@ -18,52 +20,12 @@ use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::server_fn::ServerFn;
 
-#[component]
-pub fn Stepper(step: Step, done: [bool; 4], lang: Lang, num: Numerals) -> impl IntoView {
-    let progress = step.index() as f32 / (Step::ALL.len() - 1) as f32;
-    view! {
-        <nav class="co-steps" aria-label=tr(lang, "Checkout steps", "خطوات إتمام الطلب")>
-            <ol class="co-steps__list" style=format!("--p:{progress:.4}")>
-                {Step::ALL.into_iter().map(|s| {
-                    let current = s == step;
-                    let state = if current { "is-current" } else if done[s.index()] { "is-done" } else { "is-next" };
-                    let dot = if done[s.index()] && !current {
-                        Either::Left(view! { <Icon name="check" size=14/> })
-                    } else {
-                        Either::Right(view! { <span class="mono">{format::count(s.index() as u32 + 1, num)}</span> })
-                    };
-                    let inner = view! {
-                        <span class="co-step__dot" aria-hidden="true">{dot}</span>
-                        <span class="co-step__label">{s.label(lang)}</span>
-                    };
-                    // Finished steps (and the current one's predecessors) are links back.
-                    let link = (done[s.index()] || s < step) && !current;
-                    view! {
-                        <li class=format!("co-step {state}") aria-current={if current { "step" } else { "false" }}>
-                            {if link {
-                                Either::Left(view! { <a class="co-step__link" href=s.href()>{inner}</a> })
-                            } else {
-                                Either::Right(view! { <span class="co-step__link">{inner}</span> })
-                            }}
-                        </li>
-                    }
-                }).collect_view()}
-            </ol>
-        </nav>
-    }
-}
-
 /// An error message the server sent back for this step (`features/checkout.ts` focuses it).
 #[component]
 fn StepError(message: Option<String>) -> impl IntoView {
-    message.map(|m| {
-        view! {
-            <p class="notice notice--error" role="alert" tabindex="-1" data-autofocus="">
-                <Icon name="circle-alert" size=20/>
-                <span>{m}</span>
-            </p>
-        }
-    })
+    message.map(
+        |m| view! { <Notice tone=Tone::Danger title=m attr:tabindex="-1" attr:data-autofocus=""/> },
+    )
 }
 
 /// Revealed by the client when a step can't reach the server (offline, or no answer in time):
@@ -71,11 +33,10 @@ fn StepError(message: Option<String>) -> impl IntoView {
 #[component]
 fn NetNotice(lang: Lang) -> impl IntoView {
     view! {
-        <div class="notice notice--error notice--net" data-net-notice="" hidden="" role="alert" tabindex="-1">
-            <Icon name="triangle-alert" size=20/>
-            <span>{tr(lang, "We couldn't reach the shop. Your choices are still here — check your connection and try again.", "تعذّر الاتصال بالمتجر. اختياراتك محفوظة — تأكد من الاتصال وحاول مرة أخرى.")}</span>
+        <Notice tone=Tone::Danger attr:data-net-notice="" attr:hidden=true attr:tabindex="-1"
+            title=tr(lang, "We couldn't reach the shop. Your choices are still here — check your connection and try again.", "تعذّر الاتصال بالمتجر. اختياراتك محفوظة — تأكد من الاتصال وحاول مرة أخرى.")>
             <button type="submit" class="link-btn">{tr(lang, "Try again", "حاول تاني")}</button>
-        </div>
+        </Notice>
     }
 }
 
@@ -333,40 +294,26 @@ pub fn ReviewStep(
             <StepHeading text=tr(lang, "Check and place your order", "راجع طلبك وأكّده")/>
             <StepError message=error/>
             {blocked.then(|| view! {
-                <div class="notice notice--error notice--block" role="alert" tabindex="-1" data-autofocus="">
-                    <Icon name="triangle-alert" size=20/>
-                    <div class="notice__body">
-                        <p class="notice__title">{tr(lang, "Some items changed since you added them", "تغيّر توفّر بعض المنتجات منذ إضافتها")}</p>
-                        <p>{tr(lang, "The ones marked below can't be sent as they are. Update them in your cart, then come back to place your order.", "لا يمكن إرسال المنتجات المحددة أدناه كما هي. يرجى تعديلها في السلة ثم العودة لإتمام الطلب.")}</p>
-                        <Button href="/cart" kind=ButtonKind::Secondary size=ButtonSize::Sm icon_end="arrow-right">
-                            {tr(lang, "Fix in cart", "عدّلها في السلة")}
-                        </Button>
-                    </div>
-                </div>
+                <Notice tone=Tone::Danger attr:tabindex="-1" attr:data-autofocus=""
+                    title=tr(lang, "Some items changed since you added them", "تغيّر توفّر بعض المنتجات منذ إضافتها")
+                    body=tr(lang, "The ones marked below can't be sent as they are. Update them in your cart, then come back to place your order.", "لا يمكن إرسال المنتجات المحددة أدناه كما هي. يرجى تعديلها في السلة ثم العودة لإتمام الطلب.")>
+                    <Button href="/cart" kind=ButtonKind::Secondary size=ButtonSize::Sm icon_end="arrow-right">
+                        {tr(lang, "Fix in cart", "عدّلها في السلة")}
+                    </Button>
+                </Notice>
             })}
-            <dl class="review">
-                <div class="review__row">
-                    <dt><Icon name="map-pin" size=18/><span>{tr(lang, "Deliver to", "التوصيل على")}</span></dt>
-                    <dd>{address_lines(&address, lang, num).into_iter().map(|l| view! { <span class="review__line">{l}</span> }).collect_view()}</dd>
-                    <a class="review__edit" href=Step::Address.href()>{tr(lang, "Edit", "تعديل")}</a>
-                </div>
-                <div class="review__row">
-                    <dt><Icon name="clock" size=18/><span>{tr(lang, "Delivery time", "ميعاد التوصيل")}</span></dt>
-                    <dd><span class="review__line">{slot_text}</span></dd>
-                    <a class="review__edit" href=Step::Slot.href()>{tr(lang, "Change", "تغيير")}</a>
-                </div>
-                <div class="review__row">
-                    <dt><Icon name="credit-card" size=18/><span>{tr(lang, "Payment", "الدفع")}</span></dt>
-                    <dd><span class="review__line">{payment}</span></dd>
-                    <a class="review__edit" href=Step::Payment.href()>{tr(lang, "Change", "تغيير")}</a>
-                </div>
-            </dl>
+            <KeyValueList rows=vec![
+                KvRow::new("map-pin", tr(lang, "Deliver to", "التوصيل على"), address_lines(&address, lang, num))
+                    .action(tr(lang, "Edit", "تعديل"), Step::Address.href()),
+                KvRow::new("clock", tr(lang, "Delivery time", "ميعاد التوصيل"), vec![slot_text])
+                    .action(tr(lang, "Change", "تغيير"), Step::Slot.href()),
+                KvRow::new("credit-card", tr(lang, "Payment", "الدفع"), vec![payment.to_owned()])
+                    .action(tr(lang, "Change", "تغيير"), Step::Payment.href()),
+            ]/>
             <h3 class="co-sub">{format::items(ctx.cart.count, lang, num)}</h3>
-            <ul class="mini-lines" role="list">
-                <For each=move || lines.clone() key=|l| l.key.clone() let:l>
-                    <MiniLine l lang num/>
-                </For>
-            </ul>
+            <ItemList size=ItemSize::Compact>
+                {lines.into_iter().map(|l| view! { <MiniLine l lang num/> }).collect_view()}
+            </ItemList>
             <div class="co-review__totals">
                 <Totals v=ctx.cart.clone() extra_fee lang num/>
             </div>
@@ -410,19 +357,23 @@ fn MiniLine(l: crate::api::types::CartLineView, lang: Lang, num: Numerals) -> im
             crate::pages::cart::tx("cart.issue.capped", lang, &[("n", &format::count(n, num))])
         }
     });
-    view! {
-        <li class="mini-line">
-            <span class="mini-line__media"><Picture img=l.img.clone() sizes="48px" lang/></span>
-            <span class="mini-line__main">
-                <span class="mini-line__name">{l.name.pick(ar).to_owned()}</span>
-                <span class="mini-line__meta">
-                    <span class="mono">{format!("{}×", format::count(l.qty, num))}</span>
-                    {(!detail.is_empty()).then(|| view! { <span>{detail.join(" · ")}</span> })}
-                </span>
-                {stock.map(|m| view! { <span class="mini-line__stock">{m}</span> })}
-            </span>
-            <span class="mini-line__total"><Price amount=l.line_total size=PriceSize::Sm no_badge=true lang numerals=num/></span>
-        </li>
+    // "2×", and what's wrong with it now (stock moved since it was added).
+    let meta = match stock {
+        Some(m) => format!("{}× · {m}", format::count(l.qty, num)),
+        None => format!("{}×", format::count(l.qty, num)),
+    };
+    let (name, detail, price) = (
+        l.name.pick(ar).to_owned(),
+        detail.join(" · "),
+        format::money(l.line_total, lang, num),
+    );
+    match (!l.img.is_missing()).then(|| l.img.src_near(96)) {
+        Some(img) => {
+            view! { <ItemRow size=ItemSize::Compact name img detail meta price class="co-line"/> }
+                .into_any()
+        }
+        None => view! { <ItemRow size=ItemSize::Compact name detail meta price class="co-line"/> }
+            .into_any(),
     }
 }
 
@@ -440,21 +391,17 @@ pub fn Summary(cart: CartView, extra_fee: Piastres, lang: Lang, num: Numerals) -
                 <Icon name="chevron-down" size=18 class="co-summary-sm__chev"/>
             </summary>
             <div class="co-summary-sm__body">
-                <ul class="mini-lines" role="list">
-                    <For each=move || lines.clone() key=|l| l.key.clone() let:l>
-                        <MiniLine l lang num/>
-                    </For>
-                </ul>
+                <ItemList size=ItemSize::Compact>
+                    {lines.into_iter().map(|l| view! { <MiniLine l lang num/> }).collect_view()}
+                </ItemList>
                 <Totals v=cart.clone() extra_fee lang num/>
             </div>
         </details>
         <aside class="co-summary card" aria-labelledby="co-summary-title">
             <h2 class="co-summary__title" id="co-summary-title">{tr(lang, "Order summary", "ملخص الطلب")}</h2>
-            <ul class="mini-lines" role="list">
-                <For each=move || lines2.clone() key=|l| l.key.clone() let:l>
-                    <MiniLine l lang num/>
-                </For>
-            </ul>
+            <ItemList size=ItemSize::Compact>
+                {lines2.into_iter().map(|l| view! { <MiniLine l lang num/> }).collect_view()}
+            </ItemList>
             <Totals v=cart extra_fee lang num/>
         </aside>
     }

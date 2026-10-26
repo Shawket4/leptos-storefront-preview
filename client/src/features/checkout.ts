@@ -15,6 +15,8 @@ import { register } from "../core/mount";
 import { NetError, getJSON, isOnline, onOnline } from "../core/net";
 import { cfg, digits, t } from "../core/page";
 import { routing } from "../core/router";
+import { setLiveStatus, retryIn } from "../core/live-status";
+import { setTimeline } from "../core/timeline";
 import { adoptSnapshots, type PricedSnapshot } from "../stores/cart";
 
 type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -29,62 +31,69 @@ function message(el: Control): string {
   return el.validationMessage;
 }
 
-// ── The address step: what's missing, said before the round-trip ─────────────────────────────
-// The constraint validation API with the catalogue's words: each missing field gets a custom
-// validity message, and the first one is reported (the browser's bubble, focused). The server's
-// own messages render inline under the fields (components::form).
+// ── The address step: what's missing, said inline before the round-trip ──────────────────────
+// Each field's error line (components::form renders `{id}-error` always, empty) gets the
+// catalogue's words for its HTML5 constraint (`required`, `minlength`, `maxlength`); the first
+// field with a problem takes focus. The server's own messages arrive in the same lines.
 register("checkout-form", (form) => {
   if (!(form instanceof HTMLFormElement)) return;
-  form.noValidate = true; // our words, on submit
+  form.noValidate = true; // our words, inline
+  let tried = false;
   const controls = () => $$<Control>("input[name], select[name], textarea[name]", form).filter((c) => c.type !== "hidden");
 
-  /** Set the field's message (empty when fine); returns its first control when it isn't. */
+  /** The field's problem (empty when fine). Radios and selects: one of them must be chosen. */
+  const problem = (group: Control[]): string => {
+    const first = group[0]!;
+    if (first instanceof HTMLInputElement && first.type === "radio")
+      return first.required && !group.some((c) => (c as HTMLInputElement).checked) ? t("checkout.v.choose") : "";
+    if (first instanceof HTMLSelectElement) return first.required && !first.value ? t("checkout.v.choose") : "";
+    return message(first);
+  };
+
+  /** Show (or clear) the field's message in its error line; returns its first control if wrong. */
   const check = (name: string): Control | null => {
     const group = controls().filter((c) => c.name === name);
-    const first = group[0];
-    if (!first) return null;
-    for (const c of group) c.setCustomValidity("");
-    let msg = "";
-    if (first instanceof HTMLInputElement && first.type === "radio") {
-      msg = group.some((c) => (c as HTMLInputElement).checked) ? "" : t("checkout.v.choose");
-    } else if (first instanceof HTMLSelectElement) {
-      msg = first.value ? "" : t("checkout.v.choose");
-    } else if (first.name === "notes" && first.value.length > max) {
-      msg = t("checkout.v.too_long", { n: digits(max) });
-    } else {
-      msg = message(first);
-    }
-    first.setCustomValidity(msg);
-    return msg ? first : null;
+    if (!group.length) return null;
+    const msg = problem(group);
+    for (const c of group) c.setAttribute("aria-invalid", String(!!msg));
+    const line = form.querySelector(`#co-${CSS.escape(name)}-error`);
+    if (line) patch(line, { error: msg }); // "" clears it (and what a screen reader would read)
+    return msg ? group[0]! : null;
   };
 
   const notes = $<HTMLTextAreaElement>("textarea[name=notes]", form);
   const counter = $("[data-notes-count]", form);
-  const max = Number(counter?.dataset.max) || 200;
   const count = () => {
-    if (notes && counter) counter.textContent = `${digits(notes.value.length)}/${digits(max)}`;
+    if (notes && counter) counter.textContent = `${digits(notes.value.length)}/${digits(Number(counter.dataset.max) || 200)}`;
   };
 
   const onSubmit = (ev: SubmitEvent) => {
-    const names = [...new Set(controls().map((c) => c.name))];
-    const bad = names.map(check).filter((c): c is Control => !!c);
+    tried = true;
+    const bad = [...new Set(controls().map((c) => c.name))].map(check).filter((c): c is Control => !!c);
     if (!bad.length) return; // complete: the router posts it
     ev.preventDefault();
-    bad[0]!.reportValidity();
+    bad[0]!.focus();
   };
   const onInput = (ev: Event) => {
     const c = ev.target as Control;
     if (!c.name) return;
     if (c.name === "notes") count();
-    check(c.name);
+    // Once a field has said something (or a submit was tried), it says the moment it's fixed.
+    if (tried || c.getAttribute("aria-invalid") === "true") check(c.name);
+  };
+  const onBlur = (ev: FocusEvent) => {
+    const c = ev.target as Control;
+    if (c.name && "value" in c && c.value.trim()) check(c.name);
   };
   form.addEventListener("submit", onSubmit);
   form.addEventListener("input", onInput);
   form.addEventListener("change", onInput);
+  form.addEventListener("focusout", onBlur);
   return () => {
     form.removeEventListener("submit", onSubmit);
     form.removeEventListener("input", onInput);
     form.removeEventListener("change", onInput);
+    form.removeEventListener("focusout", onBlur);
   };
 });
 
@@ -154,48 +163,33 @@ register("checkout", (root) => {
 });
 
 // ── Order tracking ────────────────────────────────────────────────────────────────────────────
+// The server's Timeline and LiveStatus, moved with core's helpers (timeline.ts, live-status.ts).
 register("order-track", (el) => {
   const id = el.dataset.id ?? "";
-  const parts = {
-    still: $("[data-static]", el),
-    live: $("[data-live]", el),
-    done: $("[data-complete]", el),
-    net: $("[data-net]", el),
-  };
+  const live = $(".live-status", el);
   const say = $("[data-announce]", el);
-  const showOnly = (which: "live" | "done" | "net") => {
-    if (parts.still) parts.still.hidden = true;
-    for (const k of ["live", "done", "net"] as const) {
-      const p = parts[k];
-      if (p) p.hidden = k !== which;
-    }
-  };
+  $("[data-static]", el)?.setAttribute("hidden", "");
+  live?.removeAttribute("hidden");
   if (el.dataset.final === "true") {
-    showOnly("done");
+    setLiveStatus(el, "idle", t("order.complete"));
     return;
   }
-  showOnly("live");
+  setLiveStatus(el, "live");
 
   let stopped = false;
   let timer = 0;
-  let clock = 0;
   let failures = 0;
+  let cancelRetry: (() => void) | null = null;
   let status = el.dataset.status ?? "";
 
   const apply = (tr: OrderTrack) => {
-    const values: Record<string, string | null> = { headline: tr.headline, eta: tr.eta, updated: tr.updated };
-    tr.steps.forEach((s, i) => (values[`t${i}`] = s.time));
-    patch(el, values);
-    const ol = $("ol.timeline", el);
-    if (ol) {
-      ol.style.setProperty("--p", tr.progress.toFixed(4));
-      ol.dataset.cancelled = String(tr.cancelled);
-      $$("li.timeline__step", ol).forEach((li, i) => {
-        const state = tr.steps[i]?.state ?? "todo";
-        li.className = `timeline__step is-${state}`;
-        li.setAttribute("aria-current", state === "current" ? "step" : "false");
-      });
-    }
+    patch(el, { headline: tr.headline, eta: tr.eta, updated: tr.updated });
+    setTimeline(el, {
+      progress: tr.progress,
+      stopped: tr.cancelled,
+      states: tr.steps.map((s) => s.state),
+      times: tr.steps.map((s) => s.time),
+    });
     el.dataset.status = tr.status;
     if (tr.status !== status && say) say.textContent = t("order.update", { status: tr.headline });
     status = tr.status;
@@ -206,41 +200,28 @@ register("order-track", (el) => {
     timer = window.setTimeout(() => void poll(), ms);
   };
   const pace = (nextIn: number | null) => Math.min(5000, Math.max(1000, (nextIn ?? 5000) + 400));
-  const offline = () => {
-    clearInterval(clock);
-    patch(el, { net: t("order.offline") });
-    showOnly("net");
-  };
-  const retryIn = (ms: number) => {
-    const until = Date.now() + ms;
-    const tick = () => patch(el, { net: t("order.retrying", { s: digits(Math.max(0, Math.ceil((until - Date.now()) / 1000))) }) });
-    clearInterval(clock);
-    tick();
-    clock = window.setInterval(tick, 1000);
-    showOnly("net");
-    schedule(ms);
-  };
 
   async function poll(): Promise<void> {
     if (stopped) return;
+    cancelRetry?.();
+    cancelRetry = null;
     if (document.hidden) return schedule(5000);
-    if (!isOnline()) return offline();
+    if (!isOnline()) return setLiveStatus(el, "offline");
     try {
       const tr = await getJSON<OrderTrack | null>(`${cfg().api.orderTrack}?id=${encodeURIComponent(id)}`, { retries: 0 });
       if (stopped) return;
-      clearInterval(clock);
       failures = 0;
-      if (!tr) return showOnly("live"); // gone (expired, restarted server): keep what's shown
+      setLiveStatus(el, "live");
+      if (!tr) return; // gone (expired, restarted server): keep what's shown
       apply(tr);
-      if (tr.done) return showOnly("done");
-      showOnly("live");
+      if (tr.done) return setLiveStatus(el, "idle", t("order.complete"));
       schedule(pace(tr.next_in_ms));
     } catch (e) {
       if (stopped) return;
-      if (!isOnline() || (e instanceof NetError && e.code === "offline")) return offline();
-      // 3 s, 6 s, 12 s, then every 20 s.
+      if (!isOnline() || (e instanceof NetError && e.code === "offline")) return setLiveStatus(el, "offline");
+      // 3 s, 6 s, 12 s, then every 20 s; Retry (in the status) runs it at once.
       failures++;
-      retryIn(Math.min(20_000, 3000 * 2 ** Math.min(failures - 1, 3)));
+      cancelRetry = retryIn(el, Math.min(20_000, 3000 * 2 ** Math.min(failures - 1, 3)), () => void poll());
     }
   }
 
@@ -248,13 +229,9 @@ register("order-track", (el) => {
     clearTimeout(timer);
     void poll();
   };
-  const onClick = (ev: MouseEvent) => {
-    if (ev.target instanceof Element && ev.target.closest("[data-retry]")) now();
-  };
   const onVisible = () => {
     if (!document.hidden) now();
   };
-  el.addEventListener("click", onClick);
   document.addEventListener("visibilitychange", onVisible);
   const offOnline = onOnline(now);
   const nextIn = Number(el.dataset.nextIn);
@@ -262,9 +239,8 @@ register("order-track", (el) => {
   return () => {
     stopped = true;
     clearTimeout(timer);
-    clearInterval(clock);
+    cancelRetry?.();
     offOnline();
-    el.removeEventListener("click", onClick);
     document.removeEventListener("visibilitychange", onVisible);
   };
 });

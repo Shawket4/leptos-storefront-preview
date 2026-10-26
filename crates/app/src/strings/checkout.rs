@@ -31,14 +31,5 @@ pub const ALL: &[Entry] = &[
         "Order update: {status}",
         "تحديث الطلب: {status}",
     ),
-    s(
-        "order.retrying",
-        "Connection lost. Retrying in {s} s…",
-        "انقطع الاتصال. هنحاول تاني خلال {s} ث…",
-    ),
-    s(
-        "order.offline",
-        "You're offline. Updates resume when you're back.",
-        "إنت مش متصل بالإنترنت. التحديثات هترجع أول ما ترجع.",
-    ),
+    s("order.complete", "This order is complete.", "الطلب ده خلص."),
 ];
