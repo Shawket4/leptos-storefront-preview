@@ -1,6 +1,7 @@
-//! Home page.
-//!
-//! The hero, trust strip and promos are plain server HTML in the first chunk (they are the LCP).
+//! Home page, laid out like Apple's Store page: a large two-tone title, the category rail, then
+//! "The latest" — swipeable product tiles built from real catalogue packshots (no stock photography,
+//! nothing floating over an image). The title and tiles are plain server HTML in the first chunk
+//! (the first tile's packshot is the LCP).
 //! Every merchandising rail is its own `<Suspense>` + `<ErrorBoundary>` around its own server
 //! function, so with out-of-order streaming each rail arrives the moment its data does — the slow
 //! "deals" rail sits *above* "featured" yet lands after it — and a failing rail (`?fail=deals`)
@@ -8,7 +9,6 @@
 
 use crate::api::{self, types::Rail};
 use crate::components::{
-    button::{Button, ButtonKind, ButtonSize},
     icons::Icon,
     layout::{Container, Rail as Row, SectionHeader},
     product_card::{ProductCard, ProductCardSkeleton},
@@ -24,22 +24,13 @@ use leptos_meta::{Link, Meta, Script, Title};
 /// Images resolved on the server (the hydrate build never renders this page).
 #[derive(Clone, Default)]
 struct HomeArt {
-    hero: Option<Img>,
-    hero_m: Option<Img>,
-    promos: Vec<Img>,
     og: Option<Img>,
 }
 
 #[cfg(feature = "ssr")]
 fn home_art(tenant: &str, lang: Lang) -> HomeArt {
     let st = crate::server::state();
-    let m = st.media();
-    HomeArt {
-        hero: m.try_img(&format!("{tenant}/hero-1")),
-        hero_m: m.try_img(&format!("{tenant}/hero-1-m")),
-        promos: (1..=2).filter_map(|i| m.try_img(&format!("{tenant}/promo-{i}"))).collect(),
-        og: m.try_img(&format!("brand/og-{tenant}-{}", lang.code())),
-    }
+    HomeArt { og: st.media().try_img(&format!("brand/og-{tenant}-{}", lang.code())) }
 }
 
 #[cfg(not(feature = "ssr"))]
@@ -47,40 +38,90 @@ fn home_art(_: &str, _: Lang) -> HomeArt {
     HomeArt::default()
 }
 
-/// Copy that differs per tenant (in production this is CMS content).
-struct Copy {
-    kicker: L10n,
-    sub: L10n,
-    cta: L10n,
-    promos: [(L10n, L10n, &'static str); 2],
+/// One "The latest" tile: a real product, resolved synchronously from the in-memory catalogue so it
+/// is in the first chunk (no Suspense, no layout shift).
+#[derive(Clone)]
+struct Tile {
+    slug: String,
+    eyebrow: String,
+    name: String,
+    sub: String,
+    price: String,
+    img: Img,
 }
 
-fn copy(tenant: &str) -> Copy {
+#[cfg(feature = "ssr")]
+fn latest_tiles(lang: Lang, num: Numerals) -> Vec<Tile> {
+    let catalog = crate::server::current_catalog();
+    let ar = lang.is_rtl();
+    let mut seen = std::collections::HashSet::new();
+    let mut picks = catalog.rail(Rail::New, 24);
+    picks.extend(catalog.rail(Rail::Featured, 24));
+    picks
+        .into_iter()
+        .filter(|c| c.in_stock && !c.img.is_missing())
+        .filter_map(|c| catalog.product(c.id).map(|p| (c, p.category, p.subtitle.clone())))
+        .filter(|(_, cat, _)| seen.insert(*cat))
+        .take(4)
+        .map(|(c, _, sub)| {
+            let money = format::money(c.price, lang, num);
+            let brand = c.brand.as_ref().map(|b| b.pick(ar).to_owned()).unwrap_or_default();
+            // The brand is the eyebrow, so don't repeat it at the start of the name.
+            let full = c.name.pick(ar);
+            let name = full
+                .strip_prefix(brand.as_str())
+                .filter(|rest| !brand.is_empty() && rest.starts_with(' '))
+                .map(|rest| rest.trim_start().to_owned())
+                .unwrap_or_else(|| full.to_owned());
+            Tile {
+                slug: c.slug.clone(),
+                eyebrow: brand,
+                name: no_break_hyphens(&name),
+                sub: no_break_hyphens(sub.pick(ar)),
+                price: if c.from {
+                    match lang {
+                        Lang::En => format!("From {money}"),
+                        Lang::Ar => format!("من {money}"),
+                    }
+                } else {
+                    money
+                },
+                img: c.img.clone(),
+            }
+        })
+        .collect()
+}
+
+#[cfg(not(feature = "ssr"))]
+fn latest_tiles(_: Lang, _: Numerals) -> Vec<Tile> {
+    vec![]
+}
+
+#[cfg(feature = "ssr")]
+/// "14-inch" must not break after the hyphen: use U+2011 (non-breaking hyphen) between word chars.
+fn no_break_hyphens(s: &str) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .map(|(i, c)| {
+            let around = i > 0 && i + 1 < chars.len() && chars[i - 1].is_alphanumeric() && chars[i + 1].is_alphanumeric();
+            if *c == '-' && around { '\u{2011}' } else { *c }
+        })
+        .collect()
+}
+
+/// The meta description (in production: CMS content per tenant).
+fn description(tenant: &str) -> L10n {
     match tenant {
-        "souq" => Copy {
-            kicker: L10n::new("Express in 30 minutes", "توصيل سريع في ٣٠ دقيقة"),
-            sub: L10n::new(
-                "Fresh produce, Egyptian pantry staples and sweets — packed by people who know a good tomato.",
-                "خضار وفاكهة طازة، خزين البيت المصري، وحلويات — بيجهّزها ناس فاهمة يعني إيه طماطم حلوة.",
-            ),
-            cta: L10n::new("Shop today's deals", "شوف عروض النهارده"),
-            promos: [
-                (L10n::new("The weekly basket", "سلة الأسبوع"), L10n::new("Seasonal fruit & veg, picked this morning", "خضار وفاكهة الموسم، متقطفة الصبح"), "/search?sort=newest"),
-                (L10n::new("Pantry, sorted", "الخزين كله"), L10n::new("Rice, pulses, tahini and spices", "رز وبقوليات وطحينة وتوابل"), "/search?deal=1&sort=discount"),
-            ],
-        },
-        _ => Copy {
-            kicker: L10n::new("Free delivery over EGP 1,500", "توصيل مجاني فوق ١٬٥٠٠ ج.م"),
-            sub: L10n::new(
-                "Phones, beauty, fashion and home — genuine products, delivered across Egypt, cash on delivery.",
-                "موبايلات وجمال وموضة وبيت — منتجات أصلية، توصيل لكل مصر، والدفع عند الاستلام.",
-            ),
-            cta: L10n::new("Shop the deals", "تسوّق العروض"),
-            promos: [
-                (L10n::new("New this week", "جديد الأسبوع"), L10n::new("The latest phones, audio and wearables", "أحدث الموبايلات والسماعات والساعات"), "/search?sort=newest"),
-                (L10n::new("Up to 35% off", "خصومات لحد ٣٥٪"), L10n::new("Limited stock — while it lasts", "كميات محدودة — لحد ما تخلص"), "/search?deal=1&sort=discount"),
-            ],
-        },
+        "souq" => L10n::new(
+            "Fresh produce, Egyptian pantry staples and sweets — packed by people who know a good tomato.",
+            "خضار وفاكهة طازة، خزين البيت المصري، وحلويات — بيجهّزها ناس فاهمة يعني إيه طماطم حلوة.",
+        ),
+        _ => L10n::new(
+            "Phones, beauty, fashion and home — genuine products, delivered across Egypt, cash on delivery.",
+            "موبايلات وجمال وموضة وبيت — منتجات أصلية، توصيل لكل مصر، والدفع عند الاستلام.",
+        ),
     }
 }
 
@@ -96,10 +137,10 @@ pub fn HomePage() -> impl IntoView {
     let ar = lang.is_rtl();
     let t = rq.tenant.clone();
     let art = home_art(&t.id, lang);
-    let c = copy(&t.id);
+    let tiles = latest_tiles(lang, num);
 
     let title = format!("{} · {}", t.name.pick(ar), t.tagline.pick(ar));
-    let description = c.sub.pick(ar).to_owned();
+    let description = description(&t.id).pick(ar).to_owned();
     let og_image = art.og.as_ref().map(|i| rq.absolute(&i.largest()));
     let website_ld = serde_json::json!({
         "@context": "https://schema.org",
@@ -117,6 +158,25 @@ pub fn HomePage() -> impl IntoView {
     .replace("</", "<\\/");
 
     let express = t.express_minutes.is_some();
+    // The promise line carries figures, so it goes through `format` like every number.
+    let promise = match t.express_minutes {
+        Some(m) => match lang {
+            Lang::En => format!("Express in {} minutes · Cash on delivery", format::count(m, num)),
+            Lang::Ar => format!("توصيل سريع في {} دقيقة · الدفع عند الاستلام", format::count(m, num)),
+        },
+        None => match lang {
+            Lang::En => format!(
+                "Free delivery over {} · Cash on delivery · 14\u{2011}day returns",
+                format::money_short(t.free_delivery_over, lang, num)
+            ),
+            Lang::Ar => format!(
+                "توصيل مجاني فوق {} · الدفع عند الاستلام · استرجاع خلال ١٤ يوم",
+                format::money_short(t.free_delivery_over, lang, num)
+            ),
+        },
+    };
+    let name = t.name.pick(ar).to_owned();
+    let tagline = t.tagline.pick(ar).to_owned();
 
     view! {
         <Title text=title.clone()/>
@@ -136,12 +196,13 @@ pub fn HomePage() -> impl IntoView {
         <Meta name="twitter:card" content="summary_large_image"/>
         <Script type_="application/ld+json">{website_ld}</Script>
 
-        <Hero art=art.clone() kicker=c.kicker.pick(ar).to_owned() headline=t.tagline.pick(ar).to_owned()
-            sub=c.sub.pick(ar).to_owned() cta=c.cta.pick(ar).to_owned() lang/>
-        <TrustStrip lang num express_minutes=t.express_minutes free_over=t.free_delivery_over/>
-
         <Container>
+            <header class="intro">
+                <h1 class="intro__title"><strong>{name}"."</strong>" "<span>{tagline}</span></h1>
+                <p class="intro__promise">{promise}</p>
+            </header>
             <CategoryRail lang/>
+            <LatestTiles tiles lang/>
             <RailSection rail=Rail::Deals lang num
                 title=tr(lang, "Today's deals", "عروض النهارده")
                 subtitle=tr(lang, "Fresh prices, every morning", "أسعار جديدة كل يوم الصبح")
@@ -150,17 +211,12 @@ pub fn HomePage() -> impl IntoView {
                 title=tr(lang, "Picked for you", "اخترنالك")
                 subtitle=tr(lang, "What our buyers are excited about this week", "اللي فريقنا متحمس له الأسبوع ده")
                 href="/search?sort=rating" priority=true/>
-            <Promos promos=c.promos.iter().map(|(h, s, href)| (h.pick(ar).to_owned(), s.pick(ar).to_owned(), href.to_string())).collect() imgs=art.promos.clone() lang/>
             {express.then(|| view! {
                 <RailSection rail=Rail::Express lang num
                     title=tr(lang, "At your door in 30 minutes", "عندك في ٣٠ دقيقة")
                     subtitle=tr(lang, "From our nearest dark store", "من أقرب مخزن لينا")
                     href="/search?sort=relevance"/>
             })}
-            <RailSection rail=Rail::New lang num
-                title=tr(lang, "New arrivals", "وصل حديثًا")
-                subtitle=tr(lang, "Just landed on our shelves", "لسه نازلين الرفوف")
-                href="/search?sort=newest"/>
             <RailSection rail=Rail::Bestsellers lang num
                 title=tr(lang, "Bestsellers", "الأكثر مبيعًا")
                 subtitle=tr(lang, "What everyone's ordering", "اللي الناس كلها بتطلبه")
@@ -169,100 +225,49 @@ pub fn HomePage() -> impl IntoView {
     }
 }
 
-/// Art-directed hero: a 4:5 crop on phones, 21:9 from 768px, rendered in the first chunk with
-/// `fetchpriority=high` and its box reserved — it is the LCP element. The copy sits on a solid card
-/// that overlaps the photo (no scrim, no gradient), so contrast never depends on the image.
+/// "The latest": swipeable tiles on phones, a row on desktop. Each tile is one link to the product
+/// (the "Buy" and "Learn more" labels are part of it, not nested controls).
 #[component]
-fn Hero(art: HomeArt, kicker: String, headline: String, sub: String, cta: String, lang: Lang) -> impl IntoView {
-    let alt = art.hero.as_ref().map(|i| i.alt(lang).to_owned()).unwrap_or_default();
-    let has_img = art.hero.is_some();
-    let lqip = art
-        .hero_m
-        .as_ref()
-        .or(art.hero.as_ref())
-        .map(|i| format!("background-image:url({});--img-color:{}", i.lqip, i.color));
-    view! {
-        <section class="hero" class:hero--plain=!has_img aria-labelledby="hero-title">
-            <div class="hero__frame">
-                <div class="hero__media" style=lqip>
-                    {art.hero.clone().map(|wide| {
-                        let mobile = art.hero_m.clone().unwrap_or_else(|| wide.clone());
-                        view! {
-                            <picture>
-                                <source media="(max-width: 767px)" srcset=mobile.srcset() sizes="100vw"/>
-                                <img
-                                    src=wide.src_near(1280)
-                                    srcset=wide.srcset()
-                                    sizes="(max-width: 1320px) 100vw, 1320px"
-                                    alt=alt.clone()
-                                    width="1920"
-                                    height="823"
-                                    fetchpriority="high"
-                                    decoding="async"
-                                />
-                            </picture>
-                        }
-                    })}
-                </div>
-                <div class="hero__card">
-                    <p class="hero__kicker">{kicker}</p>
-                    <h1 id="hero-title" class="hero__title">{headline}</h1>
-                    <p class="hero__sub">{sub}</p>
-                    <div class="hero__ctas">
-                        <Button kind=ButtonKind::Primary size=ButtonSize::Lg href="/search?deal=1&sort=discount".to_string()>
-                            {cta}
-                            <Icon name="arrow-right" class="flip-rtl"/>
-                        </Button>
-                        <Button kind=ButtonKind::Outline size=ButtonSize::Lg href="#categories".to_string()>
-                            {tr(lang, "Browse categories", "تصفّح الأقسام")}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    }
-}
-
-#[component]
-fn TrustStrip(lang: Lang, num: Numerals, express_minutes: Option<u32>, free_over: domain::Piastres) -> impl IntoView {
-    let free = format::money(free_over, lang, num);
-    let items: Vec<(&'static str, String, String)> = vec![
-        match express_minutes {
-            Some(m) => (
-                "zap",
-                tr(lang, "Express delivery", "توصيل سريع").to_owned(),
-                match lang {
-                    Lang::En => format!("In {} minutes, 9am–11pm", format::count(m, num)),
-                    Lang::Ar => format!("في {} دقيقة، من ٩ص لـ ١١م", format::count(m, num)),
-                },
-            ),
-            None => (
-                "truck",
-                tr(lang, "Delivery across Egypt", "توصيل لكل مصر").to_owned(),
-                tr(lang, "Cairo & Giza next day", "القاهرة والجيزة تاني يوم").to_owned(),
-            ),
-        },
-        (
-            "package-check",
-            tr(lang, "Free delivery", "توصيل مجاني").to_owned(),
-            match lang {
-                Lang::En => format!("On orders over {free}"),
-                Lang::Ar => format!("للطلبات فوق {free}"),
-            },
-        ),
-        ("banknote", tr(lang, "Cash on delivery", "الدفع عند الاستلام").to_owned(), tr(lang, "Or card, wallet, InstaPay", "أو كارت أو محفظة أو إنستاباي").to_owned()),
-        ("rotate-ccw", tr(lang, "Easy returns", "استرجاع سهل").to_owned(), tr(lang, "14 days, no questions", "خلال ١٤ يوم من غير أسئلة").to_owned()),
-    ];
-    view! {
-        <ul class="trust container" aria-label=tr(lang, "Why shop with us", "ليه تشتري مننا")>
-            {items.into_iter().map(|(icon, title, body)| view! {
-                <li class="trust__item">
-                    <span class="trust__icon"><Icon name=icon size=20/></span>
-                    <span class="trust__text"><strong>{title}</strong><span>{body}</span></span>
-                </li>
-            }).collect_view()}
-        </ul>
-    }
+fn LatestTiles(tiles: Vec<Tile>, lang: Lang) -> impl IntoView {
+    (!tiles.is_empty()).then(|| {
+        view! {
+            <section class="home-section latest" aria-labelledby="latest-title">
+                <h2 id="latest-title" class="two-tone">
+                    <strong>{tr(lang, "The latest.", "الجديد.")}</strong>" "
+                    <span>{tr(lang, "Fresh arrivals worth a look.", "وصل حديثًا ويستاهل نظرة.")}</span>
+                </h2>
+                <ul class="latest__rail">
+                    {tiles.into_iter().enumerate().map(|(i, t)| view! {
+                        <li>
+                            <a class="tile" href=format!("/p/{}", t.slug)>
+                                <span class="tile__eyebrow">{t.eyebrow}</span>
+                                <span class="tile__name">{t.name}</span>
+                                <span class="tile__sub">{t.sub}</span>
+                                <span class="tile__price">{t.price}</span>
+                                <span class="tile__ctas">
+                                    <span class="tile__buy">{tr(lang, "Buy", "اشتري")}</span>
+                                    <span class="tile__more">{tr(lang, "Learn more", "اعرف أكتر")}<Icon name="chevron-right" size=16 class="flip-rtl"/></span>
+                                </span>
+                                <span class="tile__media" style=format!("background-image:url({})", t.img.lqip)>
+                                    <img
+                                        src=t.img.src_near(640)
+                                        srcset=t.img.srcset()
+                                        sizes="(min-width: 1100px) 300px, (min-width: 768px) 45vw, 78vw"
+                                        alt=t.img.alt(lang).to_owned()
+                                        width="640"
+                                        height="640"
+                                        loading=if i == 0 { "eager" } else { "lazy" }
+                                        fetchpriority=if i == 0 { "high" } else { "auto" }
+                                        decoding="async"
+                                    />
+                                </span>
+                            </a>
+                        </li>
+                    }).collect_view()}
+                </ul>
+            </section>
+        }
+    })
 }
 
 #[component]
@@ -393,35 +398,6 @@ fn WidgetError(lang: Lang) -> impl IntoView {
             </p>
             <a class="widget-error__retry" href=retry>{tr(lang, "Try again", "جرّب تاني")}</a>
         </div>
-    }
-}
-
-#[component]
-fn Promos(promos: Vec<(String, String, String)>, imgs: Vec<Img>, lang: Lang) -> impl IntoView {
-    view! {
-        <section class="home-section promos" aria-label=tr(lang, "Promotions", "عروض")>
-            {promos.into_iter().enumerate().map(|(i, (headline, sub, href))| {
-                let img = imgs.get(i).cloned();
-                view! {
-                    <a class="promo" href=href>
-                        <span class="promo__media">
-                            {img.map(|img| view! {
-                                <img src=img.src_near(640) srcset=img.srcset()
-                                    sizes="(max-width: 767px) 100vw, 50vw" alt="" width="640" height="480"
-                                    loading="lazy" decoding="async" style=format!("background-image:url({})", img.lqip)/>
-                            })}
-                        </span>
-                        <span class="promo__label">
-                            <span class="promo__text">
-                                <strong>{headline}</strong>
-                                <span>{sub}</span>
-                            </span>
-                            <span class="promo__go"><Icon name="arrow-right" class="flip-rtl" size=18/></span>
-                        </span>
-                    </a>
-                }
-            }).collect_view()}
-        </section>
     }
 }
 

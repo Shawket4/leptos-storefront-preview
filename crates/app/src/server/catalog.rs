@@ -45,7 +45,14 @@ impl TenantCatalog {
                 name: c.name.clone(),
                 blurb: c.blurb.clone(),
                 icon: c.icon.clone(),
-                img: c.image.as_deref().and_then(|k| media.try_img(k)),
+                // A category without its own picture borrows its first product's packshot.
+                img: c.image.as_deref().and_then(|k| media.try_img(k)).or_else(|| {
+                    catalog
+                        .products
+                        .iter()
+                        .filter(|p| p.category == c.id)
+                        .find_map(|p| p.images.first().and_then(|k| media.try_img(k)))
+                }),
                 count: counts.get(&c.id).copied().unwrap_or(0),
             })
             .collect();

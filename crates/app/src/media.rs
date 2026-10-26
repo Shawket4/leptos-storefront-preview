@@ -27,11 +27,18 @@ pub struct Img {
     /// Dominant colour `#rrggbb`, for the placeholder tint.
     pub color: String,
     pub alt: L10n,
+    /// Content version: media is served `immutable`, so a replaced image must get a new URL.
+    #[serde(default)]
+    pub v: String,
 }
 
 impl Img {
     pub fn url(&self, w: u16) -> String {
-        format!("{MEDIA_BASE}/{}-{w}.webp", self.key)
+        if self.v.is_empty() {
+            format!("{MEDIA_BASE}/{}-{w}.webp", self.key)
+        } else {
+            format!("{MEDIA_BASE}/{}-{w}.webp?v={}", self.key, self.v)
+        }
     }
 
     /// `"/media/k-240.webp 240w, /media/k-400.webp 400w, …"`.
@@ -72,6 +79,7 @@ impl Img {
             lqip: String::new(),
             color: "#dfe4e5".into(),
             alt: L10n::default(),
+            v: String::new(),
         }
     }
 
@@ -108,6 +116,17 @@ impl MediaEntry {
             lqip: self.lqip.clone(),
             color: self.color.clone(),
             alt: self.alt.clone(),
+            v: self.version(),
         }
+    }
+
+    /// FNV-1a of what changes when the pixels change (the placeholder is derived from them).
+    pub fn version(&self) -> String {
+        let mut h: u32 = 0x811c_9dc5;
+        for b in self.lqip.bytes().chain(self.color.bytes()).chain(self.source.bytes()) {
+            h ^= b as u32;
+            h = h.wrapping_mul(0x0100_0193);
+        }
+        format!("{h:08x}")
     }
 }
