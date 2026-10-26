@@ -1,1 +1,37 @@
-/* stepper */
+/* Quantity stepper (components::stepper): 44px targets on a sunk track, the
+   figure in Plex Mono. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  block-size: 2.75rem;
+  border-radius: var(--r-md);
+  background: var(--sunk);
+}
+.stepper__btn {
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--r-md);
+  color: var(--text);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.stepper__btn:hover:not(:disabled) {
+  background: var(--sunk-2);
+}
+.stepper__btn:active:not(:disabled) {
+  scale: 0.9;
+  transition: scale var(--press-dur) ease-out;
+}
+.stepper__btn:disabled {
+  color: var(--on-disabled);
+  cursor: default;
+}
+.stepper__value {
+  min-inline-size: 2.25rem;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  text-align: center;
+}

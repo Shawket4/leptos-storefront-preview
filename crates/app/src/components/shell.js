@@ -20,12 +20,20 @@
     }
     return seen ? out : null;
   };
+  // <noscript> content is text in this (scripting) document but elements in the router's
+  // DOMParser copy, so the diff would move them in — a <noscript><meta http-equiv=refresh> would
+  // then fire. With JS running they are inert anyway: empty them on both sides.
+  const quiet = () => { for (const n of d.querySelectorAll("noscript")) n.textContent = ""; };
+  quiet();
   w.fetch = async function (input) {
-    const resp = await ofetch.apply(this, arguments);
     const routed = input instanceof Request && input.headers.get("Islands-Router") === "true";
+    // Pages vary by the language/numeral/theme cookies, and a stale-while-revalidate copy in the
+    // browser cache would answer in the old language: router navigations always revalidate.
+    const resp = routed ? await ofetch.call(this, new Request(input, { cache: "no-cache" })) : await ofetch.apply(this, arguments);
     const type = resp.headers.get("content-type") || "";
     if (!routed || !resp.ok || !type.includes("text/html")) return resp;
-    const html = await resp.text();
+    quiet();
+    const html = (await resp.text()).replace(/(<noscript\b[^>]*>)[\s\S]*?(<\/noscript>)/gi, "$1$2");
     let fixed = html;
     try {
       const doc = new DOMParser().parseFromString(html, "text/html");
