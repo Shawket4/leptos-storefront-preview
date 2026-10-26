@@ -26,6 +26,7 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
     let state = AppState::load().await;
+    state.watch_data();
 
     // Media is content-addressed by file name, so it can be cached forever (Cloudflare R2 later).
     let media = Router::new()

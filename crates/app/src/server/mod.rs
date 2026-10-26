@@ -13,7 +13,12 @@ use crate::prefs::Lang;
 use crate::tenant::Tenant;
 use domain::{L10n, Piastres};
 use leptos::prelude::*;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{
+    collections::HashMap,
+    path::PathBuf,
+    sync::{Arc, RwLock},
+    time::{Duration, SystemTime},
+};
 
 pub use catalog::TenantCatalog;
 pub use media::Media;
@@ -29,7 +34,7 @@ pub struct AppState(Arc<Inner>);
 
 struct Inner {
     tenants: Vec<Tenant>,
-    catalogs: HashMap<String, Arc<TenantCatalog>>,
+    catalogs: RwLock<HashMap<String, Arc<TenantCatalog>>>,
     media: Arc<Media>,
     reads: cache::ReadCache,
     carts: cart::CartStore,
@@ -81,8 +86,69 @@ impl AppState {
     pub async fn load() -> Self {
         let media = Arc::new(Media::load(&media_dir()));
         let tenants = demo_tenants();
-        let mut catalogs = HashMap::new();
-        for t in &tenants {
+        let catalogs = load_catalogs(&tenants, &media);
+        tracing::info!("media: {} images", media.len());
+        AppState(Arc::new(Inner {
+            tenants,
+            catalogs: RwLock::new(catalogs),
+            media,
+            reads: cache::ReadCache::new(),
+            carts: cart::CartStore::new(),
+            orders: orders::OrderStore::new(),
+        }))
+    }
+
+    /// Reload catalogues and media manifests when their files change (polled every 3 s), then
+    /// bump every tenant's cache generation — the same move a catalogue edit makes in production
+    /// (plus a CDN purge by `Cache-Tag`).
+    pub fn watch_data(&self) {
+        let st = self.clone();
+        tokio::spawn(async move {
+            let mut last = data_fingerprint();
+            loop {
+                tokio::time::sleep(Duration::from_secs(3)).await;
+                let now = data_fingerprint();
+                if now != last {
+                    last = now;
+                    st.0.media.reload(&media_dir());
+                    let fresh = load_catalogs(&st.0.tenants, &st.0.media);
+                    if let Ok(mut c) = st.0.catalogs.write() {
+                        *c = fresh;
+                    }
+                    for t in &st.0.tenants {
+                        st.0.reads.bump(&t.id);
+                    }
+                    tracing::info!("data changed: reloaded ({} images)", st.0.media.len());
+                }
+            }
+        });
+    }
+}
+
+/// Sum of (len, mtime) of every catalogue and manifest file: cheap change detection.
+fn data_fingerprint() -> u128 {
+    let mut acc = 0u128;
+    let mut add = |p: &std::path::Path| {
+        if let Ok(m) = std::fs::metadata(p) {
+            let t = m.modified().ok().and_then(|t| t.duration_since(SystemTime::UNIX_EPOCH).ok()).map(|d| d.as_millis()).unwrap_or(0);
+            acc = acc.wrapping_add(t ^ (m.len() as u128) << 64);
+        }
+    };
+    for dir in [data_dir().join("catalog")] {
+        if let Ok(rd) = std::fs::read_dir(&dir) {
+            rd.flatten().for_each(|e| add(&e.path()));
+        }
+    }
+    if let Ok(rd) = std::fs::read_dir(media_dir()) {
+        rd.flatten().for_each(|e| add(&e.path().join("manifest.json")));
+    }
+    acc
+}
+
+fn load_catalogs(tenants: &[Tenant], media: &Media) -> HashMap<String, Arc<TenantCatalog>> {
+    let mut catalogs = HashMap::new();
+    {
+        for t in tenants {
             let path = data_dir().join("catalog").join(format!("{}.json", t.id));
             let catalog = match std::fs::read_to_string(&path)
                 .map_err(|e| e.to_string())
@@ -100,18 +166,13 @@ impl AppState {
                 catalog.categories.len(),
                 catalog.products.len()
             );
-            catalogs.insert(t.id.clone(), Arc::new(TenantCatalog::new(catalog, &media)));
+            catalogs.insert(t.id.clone(), Arc::new(TenantCatalog::new(catalog, media)));
         }
-        tracing::info!("media: {} images", media.len());
-        AppState(Arc::new(Inner {
-            tenants,
-            catalogs,
-            media,
-            reads: cache::ReadCache::new(),
-            carts: cart::CartStore::new(),
-            orders: orders::OrderStore::new(),
-        }))
     }
+    catalogs
+}
+
+impl AppState {
 
     pub fn tenant(&self, id: &str) -> &Tenant {
         self.0.tenants.iter().find(|t| t.id == id).unwrap_or(&self.0.tenants[0])
@@ -122,11 +183,8 @@ impl AppState {
     }
 
     pub fn catalog(&self, tenant: &str) -> Arc<TenantCatalog> {
-        self.0
-            .catalogs
-            .get(tenant)
-            .cloned()
-            .unwrap_or_else(|| self.0.catalogs.values().next().cloned().expect("a catalogue"))
+        let c = self.0.catalogs.read().expect("catalogue lock");
+        c.get(tenant).cloned().unwrap_or_else(|| c.values().next().cloned().expect("a catalogue"))
     }
 
     pub fn media(&self) -> &Media {

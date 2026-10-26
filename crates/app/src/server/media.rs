@@ -1,14 +1,26 @@
 //! The image manifests (`data/media/<tenant>/manifest.json`), merged into one lookup.
 
 use crate::media::{Img, MediaEntry};
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, path::Path, sync::RwLock};
 
+/// Reloadable: the dev server picks up new manifests while the asset pipeline is still running.
 pub struct Media {
-    entries: HashMap<String, MediaEntry>,
+    entries: RwLock<HashMap<String, MediaEntry>>,
 }
 
 impl Media {
     pub fn load(dir: &Path) -> Media {
+        Media { entries: RwLock::new(Self::read_dir(dir)) }
+    }
+
+    pub fn reload(&self, dir: &Path) {
+        let fresh = Self::read_dir(dir);
+        if let Ok(mut e) = self.entries.write() {
+            *e = fresh;
+        }
+    }
+
+    fn read_dir(dir: &Path) -> HashMap<String, MediaEntry> {
         let mut entries = HashMap::new();
         if let Ok(read) = std::fs::read_dir(dir) {
             for sub in read.flatten() {
@@ -20,31 +32,31 @@ impl Media {
                 }
             }
         }
-        Media { entries }
+        entries
     }
 
     pub fn len(&self) -> usize {
-        self.entries.len()
+        self.entries.read().map(|e| e.len()).unwrap_or(0)
     }
 
     pub fn is_empty(&self) -> bool {
-        self.entries.is_empty()
+        self.len() == 0
     }
 
     pub fn has(&self, key: &str) -> bool {
-        self.entries.contains_key(key)
+        self.entries.read().is_ok_and(|e| e.contains_key(key))
     }
 
     /// The image for a key, or a neutral placeholder so a missing file never breaks a page.
     pub fn img(&self, key: &str) -> Img {
-        self.entries.get(key).map(|e| e.to_img(key)).unwrap_or_else(|| Img::missing(key))
+        self.try_img(key).unwrap_or_else(|| Img::missing(key))
     }
 
     pub fn try_img(&self, key: &str) -> Option<Img> {
-        self.entries.get(key).map(|e| e.to_img(key))
+        self.entries.read().ok()?.get(key).map(|e| e.to_img(key))
     }
 
-    pub fn entry(&self, key: &str) -> Option<&MediaEntry> {
-        self.entries.get(key)
+    pub fn entry(&self, key: &str) -> Option<MediaEntry> {
+        self.entries.read().ok()?.get(key).cloned()
     }
 }
