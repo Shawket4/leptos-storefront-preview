@@ -2,3 +2,4 @@
 //! Owned by the design-system agent (see AGENTS.md).
 
 pub mod shell;
+pub mod toast;

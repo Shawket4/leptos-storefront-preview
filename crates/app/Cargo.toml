@@ -23,6 +23,7 @@ web-sys = { workspace = true, features = [
   "MediaQueryList", "Storage", "Navigator", "UrlSearchParams", "Url", "CssStyleDeclaration",
   "IntersectionObserver", "IntersectionObserverEntry", "IntersectionObserverInit",
   "ResizeObserver", "ResizeObserverEntry", "DomTokenList", "HtmlCollection", "NodeList",
+  "MutationObserver", "MutationObserverInit", "MutationRecord",
 ] }
 
 # server-only
