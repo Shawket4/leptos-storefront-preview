@@ -18,10 +18,11 @@ interface PickerData {
   product: number;
   href: string;
   name: string;
-  img: string | null;
   selected: number;
   maxQty: number;
   variants: VariantData[];
+  /** Every add-on option, by id: name and surcharge in piastres. */
+  addons: Record<string, { name: string; price: number }>;
 }
 interface VariantData {
   id: number;
@@ -34,6 +35,12 @@ interface VariantData {
   save: string | null;
   priceTpl: string;
   image: number | null;
+  /** The cart line's priced snapshot (piastres): `api::cart::Snapshot`. */
+  unit: number;
+  compareAt: number | null;
+  snapMax: number;
+  label: string | null;
+  img: string | null;
   labels: string[];
   values: { s: "on" | "open" | "out" | "none"; v?: number; why?: string }[][];
   notes: string[];
@@ -178,14 +185,21 @@ register("variant-picker", (root) => {
       $<HTMLInputElement>("input:not(:disabled)", first)?.focus({ preventScroll: true });
       return;
     }
+    // The line's add-ons in the cart's order (sorted ids), names and prices alike.
     const addons = $$<HTMLInputElement>(".pp-groups input:checked", root)
       .map((i) => i.value)
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort();
     const qty = stepper ? Math.max(1, stepperValue(stepper)) : 1;
-    const snap: LineSnapshot = { name: data.name, href: pageHref(cur) };
-    if (data.img) snap.img = data.img;
-    // The unit price without add-ons is the only one the page has (the quote prices the rest).
-    if (!addons.length) snap.price = cur.price;
+    // Priced: the cart computes the line from this, so the add needs no request at all.
+    const snap: LineSnapshot = { name: data.name, href: pageHref(cur), unit: cur.unit, maxQty: cur.snapMax };
+    if (cur.img) snap.img = cur.img;
+    if (cur.label) snap.variant = cur.label;
+    if (cur.compareAt !== null) snap.compareAt = cur.compareAt;
+    if (addons.length) {
+      snap.addons = addons.map((id) => data.addons[id]?.name ?? id);
+      snap.addonPrices = addons.map((id) => data.addons[id]?.price ?? 0);
+    }
     const r = addAndConfirm({ product: data.product, variant: cur.id, qty, addons }, snap);
     if (!r.ok) return;
     attempted = false;
