@@ -51,9 +51,10 @@ pub fn Drawer(
 
     // The panel's extent along its axis (px), measured when it opens.
     let extent = StoredValue::new(400.0_f64);
-    // The element that had focus before opening, to give it back.
-    let opener: StoredValue<Option<web_sys::HtmlElement>, LocalStorage> =
-        StoredValue::new_local(None);
+    // The element that had focus before opening is tagged, to give focus back on close. (Nothing
+    // thread-bound is stored: this body also runs on the server, when the island renders.)
+    let opener_attr = "data-drawer-opener";
+    let opener_id = StoredValue::new(id.clone());
 
     // p = how far the panel is from open, along its dismiss direction (0 = open, extent = gone).
     let pos = SpringValue::new(0.0, move |p| {
@@ -82,10 +83,13 @@ pub fn Drawer(
                 d.close();
             }
         }
-        if let Some(el) = opener.get_value() {
-            let _ = el.focus();
+        let sel = opener_id.with_value(|oid| format!("[{opener_attr}=\"{oid}\"]"));
+        if let Ok(Some(el)) = document().query_selector(&sel) {
+            let _ = el.remove_attribute(opener_attr);
+            if let Ok(el) = wasm_bindgen::JsCast::dyn_into::<web_sys::HtmlElement>(el) {
+                let _ = el.focus();
+            }
         }
-        opener.set_value(None);
     };
 
     // Follow `open`.
@@ -94,11 +98,9 @@ pub fn Drawer(
         let Some(d) = dialog.get() else { return };
         if want {
             if !d.open() {
-                opener.set_value(
-                    document().active_element().and_then(|e| {
-                        wasm_bindgen::JsCast::dyn_into::<web_sys::HtmlElement>(e).ok()
-                    }),
-                );
+                if let Some(active) = document().active_element() {
+                    let _ = opener_id.with_value(|oid| active.set_attribute(opener_attr, oid));
+                }
                 let _ = d.show_modal();
                 if let Some(p) = panel.get_untracked() {
                     let r = p.get_bounding_client_rect();
@@ -121,7 +123,7 @@ pub fn Drawer(
     // The bottom sheet drags from its grabber and head (its content scrolls); the end drawer
     // drags sideways anywhere (vertical scrolling stays native via `touch-action: pan-y`). A drag
     // only starts after 10px along the dismiss axis, and a click after a real drag is swallowed.
-    let drag: StoredValue<Option<Drag>, LocalStorage> = StoredValue::new_local(None);
+    let drag: StoredValue<Option<Drag>> = StoredValue::new(None);
     let dragged = StoredValue::new(false);
     let on_down = move |ev: web_sys::PointerEvent| {
         if ev.button() != 0 {

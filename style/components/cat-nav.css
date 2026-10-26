@@ -32,7 +32,8 @@
   padding: 0 0.75rem;
   border-radius: var(--r-sm);
   background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  /* A hairline inside, so a chip still reads on a white card. */
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line);
   color: var(--text);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
