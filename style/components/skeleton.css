@@ -36,3 +36,25 @@
     animation: none;
   }
 }
+
+/* SkeletonMedia: a ratio-reserved block with the Picture's own corner. */
+.skeleton-media {
+  inline-size: 100%;
+  border-radius: var(--pic-radius, 0);
+}
+/* SkeletonField: the label line and the field's own box (form.css: .input is 52px; a 3-row
+   .input--area is 3 lines of body text plus its padding, at least 6.5rem). */
+.skeleton-field__box {
+  display: block;
+  block-size: 3.25rem;
+  border-radius: var(--r-md);
+}
+.skeleton-field__box--area {
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+  block-size: max(6.5rem, calc(3lh + 1.75rem));
+}
+.skeleton-field .field__label,
+.skeleton-field .field__hint {
+  display: block;
+}

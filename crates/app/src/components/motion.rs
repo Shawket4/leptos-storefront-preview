@@ -12,13 +12,18 @@
 //! ```
 //!
 //! The spring is solved in closed form each frame, so it is exact at any frame rate; a retarget
-//! keeps the current value and velocity, so reversing mid-flight never hits a "brick wall". On the
-//! server (and under `prefers-reduced-motion`) animations land at once.
+//! keeps the current value and velocity, so reversing mid-flight never hits a "brick wall". Under
+//! `prefers-reduced-motion` animations land at once.
+//!
+//! SSR-safe by construction: whenever `ssr` is on (even in a build that also turns on `hydrate`),
+//! [`SpringValue`] is a plain inert value: no thread-bound state, no closures kept, no frame loop.
+//! An island body (which also runs on the server) can create springs freely; callers never need
+//! to know which side they are on.
 
-#[cfg(feature = "hydrate")]
+#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
 use leptos::prelude::*;
 use std::collections::VecDeque;
-#[cfg(feature = "hydrate")]
+#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
 use std::rc::Rc;
 
 /// Apple's two designer-facing spring parameters.
@@ -130,7 +135,7 @@ impl VelocityTracker {
 
 /// Whether the visitor asked for less motion (always `false` on the server).
 pub fn reduced() -> bool {
-    #[cfg(feature = "hydrate")]
+    #[cfg(all(feature = "hydrate", not(feature = "ssr")))]
     {
         window()
             .match_media("(prefers-reduced-motion: reduce)")
@@ -138,7 +143,7 @@ pub fn reduced() -> bool {
             .flatten()
             .is_some_and(|m| m.matches())
     }
-    #[cfg(not(feature = "hydrate"))]
+    #[cfg(not(all(feature = "hydrate", not(feature = "ssr"))))]
     {
         false
     }
@@ -146,7 +151,7 @@ pub fn reduced() -> bool {
 
 /// The animation state. Client only: it holds closures (not `Send`), and the server must never
 /// create a thread-bound value (a component's body also runs there, during SSR of its island).
-#[cfg(feature = "hydrate")]
+#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
 struct State {
     x: f64,
     v: f64,
@@ -163,11 +168,11 @@ struct State {
 /// callback (set a transform, an opacity) every frame. On the server it is inert.
 #[derive(Clone, Copy)]
 pub struct SpringValue {
-    #[cfg(feature = "hydrate")]
+    #[cfg(all(feature = "hydrate", not(feature = "ssr")))]
     inner: StoredValue<State, LocalStorage>,
 }
 
-#[cfg(not(feature = "hydrate"))]
+#[cfg(not(all(feature = "hydrate", not(feature = "ssr"))))]
 impl SpringValue {
     pub fn new(_initial: f64, _on_update: impl Fn(f64) + 'static) -> Self {
         SpringValue {}
@@ -196,7 +201,7 @@ impl SpringValue {
     pub fn stop(&self) {}
 }
 
-#[cfg(feature = "hydrate")]
+#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
 impl SpringValue {
     pub fn new(initial: f64, on_update: impl Fn(f64) + 'static) -> Self {
         SpringValue {
@@ -346,7 +351,7 @@ impl SpringValue {
     }
 }
 
-#[cfg(feature = "hydrate")]
+#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
 fn now_ms() -> f64 {
     js_sys::Date::now()
 }

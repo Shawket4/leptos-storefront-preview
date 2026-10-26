@@ -148,6 +148,9 @@
     const n = (fails.get(key) || 0) + 1;
     fails.set(key, n);
     if (n >= 2 && method === "GET") { location.assign(key); return; }
+    showAlert(key, method, why);
+  };
+  const showAlert = (key, method, why) => {
     const el = d.querySelector(".nav-alert");
     if (!el) return;
     el.dataset.open = "true";
@@ -164,6 +167,16 @@
       if (why_el) why_el.textContent = el.getAttribute("data-why-" + why) || "";
     });
   };
+
+  // The design system's page (/ui) stages these states with buttons; nothing really fails.
+  d.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest("button[data-preview]");
+    if (!b) return;
+    const [what, arg] = b.dataset.preview.split(":");
+    if (what === "progress") { navBegin(); setTimeout(() => navEnd(true), +arg || 1500); }
+    else if (what === "alert") showAlert(location.href, "GET", arg || "network");
+    else if (what === "offline" || what === "online") w.dispatchEvent(new Event(what));
+  });
 
   // ── Keep the router's page diff aligned ───────────────────────────────────
   // The islands router walks the old and new documents in lockstep, <head> included. Pages carry
@@ -219,6 +232,11 @@
       throw tag(new Error("HTTP " + resp.status));
     }
     fails.delete(key);
+    // A submission goes to the top only if it lands on another page (not a server function
+    // that redirects back here).
+    if (pending && pending.top === "if-moved") {
+      pending = new URL(resp.url || key, location.href).pathname !== location.pathname ? { top: true } : null;
+    }
     const type = resp.headers.get("content-type") || "";
     if (!resp.ok || !type.includes("text/html")) return resp;
     quiet();
@@ -259,7 +277,7 @@
     const alert = d.querySelector(".nav-alert");
     if (alert) alert.dataset.open = "false";
     if (p && p.hash) d.getElementById(p.hash)?.scrollIntoView({ block: "start", behavior: "instant" });
-    else if (p && p.top) w.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    else if (p && p.top === true) w.scrollTo({ top: 0, left: 0, behavior: "instant" });
     else if (p && p.y != null) w.scrollTo({ top: p.y, left: 0, behavior: "instant" });
     rails();
   };
@@ -273,7 +291,14 @@
   }
   for (const m of ["pushState", "replaceState"]) {
     const orig = H[m];
-    H[m] = function () { const r = orig.apply(this, arguments); if (!svt && pending) after(); return r; };
+    H[m] = function (state, title, url) {
+      // server_fn redirects end in a bare "?" (/cart?): commit the clean address.
+      const r = arguments.length > 2 && url != null
+        ? orig.call(this, state, title, String(url).replace(/\?(?=#|$)/, ""))
+        : orig.apply(this, arguments);
+      if (!svt && pending) after();
+      return r;
+    };
   }
   const nav = performance.getEntriesByType("navigation")[0];
   if (nav && (nav.type === "reload" || nav.type === "back_forward")) w.scrollTo(0, saved());
@@ -305,7 +330,25 @@
     const u = new URL(f.action, location.href);
     if (u.origin !== location.origin) return;
     save();
-    if (u.pathname !== location.pathname) pending = { top: true };
+    // Where a submission lands is known only from the response (a server function posts to
+    // /api/… and redirects back): the fetch below decides.
+    pending = { top: "if-moved" };
+  }, true);
+
+  // ── The button that submitted a form ──────────────────────────────────────
+  // The islands router posts `new FormData(form)`, which leaves out the pressed button (a
+  // `<button name="op" value="remove">`); without JS the browser sends it. Add it as a hidden
+  // field for this one submission. (A "dialog" form isn't the router's: the browser submits it,
+  // button included.)
+  d.addEventListener("submit", (e) => {
+    const f = e.target, b = e.submitter;
+    if (!(f instanceof HTMLFormElement) || !b || !b.name || f.method === "dialog") return;
+    const i = d.createElement("input");
+    i.type = "hidden";
+    i.name = b.name;
+    i.value = b.value;
+    f.appendChild(i);
+    setTimeout(() => i.remove(), 0);
   }, true);
 
   // ── Preference and tenant links come back to where you are ────────────────

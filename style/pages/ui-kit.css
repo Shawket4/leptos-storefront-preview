@@ -190,7 +190,85 @@
   margin-block-start: var(--sp-8);
 }
 
-/* Skeletons */
+/* States: every tone, side by side, each in its own cell of the card. */
+.kit__states {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--sp-4);
+}
+.kit__state {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+.kit__state .state {
+  padding-block: var(--sp-2) var(--sp-3);
+}
+.kit__section-errors {
+  display: grid;
+  gap: var(--sp-3);
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+.kit__note {
+  max-inline-size: 44rem;
+  color: var(--text-2);
+}
+
+/* Skeletons: loading beside loaded. */
+.kit__pairs {
+  display: grid;
+  gap: var(--sp-8);
+}
+.kit__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3) clamp(var(--sp-3), 2vw, var(--sp-8));
+  align-items: start;
+}
+.kit__pair--stack {
+  grid-template-columns: minmax(0, 1fr);
+}
+.kit__pair-title {
+  grid-column: 1 / -1;
+  font-weight: var(--fw-bold);
+}
+.kit__pair-side {
+  display: grid;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+}
+.kit__pair-body {
+  min-inline-size: 0;
+}
+@media (min-width: 768px) {
+  .kit__pair:not(.kit__pair--stack) {
+    max-inline-size: 44rem;
+  }
+}
+.kit__copy {
+  display: grid;
+  gap: var(--sp-2);
+}
+.kit__para {
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
+}
+.kit__clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  color: var(--text-2);
+}
+.kit__fields {
+  display: grid;
+  gap: var(--sp-5);
+}
 .kit__skeletons {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -200,10 +278,6 @@
 }
 .kit__skeletons > :last-child {
   grid-column: 1 / -1;
-}
-.kit__skel-text {
-  display: grid;
-  gap: var(--sp-2);
 }
 
 /* Icons */
