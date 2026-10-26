@@ -1,9 +1,5 @@
 /* Home page. Tokens only; logical properties only (RTL mirrors itself); no gradients. */
 
-/* No-JS note (inside <noscript>, so only visitors without JS ever see it). */
-.nojs-note { margin: 0; padding: 12px var(--gutter); text-align: center; font-size: .875rem; background: var(--warning-wash); color: var(--text); }
-.nojs-note a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-
 /* Ribbon: one quiet line of store promises (Apple's top ribbon). */
 .ribbon {
   margin: 0;

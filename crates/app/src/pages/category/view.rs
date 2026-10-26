@@ -5,7 +5,7 @@
 //! **Without JS** the filters are one GET form with an Apply button (on phones the Filters link
 //! opens it in place via `:target`); sort, chips and pages are plain links.
 //!
-//! **With JS** (`features/browse.ts`): `data-ts="listing"` and `data-ts="filters"`. A filter or sort
+//! **With JS** (`features/browse.ts`): `data-ts="listing"` and `data-filters=""`. A filter or sort
 //! change navigates (`replace`, scroll kept) after a short quiet, and the server renders the new
 //! results; on phones the same fields sit in the one bottom sheet (`components::drawer`), which
 //! the router keeps open across that navigation. Nothing here is rendered by the client.
@@ -78,7 +78,7 @@ pub fn Listing(page: ListingPage, extras: Extras, lang: Lang, num: Numerals) -> 
             {chips(&page, lang, num)}
             <div class="lx-body">
                 <aside class="lx-filters" id="lx-filters" aria-labelledby="lx-filters-title">
-                    <form class="lx-form" method="get" action=base_href(&q) data-ts="filters">
+                    <form class="lx-form" method="get" action=base_href(&q) data-filters="">
                         <div class="lx-form-head">
                             <h2 class="lx-form-title" id="lx-filters-title">{filters_label}</h2>
                             <a class="lx-sheet-close nojs-only" href="#lx-bar">{tr(lang, "Close", "إغلاق")}</a>
@@ -126,7 +126,7 @@ pub fn Listing(page: ListingPage, extras: Extras, lang: Lang, num: Numerals) -> 
                             </div>
                         }.into_any())
                     >
-                        <form class="lx-form lx-form--sheet" method="get" action=base_href(&q) data-ts="filters">
+                        <form class="lx-form lx-form--sheet" method="get" action=base_href(&q) data-filters="">
                             {fields(&page, "d", lang, num)}
                         </form>
                     </Drawer>
@@ -296,7 +296,7 @@ fn fields(page: &ListingPage, p: &'static str, lang: Lang, num: Numerals) -> imp
             </ul>
         </fieldset>
         // The sort sits in the form so a filter change keeps it (no-JS Apply, and the browser code).
-        {(q.sort != Sort::Relevance).then(|| view! { <input type="hidden" name="sort" value=q.sort.code()/> })}
+        <input type="hidden" name="sort" value=q.sort.code()/>
     }
 }
 
