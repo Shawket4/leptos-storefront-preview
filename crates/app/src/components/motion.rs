@@ -15,16 +15,11 @@
 //! keeps the current value and velocity, so reversing mid-flight never hits a "brick wall". Under
 //! `prefers-reduced-motion` animations land at once.
 //!
-//! SSR-safe by construction: whenever `ssr` is on (even in a build that also turns on `hydrate`),
-//! [`SpringValue`] is a plain inert value: no thread-bound state, no closures kept, no frame loop.
-//! An island body (which also runs on the server) can create springs freely; callers never need
-//! to know which side they are on.
+//! **Islands era.** The browser code's `client/src/core/motion.ts` is the motion system now; this
+//! module keeps the spring maths (and an inert `SpringValue`) only for the showcase's remaining
+//! Rust references, and goes when they do.
 
-#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-use leptos::prelude::*;
 use std::collections::VecDeque;
-#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-use std::rc::Rc;
 
 /// Apple's two designer-facing spring parameters.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -133,46 +128,17 @@ impl VelocityTracker {
     }
 }
 
-/// Whether the visitor asked for less motion (always `false` on the server).
+/// Whether the visitor asked for less motion: unknown on the server, so `false`.
 pub fn reduced() -> bool {
-    #[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-    {
-        window()
-            .match_media("(prefers-reduced-motion: reduce)")
-            .ok()
-            .flatten()
-            .is_some_and(|m| m.matches())
-    }
-    #[cfg(not(all(feature = "hydrate", not(feature = "ssr"))))]
-    {
-        false
-    }
+    false
 }
 
-/// The animation state. Client only: it holds closures (not `Send`), and the server must never
-/// create a thread-bound value (a component's body also runs there, during SSR of its island).
-#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-struct State {
-    x: f64,
-    v: f64,
-    target: f64,
-    spring: Spring,
-    running: bool,
-    generation: u32,
-    last_ms: f64,
-    on_update: Rc<dyn Fn(f64)>,
-    on_rest: Option<Box<dyn FnOnce()>>,
-}
-
-/// A number animated by a spring on the browser's frame clock. `Copy`; drives its `on_update`
-/// callback (set a transform, an opacity) every frame. On the server it is inert.
+/// Islands-era spring handle, inert: the server never animates. Gesture motion is
+/// `client/src/core/motion.ts` (`SpringValue`) now; this stays only until the last Rust caller
+/// (the showcase) is ported, then the module goes.
 #[derive(Clone, Copy)]
-pub struct SpringValue {
-    #[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-    inner: StoredValue<State, LocalStorage>,
-}
+pub struct SpringValue {}
 
-#[cfg(not(all(feature = "hydrate", not(feature = "ssr"))))]
 impl SpringValue {
     pub fn new(_initial: f64, _on_update: impl Fn(f64) + 'static) -> Self {
         SpringValue {}
@@ -199,161 +165,6 @@ impl SpringValue {
         }
     }
     pub fn stop(&self) {}
-}
-
-#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-impl SpringValue {
-    pub fn new(initial: f64, on_update: impl Fn(f64) + 'static) -> Self {
-        SpringValue {
-            inner: StoredValue::new_local(State {
-                x: initial,
-                v: 0.0,
-                target: initial,
-                spring: Spring::DEFAULT,
-                running: false,
-                generation: 0,
-                last_ms: 0.0,
-                on_update: Rc::new(on_update),
-                on_rest: None,
-            }),
-        }
-    }
-
-    /// The value on screen now.
-    pub fn get(&self) -> f64 {
-        self.inner.try_with_value(|s| s.x).unwrap_or_default()
-    }
-
-    /// Its velocity now, in units per second.
-    pub fn velocity(&self) -> f64 {
-        self.inner.try_with_value(|s| s.v).unwrap_or_default()
-    }
-
-    pub fn is_animating(&self) -> bool {
-        self.inner.try_with_value(|s| s.running).unwrap_or(false)
-    }
-
-    /// Put the value somewhere now (1:1 tracking during a drag). Stops any animation in flight.
-    pub fn set(&self, x: f64) {
-        let cb = self.inner.try_update_value(|s| {
-            s.x = x;
-            s.v = 0.0;
-            s.target = x;
-            s.running = false;
-            s.generation = s.generation.wrapping_add(1);
-            s.on_rest = None;
-            s.on_update.clone()
-        });
-        if let Some(cb) = cb {
-            cb(x);
-        }
-    }
-
-    /// Spring toward `target` from wherever the value is now. `velocity` (units/s) hands off a
-    /// gesture's speed; `None` keeps the current velocity, so a retarget mid-flight is seamless.
-    /// `on_rest` runs once when it settles (not if another `set`/`animate_to` takes over first).
-    pub fn animate_to(
-        &self,
-        target: f64,
-        spring: Spring,
-        velocity: Option<f64>,
-        on_rest: Option<Box<dyn FnOnce()>>,
-    ) {
-        if reduced() {
-            let cb = self.inner.try_update_value(|s| {
-                s.x = target;
-                s.v = 0.0;
-                s.target = target;
-                s.running = false;
-                s.generation = s.generation.wrapping_add(1);
-                s.on_rest = None;
-                s.on_update.clone()
-            });
-            if let Some(cb) = cb {
-                cb(target);
-            }
-            if let Some(f) = on_rest {
-                f();
-            }
-            return;
-        }
-        let start = self.inner.try_update_value(|s| {
-            s.target = target;
-            s.spring = spring;
-            if let Some(v) = velocity {
-                s.v = v;
-            }
-            s.on_rest = on_rest;
-            if s.running {
-                None
-            } else {
-                s.running = true;
-                s.generation = s.generation.wrapping_add(1);
-                s.last_ms = now_ms();
-                Some(s.generation)
-            }
-        });
-        if let Some(Some(generation)) = start {
-            self.frame(generation);
-        }
-    }
-
-    /// Stop where it is.
-    pub fn stop(&self) {
-        self.inner.update_value(|s| {
-            s.running = false;
-            s.v = 0.0;
-            s.generation = s.generation.wrapping_add(1);
-            s.on_rest = None;
-        });
-    }
-
-    fn frame(self, generation: u32) {
-        request_animation_frame(move || {
-            let now = now_ms();
-            // Advance inside the store, call out after (callbacks may touch the value again).
-            let step = self.inner.try_update_value(|s| {
-                if !s.running || s.generation != generation {
-                    return None;
-                }
-                // A long gap (background tab) shouldn't fling the value: cap the step.
-                let dt = ((now - s.last_ms) / 1000.0).clamp(0.0, 0.064);
-                s.last_ms = now;
-                let (dx, v) = s.spring.step(s.x - s.target, s.v, dt);
-                let scale = (s.target.abs() + 1.0).max(1.0);
-                let rest = dx.abs() < 0.2_f64.min(scale * 0.001 + 0.05) && v.abs() < 2.0;
-                if rest {
-                    s.x = s.target;
-                    s.v = 0.0;
-                    s.running = false;
-                } else {
-                    s.x = s.target + dx;
-                    s.v = v;
-                }
-                Some((
-                    s.x,
-                    s.on_update.clone(),
-                    if rest { s.on_rest.take() } else { None },
-                    rest,
-                ))
-            });
-            if let Some(Some((x, cb, done, rest))) = step {
-                cb(x);
-                if rest {
-                    if let Some(f) = done {
-                        f();
-                    }
-                } else {
-                    self.frame(generation);
-                }
-            }
-        });
-    }
-}
-
-#[cfg(all(feature = "hydrate", not(feature = "ssr")))]
-fn now_ms() -> f64 {
-    js_sys::Date::now()
 }
 
 #[cfg(test)]

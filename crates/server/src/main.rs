@@ -50,6 +50,22 @@ async fn main() {
                 )
             }),
         )
+        // Liveness for the deploy pipeline: 200 once AppState has loaded (it has by the time the
+        // listener is up); no tenant, no catalogue read, never cached.
+        .route(
+            "/health",
+            get({
+                let state = state.clone();
+                move || async move {
+                    let up = !state.tenants().is_empty();
+                    (
+                        if up { StatusCode::OK } else { StatusCode::SERVICE_UNAVAILABLE },
+                        [(header::CACHE_CONTROL, "no-store")],
+                        if up { "ok" } else { "starting" },
+                    )
+                }
+            }),
+        )
         .route("/__prefs", get(set_prefs))
         .route("/__tenant/{id}", get(set_tenant))
         .route("/__sim", get(set_sim))

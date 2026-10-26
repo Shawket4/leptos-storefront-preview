@@ -15,6 +15,8 @@ pub mod tenant;
 #[cfg(feature = "ssr")]
 pub mod server;
 
+// Islands-era client bootstrap: dead (no WASM build any more). Kept only because the showcase
+// quotes it (pages/showcase/snippets.rs); delete it with that reference.
 #[cfg(feature = "hydrate")]
 pub mod client;
 

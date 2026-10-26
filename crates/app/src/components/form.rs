@@ -1,7 +1,8 @@
 //! Form controls: 52px fields with 16px text (no iOS zoom), a label above, a hint and an inline
 //! error below (wired with `aria-describedby`, `aria-invalid`), radio cards for delivery slots
-//! and payment methods, and checkboxes. Native inputs throughout, so forms work without JS; inside
-//! islands, pass signals (`value`, `error`, `checked`) and callbacks.
+//! and payment methods, and checkboxes. Native inputs throughout, so forms work without JS; the
+//! browser code listens for `input`/`change` on them (features/*.ts). Server markup only: values
+//! are read once, and the `on_*` callback props are islands-era leftovers that never run.
 //!
 //! Ids: a control with `id = "phone"` describes itself with `phone-hint` and `phone-error`;
 //! use the same convention when wrapping a custom control in [`Field`].
@@ -107,6 +108,7 @@ pub fn TextInput(
     icon: Option<&'static str>,
     #[prop(optional)] on_input: Option<Callback<String>>,
 ) -> impl IntoView {
+    let _ = on_input;
     let has_hint = hint.is_some();
     let describe = {
         let id = id.clone();
@@ -135,7 +137,6 @@ pub fn TextInput(
                     name=name
                     type=t
                     value=initial
-                    prop:value=move || value.get().unwrap_or_default()
                     placeholder=move || placeholder.as_ref().map(|p| p.get())
                     autocomplete=(!autocomplete.is_empty()).then_some(autocomplete)
                     inputmode=(!inputmode.is_empty()).then_some(inputmode)
@@ -144,11 +145,6 @@ pub fn TextInput(
                     dir=dir
                     aria-invalid=invalid
                     aria-describedby=describe
-                    on:input=move |ev| {
-                        if let Some(cb) = on_input {
-                            cb.run(event_target_value(&ev));
-                        }
-                    }
                 />
             </div>
     }
@@ -170,6 +166,7 @@ pub fn TextArea(
     #[prop(optional)] optional: bool,
     #[prop(optional)] on_input: Option<Callback<String>>,
 ) -> impl IntoView {
+    let _ = on_input;
     let has_hint = hint.is_some();
     let describe = {
         let id = id.clone();
@@ -187,12 +184,6 @@ pub fn TextArea(
                 placeholder=move || placeholder.as_ref().map(|p| p.get())
                 aria-invalid=invalid
                 aria-describedby=describe
-                prop:value=move || value.get().unwrap_or_default()
-                on:input=move |ev| {
-                    if let Some(cb) = on_input {
-                        cb.run(event_target_value(&ev));
-                    }
-                }
             >
                 {initial}
             </textarea>
@@ -216,6 +207,7 @@ pub fn Select(
     #[prop(optional)] optional: bool,
     #[prop(optional)] on_change: Option<Callback<String>>,
 ) -> impl IntoView {
+    let _ = on_change;
     let has_hint = hint.is_some();
     let describe = {
         let id = id.clone();
@@ -232,11 +224,6 @@ pub fn Select(
                     name=name
                     aria-invalid=invalid
                     aria-describedby=describe
-                    on:change=move |ev| {
-                        if let Some(cb) = on_change {
-                            cb.run(event_target_value(&ev));
-                        }
-                    }
                 >
                     {options
                         .into_iter()
@@ -269,7 +256,7 @@ pub fn RadioCard(
     #[prop(optional, into)] disabled: MaybeProp<bool>,
     #[prop(optional)] on_select: Option<Callback<String>>,
 ) -> impl IntoView {
-    let v = value.clone();
+    let _ = on_select;
     view! {
         <label class="radio-card" data-press="">
             <input
@@ -277,14 +264,8 @@ pub fn RadioCard(
                 type="radio"
                 name=name
                 value=value
-                prop:checked=move || checked.get().unwrap_or(false)
                 checked=checked.get_untracked().unwrap_or(false)
                 disabled=move || disabled.get().unwrap_or(false)
-                on:change=move |_| {
-                    if let Some(cb) = on_select {
-                        cb.run(v.clone());
-                    }
-                }
             />
             <span class="radio-card__body">
                 {icon.map(|i| view! { <span class="radio-card__icon"><Icon name=i size=22/></span> })}
@@ -310,6 +291,7 @@ pub fn Checkbox(
     #[prop(optional, into)] disabled: MaybeProp<bool>,
     #[prop(optional)] on_change: Option<Callback<bool>>,
 ) -> impl IntoView {
+    let _ = on_change;
     view! {
         <label class="check" data-press="">
             <input
@@ -317,14 +299,8 @@ pub fn Checkbox(
                 type="checkbox"
                 name=name
                 value=value.unwrap_or_else(|| "on".to_owned())
-                prop:checked=move || checked.get().unwrap_or(false)
                 checked=checked.get_untracked().unwrap_or(false)
                 disabled=move || disabled.get().unwrap_or(false)
-                on:change=move |ev| {
-                    if let Some(cb) = on_change {
-                        cb.run(event_target_checked(&ev));
-                    }
-                }
             />
             <span class="check__box" aria-hidden="true">
                 <Icon name="check" size=16/>
