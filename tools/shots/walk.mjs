@@ -94,6 +94,11 @@ await check("filter (one navigation)", async () => {
   const box = page.locator('[data-ts~="drawer"] input[type=checkbox], [data-ts~="filters"] input[type=checkbox]').first();
   if (await box.count()) await box.tap();
   await page.waitForTimeout(1200);
+  // An open sheet survives the navigation (by design) and keeps the page behind it inert: close it.
+  if (await page.locator("[data-ts~='drawer'][open], dialog[open]").count()) {
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(700);
+  }
   return page.url().replace(base, "");
 });
 await check("open a product (router)", async () => {
@@ -102,26 +107,39 @@ await check("open a product (router)", async () => {
   return page.url().replace(base, "");
 }, { expectRequests: only(/^GET \/p\//) });
 await check("switch variant (no request)", async () => {
-  const opt = page.locator('[data-ts~="variant-picker"] a, [data-ts~="variant-picker"] input, [data-ts~="variant-picker"] button').nth(1);
+  // A visible option that isn't the chosen one (chips are links, or labels over hidden radios).
+  const opt = page.locator('[data-ts~="variant-picker"] a[href*="v="]:visible:not([aria-current="true"], [aria-checked="true"], [aria-disabled="true"])').first();
   if (!(await opt.count())) return "single-variant product";
+  const before = await page.evaluate(() => location.href);
   await opt.tap();
-  return page.url().replace(base, "");
+  await page.waitForTimeout(400);
+  const after = await page.evaluate(() => location.href);
+  return after !== before ? after.replace(base, "") : "same URL (variant state is local)";
 }, { expectRequests: none });
 await check("add to cart from product (no request)", async () => {
   await page.locator('main button[type=submit], main [data-ts~="add-to-cart"]').first().tap();
   await page.waitForTimeout(500);
   return `badge=${await badge()} toast="${await toastText()}"`;
 }, { expectRequests: none });
-await check("open drawer (one quote)", async () => {
+// The client computes the cart from the lines' priced snapshots (quick add and the product page
+// both pass one): the drawer opens and edits with no request. Only a line without a snapshot (added
+// without JS) would ask /api/cart/quote, once.
+await check("open drawer (no request)", async () => {
+  // The phone header hides on scroll (the add button scrolled the page): bring it back first.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(500);
   await page.locator('[data-ts~="cart-badge"]').first().tap();
   await page.waitForTimeout(1500);
-  return page.evaluate(() => document.querySelector("#cart-drawer")?.textContent?.replace(/\s+/g, " ").slice(0, 120));
-}, { expectRequests: only(/^GET \/api\/cart\/quote/) });
-await check("+1 in drawer (quote after debounce)", async () => {
-  await page.locator('#cart-drawer [data-ts~="stepper"] button').last().tap();
-  await page.waitForTimeout(1200);
-  return `badge=${await badge()}`;
-}, { expectRequests: (r) => r.every((x) => /^GET \/api\/cart\/quote/.test(x)) && r.length <= 1 });
+  return page.evaluate(() => [...document.querySelectorAll("#cart-drawer li")].filter((li) => li.offsetParent).map((li) => li.textContent.replace(/\s+/g, " ").trim().slice(0, 40)).join(" / "));
+}, { expectRequests: none });
+await check("+1 in drawer (no request)", async () => {
+  const before = await badge();
+  const plus = page.locator('#cart-drawer [data-ts~="stepper"] button[data-step="1"]:not([disabled])').first();
+  if (!(await plus.count())) return "every line at its limit";
+  await plus.tap();
+  await page.waitForTimeout(800);
+  return `badge ${before} → ${await badge()}`;
+}, { expectRequests: none });
 await check("back (from cache)", async () => {
   await page.keyboard.press("Escape");
   await page.goBack();
@@ -133,12 +151,17 @@ await check("/cart page", async () => {
   return page.evaluate(() => document.querySelector("main")?.textContent?.replace(/\s+/g, " ").slice(0, 140));
 });
 await check("search suggestions", async () => {
-  const box = page.locator('[data-ts~="search-box"] input').first();
-  await box.tap();
+  // Phones show a search button (the overlay once search.ts has loaded, else a router visit to
+  // /search); wider screens show the field itself.
+  const trigger = page.locator('[data-ts~="search-box"] :is(.hs-trigger, input):visible').first();
+  await trigger.tap();
+  await page.waitForTimeout(600);
+  const box = page.locator('input[name="q"]:visible').first();
   await box.fill(base.includes("souq") ? "رز" : "phone");
   await page.waitForTimeout(1500);
-  return page.evaluate(() => [...document.querySelectorAll('[data-ts~="search-box"] [role=option]')].slice(0, 3).map((o) => o.textContent.trim()).join(" | "));
-}, { expectRequests: (r) => r.every((x) => /^GET \/api\/search\/suggest/.test(x)) && r.length >= 1 });
+  const opts = await page.evaluate(() => [...document.querySelectorAll("[role=option]")].filter((o) => o.offsetParent).slice(0, 3).map((o) => o.textContent.replace(/\s+/g, " ").trim().slice(0, 30)).join(" | "));
+  return `${page.url().replace(base, "")} :: ${opts}`;
+}, { expectRequests: (r) => r.every((x) => /^GET \/(api\/search\/suggest|search)/.test(x)) && r.some((x) => /suggest/.test(x)) });
 
 console.log(`\n${results.filter((r) => r.ok).length}/${results.length} steps ok; problems: ${problems.length ? "\n  " + problems.join("\n  ") : "none"}`);
 await browser.close();
