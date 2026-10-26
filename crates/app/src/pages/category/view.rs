@@ -5,7 +5,7 @@
 //! **Without JS** the filters are one GET form with an Apply button (on phones the Filters link
 //! opens it in place via `:target`); sort, chips and pages are plain links.
 //!
-//! **With JS** (`features/browse.ts`): `data-ts="listing"` and `data-ts="filters"`. A filter or sort
+//! **With JS** (`features/browse.ts`): `data-ts="listing"` and `data-filters=""`. A filter or sort
 //! change navigates (`replace`, scroll kept) after a short quiet, and the server renders the new
 //! results; on phones the same fields sit in the one bottom sheet (`components::drawer`), which
 //! the router keeps open across that navigation. Nothing here is rendered by the client.
@@ -78,7 +78,7 @@ pub fn Listing(page: ListingPage, extras: Extras, lang: Lang, num: Numerals) -> 
             {chips(&page, lang, num)}
             <div class="lx-body">
                 <aside class="lx-filters" id="lx-filters" aria-labelledby="lx-filters-title">
-                    <form class="lx-form" method="get" action=base_href(&q) data-ts="filters">
+                    <form class="lx-form" method="get" action=base_href(&q) data-filters="">
                         <div class="lx-form-head">
                             <h2 class="lx-form-title" id="lx-filters-title">{filters_label}</h2>
                             <a class="lx-sheet-close nojs-only" href="#lx-bar">{tr(lang, "Close", "إغلاق")}</a>
@@ -126,7 +126,7 @@ pub fn Listing(page: ListingPage, extras: Extras, lang: Lang, num: Numerals) -> 
                             </div>
                         }.into_any())
                     >
-                        <form class="lx-form lx-form--sheet" method="get" action=base_href(&q) data-ts="filters">
+                        <form class="lx-form lx-form--sheet" method="get" action=base_href(&q) data-filters="">
                             {fields(&page, "d", lang, num)}
                         </form>
                     </Drawer>
@@ -161,7 +161,7 @@ fn search_head(q: &ListingQuery, lang: Lang) -> impl IntoView + use<> {
 fn sort_menu(q: &ListingQuery, lang: Lang) -> impl IntoView + use<> {
     let ar = lang.is_rtl();
     view! {
-        <details class="lx-sort">
+        <details class="lx-sort" data-router="off">
             <summary class="lx-sort-btn">
                 <Icon name="arrow-up-down" size=16/>
                 <span class="lx-sort-k">{tr(lang, "Sort", "الترتيب")}</span>
@@ -191,7 +191,8 @@ fn sort_menu(q: &ListingQuery, lang: Lang) -> impl IntoView + use<> {
 }
 
 /// The active filters as removable chips. `data-clear` names the field a chip resets, so the
-/// browser code can apply it to the form at once and send one navigation for several taps.
+/// browser code can apply it to the form at once and send one navigation for several taps (so
+/// the router neither follows nor prefetches these links: `data-router="off"`).
 fn chips(page: &ListingPage, lang: Lang, num: Numerals) -> Option<impl IntoView + use<>> {
     let q = &page.query;
     let ar = lang.is_rtl();
@@ -247,7 +248,7 @@ fn chips(page: &ListingPage, lang: Lang, num: Numerals) -> Option<impl IntoView 
     let remove = tr(lang, "Remove filter", "شيل الفلتر");
     let clear_all = (items.len() > 1).then(|| cleared(q).href());
     Some(view! {
-        <ul class="lx-chips" aria-label=tr(lang, "Active filters", "الفلاتر المختارة")>
+        <ul class="lx-chips" aria-label=tr(lang, "Active filters", "الفلاتر المختارة") data-router="off">
             {items
                 .into_iter()
                 .map(|(label, href, field, value)| {
@@ -296,7 +297,7 @@ fn fields(page: &ListingPage, p: &'static str, lang: Lang, num: Numerals) -> imp
             </ul>
         </fieldset>
         // The sort sits in the form so a filter change keeps it (no-JS Apply, and the browser code).
-        {(q.sort != Sort::Relevance).then(|| view! { <input type="hidden" name="sort" value=q.sort.code()/> })}
+        <input type="hidden" name="sort" value=q.sort.code()/>
     }
 }
 

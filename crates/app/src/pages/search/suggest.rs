@@ -44,8 +44,6 @@ pub struct SuggestHit {
     /// Thumbnail (`src`, `srcset`), `None` without a photo.
     pub img: Option<String>,
     pub srcset: Option<String>,
-    /// The placeholder tint behind the packshot (`#rrggbb`).
-    pub tint: String,
     /// Formatted price, and the struck "was" price when on sale.
     pub price: String,
     pub was: Option<String>,
@@ -99,7 +97,6 @@ pub fn build(r: &crate::api::types::SearchResults, lang: Lang, num: Numerals) ->
                 category: h.category.pick(ar).to_owned(),
                 img: live.then(|| img.src_near(96)),
                 srcset: live.then(|| img.srcset()),
-                tint: img.color.clone(),
                 price: format::money(h.card.price, lang, num),
                 was: h
                     .card

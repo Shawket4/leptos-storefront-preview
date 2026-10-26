@@ -157,7 +157,7 @@
 .is-broken img {
   visibility: hidden;
 }
-/* With JS the island moves the strip itself (springs, 1:1 tracking). */
+/* With JS the gallery moves the strip itself (springs, 1:1 tracking: features/product.ts). */
 .pg.is-js .pg__viewport {
   overflow: hidden;
   scroll-snap-type: none;
@@ -566,6 +566,12 @@ html.pv-open {
 .pp-stock__state.is-out {
   color: var(--danger-text);
 }
+/* One icon per stock state; the browser code switches the state class. */
+.pp-stock__state:is(.is-low, .is-out) .pp-stock__ic--in,
+.pp-stock__state:not(.is-low) .pp-stock__ic--low,
+.pp-stock__state:not(.is-out) .pp-stock__ic--out {
+  display: none;
+}
 .pp-sku {
   color: var(--text-3);
   font-size: var(--fs-xs);
@@ -846,7 +852,7 @@ html.pv-open {
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
 }
-.pp-group__err:empty {
+.pp-group:not(.is-bad) .pp-group__err {
   display: none;
 }
 
@@ -860,12 +866,6 @@ html.pv-open {
   flex: none;
   block-size: 52px;
   padding: 4px;
-}
-/* Without JS the stepper can't step: the form posts one, the cart can change it. */
-@media (scripting: none) {
-  .pp-buy .stepper {
-    display: none;
-  }
 }
 .pp-add {
   flex: 1;
@@ -883,21 +883,13 @@ html.pv-open {
   align-items: center;
   gap: var(--sp-2);
 }
-.pp-add__state:empty {
+/* "Added" for a moment after a successful add (features/product.ts). */
+.pp-add:not(.is-added) .pp-add__state {
   display: none;
 }
 .pp-add__state {
   display: inline-grid;
   animation: rise-in var(--dur-base) var(--ease-pop);
-}
-/* The live line total, under the label: always fits, at every width. */
-.pp-add__total {
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
-  opacity: 0.78;
-}
-.pp-add__total.is-empty {
-  display: none;
 }
 
 .pp-msgs:empty {
@@ -1144,12 +1136,6 @@ html.pv-open {
 }
 
 /* ── Rails, errors and not-found ──────────────────────────────────────────── */
-/* Without JS a streamed rail can't land; its section link stays. */
-@media (scripting: none) {
-  .pdp-rail-sk {
-    display: none;
-  }
-}
 .pdp-rail-empty {
   margin: 0;
   color: var(--text-2);

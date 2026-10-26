@@ -433,7 +433,9 @@ pub fn PurchasePanel(
                     <input type="hidden" name="product" value=pid/>
                     <input type="hidden" name="variant" value=cur.id.0/>
                     <input type="hidden" name="next" value=page_href/>
-                    {has_axes.then(|| view! { <div class="pp-axes">{axes}</div> })}
+                    // Variant links are the no-JS path; with JS a pick is local, so the router neither takes
+                    // nor prefetches them (`data-router="off"`).
+                    {has_axes.then(|| view! { <div class="pp-axes" data-router="off">{axes}</div> })}
                     {has_groups.then(|| view! { <div class="pp-groups">{groups}</div> })}
                     <div class="pp-buy">
                         <Stepper
@@ -498,7 +500,7 @@ fn notice_view(n: Notice, lang: Lang, num: Numerals) -> impl IntoView {
                 <p class="pp-msg pp-msg--ok" role="status">
                     <Icon name="circle-check" size=16/>
                     <span>{msg}</span>
-                    <a class="pp-msg__link" href="/cart">{tr(lang, "View cart", "اعرض السلة")}</a>
+                    <a class="pp-msg__link" href="/cart">{strings::get("cart.view", lang)}</a>
                 </p>
             })
         }

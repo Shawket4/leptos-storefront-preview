@@ -290,10 +290,8 @@
   text-overflow: ellipsis;
 }
 /* The matched part is the weight that changes, not a highlighter: calm, and it
-   reads in both scripts. */
-.hs-mark {
-  background: none;
-  color: inherit;
+   reads in both scripts (`<span data-hit>`, filled by features/browse.ts). */
+.hs-name [data-hit] {
   font-weight: var(--fw-heavy);
 }
 .hs-meta {
@@ -304,8 +302,46 @@
   text-overflow: ellipsis;
 }
 .hs-price {
+  display: flex;
   flex: none;
-  text-align: end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  font-size: 0.875rem;
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hs-price__was {
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+}
+.hs-group[hidden],
+.hs-list[hidden],
+.hs-note[hidden],
+.hs-price [hidden] {
+  display: none;
+}
+.hs-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  margin-block-start: var(--sp-2);
+  padding-inline: var(--sp-4);
+  border: 0;
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--sunk);
+  color: var(--text);
+  font: inherit;
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: scale 100ms var(--ease-out);
+}
+.hs-retry:active {
+  scale: var(--press);
 }
 .hs-note {
   padding: var(--sp-4) var(--sp-3);
