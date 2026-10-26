@@ -512,10 +512,9 @@ fn CartDemo(cx: Arc<Ctx>) -> impl IntoView {
     let Some(s) = cx.sample.clone() else {
         return view! { <p class="sc-note">{tr(lang, "This shop has no product to try it with.", "المحل ده مافيهوش منتج نجرّب بيه.")}</p> }.into_any();
     };
-    let Sample { product, variant, name, price, img, href } = s;
-    let (d_name, d_price, d_img, d_href) = (name.clone(), price.clone(), img.clone(), href.clone());
+    let Sample { product, variant, name, price, img, href, snapshot } = s;
     view! {
-        <div class="sc-cartdemo" data-ts="sc-cart" data-product=product data-variant=variant data-name=d_name data-price=d_price data-img=d_img data-href=d_href>
+        <div class="sc-cartdemo" data-ts="sc-cart" data-product=product data-variant=variant data-snapshot=snapshot>
             <div class="sc-mini sc-mini--wide">
                 <img class="sc-mini__img" src=img alt="" width="48" height="48" loading="lazy" decoding="async"/>
                 <a class="sc-mini__name" href=href>{name}</a>
