@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Picture (components::image): the box reserves the aspect ratio; the LQIP
-   (blurred) sits on the dominant colour until the WebP arrives. Transparent
-   packshots rest on the flat --well. The fade-in only exists with scripting,
-   so with JS off images are simply there.
+   Picture (components::image): the box reserves the aspect ratio; for photos the
+   blurred LQIP sits on the dominant colour until the WebP paints over it;
+   transparent packshots rest on the flat --well. Images are never hidden while
+   they load (no opacity gate, no blend modes — see the notes below).
    ───────────────────────────────────────────────────────────────────────────── */
 .pic {
   position: relative;
