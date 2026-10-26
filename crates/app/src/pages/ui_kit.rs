@@ -11,7 +11,7 @@ use crate::components::form::{Checkbox, RadioCard, Select, TextArea, TextInput};
 use crate::components::icons::{Icon, NAMES};
 use crate::components::image::Picture;
 use crate::components::layout::{Container, Rail, SectionHeader};
-use crate::components::price::{Price, PriceSize};
+use crate::components::price::{Price, PriceLive, PriceSize};
 use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton, ProductGrid};
 use crate::components::rating::Rating;
 use crate::components::segmented::{SegItem, Segmented};
@@ -571,22 +571,30 @@ fn KitToasts() -> impl IntoView {
     }
 }
 
-/// Stepper demo.
+/// Stepper demo, with a live line total (PriceLive re-renders on quantity, language, numerals).
 #[island]
 fn KitStepper() -> impl IntoView {
     let ui = use_ui();
     let a = RwSignal::new(1u32);
     let b = RwSignal::new(1u32);
+    let unit = Piastres(129_900);
+    let total = Signal::derive(move || unit * a.get());
     view! {
         <div class="kit__items">
             <Stepper value=a on_change=Callback::new(move |v| a.set(v)) min=1 max=5/>
+            <PriceLive amount=total size=PriceSize::Lg/>
+        </div>
+        <div class="kit__items">
             <Stepper
                 value=b
                 on_change=Callback::new(move |v| b.set(v))
                 min=1
                 max=9
                 on_remove=Callback::new(move |_| {
-                    toast::show(tr(ui.lang.get_untracked(), "Removed from your cart", "اتشال من السلة").to_owned(), ToastKind::Info)
+                    toast::show(
+                        tr(ui.lang.get_untracked(), "Removed from your cart", "اتشال من السلة").to_owned(),
+                        ToastKind::Info,
+                    )
                 })
             />
             <Stepper value=Signal::stored(3u32) on_change=Callback::new(|_| {}) min=1 max=9 disabled=true/>
