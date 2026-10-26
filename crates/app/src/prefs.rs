@@ -84,9 +84,10 @@ impl Numerals {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Theme {
-    /// Follow `prefers-color-scheme`.
-    #[default]
+    /// Follow `prefers-color-scheme` (only when the visitor picks it).
     System,
+    /// The default — owner's call: the storefront opens light even on a dark-mode phone.
+    #[default]
     Light,
     Dark,
 }

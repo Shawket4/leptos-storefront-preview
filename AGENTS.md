@@ -126,6 +126,9 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   language is the storefront's own: warm **linen/sand neutrals** (page `#F6F4EF`, surface `#FFFFFF`,
   warm ink `#1A1814`, stone greys; dark mode warm charcoal `#121110` / `#1C1B19`), the tenant accent
   (`var(--brand)`) as the single primary per screen.
+- **Light by default** (owner): the page renders `data-theme="light"` unless the visitor picked
+  Dark or System in the theme control — even on a dark-mode phone. Dark mode must still be complete
+  and polished for those who choose it.
 - **No gradients.** None in backgrounds, buttons, scrims or skeletons (a *very* faint one is tolerated
   only where it is functionally needed, e.g. a rail's edge fade). Text never sits on a photo behind a
   dark scrim — put copy on solid surfaces (split layouts, solid chips/cards overlapping an image).
