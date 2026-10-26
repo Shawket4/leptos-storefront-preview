@@ -206,11 +206,20 @@ pub fn CartDrawer() -> impl IntoView {
         }
         open
     });
+    // The drawer is personal and starts closed, so it is built in the browser after hydration
+    // and never rendered on the server (which also keeps the Drawer's thread-local spring state
+    // out of server renders).
+    let mounted = RwSignal::new(false);
+    Effect::new(move |_| mounted.set(true));
     let title = Signal::derive(move || tr(ui.lang.get(), "Your cart", "سلتك").to_owned());
-    view! {
-        <Drawer open=cart.open title id="cart-drawer" attr:id="cart-drawer" attr:data-cart="">
-            <DrawerContent/>
-        </Drawer>
+    move || {
+        mounted.get().then(|| {
+            view! {
+                <Drawer open=cart.open title id="cart-drawer" attr:id="cart-drawer" attr:data-cart="">
+                    <DrawerContent/>
+                </Drawer>
+            }
+        })
     }
 }
 
