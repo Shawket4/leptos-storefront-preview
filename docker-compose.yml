@@ -1,0 +1,24 @@
+# The storefront on the VPS. Deployed by .github/workflows/deploy.yaml, which copies this file to
+# /opt/leptos-storefront/ and starts the image it just built (STOREFRONT_IMAGE, pinned by sha).
+#
+# The app keeps no state on disk (catalogue and media are baked into the image; carts live in the
+# browser's cookie; orders are in memory — it's a preview), so there are no volumes. nginx on the
+# host terminates TLS for the shops' subdomains and proxies to the loopback port below, passing
+# the Host header through: the shop is the first label of the hostname (deploy/SETUP.md).
+
+services:
+  storefront:
+    # Falls back to :latest, which every deploy re-points at what it deployed.
+    image: ${STOREFRONT_IMAGE:-ghcr.io/shawket4/leptos-storefront-preview:latest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${STOREFRONT_PORT:-8090}:8080"
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+      # Read-cache lifetime for catalogue reads (seconds).
+      CACHE_TTL_SECS: ${CACHE_TTL_SECS:-120}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

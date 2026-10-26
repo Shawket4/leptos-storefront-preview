@@ -1,0 +1,12 @@
+# Build outputs and toolchains (rebuilt inside the image).
+target/
+client/node_modules/
+tools/shots/node_modules/
+# Machine-local cargo setup (sccache, mold, a build dir on this machine's SSD): a container has none
+# of them, and the image must build anywhere.
+.cargo/config.toml
+# Source images the media pipeline reads; the WebP ladders in data/media are what ships.
+data/media/*/_src/
+assets-src/
+.git/
+*.log
