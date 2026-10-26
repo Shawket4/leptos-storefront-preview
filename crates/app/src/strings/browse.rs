@@ -1,4 +1,8 @@
-//! Strings for the browse area. Owner: the browse agent. Add `s("browse.key", "English", "عربي")`.
-use super::Entry;
+//! Strings for the browse area (home, listing, search). Owner: the browse agent.
+use super::{Entry, s};
 
-pub const ALL: &[Entry] = &[];
+pub const ALL: &[Entry] = &[
+    s("browse.filters", "Filters", "الفلاتر"),
+    s("browse.clear", "Clear", "امسح"),
+    s("browse.searching", "Searching…", "بندوّر…"),
+];

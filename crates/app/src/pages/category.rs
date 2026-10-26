@@ -2,29 +2,25 @@
 //!
 //! Everything is decided from the URL. Synchronously, before the first byte: the category (an
 //! unknown slug is a 404), the caching headers (`Cache-Tag: t{tenant}, t{tenant}-cat{id}`), title,
-//! description, canonical and breadcrumb JSON-LD. Then the page streams in order (the route is
-//! `SsrMode::InOrder`, so it is complete without JS) and hands the first page of results to the
-//! `CatalogExplorer` island, which takes over filtering, sorting and paging in the browser.
+//! description, canonical and breadcrumb JSON-LD. Then the page renders in order (complete without
+//! JS) with the results of `api::list_products` (`view::Listing`). Filtering, sorting and paging
+//! are new URLs: the server renders them; the browser code only makes the trip quick.
 
-pub(crate) mod explorer;
 pub(crate) mod listing;
+pub(crate) mod view;
 
-use crate::api::types::{ListingPage, PER_PAGE};
+use crate::api::types::ListingPage;
 use crate::api::{
     self,
     types::{ListingQuery, NavCategory},
 };
 use crate::components::button::{Button, ButtonKind};
-use crate::components::{
-    breadcrumbs::Breadcrumbs, empty_state::EmptyState, icons::Icon,
-    product_card::ProductGridSkeleton,
-};
+use crate::components::{breadcrumbs::Breadcrumbs, empty_state::EmptyState, icons::Icon};
 use crate::format;
 use crate::pages::search::suggest::{CatLink, Suggestions};
 use crate::pages::search::{HeaderSearch, SearchBox};
 use crate::prefs::{Lang, tr};
 use crate::request::req;
-use explorer::{CatalogExplorer, Extras};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_meta::{Link, Meta, Title};
@@ -83,7 +79,6 @@ pub fn CategoryPage() -> impl IntoView {
     .to_string()
     .replace("</", "<\\/");
 
-    let href = query.href();
     let data = Resource::new(|| (), move |_| api::list_products(query.clone()));
 
     Either::Right(view! {
@@ -97,9 +92,7 @@ pub fn CategoryPage() -> impl IntoView {
         <Meta property="og:url" content=canonical/>
         <script type="application/ld+json" inner_html=crumbs_ld></script>
 
-        // `data-listing-href` (explorer::HREF_ATTR) is how the island learns about same-route
-        // navigations: the islands router diffs this attribute but never the island itself.
-        <div class="listing container" data-listing-href=href>
+        <div class="listing container">
             <Breadcrumbs items=vec![(tr(lang, "Home", "الرئيسية").to_owned(), Some("/".to_owned())), (name.clone(), None)]/>
             <header class="cat-head">
                 <span class="cat-head__icon" aria-hidden="true">
@@ -111,7 +104,7 @@ pub fn CategoryPage() -> impl IntoView {
                 </div>
                 <p class="cat-head__count">{format::items(cat.count, lang, num)}</p>
             </header>
-            <ListingResults data site lang aisles=aisles(Some(&slug)) expected=cat.count.min(PER_PAGE)/>
+            <ListingResults data aisles=aisles(Some(&slug))/>
         </div>
     })
 }
@@ -146,28 +139,26 @@ fn first_suggestions(page: &ListingPage) -> Option<Suggestions> {
     }
 }
 
-/// The explorer, once its first page is in. In order (no JS needed) it is simply part of the
-/// page; the fallback only shows if the route is ever switched to out-of-order streaming.
+/// The listing, once its first page is in (the route renders in order, so the fallback is never
+/// sent; a failed read shows `ListingFailed`).
 #[component]
 pub(crate) fn ListingResults(
     data: Resource<Result<ListingPage, ServerFnError>>,
-    site: String,
-    lang: Lang,
     /// Aisles the empty states offer.
     aisles: Vec<CatLink>,
-    /// How many cards the first page will hold (the skeleton draws as many).
-    expected: u32,
 ) -> impl IntoView {
+    let rq = req();
+    let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
     view! {
-        <Suspense fallback=move || view! { <ListingSkeleton cards=expected lang/> }>
+        <Suspense fallback=|| ()>
             <ErrorBoundary fallback=move |_| view! { <ListingFailed lang/> }>
                 {move || {
-                    let (site, aisles) = (site.clone(), aisles.clone());
+                    let aisles = aisles.clone();
                     Suspend::new(async move {
                         data.await.map(|page| {
                             let suggest = first_suggestions(&page);
-                            let extras = Extras { aisles, suggest };
-                            view! { <CatalogExplorer initial=page site_name=site extras/> }
+                            let extras = view::Extras { aisles, suggest };
+                            view! { <view::Listing page extras lang num/> }
                         })
                     })
                 }}
@@ -176,49 +167,8 @@ pub(crate) fn ListingResults(
     }
 }
 
-/// The explorer's exact frame — bar, filter panel, grid — pulsing, at the size of what replaces
-/// it (same classes, same rows, as many cards as the first page will hold).
-#[component]
-fn ListingSkeleton(cards: u32, lang: Lang) -> impl IntoView {
-    let rows = |n: usize| {
-        (0..n)
-            .map(|_| view! { <span class="skeleton lx-skel-row"></span> })
-            .collect_view()
-    };
-    view! {
-        <div class="lx lx--skeleton" aria-busy="true" aria-label=tr(lang, "Loading products", "جاري تحميل المنتجات")>
-            <div class="lx-bar">
-                <span class="skeleton lx-skel-btn lx-skel-btn--filters"></span>
-                <span class="skeleton lx-skel-btn lx-skel-btn--sort"></span>
-            </div>
-            <p class="lx-total"><span class="skeleton lx-skel-line"></span></p>
-            <div class="lx-body">
-                <div class="lx-filters">
-                    <div class="lx-form">
-                        <div class="lx-form-head"><span class="skeleton lx-skel-title"></span></div>
-                        <div class="lx-group">
-                            <span class="skeleton lx-skel-legend"></span>
-                            <div class="lx-price">
-                                <span class="skeleton lx-skel-input"></span>
-                                <span class="lx-price-dash" aria-hidden="true">"–"</span>
-                                <span class="skeleton lx-skel-input"></span>
-                            </div>
-                        </div>
-                        <div class="lx-group"><span class="skeleton lx-skel-legend"></span>{rows(5)}</div>
-                        <div class="lx-group"><span class="skeleton lx-skel-legend"></span>{rows(2)}</div>
-                    </div>
-                </div>
-                <div class="lx-results">
-                    <ProductGridSkeleton count=cards.max(1) as usize class="lx-grid"/>
-                </div>
-            </div>
-        </div>
-    }
-}
-
 /// The first page of results failed to load (`?fail=listing` demonstrates it). Retry is a link to
-/// the same listing without the `fail` parameter: without JS the browser loads it, with JS the
-/// islands router fetches it and patches this section in place.
+/// the same listing without the `fail` parameter.
 #[component]
 fn ListingFailed(lang: Lang) -> impl IntoView {
     let rq = req();
