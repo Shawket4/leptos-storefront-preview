@@ -72,6 +72,8 @@ register("variant-picker", (root) => {
   const bar = $(".pp-bar", root);
   let cur = byId.get(data.selected) ?? data.variants[0]!;
   let addedTimer = 0;
+  /** An add was tried with this variant: group problems show (and follow the answers live). */
+  let attempted = false;
 
   const pageHref = (v: VariantData) => `${data.href}?v=${v.id}`;
 
@@ -145,11 +147,16 @@ register("variant-picker", (root) => {
     const barPrice = $("[data-bar-price]", root);
     if (barPrice) barPrice.textContent = v.price;
     $(".pp-msgs", root)?.replaceChildren();
+    // A new variant is a fresh start: no add-on message until the next try to add.
+    attempted = false;
+    validate();
     writeUrl(v);
     if (v.image !== null) root.dispatchEvent(new CustomEvent(VARIANT_EVENT, { bubbles: true, detail: { image: v.image } }));
   };
 
-  // ── Add-on groups: limits as you pick, problems shown once an add was tried ──
+  // ── Add-on groups: limits as you pick. A group's problem shows only once an add was tried
+  // (like checkout): then on every unmet group at once, and from there it follows the answers
+  // live. Changing the variant starts over. ──
   const groupState = (g: HTMLElement) => {
     const min = Number(g.dataset.min ?? 0);
     const max = g.dataset.max ? Number(g.dataset.max) : Infinity;
@@ -170,13 +177,19 @@ register("variant-picker", (root) => {
     }
   };
   for (const g of $$(".pp-group", root)) limitGroup(g);
+  /** Mark the unmet groups (only after an attempt); returns them. */
+  const validate = (): HTMLElement[] => {
+    const groups = $$(".pp-group", root);
+    const bad = groups.filter((g) => !groupState(g).ok);
+    for (const g of groups) markGroup(g, attempted && bad.includes(g));
+    return bad;
+  };
 
   const submit = (ev: SubmitEvent) => {
     ev.preventDefault();
     if (cur.stock === 0) return;
-    const bad = $$(".pp-group", root).filter((g) => !groupState(g).ok);
-    for (const g of $$(".pp-group", root)) markGroup(g, bad.includes(g));
-    const first = bad[0];
+    attempted = true;
+    const first = validate()[0];
     if (first) {
       first.scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "auto" : "smooth" });
       $<HTMLInputElement>("input:not(:disabled)", first)?.focus({ preventScroll: true });
@@ -192,6 +205,7 @@ register("variant-picker", (root) => {
     if (!addons.length) snap.price = cur.price;
     const r = addAndConfirm({ product: data.product, variant: cur.id, qty, addons }, snap);
     if (!r.ok) return;
+    attempted = false;
     // The button says it worked, for a moment.
     for (const b of $$("button[data-add]", root)) b.classList.add("is-added");
     for (const l of $$("[data-add-label]", root)) l.textContent = t("product.added_short");
@@ -245,7 +259,7 @@ register("variant-picker", (root) => {
       const g = el.closest<HTMLElement>(".pp-group");
       if (!g) return;
       limitGroup(g);
-      if (g.classList.contains("is-bad") && groupState(g).ok) markGroup(g, false);
+      validate(); // live, once an add was tried
     }),
   ];
   form?.addEventListener("submit", submit);
