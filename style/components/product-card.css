@@ -202,6 +202,9 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-3);
+  /* As a grid or flex item itself, never demand its cards' max-content width
+     (an fr track sized under a min-content constraint would). */
+  min-inline-size: 0;
 }
 @media (min-width: 600px) {
   .pgrid {
