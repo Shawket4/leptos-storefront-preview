@@ -157,7 +157,9 @@
 .pcard__price {
   display: flex;
   align-items: flex-start;
-  min-block-size: 2.6rem;
+  /* Fixed, not a minimum: a sale's two lines and a plain price take the same room in both
+     scripts, so every card (and the skeleton) is the same height. */
+  block-size: 2.75rem;
   margin-block-start: var(--sp-2);
   container: price-slot / inline-size;
 }

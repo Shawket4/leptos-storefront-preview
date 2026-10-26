@@ -65,10 +65,10 @@
 /* Dark mode: transparent packshots get a rim light — a hairline of light along
    their own silhouette — so dark products keep their edges on the dark well. */
 :root[data-theme="dark"] .pic--alpha img {
-  filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.5));
+  filter: drop-shadow(0 0 0.5px var(--rim));
 }
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"] .pic--alpha img {
-    filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.5));
+    filter: drop-shadow(0 0 0.5px var(--rim));
   }
 }
