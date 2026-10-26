@@ -108,6 +108,7 @@ pub fn NotFound() -> impl IntoView {
     let lang = rq.prefs.lang;
     let ar = lang.is_rtl();
     let tenant_name = rq.tenant.name.pick(ar).to_owned();
+    let back = same_origin_referer(&rq.origin);
     // Blocking: the categories are cheap (in-memory, no simulated latency) and a 404 must be
     // complete without JavaScript, so they render inline in the first chunk instead of streaming.
     let cats = Resource::new_blocking(|| (), |_| api::nav_categories());
@@ -143,10 +144,18 @@ pub fn NotFound() -> impl IntoView {
                     />
                     <button class="err-search__go" type="submit">{tr(lang, "Search", "بحث")}</button>
                 </form>
-                <a class="err-page__home" href="/">
-                    <Icon name="house" size=18/>
-                    <span>{tr(lang, "Back to the home page", "العودة إلى الصفحة الرئيسية")}</span>
-                </a>
+                <div class="err-page__links">
+                    {back.map(|href| view! {
+                        <a class="err-page__home" href=href>
+                            <Icon name="arrow-left" size=18 class="flip-rtl"/>
+                            <span>{tr(lang, "Back to the previous page", "العودة إلى الصفحة السابقة")}</span>
+                        </a>
+                    })}
+                    <a class="err-page__home" href="/">
+                        <Icon name="house" size=18/>
+                        <span>{tr(lang, "Back to the home page", "العودة إلى الصفحة الرئيسية")}</span>
+                    </a>
+                </div>
             </div>
         </section>
         <section class="err-cats container" aria-labelledby="err-cats-title">
@@ -179,6 +188,21 @@ pub fn NotFound() -> impl IntoView {
             </Suspense>
         </section>
     }
+}
+
+/// The page the visitor came from, as a path, when it is on this site (and isn't this 404).
+#[cfg(feature = "ssr")]
+fn same_origin_referer(origin: &str) -> Option<String> {
+    let parts = use_context::<http::request::Parts>()?;
+    let referer = parts.headers.get(http::header::REFERER)?.to_str().ok()?;
+    let path = referer.strip_prefix(origin)?;
+    let here = parts.uri.path_and_query().map(|p| p.as_str()).unwrap_or("");
+    (path.starts_with('/') && !path.starts_with("//") && path != here).then(|| path.to_owned())
+}
+
+#[cfg(not(feature = "ssr"))]
+fn same_origin_referer(_: &str) -> Option<String> {
+    None
 }
 
 // ─── Per-section fallback ──────────────────────────────────────────────────────────────────────
@@ -322,11 +346,23 @@ pub fn ErrorPage(
     /// Where "Try again" goes (defaults to the current URL without `fail=`/`crash=`).
     #[prop(optional, into)]
     retry_href: Option<String>,
+    /// `true`: 503 Service Unavailable (maintenance, a backend that is down) with a Retry-After
+    /// hint, instead of 500.
+    #[prop(optional)]
+    unavailable: bool,
 ) -> impl IntoView {
     #[cfg(feature = "ssr")]
     {
         if let Some(resp) = use_context::<leptos_axum::ResponseOptions>() {
-            resp.set_status(http::StatusCode::INTERNAL_SERVER_ERROR);
+            if unavailable {
+                resp.set_status(http::StatusCode::SERVICE_UNAVAILABLE);
+                resp.insert_header(
+                    http::header::RETRY_AFTER,
+                    http::HeaderValue::from_static("30"),
+                );
+            } else {
+                resp.set_status(http::StatusCode::INTERNAL_SERVER_ERROR);
+            }
         }
         crate::server::cache::private();
     }
@@ -344,23 +380,40 @@ pub fn ErrorPage(
                 .join(" · ")
         }
     });
+    let (code, title, body) = if unavailable {
+        (
+            tr(lang, "Error 503", "خطأ 503"),
+            tr(lang, "We'll be right back", "سنعود خلال لحظات"),
+            tr(
+                lang,
+                "The shop is briefly unavailable — usually for a minute or two. Your cart is saved; try again shortly.",
+                "المتجر غير متاح لفترة قصيرة — عادةً لدقيقة أو اثنتين. سلّتك محفوظة؛ حاول مرة أخرى بعد قليل.",
+            ),
+        )
+    } else {
+        (
+            tr(lang, "Error 500", "خطأ 500"),
+            tr(
+                lang,
+                "Something went wrong on our side",
+                "حدث خطأ من جانبنا",
+            ),
+            tr(
+                lang,
+                "It's not you. Please try again in a moment — your cart is saved.",
+                "المشكلة ليست عندك. يُرجى المحاولة مرة أخرى بعد قليل — سلّتك محفوظة.",
+            ),
+        )
+    };
     view! {
-        <Title text=tr(lang, "Something went wrong", "حدث خطأ")/>
+        <Title text=title/>
         <Meta name="robots" content="noindex"/>
         <section class="err-page err-page--500 container" aria-labelledby="err500-title" role="alert">
-            <Illustration art=art("error") theme lang fallback_glyph="500"/>
+            <Illustration art=art("error") theme lang fallback_glyph={if unavailable { "503" } else { "500" }}/>
             <div class="err-page__copy">
-                <p class="err-page__code mono">{tr(lang, "Error 500", "خطأ 500")}</p>
-                <h1 id="err500-title" class="err-page__title">
-                    {tr(lang, "Something went wrong on our side", "حدث خطأ من جانبنا")}
-                </h1>
-                <p class="err-page__body">
-                    {tr(
-                        lang,
-                        "It's not you. Please try again in a moment — your cart is saved.",
-                        "المشكلة ليست عندك. يُرجى المحاولة مرة أخرى بعد قليل — سلّتك محفوظة.",
-                    )}
-                </p>
+                <p class="err-page__code mono">{code}</p>
+                <h1 id="err500-title" class="err-page__title">{title}</h1>
+                <p class="err-page__body">{body}</p>
                 <div class="err-page__actions">
                     <a class="err-btn err-btn--primary" href=retry>
                         <Icon name="rotate-ccw" size=18/>

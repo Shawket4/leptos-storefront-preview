@@ -302,6 +302,40 @@ pub static FEATURES: &[Feature] = &[
         ],
     },
     Feature {
+        id: "states",
+        cat: Cat::Rendering,
+        title: (
+            "Every state, designed: loading, failed, offline, not found, broken",
+            "كل الحالات متصممة: تحميل، عطل، من غير نت، مش موجود، واقع",
+        ),
+        what: (
+            "Skeletons the exact size of what replaces them, a failed section that says so and offers a retry, an offline notice, a designed 404 and a 500/503 page — real components the pages use, shown live here.",
+            "‏Skeletons بنفس مقاس اللي هيجي مكانها، وقسم واقع بيقول كده ويعرض إعادة المحاولة، وتنبيه لما النت يقطع، وصفحة 404 وصفحة 500/503 متصممين — كومبوننتس حقيقية الصفحات بتستخدمها، ومعروضة هنا على الهوا.",
+        ),
+        why: (
+            "A shop is judged in its bad moments — slow 3G, a backend hiccup, a dead link. None of them should look broken or lose the cart.",
+            "المتجر بيتحكم عليه في لحظاته الوحشة — نت بطيء، أو عطل في الباك إند، أو لينك مش شغال. ولا واحدة منهم المفروض تبان بايظة أو تضيّع السلة.",
+        ),
+        used_in: &[
+            used(
+                Href::Path("/no-such-page"),
+                "The router's 404 (NotFound)",
+                "صفحة 404 بتاعة الراوتر (‏NotFound)",
+            ),
+            used(
+                Href::Path("/?fail=deals"),
+                "Home: a failing rail",
+                "الرئيسية: قسم واقع",
+            ),
+        ],
+        note: None,
+        sources: &[
+            "crates/app/src/pages/errors.rs",
+            "crates/app/src/components/skeleton.rs",
+            "crates/app/src/pages/showcase/islands.rs",
+        ],
+    },
+    Feature {
         id: "meta",
         cat: Cat::Rendering,
         title: (
@@ -419,14 +453,18 @@ pub static FEATURES: &[Feature] = &[
             "Paging or filtering a listing never flashes empty skeletons: the grid stays put and swaps once the next page is ready.",
             "التنقل بين الصفحات أو الفلترة عمرها ما بتفضّي الشاشة لـ skeletons: الشبكة بتفضل مكانها وبتتبدل لما الصفحة الجاية تجهز.",
         ),
-        used_in: &[],
+        used_in: &[used(
+            Href::Category,
+            "Listings: filters, sort and paging keep the old results on screen",
+            "القوايم: الفلاتر والترتيب والصفحات بتسيب النتايج القديمة على الشاشة",
+        )],
         note: Some((
-            "Not used by a page yet: listings page through plain links (server-rendered). This island is its usage.",
-            "لسه مش مستخدم في صفحة: صفحات القوايم بتتقلب بلينكات عادية (بتترسم على السيرفر). الـ island دي هي استخدامه.",
+            "Both seed the first page from server props through an AsyncDerived that is ready on its first poll — a pending Resource inside an island breaks hydration after a client navigation (see Sharp edges).",
+            "الاتنين بياخدوا أول صفحة من props السيرفر عن طريق AsyncDerived جاهز من أول poll — لإن Resource مستني جوه island بيكسر الـ hydration بعد التنقل (شوف «حاجات جرحتنا»).",
         )),
         sources: &[
+            "crates/app/src/pages/category/explorer.rs",
             "crates/app/src/pages/showcase/islands.rs",
-            "crates/app/src/api/mod.rs",
         ],
     },
     Feature {
@@ -465,15 +503,12 @@ pub static FEATURES: &[Feature] = &[
             "Add to cart and checkout must work on every phone, good network or not — one server function serves both paths.",
             "«أضف للسلة» والدفع لازم يشتغلوا على أي موبايل، النت كويس أو لأ — ودالة سيرفر واحدة بتخدم الطريقتين.",
         ),
-        // `/cart` lands with agent/commerce (2548a2f): page.rs renders every control as a stock ActionForm.
-        used_in: &[used(
-            Href::Path("/cart"),
-            "Cart: every quantity, remove and add control is a stock ActionForm",
-            "السلة: كل تحكم في الكمية والحذف والإضافة ActionForm عادي",
-        )],
+        // When agent/commerce (2548a2f) is merged, add:
+        // used(Href::Path("/cart"), "Cart: every quantity, remove and add control is a stock ActionForm", "السلة: كل تحكم في الكمية والحذف والإضافة ActionForm عادي"),
+        used_in: &[],
         note: Some((
-            "On /cart the forms live in a server component, so with JavaScript the islands router posts them and diffs the page the server sends back — no island at all. This demo shows the other style: an island that dispatches the ServerAction itself.",
-            "في ‎/cart‎ الفورمز جوه كومبوننت سيرفر، فمع JavaScript الـ islands router هو اللي بيبعتها ويعمل diff للصفحة اللي راجعة — من غير أي island. والديمو ده بيوري الطريقة التانية: island بتشغّل الـ ServerAction بنفسها.",
+            "The cart's quantity, remove and add controls are stock ActionForms in a server component (on the commerce branch, not merged yet): with JavaScript the islands router posts them and diffs the page the server sends back — no island at all. This demo shows the other style: an island that dispatches the ServerAction itself.",
+            "تحكم الكمية والحذف والإضافة في السلة ActionForms عادية جوه كومبوننت سيرفر (في فرع الشراء، لسه ما اتدمجش): مع JavaScript الـ islands router هو اللي بيبعتها ويعمل diff للصفحة اللي راجعة — من غير أي island. والديمو ده بيوري الطريقة التانية: island بتشغّل الـ ServerAction بنفسها.",
         )),
         sources: &[
             "crates/app/src/pages/showcase/notes.rs",
@@ -496,7 +531,8 @@ pub static FEATURES: &[Feature] = &[
             "Page changes without a white flash and without losing the open cart, while every page is still server-rendered, cacheable HTML that works without JavaScript.",
             "تنقل من غير وميض أبيض ومن غير ما السلة المفتوحة تتقفل، وفي نفس الوقت كل صفحة HTML متجهز على السيرفر، بيتعمله كاش، وشغال من غير JavaScript.",
         ),
-        // `/cart` lands with agent/commerce (2548a2f): keyed <For> lines, forms the router posts and diffs.
+        // When agent/commerce (2548a2f) is merged, add:
+        // used(Href::Path("/cart"), "Cart: posts diffed in place, keyed <For> lines", "السلة: الطلبات بتتعمل diff مكانها، وسطور <For> بمفاتيح"),
         used_in: &[
             used(
                 Href::Path("/"),
@@ -504,9 +540,9 @@ pub static FEATURES: &[Feature] = &[
                 "كل لينك وكل فورم في كل صفحة",
             ),
             used(
-                Href::Path("/cart"),
-                "Cart: posts diffed in place, keyed <For> lines",
-                "السلة: الطلبات بتتعمل diff مكانها، وسطور <For> بمفاتيح",
+                Href::Category,
+                "Listings: the filter form and paging are links and GET forms",
+                "القوايم: فورم الفلاتر والصفحات لينكات وفورمز GET",
             ),
         ],
         note: None,
@@ -530,28 +566,66 @@ pub static FEATURES: &[Feature] = &[
             "Every filter, sort, page and variant is a URL you can share, cache at the edge and open without JavaScript: the URL is the state.",
             "كل فلتر وترتيب وصفحة واختيار ليه URL تقدر تبعته، ويتعمله كاش على الـ CDN، ويفتح من غير JavaScript: الـ URL هو الحالة.",
         ),
-        used_in: &[used(
-            Href::Path("/search?deal=1&sort=discount"),
-            "Home's “See all” links",
-            "لينكات «عرض الكل» في الرئيسية",
-        )],
+        used_in: &[
+            used(
+                Href::CategoryQuery,
+                "Category: use_params_map for :slug, the query for filters/sort/page",
+                "القسم: ‏use_params_map للـ ‎:slug‎، والـ query للفلاتر والترتيب والصفحة",
+            ),
+            used(
+                Href::Path("/search?deal=1&sort=discount"),
+                "Search and the home page's “See all” links",
+                "البحث ولينكات «عرض الكل» في الرئيسية",
+            ),
+        ],
         note: Some((
-            "The listing and product pages that read these params land with the browse and product pages; this demo reads its own query the same way.",
-            "صفحات القوايم والمنتج اللي بتقرا الـ params دي هتيجي مع صفحات التصفح والمنتج؛ والديمو ده بيقرا الـ query بتاعته بنفس الطريقة.",
+            "The product page's ?v= variant lands with the product page (not merged yet).",
+            "الـ ‎?v=‎ بتاع اختيار المنتج هيجي مع صفحة المنتج (لسه ما اتدمجتش).",
         )),
-        sources: &["crates/app/src/lib.rs", "crates/app/src/api/types.rs"],
+        sources: &[
+            "crates/app/src/lib.rs",
+            "crates/app/src/pages/category.rs",
+            "crates/app/src/api/types.rs",
+        ],
+    },
+    Feature {
+        id: "router-patches",
+        cat: Cat::Routing,
+        title: (
+            "islands-router: what we had to patch",
+            "الـ islands-router: اللي اضطرينا نرقّعه",
+        ),
+        what: (
+            "The router itself is a small script (leptos/src/hydration/islands_routing.js) that diffs fetched HTML into the page. The app wraps it with one more small script (components/shell.js, inlined once): realign <head> before each diff, keep <noscript> inert, manage scroll, always revalidate, and name only the clicked card for the photo morph. The server helps too: router responses carry no <noscript>.",
+            "الراوتر نفسه سكريبت صغير (‏leptos/src/hydration/islands_routing.js) بيعمل diff للـ HTML اللي بيجيبه جوه الصفحة. والأبلكيشن بيلفّه بسكريبت صغير تاني (‏components/shell.js، مرة واحدة في الصفحة): يظبط الـ <head> قبل كل diff، ويخلي الـ <noscript> مالوش أثر، ويتحكم في الـ scroll، ويتأكد من السيرفر كل مرة، ويدي اسم الـ morph للكارت اللي اتداس عليه بس. والسيرفر بيساعد كمان: مفيش <noscript> refresh في ردود الراوتر.",
+        ),
+        why: (
+            "These are the gaps between “works in the example” and “works in a shop”: without them a cross-page navigation could leave the old page on screen, a no-JS redirect could fire for JS users, and every new page opened at the old scroll position.",
+            "دي الفجوات بين «شغال في المثال» و«شغال في متجر»: من غيرها التنقل بين صفحتين ممكن يسيب الصفحة القديمة على الشاشة، وتحويل الـ no-JS ممكن يشتغل للي عندهم JS، وكل صفحة جديدة تفتح في نفس مكان الـ scroll القديم.",
+        ),
+        used_in: &[used(
+            Href::Path("/"),
+            "Every page: the shell inlines shell.js once (~2 KB, no WASM)",
+            "كل صفحة: الـ shell بيحط shell.js مرة واحدة (حوالي ٢ KB، من غير WASM)",
+        )],
+        note: None,
+        sources: &[
+            "crates/app/src/components/shell.js",
+            "crates/app/src/components/shell.rs",
+            "crates/app/src/lib.rs",
+        ],
     },
     // ── Platform & caching ─────────────────────────────────────────────────────────────────────
     Feature {
         id: "caching",
         cat: Cat::Platform,
         title: (
-            "HTTP caching hooks: Cache-Control + Cache-Tag",
-            "الكاش: Cache-Control و Cache-Tag",
+            "HTTP caching hooks: Cache-Control, CDN-Cache-Control, Cache-Tag",
+            "الكاش: Cache-Control و CDN-Cache-Control و Cache-Tag",
         ),
         what: (
-            "Each page decides its caching synchronously, before streaming starts: catalogue pages are public with a short edge TTL and Cache-Tags; anything personal is private, no-store. Reads behind them go through a moka cache keyed by tenant + generation.",
-            "كل صفحة بتقرر الكاش بتاعها بشكل متزامن قبل ما البث يبدأ: صفحات الكتالوج public بـ TTL قصير على الـ CDN ومعاها Cache-Tags؛ وأي حاجة شخصية private, no-store. والقراءات وراها بتعدّي على كاش moka بمفتاح المتجر + الـ generation.",
+            "Each page decides its caching synchronously, before streaming starts. Catalogue pages tell browsers to revalidate (no-cache — language and theme live in cookies) and tell the edge to keep a short-lived copy (CDN-Cache-Control) tagged for targeted purges; anything personal is private, no-store. Reads behind them go through a moka cache keyed by tenant + generation.",
+            "كل صفحة بتقرر الكاش بتاعها بشكل متزامن قبل ما البث يبدأ. صفحات الكتالوج بتقول للمتصفح «اتأكد كل مرة» (‏no-cache — لإن اللغة والثيم في الكوكيز) وبتقول للـ CDN «احتفظ بنسخة قصيرة العمر» (‏CDN-Cache-Control) عليها تاجات للمسح بالتحديد؛ وأي حاجة شخصية private, no-store. والقراءات وراها بتعدّي على كاش moka بمفتاح المتجر + الـ generation.",
         ),
         why: (
             "Cloudflare can serve the catalogue from the edge to every visitor, and a price change purges exactly that product's pages by tag.",
@@ -559,8 +633,8 @@ pub static FEATURES: &[Feature] = &[
         ),
         used_in: &[used(
             Href::Path("/"),
-            "Home: public + Cache-Tag: t{tenant}",
-            "الرئيسية: ‏public مع Cache-Tag: t{tenant}",
+            "Home: edge copy (CDN-Cache-Control) + Cache-Tag: t{tenant}",
+            "الرئيسية: نسخة على الـ CDN (‏CDN-Cache-Control) مع Cache-Tag: t{tenant}",
         )],
         note: None,
         sources: &[
@@ -640,12 +714,43 @@ pub static FEATURES: &[Feature] = &[
             "كل تنقل (cross-fade افتراضيًا)",
         )],
         note: Some((
-            "The card → product photo morph needs a shared view-transition-name on both pages; it lands with the design system's Picture (vt_name) and the product page. The layout switch below is a working morph.",
-            "حركة الصورة من الكارت لصفحة المنتج محتاجة view-transition-name مشترك في الصفحتين؛ وهتيجي مع Picture بتاع الـ design system (‏vt_name) وصفحة المنتج. وتبديل الشكل اللي تحت حركة شغالة فعلًا.",
+            "The card → product photo morph needs the same view-transition-name on both pages: the card side is live (shell.js names only the clicked card's image), the product page's side lands with the product page. The layout switch below is a working morph.",
+            "حركة الصورة من الكارت لصفحة المنتج محتاجة نفس الـ view-transition-name في الصفحتين: ناحية الكارت شغالة (‏shell.js بيدي الاسم لصورة الكارت اللي اتداس عليه بس)، وناحية صفحة المنتج هتيجي معاها. وتبديل الشكل اللي تحت حركة شغالة فعلًا.",
         )),
         sources: &[
             "leptos-0.8.22/leptos/src/hydration/islands_routing.js",
+            "crates/app/src/components/shell.js",
             "style/pages/showcase.css",
+        ],
+    },
+    Feature {
+        id: "motion",
+        cat: Cat::Media,
+        title: (
+            "Apple-style motion in Rust/WASM: springs you can grab",
+            "حركة على طريقة Apple في Rust/WASM: سبرينج تقدر تمسكه",
+        ),
+        what: (
+            "components::motion solves a damped spring in closed form every frame, set by Apple's two parameters (damping, response). Motion starts from the value on screen, inherits the finger's release velocity, projects momentum to pick where a flick lands, and rubber-bands past the edges — Rust compiled into the islands' WASM, driven by requestAnimationFrame.",
+            "‏components::motion بيحل معادلة السبرينج بشكل مباشر في كل فريم، بالمعاملين بتوع Apple (‏damping و response). الحركة بتبدأ من مكان العنصر على الشاشة، وبتاخد سرعة صباعك لحظة ما تسيبه، وبتتوقع العنصر هيقف فين بعد الـ flick، وبتقاوم بنعومة لما تشده بعد الحافة — كل ده Rust متحوّل لـ WASM الـ islands، وشغال على requestAnimationFrame.",
+        ),
+        why: (
+            "Drawers and bottom sheets that follow the finger, can be caught mid-flight and settle with the hand's momentum feel native on phones; CSS transitions can't be interrupted cleanly or handed a velocity.",
+            "الأدراج والـ bottom sheets اللي بتمشي مع صباعك، وتقدر تمسكها وهي بتتحرك، وتقف بنفس اندفاع إيدك بتحس إنها جزء من الموبايل؛ والـ CSS transitions ماتقدرش تتقاطع بنعومة ولا تاخد سرعة.",
+        ),
+        used_in: &[used(
+            Href::Path("/ui#overlays"),
+            "UI kit: drag the cart drawer and the filters sheet",
+            "الـ UI kit: اسحب درج السلة وشيت الفلاتر",
+        )],
+        note: Some((
+            "The same Drawer is the cart drawer (commerce branch) and the listing's filter sheet.",
+            "نفس الـ Drawer ده هو درج السلة (فرع الشراء) وشيت الفلاتر في القوايم.",
+        )),
+        sources: &[
+            "crates/app/src/components/motion.rs",
+            "crates/app/src/components/drawer.rs",
+            "crates/app/src/pages/showcase/islands.rs",
         ],
     },
     Feature {
@@ -695,18 +800,29 @@ pub static FEATURES: &[Feature] = &[
             "Screen-reader and keyboard users buy things too, and the same structure is what search engines read.",
             "اللي بيستخدموا قارئ الشاشة والكيبورد بيشتروا برضه، ونفس الهيكل ده هو اللي محركات البحث بتقراه.",
         ),
-        used_in: &[used(
-            Href::Path("/"),
-            "Home: labelled sections, list semantics, role=status fallbacks",
-            "الرئيسية: أقسام ليها عناوين، وقوايم، وrole=status للأعطال",
-        )],
-        note: Some((
-            "The instant-search combobox, the cart drawer's focus handling and the toast live region land with the browse, commerce and design-system branches; the demos below use the same patterns.",
-            "البحث الفوري (combobox) والفوكس في درج السلة ومنطقة الإشعارات هييجوا مع فروع التصفح والشراء والـ design system؛ والديموهات اللي تحت بتستخدم نفس الأنماط.",
-        )),
+        used_in: &[
+            used(
+                Href::Path("/search"),
+                "Header search: an ARIA combobox (aria-activedescendant, ↑/↓, Esc)",
+                "البحث في الهيدر: ‏combobox (‏aria-activedescendant، والأسهم، و Esc)",
+            ),
+            used(
+                Href::Path("/ui#overlays"),
+                "Drawers on a native <dialog>; toasts in a role=status region",
+                "أدراج على <dialog> أصلي؛ والإشعارات في منطقة role=status",
+            ),
+            used(
+                Href::Path("/"),
+                "Skip link, labelled sections, role=status fallbacks",
+                "لينك «انتقل للمحتوى»، وأقسام ليها عناوين، و role=status للأعطال",
+            ),
+        ],
+        note: None,
         sources: &[
+            "crates/app/src/pages/search/instant.rs",
+            "crates/app/src/components/drawer.rs",
+            "crates/app/src/components/toast.rs",
             "crates/app/src/pages/showcase/islands.rs",
-            "crates/app/src/pages/errors.rs",
         ],
     },
 ];

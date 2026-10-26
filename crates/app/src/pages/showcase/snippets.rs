@@ -27,6 +27,8 @@ pub enum Src {
     Notes,
     Demos,
     ShowcasePage,
+    Motion,
+    ShellJs,
 }
 
 impl Src {
@@ -50,6 +52,8 @@ impl Src {
             Src::Notes => "crates/app/src/pages/showcase/notes.rs",
             Src::Demos => "crates/app/src/pages/showcase/demos.rs",
             Src::ShowcasePage => "crates/app/src/pages/showcase.rs",
+            Src::Motion => "crates/app/src/components/motion.rs",
+            Src::ShellJs => "crates/app/src/components/shell.js",
         }
     }
 
@@ -74,6 +78,8 @@ impl Src {
             Src::Notes => include_str!("notes.rs"),
             Src::Demos => include_str!("demos.rs"),
             Src::ShowcasePage => include_str!("../showcase.rs"),
+            Src::Motion => include_str!("../../components/motion.rs"),
+            Src::ShellJs => include_str!("../../components/shell.js"),
         }
     }
 }
@@ -212,10 +218,54 @@ impl Tok {
 }
 
 const KEYWORDS: &[&str] = &[
-    "as", "async", "await", "break", "const", "continue", "crate", "else", "enum", "fn", "for",
-    "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref", "return",
-    "self", "Self", "static", "struct", "super", "trait", "type", "unsafe", "use", "where",
-    "while", "true", "false", "Some", "None", "Ok", "Err",
+    "as",
+    "async",
+    "await",
+    "break",
+    "const",
+    "continue",
+    "crate",
+    "else",
+    "enum",
+    "fn",
+    "for",
+    "if",
+    "impl",
+    "in",
+    "let",
+    "loop",
+    "match",
+    "mod",
+    "move",
+    "mut",
+    "pub",
+    "ref",
+    "return",
+    "self",
+    "Self",
+    "static",
+    "struct",
+    "super",
+    "trait",
+    "type",
+    "unsafe",
+    "use",
+    "where",
+    "while",
+    "true",
+    "false",
+    "Some",
+    "None",
+    "Ok",
+    "Err",
+    "function",
+    "of",
+    "new",
+    "try",
+    "catch",
+    "null",
+    "typeof",
+    "instanceof",
 ];
 
 /// Split Rust-ish source into classified runs (good enough for short excerpts: comments, strings,

@@ -40,7 +40,8 @@ pub(crate) struct Query {
     pub cat: Option<Cat>,
     /// `?fail=` (per-request simulated faults).
     pub fail: Vec<String>,
-    pub crash: bool,
+    /// `?crash=1|500|503`: show the full-page error view (route-level failure).
+    pub crash: Option<u16>,
     /// View-transition demo layout: `list` or grid.
     pub vt_list: bool,
     /// The raw query string (router demo).
@@ -75,7 +76,13 @@ impl Query {
                         .map(str::to_owned)
                         .collect()
                 }
-                "crash" => q.crash = !v.is_empty() && v != "0",
+                "crash" => {
+                    q.crash = match v.as_str() {
+                        "" | "0" => None,
+                        "503" => Some(503),
+                        _ => Some(500),
+                    }
+                }
                 "vt" => q.vt_list = v == "list",
                 "__path" => path = Some(v),
                 "__err" => err = Some(v),
@@ -172,7 +179,8 @@ pub(crate) struct Ctx {
     pub q: Query,
     pub tenant: TenantFacts,
     pub base_ms: u64,
-    pub default_ms: u64,
+    /// The visitor set the latency with the `sim` cookie (else it's the server default).
+    pub sim_cookie: bool,
     pub fail_cookie: Vec<String>,
     pub cats: Vec<NavCategory>,
     pub links: Links,
@@ -193,8 +201,9 @@ pub(crate) struct Ctx {
     pub clock: Arc<Clock>,
     /// Router demo: the parsed listing query and its first results.
     pub listing: Option<(crate::api::types::ListingQuery, Vec<CardData>, u32)>,
-    /// Pages in the Transition demo's listing (all products, 24 per page).
+    /// Pages in the Transition demo's listing (all products, 24 per page), and its first page.
     pub pager_pages: u32,
+    pub pager_first: Vec<CardData>,
     /// In-stock products priced under the free-delivery line (price calculator).
     pub calc_units: Vec<CardData>,
 }
@@ -368,13 +377,21 @@ fn build_ctx(q: Query) -> Ctx {
         })
     };
 
-    let pager_pages = cat
-        .listing(&ListingQuery {
-            page: 1,
-            sort: crate::api::types::Sort::Newest,
-            ..Default::default()
+    let pager = cat.listing(&ListingQuery {
+        page: 1,
+        sort: crate::api::types::Sort::Newest,
+        ..Default::default()
+    });
+    let pager_pages = pager.pages;
+    // The thumbnails don't use the blurred placeholder; keep the island's props small.
+    let pager_first: Vec<CardData> = pager
+        .items
+        .into_iter()
+        .map(|mut c| {
+            c.img.lqip = String::new();
+            c
         })
-        .pages;
+        .collect();
     // Calculator: real products under the free-delivery line, so a few steps cross it.
     let free = t.free_delivery_over.0;
     let mut calc_units: Vec<CardData> = Vec::new();
@@ -417,10 +434,7 @@ fn build_ctx(q: Query) -> Ctx {
             other,
         },
         base_ms: crate::server::sim::base_ms(),
-        default_ms: std::env::var("SIM_LATENCY_MS")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(350),
+        sim_cookie: rq_cookie("sim").is_some(),
         fail_cookie,
         cats,
         links,
@@ -438,6 +452,7 @@ fn build_ctx(q: Query) -> Ctx {
         clock: Arc::new(Clock::new()),
         listing,
         pager_pages,
+        pager_first,
         calc_units,
         q,
     }
@@ -466,7 +481,7 @@ fn build_ctx(q: Query) -> Ctx {
         q,
         tenant: TenantFacts::default(),
         base_ms: 0,
-        default_ms: 0,
+        sim_cookie: false,
         fail_cookie: vec![],
         cats: vec![],
         links: Links::default(),
@@ -484,6 +499,7 @@ fn build_ctx(q: Query) -> Ctx {
         clock: Arc::new(Clock::new()),
         listing: None,
         pager_pages: 1,
+        pager_first: vec![],
         calc_units: vec![],
     }
 }
@@ -514,10 +530,11 @@ pub fn ShowcasePage() -> impl IntoView {
     // A route-level error view, demonstrated without wrapping the streamed page: an
     // <ErrorBoundary> that *contains* <Suspense> waits for all of it before sending anything
     // (see "Sharp edges"), so the boundary here holds only the synchronous failure.
-    if q.crash {
+    if let Some(code) = q.crash {
+        let unavailable = code == 503;
         return view! {
-            <ErrorBoundary fallback=|errors| view! { <ErrorPage errors/> }>
-                {Err::<(), _>(ServerFnError::new("simulated route-level failure (/showcase?crash=1)"))}
+            <ErrorBoundary fallback=move |errors| view! { <ErrorPage errors unavailable/> }>
+                {Err::<(), _>(ServerFnError::new(format!("simulated route-level failure (/showcase?crash={code})")))}
             </ErrorBoundary>
         }
         .into_any();
@@ -639,7 +656,14 @@ fn Intro(cx: Arc<Ctx>) -> impl IntoView {
             <ul class="sc-facts" role="list">
                 <li><strong class="mono">{n_features}</strong><span>{tr(lang, "features, each with a demo", "خاصية، لكل واحدة ديمو")}</span></li>
                 <li><strong class="mono">"0"</strong><span>{tr(lang, "bytes of JS for server components", "بايت JS لكومبوننتس السيرفر")}</span></li>
-                <li><strong class="mono">{crate::format::count(cx.base_ms as u32, num)}<small>" ms"</small></strong><span>{tr(lang, "simulated backend latency (yours)", "زمن الباك إند التجريبي (بتاعك)")}</span></li>
+                <li>
+                    {if cx.base_ms == 0 {
+                        view! { <strong>{tr(lang, "Off", "مقفول")}</strong> }.into_any()
+                    } else {
+                        view! { <strong class="mono">{crate::format::count(cx.base_ms as u32, num)}<small>" ms"</small></strong> }.into_any()
+                    }}
+                    <span>{tr(lang, "simulated backend latency (yours — see Streaming)", "زمن الباك إند التجريبي (بتاعك — شوف البث)")}</span>
+                </li>
                 <li><strong>{cx.tenant.name.pick(lang.is_rtl()).to_owned()}</strong><span>{tr(lang, "tenant, from the Host header", "المتجر، من الـ Host")}</span></li>
             </ul>
             <figure class="sc-arch" aria-labelledby="sc-arch-cap">
@@ -812,9 +836,9 @@ fn cuts_for(id: &str) -> Vec<Cut> {
         )],
         "transition" => vec![cut(
             Src::Islands,
-            "let data = Resource::new(move || page.get(), pager_page);",
+            "let data = AsyncDerived::new(move || {",
             "</Transition>",
-            14,
+            24,
         )],
         "sim" => vec![cut(Src::Sim, "pub fn check_fail", "^}", 12)],
         "action-form" => vec![
@@ -836,7 +860,34 @@ fn cuts_for(id: &str) -> Vec<Cut> {
             ),
             cut(Src::ApiTypes, "pub fn from_query", "\"sort\" =>", 14),
         ],
-        "caching" => vec![cut(Src::Cache, "pub fn public(tags", "^}", 22)],
+        "caching" => vec![cut(Src::Cache, "pub fn public(tags", "^}", 24)],
+        "states" => vec![cut(
+            Src::Errors,
+            "pub fn NotFound()",
+            "let back = same_origin_referer",
+            16,
+        )],
+        "router-patches" => vec![cut(
+            Src::ShellJs,
+            "// ── Keep the router's page diff aligned",
+            "return new Proxy",
+            44,
+        )],
+        "motion" => vec![
+            cut(
+                Src::Motion,
+                "pub fn project(",
+                "(overshoot * d * constant)",
+                12,
+            ),
+            cut(
+                Src::Islands,
+                "let on_up = move |ev: leptos::ev::PointerEvent|",
+                "};",
+                8,
+            ),
+            cut(Src::Islands, "let settle = move |v: f64|", "};", 18),
+        ],
         "tenancy" => vec![
             cut(Src::Tenant, "pub fn tenant_from_host", "^}", 8),
             cut(

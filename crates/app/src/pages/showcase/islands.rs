@@ -460,8 +460,8 @@ pub fn BundleProbe(files: Vec<DiskFile>, debug_build: bool) -> impl IntoView {
         </dl>
         <p class="sc-note">
             {move || match (ui.lang.get(), debug_build) {
-                (Lang::En, true) => "Debug build (unoptimised WASM). A release build uses opt-level \"z\", LTO and strip ([profile.wasm-release]); measure it with tools/wasm-size.mjs.",
-                (Lang::Ar, true) => "دي نسخة debug (الـ WASM من غير تحسين). نسخة الـ release بتستخدم opt-level \"z\" و LTO و strip ‏([profile.wasm-release])؛ وتقيسها بـ tools/wasm-size.mjs.",
+                (Lang::En, true) => "Debug build (unoptimised, type-erased WASM). The release build — opt-level \"z\", LTO, strip ([profile.wasm-release]) — measured 1,131 KB raw, 440 KB gzip, 326 KB brotli for every island in the app (tools/wasm-size.mjs, 26 Oct).",
+                (Lang::Ar, true) => "دي نسخة debug (الـ WASM من غير تحسين ومن غير أنواع). نسخة الـ release — ‏opt-level \"z\" و LTO و strip ‏([profile.wasm-release]) — اتقاست ١١٣١ KB خام، و ٤٤٠ KB بـ gzip، و ٣٢٦ KB بـ brotli لكل الـ islands في الأبلكيشن (‏tools/wasm-size.mjs، ٢٦ أكتوبر).",
                 (Lang::En, false) => "Release build: opt-level \"z\", LTO and strip ([profile.wasm-release]).",
                 (Lang::Ar, false) => "نسخة release: ‏opt-level \"z\" و LTO و strip ‏([profile.wasm-release]).",
             }}
@@ -892,7 +892,7 @@ pub fn CacheLab(initial: CacheInfo, tenant: String) -> impl IntoView {
                     let l = ui.lang.get();
                     let n = ui.numerals.get();
                     match note.get() {
-                        None => tr(l, "Read twice: the first read after a bump is a miss (it pays the pretend database), the second a hit.", "اقرا مرتين: أول قراءة بعد زيادة الجيل بتبقى miss (بتدفع تمن قاعدة البيانات التجريبية)، والتانية hit.").to_owned(),
+                        None => tr(l, "Bump, then read twice: the first read after a bump is a miss (computed, then cached), the second a hit.", "زوّد الجيل، واقرا مرتين: أول قراءة بعد الزيادة بتبقى miss (بتتحسب وتتخزن)، والتانية hit.").to_owned(),
                         Some(LabNote::Read { ms: t, missed, ok: true }) => match (l, missed) {
                             (Lang::En, true) => format!("Miss — computed and cached in {}.", ms(t, n)),
                             (Lang::En, false) => format!("Hit — served from the cache in {}.", ms(t, n)),
@@ -914,36 +914,52 @@ pub fn CacheLab(initial: CacheInfo, tenant: String) -> impl IntoView {
 
 // ─── <Transition>: paging that keeps the old page on screen ────────────────────────────────────
 
-/// One page of every product, newest first. A flat-argument wrapper around `api::list_products`:
-/// its `ListingQuery` argument can't be sent from the browser with the default URL encoding when
-/// `brands` is empty (the empty list disappears and the server rejects the call — see "Sharp
-/// edges").
-#[server]
-pub async fn pager_page(page: u32) -> Result<crate::api::types::ListingPage, ServerFnError> {
-    use crate::api::types::{ListingQuery, Sort};
-    api::list_products(ListingQuery {
-        page: page.max(1),
-        sort: Sort::Newest,
-        ..Default::default()
-    })
-    .await
-}
-
-/// Pages through every product, 24 at a time, with a `Resource` + `<Transition>`: the current
-/// page stays (dimmed) until the next one has arrived. `pages` comes from the server.
+/// Pages through every product, 24 at a time, with an `AsyncDerived` + `<Transition>`: the current
+/// page stays (dimmed) until the next one has arrived.
+///
+/// Page 1 comes from the server as props and seeds the derived value, so the first poll is ready
+/// on both sides: the server renders the results and hydration finds exactly that — no fallback,
+/// no fetch, no hydration data. (A `Resource` or `LocalResource` here would leave the Transition
+/// pending, and its hydration would depend on inline scripts and the page-wide hydration-id
+/// sequence, which the islands router doesn't carry over a client navigation — see "Sharp edges".)
 #[island]
-pub fn ListingPager(pages: u32) -> impl IntoView {
+pub fn ListingPager(
+    pages: u32,
+    first: Vec<crate::components::product_card::CardData>,
+) -> impl IntoView {
     let page = RwSignal::new(1u32);
     let pending = RwSignal::new(false);
-    let data = Resource::new(move || page.get(), pager_page);
+    // Pages seen this visit; page 1 from the server.
+    let seen = StoredValue::new(vec![(1u32, first)]);
+    let data = AsyncDerived::new(move || {
+        let p = page.get();
+        let known = seen.with_value(|s| s.iter().find(|(n, _)| *n == p).map(|(_, v)| v.clone()));
+        async move {
+            match known {
+                Some(items) => Ok(items),
+                None => {
+                    let query = crate::api::types::ListingQuery {
+                        page: p,
+                        sort: crate::api::types::Sort::Newest,
+                        ..Default::default()
+                    };
+                    let items = api::list_products(query).await.map(|lp| lp.items);
+                    if let Ok(v) = &items {
+                        seen.update_value(|s| s.push((p, v.clone())));
+                    }
+                    items
+                }
+            }
+        }
+    });
     view! {
         <div class="sc-pager" class:is-pending=move || pending.get() aria-busy=move || pending.get().to_string()>
             <PagerBar page pages/>
-            // After the first load, a refetch keeps the old page on screen; `set_pending` dims it.
+            // After the first page, a load keeps the old page on screen; `set_pending` dims it.
             <Transition fallback=|| view! { <ThumbsSkeleton/> } set_pending=pending.write_only()>
                 <ErrorBoundary fallback=|errors| view! { <SectionError errors compact=true/> }>
                     {move || Suspend::new(async move {
-                        data.await.map(|lp| view! { <Thumbs items=lp.items/> })
+                        data.await.map(|items| view! { <Thumbs items/> })
                     })}
                 </ErrorBoundary>
             </Transition>
@@ -971,7 +987,7 @@ fn PagerBar(page: RwSignal<u32>, pages: u32) -> impl IntoView {
                     }
                 }}
             </span>
-            <button class="sc-ibtn" type="button" disabled=move || page.get() >= pages
+            <button class="sc-ibtn" type="button" disabled=move || { page.get() >= pages }
                 on:click=move |_| page.update(|p| *p += 1)
                 aria-label=move || tr(ui.lang.get(), "Next page", "الصفحة اللي بعد")>
                 <Icon name="chevron-right" size=18 class="flip-rtl"/>
@@ -1226,7 +1242,13 @@ pub struct Probe {
 }
 
 #[cfg(feature = "hydrate")]
-const PROBE_HEADERS: [&str; 3] = ["cache-control", "cache-tag", "x-read-cache"];
+const PROBE_HEADERS: [&str; 5] = [
+    "cache-control",
+    "cdn-cache-control",
+    "vary",
+    "cache-tag",
+    "x-read-cache",
+];
 
 /// `fetch(url, {method: 'HEAD'})` a few routes (and POST one server function) and show the
 /// caching headers each one actually sends.
@@ -1271,11 +1293,11 @@ pub fn HeaderProbe(targets: Vec<Probe>) -> impl IntoView {
                     let label = if lang.is_rtl() { t.ar.clone() } else { t.en.clone() };
                     let (status, vals, t_ms) = match &r {
                         Some(Ok((s, v, m))) => (format::count(*s as u32, num), v.clone(), Some(*m)),
-                        Some(Err(_)) => (tr(lang, "failed", "فشل").to_owned(), vec![None; 3], None),
-                        None => ("…".to_owned(), vec![None; 3], None),
+                        Some(Err(_)) => (tr(lang, "failed", "فشل").to_owned(), vec![None; 5], None),
+                        None => ("…".to_owned(), vec![None; 5], None),
                     };
                     let val = |i: usize| vals.get(i).cloned().flatten().unwrap_or_else(|| "—".into());
-                    let public = vals.first().cloned().flatten().is_some_and(|v| v.starts_with("public"));
+                    let public = vals.get(1).cloned().flatten().is_some_and(|v| v.starts_with("public"));
                     view! {
                         <div class="sc-probe-row" class:is-public=public>
                             <div class="sc-probe-row__head">
@@ -1285,8 +1307,10 @@ pub fn HeaderProbe(targets: Vec<Probe>) -> impl IntoView {
                             </div>
                             <dl class="sc-probe-row__kv" dir="ltr">
                                 <div><dt>"Cache-Control"</dt><dd class="mono">{val(0)}</dd></div>
-                                <div><dt>"Cache-Tag"</dt><dd class="mono">{val(1)}</dd></div>
-                                <div><dt>"x-read-cache"</dt><dd class="mono">{val(2)}</dd></div>
+                                <div><dt>"CDN-Cache-Control"</dt><dd class="mono">{val(1)}</dd></div>
+                                <div><dt>"Vary"</dt><dd class="mono">{val(2)}</dd></div>
+                                <div><dt>"Cache-Tag"</dt><dd class="mono">{val(3)}</dd></div>
+                                <div><dt>"x-read-cache"</dt><dd class="mono">{val(4)}</dd></div>
                             </dl>
                         </div>
                     }
@@ -1687,5 +1711,369 @@ pub fn SheetDemo() -> impl IntoView {
             </dialog>
             <p class="sc-sheet-demo__status" role="status" aria-live="polite">{move || status.get()}</p>
         </div>
+    }
+}
+
+// ─── Motion: a spring you can grab ─────────────────────────────────────────────────────────────
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+struct Release {
+    v: f64,
+    projected: f64,
+    bouncy: bool,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct Grab {
+    pointer: i32,
+    x0: f64,
+    p0: f64,
+}
+
+fn stop_label(i: usize, lang: Lang) -> &'static str {
+    match i {
+        0 => tr(lang, "start", "البداية"),
+        1 => tr(lang, "middle", "النص"),
+        _ => tr(lang, "end", "النهاية"),
+    }
+}
+
+/// A puck on a track with three resting places, driven by `components::motion`. Drag it (1:1,
+/// from where you grabbed it), pull it past an end (it rubber-bands), let go mid-flick (the release
+/// velocity carries on and the projected landing picks the resting place), or catch it mid-flight
+/// (it starts from where it is on screen). Arrow keys and the buttons do the same without a pointer.
+#[island]
+pub fn SpringLab() -> impl IntoView {
+    use crate::components::motion::{Spring, SpringValue, VelocityTracker, project, rubberband};
+    let ui = use_ui();
+    let rail = NodeRef::<leptos::html::Div>::new();
+    let puck = NodeRef::<leptos::html::Div>::new();
+    let x_now = RwSignal::new(0.0_f64);
+    let snap = RwSignal::new(0usize);
+    let last = RwSignal::new(None::<Release>);
+    let grab = StoredValue::new(None::<Grab>);
+    let tracker = StoredValue::new(VelocityTracker::default());
+    // The spring draws each frame by moving the puck; the readout follows.
+    let pos = SpringValue::new(0.0, move |x| {
+        #[cfg(feature = "hydrate")]
+        if let Some(el) = puck.get_untracked() {
+            let _ = web_sys::HtmlElement::style(&el)
+                .set_property("transform", &format!("translateX({x:.2}px)"));
+        }
+        x_now.set(x);
+    });
+    // How far the puck can travel, and its three resting places.
+    let travel = move || -> f64 {
+        #[cfg(feature = "hydrate")]
+        {
+            match (rail.get_untracked(), puck.get_untracked()) {
+                (Some(r), Some(p)) => (r.client_width() - p.offset_width()).max(0) as f64,
+                _ => 0.0,
+            }
+        }
+        #[cfg(not(feature = "hydrate"))]
+        {
+            0.0
+        }
+    };
+    let stops = move || {
+        let m = travel();
+        [0.0, m / 2.0, m]
+    };
+    let settle = move |v: f64| {
+        let projected = pos.get() + project(v, 0.998);
+        let s = stops();
+        let i = (0..3)
+            .min_by(|a, b| {
+                (s[*a] - projected)
+                    .abs()
+                    .total_cmp(&(s[*b] - projected).abs())
+            })
+            .unwrap_or(0);
+        // A little overshoot only when a flick carried momentum.
+        let bouncy = v.abs() > 600.0;
+        snap.set(i);
+        last.set(Some(Release {
+            v,
+            projected,
+            bouncy,
+        }));
+        pos.animate_to(
+            s[i],
+            if bouncy {
+                Spring::BOUNCY
+            } else {
+                Spring::DEFAULT
+            },
+            Some(v),
+            None,
+        );
+    };
+    let go = move |i: usize| {
+        snap.set(i);
+        pos.animate_to(stops()[i], Spring::DEFAULT, None, None);
+    };
+    #[cfg(feature = "hydrate")]
+    Effect::new(move |_| {
+        // Keep the resting place when the track changes width.
+        let handle = window_event_listener(leptos::ev::resize, move |_| {
+            pos.set(stops()[snap.get_untracked()])
+        });
+        on_cleanup(move || handle.remove());
+    });
+    let on_down = move |ev: leptos::ev::PointerEvent| {
+        if ev.button() != 0 {
+            return;
+        }
+        ev.prevent_default();
+        #[cfg(feature = "hydrate")]
+        if let Some(el) = puck.get_untracked() {
+            let _ = el.set_pointer_capture(ev.pointer_id());
+        }
+        // Catch it where it is on screen (this also stops a spring in flight).
+        let p0 = pos.get();
+        pos.set(p0);
+        tracker.update_value(|t| {
+            t.reset();
+            t.push(ev.time_stamp(), p0);
+        });
+        grab.set_value(Some(Grab {
+            pointer: ev.pointer_id(),
+            x0: ev.client_x() as f64,
+            p0,
+        }));
+    };
+    let on_move = move |ev: leptos::ev::PointerEvent| {
+        let Some(g) = grab.get_value().filter(|g| g.pointer == ev.pointer_id()) else {
+            return;
+        };
+        let raw = g.p0 + (ev.client_x() as f64 - g.x0);
+        tracker.update_value(|t| t.push(ev.time_stamp(), raw));
+        let max = travel();
+        let d = max.max(1.0);
+        // Past an end, follow less and less — never a hard stop.
+        let x = if raw < 0.0 {
+            -rubberband(-raw, d, 0.55)
+        } else if raw > max {
+            max + rubberband(raw - max, d, 0.55)
+        } else {
+            raw
+        };
+        pos.set(x);
+    };
+    let on_up = move |ev: leptos::ev::PointerEvent| {
+        if grab
+            .get_value()
+            .is_none_or(|g| g.pointer != ev.pointer_id())
+        {
+            return;
+        }
+        grab.set_value(None);
+        settle(tracker.with_value(|t| t.velocity()));
+    };
+    let on_key = move |ev: leptos::ev::KeyboardEvent| {
+        let i = snap.get_untracked();
+        let n = match ev.key().as_str() {
+            "ArrowRight" | "ArrowUp" => (i + 1).min(2),
+            "ArrowLeft" | "ArrowDown" => i.saturating_sub(1),
+            "Home" => 0,
+            "End" => 2,
+            _ => return,
+        };
+        ev.prevent_default();
+        go(n);
+    };
+    view! {
+        <div class="sc-spring">
+            // A physical track: left is left in both languages, like a media scrubber.
+            <div class="sc-spring__track" dir="ltr">
+                <div class="sc-spring__rail" node_ref=rail>
+                    <span class="sc-spring__stop" style="--k:0"></span>
+                    <span class="sc-spring__stop" style="--k:0.5"></span>
+                    <span class="sc-spring__stop" style="--k:1"></span>
+                    <div
+                        class="sc-spring__puck"
+                        node_ref=puck
+                        tabindex="0"
+                        role="slider"
+                        aria-label=move || tr(ui.lang.get(), "Spring puck", "كرة السبرينج")
+                        aria-valuemin="0"
+                        aria-valuemax="2"
+                        aria-valuenow=move || snap.get().to_string()
+                        aria-valuetext=move || stop_label(snap.get(), ui.lang.get())
+                        on:pointerdown=on_down
+                        on:pointermove=on_move
+                        on:pointerup=on_up
+                        on:pointercancel=on_up
+                        on:keydown=on_key
+                    ></div>
+                </div>
+            </div>
+            <div class="sc-actions">
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="chevron-left" on:click=move |_| settle(-2400.0)>
+                    {move || tr(ui.lang.get(), "Flick left", "اقذف شمال")}
+                </Button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon_end="chevron-right" on:click=move |_| settle(2400.0)>
+                    {move || tr(ui.lang.get(), "Flick right", "اقذف يمين")}
+                </Button>
+            </div>
+            <dl class="sc-probe">
+                <div>
+                    <dt>{move || tr(ui.lang.get(), "Position now", "المكان دلوقتي")}</dt>
+                    <dd class="mono">{move || format!("{} px", format::int(x_now.get().round() as i64, ui.numerals.get()))}</dd>
+                </div>
+                <div>
+                    <dt>{move || tr(ui.lang.get(), "Release velocity", "السرعة لحظة الترك")}</dt>
+                    <dd class="mono">{move || last.get().map(|r| format!("{} px/s", format::int(r.v.round() as i64, ui.numerals.get()))).unwrap_or_else(|| "—".into())}</dd>
+                </div>
+                <div>
+                    <dt>{move || tr(ui.lang.get(), "Projected landing → rest", "المتوقع → مكان الوقوف")}</dt>
+                    <dd class="mono">{move || last.get().map(|r| {
+                        let n = ui.numerals.get();
+                        format!("{} px → {}", format::int(r.projected.round() as i64, n), stop_label(snap.get(), ui.lang.get()))
+                    }).unwrap_or_else(|| "—".into())}</dd>
+                </div>
+                <div>
+                    <dt>{move || tr(ui.lang.get(), "Spring", "السبرينج")}</dt>
+                    <dd class="mono">{move || match last.get() {
+                        Some(Release { bouncy: true, .. }) => "BOUNCY · damping 0.8 · response 0.3 s".to_owned(),
+                        Some(_) => "DEFAULT · damping 1.0 · response 0.35 s".to_owned(),
+                        None => "—".to_owned(),
+                    }}</dd>
+                </div>
+            </dl>
+        </div>
+    }
+}
+
+// ─── islands-router: are the patches live on this page? ────────────────────────────────────────
+
+/// Checks, in the visitor's browser, that the shell's router patches are in place, and asks the
+/// server for the home page both ways to show the <noscript> refresh is left out of router
+/// responses.
+#[island]
+pub fn PatchProbe() -> impl IntoView {
+    let ui = use_ui();
+    // [head realignment, scroll after swap, inert noscript, router response without refresh, first load with it]
+    let checks = RwSignal::new([None::<bool>; 5]);
+    #[cfg(feature = "hydrate")]
+    Effect::new(move |_| {
+        let fetch_wrapped = !js::is_native(&js::get(&js::global(), "fetch"));
+        let doc: wasm_bindgen::JsValue = document().into();
+        let vt = js::get(&doc, "startViewTransition");
+        let manual = js::get(&js::get(&js::global(), "history"), "scrollRestoration")
+            .as_string()
+            .as_deref()
+            == Some("manual");
+        let scroll = manual && (vt.is_undefined() || !js::is_native(&vt));
+        let noscript_inert = document()
+            .query_selector_all("noscript")
+            .map(|l| {
+                (0..l.length()).all(|i| {
+                    l.get(i)
+                        .and_then(|n| n.text_content())
+                        .unwrap_or_default()
+                        .trim()
+                        .is_empty()
+                })
+            })
+            .unwrap_or(false);
+        checks.update(|c| {
+            c[0] = Some(fetch_wrapped);
+            c[1] = Some(scroll);
+            c[2] = Some(noscript_inert);
+        });
+        leptos::task::spawn_local(async move {
+            let routed = js::text("/", &[("Islands-Router", "true")]).await.ok();
+            let first = js::text("/", &[]).await.ok();
+            checks.update(|c| {
+                c[3] = routed.map(|h| js::count_in_html(&h, "noscript") == 0);
+                c[4] = first.map(|h| js::count_in_html(&h, "noscript") > 0);
+            });
+        });
+    });
+    let rows: [(&str, &str); 5] = [
+        (
+            "<head> is realigned before each diff (fetch is wrapped)",
+            "الـ <head> بيتظبط قبل كل diff (الـ fetch متلفوف)",
+        ),
+        (
+            "Scroll is handled after each swap (scrollRestoration = manual)",
+            "الـ scroll بيتظبط بعد كل تبديل (‏scrollRestoration = manual)",
+        ),
+        (
+            "<noscript> in this page is inert",
+            "الـ <noscript> في الصفحة دي مالوش أثر",
+        ),
+        (
+            "Router responses for / carry no <noscript> at all",
+            "ردود الراوتر لـ ‎/‎ مافيهاش <noscript> خالص",
+        ),
+        (
+            "…while a first load of / keeps its no-JS fallback (a link to /nojs)",
+            "…وأول تحميل لـ ‎/‎ لسه فيه البديل بتاع الـ no-JS (لينك لـ ‎/nojs‎)",
+        ),
+    ];
+    view! {
+        <ul class="sc-checks">
+            {rows.into_iter().enumerate().map(|(i, (en, ar))| view! {
+                <li class="sc-check-row" data-ok=move || match checks.get()[i] { Some(true) => "yes", Some(false) => "no", None => "wait" }>
+                    <span class="sc-check-row__mark" aria-hidden="true">{move || match checks.get()[i] { Some(true) => "✓", Some(false) => "✗", None => "…" }}</span>
+                    <span>{move || tr(ui.lang.get(), en, ar)}</span>
+                    <span class="sr-only">{move || match checks.get()[i] {
+                        Some(true) => tr(ui.lang.get(), "yes", "أيوه"),
+                        Some(false) => tr(ui.lang.get(), "no", "لأ"),
+                        None => tr(ui.lang.get(), "checking", "بيتشيّك"),
+                    }}</span>
+                </li>
+            }).collect_view()}
+        </ul>
+    }
+}
+
+// ─── States: offline ───────────────────────────────────────────────────────────────────────────
+
+/// The connection as the browser sees it (`navigator.onLine` + `online`/`offline` events), and the
+/// notice a visitor gets when it drops. Turn the network off in your browser to see it for real,
+/// or preview it.
+#[island]
+pub fn OfflineDemo() -> impl IntoView {
+    let ui = use_ui();
+    let online = RwSignal::new(true);
+    let preview = RwSignal::new(false);
+    #[cfg(feature = "hydrate")]
+    Effect::new(move |_| {
+        online.set(window().navigator().on_line());
+        let up = window_event_listener(leptos::ev::online, move |_| online.set(true));
+        let down = window_event_listener(leptos::ev::offline, move |_| online.set(false));
+        on_cleanup(move || {
+            up.remove();
+            down.remove();
+        });
+    });
+    let shown = move || preview.get() || !online.get();
+    view! {
+        <p class="sc-online" data-online=move || if online.get() { "yes" } else { "no" }>
+            <span class="sc-online__dot" aria-hidden="true"></span>
+            <span>{move || if online.get() {
+                tr(ui.lang.get(), "Your browser says: online.", "المتصفح بيقول: متصل.")
+            } else {
+                tr(ui.lang.get(), "Your browser says: offline.", "المتصفح بيقول: مش متصل.")
+            }}</span>
+        </p>
+        <div class="sc-offline" class:is-shown=shown role="status" aria-live="polite">
+            {move || shown().then(|| view! {
+                <Icon name="circle-alert" size=18/>
+                <span>{tr(ui.lang.get(), "You're offline. What's on screen still works; we'll try again when you're back.", "أنت غير متصل بالإنترنت. ما يظهر على الشاشة ما زال يعمل، وسنعيد المحاولة عند عودة الاتصال.")}</span>
+            })}
+        </div>
+        <button type="button" class="sc-btnlink" aria-pressed=move || preview.get().to_string()
+            on:click=move |_| preview.update(|p| *p = !*p)>
+            {move || if preview.get() {
+                tr(ui.lang.get(), "Hide the preview", "اخفي المعاينة")
+            } else {
+                tr(ui.lang.get(), "Preview the offline notice", "عاين تنبيه انقطاع النت")
+            }}
+        </button>
     }
 }

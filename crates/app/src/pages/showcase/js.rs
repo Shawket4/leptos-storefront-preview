@@ -381,6 +381,52 @@ fn err(e: JsValue) -> String {
 
 // ─── Feature detection ─────────────────────────────────────────────────────────────────────────
 
+/// Whether a function is the browser's own (not wrapped by a script).
+pub fn is_native(f: &JsValue) -> bool {
+    f.dyn_ref::<Function>()
+        .and_then(|f| f.to_string().as_string())
+        .is_some_and(|s| s.contains("[native code]"))
+}
+
+/// Count the elements matching `selector` in an HTML string, parsed the way the islands router
+/// parses a page (DOMParser: scripts don't run, script text isn't markup).
+pub fn count_in_html(html: &str, selector: &str) -> u32 {
+    let Ok(ctor) = get(&global(), "DOMParser").dyn_into::<Function>() else {
+        return 0;
+    };
+    let Ok(parser) = Reflect::construct(&ctor, &Array::new()) else {
+        return 0;
+    };
+    let Ok(doc) = call(
+        &parser,
+        "parseFromString",
+        &[JsValue::from_str(html), JsValue::from_str("text/html")],
+    ) else {
+        return 0;
+    };
+    call(&doc, "querySelectorAll", &[JsValue::from_str(selector)])
+        .map(|l| num(&l, "length") as u32)
+        .unwrap_or(0)
+}
+
+/// GET a URL and return its body as text.
+pub async fn text(url: &str, headers: &[(&str, &str)]) -> Result<String, String> {
+    let resp = wait(
+        call(
+            &global(),
+            "fetch",
+            &[JsValue::from_str(url), init("GET", headers)],
+        )
+        .map_err(err)?,
+    )
+    .await
+    .map_err(err)?;
+    let t = wait(call(&resp, "text", &[]).map_err(err)?)
+        .await
+        .map_err(err)?;
+    Ok(t.as_string().unwrap_or_default())
+}
+
 pub fn has_view_transitions() -> bool {
     let doc: JsValue = leptos::prelude::document().into();
     Reflect::has(&doc, &JsValue::from_str("startViewTransition")).unwrap_or(false)
