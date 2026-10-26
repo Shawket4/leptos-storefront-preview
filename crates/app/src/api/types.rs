@@ -73,7 +73,10 @@ pub const PER_PAGE: u32 = 24;
 /// A product listing request. Lives in the URL query string so it works without JS, can be
 /// shared, and is cacheable at the edge:
 /// `/c/phones?min=1000&max=20000&brand=samsung&brand=apple&stock=1&deal=1&sort=price-asc&page=2`.
+// `default`: server-function args travel URL-encoded (serde_qs), which omits empty Vecs and
+// `false`s, so every field must have a default on the way back in.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ListingQuery {
     /// Category slug (`None` = all products, e.g. a deals listing).
     pub category: Option<String>,

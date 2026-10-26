@@ -1,1 +1,56 @@
-/* shell */
+/* The frame (components::shell): skip link, main, the logo. */
+.skip-link {
+  position: fixed;
+  z-index: var(--z-skip);
+  inset-block-start: var(--sp-2);
+  inset-inline-start: var(--sp-2);
+  padding: 0.75rem 1rem;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: var(--fw-bold);
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible {
+  transform: none;
+}
+main:focus {
+  outline: none;
+}
+
+/* Tenant lockup: one CSS height gives every tenant and language the same mark size. */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  block-size: var(--logo-h, 30px);
+}
+.logo__img {
+  display: block;
+  block-size: var(--logo-h, 30px);
+  inline-size: auto;
+  max-inline-size: none;
+}
+.logo__img--dark {
+  display: none;
+}
+:root[data-theme="dark"] .logo__img--light {
+  display: none;
+}
+:root[data-theme="dark"] .logo__img--dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .logo__img--light {
+    display: none;
+  }
+  :root[data-theme="system"] .logo__img--dark {
+    display: block;
+  }
+}
+.logo--wordmark {
+  font-size: calc(var(--logo-h, 30px) * 0.8);
+  font-weight: var(--fw-heavy);
+  letter-spacing: var(--tracking-display);
+  line-height: 1;
+  color: var(--text);
+}

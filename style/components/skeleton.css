@@ -12,7 +12,8 @@
   border-radius: var(--r-xs);
 }
 .skeleton--circle {
-  border-radius: var(--r-pill);
+  border-radius: 50%;
+  corner-shape: round;
 }
 .skeleton-text {
   display: flex;
