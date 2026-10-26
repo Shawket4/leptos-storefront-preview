@@ -9,26 +9,9 @@ import { digits, t } from "../core/page";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
 import { setStepper, stepperValue } from "../core/stepper";
 import { onOnline } from "../core/net";
-import { add, type CartResult, type LineSnapshot } from "../stores/cart";
-import { toast } from "../stores/toasts";
+import type { LineSnapshot } from "../stores/cart";
+import { addAndConfirm } from "./cart";
 
-// ── addAndConfirm: LOCAL SHIM ───────────────────────────────────────────────────────────────────
-// TEMPORARY, until the cart agent's `features/cart.ts` is merged: the same signature as its
-// `addAndConfirm(item, snapshot): CartResult` (agent/cart 2bf4192), minimal behaviour (add + a
-// toast). At integration the lead replaces this block with `import { addAndConfirm } from "./cart"`.
-interface AddItem {
-  product: number;
-  variant: number;
-  qty?: number;
-  addons?: string[];
-}
-function addAndConfirm(item: AddItem, snapshot: LineSnapshot): CartResult {
-  const r = add(item, snapshot);
-  if (r.ok) toast(t("product.added", { name: snapshot.name }), "success");
-  else toast(t(r.reason === "full" ? "product.cart_full" : "product.max_qty"), r.reason === "full" ? "error" : "info");
-  return r;
-}
-// ── end of shim ─────────────────────────────────────────────────────────────────────────────────
 
 /** The page's JSON (`pages/product/panel.rs`, `PickerData`). */
 interface PickerData {

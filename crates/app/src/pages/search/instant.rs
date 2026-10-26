@@ -10,7 +10,7 @@
 //! full-screen overlay, without JS it is a link to `/search`, which has the form on the page.
 
 use crate::api::types::ListingQuery;
-use crate::components::icons::Icon;
+use crate::components::{icons::Icon, skeleton::Skeleton};
 use crate::prefs::{Lang, tr};
 use crate::request::req;
 use crate::strings;
@@ -107,10 +107,10 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
                     <div class="hs-list hs-list--skel" data-state="loading" aria-hidden="true" hidden>
                         {(0..3).map(|_| view! {
                             <div class="hs-opt hs-opt--hit hs-opt--skel">
-                                <span class="hs-thumb skeleton"></span>
+                                <Skeleton class="hs-thumb"/>
                                 <span class="hs-opt__main">
-                                    <span class="skeleton hs-skel-line"></span>
-                                    <span class="skeleton hs-skel-line hs-skel-line--short"></span>
+                                    <Skeleton class="hs-skel-line"/>
+                                    <Skeleton class="hs-skel-line hs-skel-line--short"/>
                                 </span>
                             </div>
                         }).collect_view()}
@@ -162,10 +162,8 @@ fn Templates(lang: Lang) -> impl IntoView {
         <template id="tpl-suggest-cat">
             <a role="option" class="hs-opt hs-opt--cat" tabindex="-1" aria-selected="false" data-attr-href="href">
                 <span class="hs-opt__ic" aria-hidden="true">
-                    <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                        <path data-attr-d="icon"></path>
-                    </svg>
+                    // The aisle's own icon: the browser sets this path's `d` from the answer.
+                    <Icon name="layout-grid" size=18/>
                 </span>
                 <span class="hs-opt__main">
                     <span data-slot="quoted"></span>
