@@ -751,3 +751,12 @@ html:has(dialog.drawer[data-cart][open]) {
   font-weight: var(--fw-semibold);
   color: var(--danger-text, var(--danger));
 }
+
+/* A line's own problem spans the text and controls columns. */
+.cline__issue {
+  grid-column: 2 / -1;
+}
+.line-issue--note {
+  background: var(--info-wash);
+  color: var(--info-text, var(--info));
+}

@@ -3,7 +3,7 @@
 //! through the op queue (`store`) for an instant, sequenced, roll-back-able update.
 
 use super::math::{self, Op};
-use super::store::{CartOps, OpResult, Removed, use_ops};
+use super::store::{CartOps, IssueKind, OpResult, Removed, use_ops};
 use crate::api::cart::{CartAdd, CartRemove, CartSetQty};
 use crate::api::types::CartLineView;
 use crate::components::drawer::Drawer;
@@ -540,6 +540,11 @@ fn DrawerLine(key: String) -> impl IntoView {
             Lang::Ar => format!("المتاح {} بس", format::count(m, num)),
         })
     };
+    let issue_key = key.clone();
+    let issue = move || ops.issue(&issue_key);
+    // Stock moved since this was added (sold out, or fewer left than the line asks for).
+    let stock = move || line.with(|l| l.as_ref().map(math::stock).unwrap_or(math::Stock::Ok));
+    let fix_key = key.clone();
     let (key_row, key_qty, key_rm) = (key.clone(), key.clone(), key);
     Some(view! {
         <li class="cline" data-line-key=key_row>
@@ -579,6 +584,52 @@ fn DrawerLine(key: String) -> impl IntoView {
                     {move || breakdown().map(|b| view! { <span class="cline__breakdown">{b}</span> })}
                 </span>
             </div>
+            {move || {
+                let (lang, num) = (ui.lang.get(), ui.numerals.get());
+                let s = stock();
+                math::stock_message(s, lang, num).map(|msg| {
+                    let key = fix_key.clone();
+                    view! {
+                        <div class="line-issue cline__issue" role="status">
+                            <Icon name="triangle-alert" size=16/>
+                            <span>{msg}</span>
+                            {match s {
+                                math::Stock::Only(n) => Some(view! {
+                                    <button type="button" class="link-btn" data-press=""
+                                        on:click=move |_| ops.submit(Op::SetQty { key: key.clone(), qty: n }, None)>
+                                        {match lang {
+                                            Lang::En => format!("Change to {}", format::count(n, num)),
+                                            Lang::Ar => format!("خليها {}", format::count(n, num)),
+                                        }}
+                                    </button>
+                                }),
+                                _ => None,
+                            }}
+                        </div>
+                    }
+                })
+            }}
+            // What went wrong with this line (rolled back already), and the way out.
+            {move || issue().map(|i| {
+                let (lang, num) = (ui.lang.get(), ui.numerals.get());
+                let (cls, icon) = match i.kind {
+                    IssueKind::Offline => ("line-issue line-issue--offline cline__issue", "triangle-alert"),
+                    IssueKind::Failed => ("line-issue cline__issue", "circle-alert"),
+                    IssueKind::Capped(_) => ("line-issue line-issue--note cline__issue", "info"),
+                };
+                let key = i.key.clone();
+                view! {
+                    <div class=cls role="alert">
+                        <Icon name=icon size=16/>
+                        <span>{i.kind.message(lang, num)}</span>
+                        {i.op.is_some().then(|| view! {
+                            <button type="button" class="link-btn" data-press="" on:click=move |_| ops.retry(&key)>
+                                {tr(lang, "Retry", "حاول تاني")}
+                            </button>
+                        })}
+                    </div>
+                }
+            })}
         </li>
     })
 }
@@ -599,6 +650,10 @@ fn DrawerSummary() -> impl IntoView {
     let empty = move || {
         cart.view
             .with(|v| v.as_ref().is_none_or(|v| v.lines.is_empty()))
+    };
+    let blocked = move || {
+        cart.view
+            .with(|v| v.as_ref().is_some_and(math::stock_blocked))
     };
     view! {
         <div class="cart-summary" aria-busy=move || { ops.busy.get().to_string() } data-empty=move || { empty().to_string() }>
@@ -638,10 +693,23 @@ fn DrawerSummary() -> impl IntoView {
                 }}
             </p>
             <div class="cart-summary__actions">
-                <a class="btn btn--primary btn--lg btn--block" href="/checkout" data-press="" on:click=move |_| close_drawer()>
-                    <span class="btn__label">{move || tr(ui.lang.get(), "Checkout", "كمّل الطلب")}</span>
-                    <Icon name="arrow-right" size=18 class="flip-rtl btn__end"/>
-                </a>
+                {move || if blocked() {
+                    Either::Left(view! {
+                        <p class="cart-summary__blocked" id="drawer-blocked">
+                            {tr(ui.lang.get(), "Fix the items marked above to check out.", "عدّل المنتجات المحددة فوق علشان تكمّل الطلب.")}
+                        </p>
+                        <button type="button" class="btn btn--primary btn--lg btn--block" disabled=true aria-describedby="drawer-blocked">
+                            <span class="btn__label">{tr(ui.lang.get(), "Checkout", "كمّل الطلب")}</span>
+                        </button>
+                    })
+                } else {
+                    Either::Right(view! {
+                        <a class="btn btn--primary btn--lg btn--block" href="/checkout" data-press="" on:click=move |_| close_drawer()>
+                            <span class="btn__label">{tr(ui.lang.get(), "Checkout", "كمّل الطلب")}</span>
+                            <Icon name="arrow-right" size=18 class="flip-rtl btn__end"/>
+                        </a>
+                    })
+                }}
                 <a class="btn btn--ghost btn--md btn--block" href="/cart" data-press="" on:click=move |_| close_drawer()>
                     {move || tr(ui.lang.get(), "View cart", "شوف السلة")}
                 </a>

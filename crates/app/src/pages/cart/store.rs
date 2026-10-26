@@ -36,6 +36,48 @@ use std::collections::VecDeque;
 /// What a queued op's caller hears back: the confirmed cart, or an error code (see `copy`).
 pub type OpResult = Result<CartView, String>;
 
+/// Something that went wrong with one line, shown on that line.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LineIssue {
+    pub key: String,
+    pub kind: IssueKind,
+    /// The change to send again (Retry); none for a note that needs no action.
+    pub op: Option<Op>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum IssueKind {
+    /// No network: the change is rolled back and retried by itself when the browser is online.
+    Offline,
+    /// The server refused or failed: rolled back, Retry offered.
+    Failed,
+    /// The server could only keep this many (stock).
+    Capped(u32),
+}
+
+impl IssueKind {
+    pub fn message(self, lang: crate::prefs::Lang, num: crate::prefs::Numerals) -> String {
+        use crate::prefs::Lang;
+        let n = |x: u32| crate::format::count(x, num);
+        match (self, lang) {
+            (IssueKind::Offline, Lang::En) => {
+                "You're offline — this change isn't saved yet.".into()
+            }
+            (IssueKind::Offline, Lang::Ar) => {
+                "أنت غير متصل بالإنترنت — لم يُحفظ هذا التعديل بعد.".into()
+            }
+            (IssueKind::Failed, Lang::En) => "This change didn't save.".into(),
+            (IssueKind::Failed, Lang::Ar) => "تعذّر حفظ هذا التعديل.".into(),
+            (IssueKind::Capped(c), Lang::En) => {
+                format!("Only {} available — we've set it to {}.", n(c), n(c))
+            }
+            (IssueKind::Capped(c), Lang::Ar) => {
+                format!("المتوفر {} فقط — تم ضبط الكمية على {}.", n(c), n(c))
+            }
+        }
+    }
+}
+
 /// A line removed from the drawer, kept for a few seconds so its "Undo" can put it back in place.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Removed {
@@ -77,6 +119,8 @@ pub struct CartOps {
     next_removed: StoredValue<u32>,
     /// A failure to show inside the open drawer (toasts sit under its modal layer).
     pub drawer_error: RwSignal<Option<String>>,
+    /// Per-line problems (offline, failed, capped).
+    pub issues: RwSignal<Vec<LineIssue>>,
 }
 
 pub fn use_ops() -> CartOps {
@@ -113,6 +157,7 @@ impl CartOps {
             removed: RwSignal::new(Vec::new()),
             next_removed: StoredValue::new(1),
             drawer_error: RwSignal::new(None),
+            issues: RwSignal::new(Vec::new()),
         }
     }
 
@@ -224,6 +269,7 @@ impl CartOps {
             self.inflight.set_value(None);
             let out = match res {
                 Ok(v) => {
+                    self.note_success(&job.op, &v);
                     self.adopt(v.clone());
                     Ok(v)
                 }
@@ -232,11 +278,114 @@ impl CartOps {
             self.render();
             match (&out, job.done) {
                 (_, Some(cb)) => cb.run(out),
-                (Err(code), None) => self.report(code),
+                (Err(code), None) => self.note_failure(job.op, code),
                 _ => {}
             }
             self.pump();
         });
+    }
+
+    /// A change for a line went through: clear its old problem, and say so if the server could
+    /// only keep fewer than asked (stock).
+    fn note_success(self, op: &Op, v: &CartView) {
+        let key = op.key();
+        let capped = match op {
+            Op::SetQty { qty, .. } => v
+                .lines
+                .iter()
+                .find(|l| l.key == key)
+                .filter(|l| l.qty < *qty)
+                .map(|l| l.qty),
+            _ => None,
+        };
+        self.issues.update(|i| {
+            i.retain(|x| x.key != key);
+            if let Some(c) = capped {
+                i.push(LineIssue {
+                    key: key.clone(),
+                    kind: IssueKind::Capped(c),
+                    op: None,
+                });
+            }
+        });
+        if capped.is_some() {
+            #[cfg(feature = "hydrate")]
+            set_timeout(
+                move || {
+                    self.issues.update(|i| {
+                        i.retain(|x| !(x.key == key && matches!(x.kind, IssueKind::Capped(_))))
+                    })
+                },
+                std::time::Duration::from_secs(8),
+            );
+        }
+    }
+
+    /// A change failed: it has already rolled back (it left the queue); tell the shopper on the
+    /// line itself, with a Retry. An undo that failed puts its "Undo" row back.
+    fn note_failure(self, op: Op, code: &str) {
+        #[cfg(feature = "hydrate")]
+        let offline = code == "network" || !window().navigator().on_line();
+        #[cfg(not(feature = "hydrate"))]
+        let offline = code == "network";
+        let key = op.key();
+        let on_line = self.cart.view.with_untracked(|v| {
+            v.as_ref()
+                .is_some_and(|v| v.lines.iter().any(|l| l.key == key))
+        });
+        match &op {
+            Op::Add {
+                line: Some(line), ..
+            } if !on_line => {
+                self.remember_removed((**line).clone(), 0);
+                self.report(code);
+            }
+            _ if on_line => {
+                let kind = if offline {
+                    IssueKind::Offline
+                } else {
+                    IssueKind::Failed
+                };
+                self.issues.update(|i| {
+                    i.retain(|x| x.key != key);
+                    i.push(LineIssue {
+                        key,
+                        kind,
+                        op: Some(op),
+                    });
+                });
+            }
+            _ => self.report(code),
+        }
+    }
+
+    /// Send a line's failed change again.
+    pub fn retry(self, key: &str) {
+        let op = self.issues.try_update(|i| {
+            let at = i.iter().position(|x| x.key == key)?;
+            i.remove(at).op
+        });
+        if let Some(op) = op.flatten() {
+            self.submit(op, None);
+        }
+    }
+
+    /// Back online: send every change that failed for lack of a network.
+    pub fn retry_offline(self) {
+        let keys: Vec<String> = self.issues.with_untracked(|i| {
+            i.iter()
+                .filter(|x| x.kind == IssueKind::Offline)
+                .map(|x| x.key.clone())
+                .collect()
+        });
+        for k in keys {
+            self.retry(&k);
+        }
+    }
+
+    pub fn issue(self, key: &str) -> Option<LineIssue> {
+        self.issues
+            .with(|i| i.iter().find(|x| x.key == key).cloned())
     }
 
     fn adopt(self, v: CartView) {
@@ -436,6 +585,8 @@ mod client {
             });
         }
         listen(&win, "popstate", move |_| ops.sync_from_cookie());
+        // Changes that failed for lack of a network go out again as soon as it's back.
+        listen(&win, "online", move |_| ops.retry_offline());
         listen(&win, "pageshow", move |_| ops.sync_from_cookie());
         listen(&document().into(), "visibilitychange", move |_| {
             if !document().hidden() {
