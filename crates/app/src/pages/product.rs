@@ -93,7 +93,6 @@ pub fn ProductPage() -> impl IntoView {
         (text(&p.name, lang), None),
     ];
     let category = pv.category.clone();
-    let data = Resource::new(move || slug.clone(), api::product_detail);
 
     Either::Right(view! {
         <ProductHead h=head/>
@@ -102,19 +101,14 @@ pub fn ProductPage() -> impl IntoView {
                 <div class="pdp-crumbs">
                     <Breadcrumbs items=crumbs/>
                 </div>
-                <Suspense fallback=|| ()>
-                    <ErrorBoundary fallback=move |_| view! { <ProductError lang=lang/> }>
-                        {move || {
-                            let notice = notice.clone();
-                            Suspend::new(async move {
-                                data.await.map(|found| match found {
-                                    Some(pv) => Either::Left(view! { <ProductBody pv selected start notice/> }),
-                                    None => Either::Right(view! { <ProductError lang=lang/> }),
-                                })
-                            })
-                        }}
-                    </ErrorBoundary>
-                </Suspense>
+                <ErrorBoundary fallback=move |_| view! { <ProductError lang=lang/> }>
+                    {Suspend::new(async move {
+                        api::product_detail(slug).await.map(|found| match found {
+                            Some(pv) => Either::Left(view! { <ProductBody pv selected start notice/> }),
+                            None => Either::Right(view! { <ProductError lang=lang/> }),
+                        })
+                    })}
+                </ErrorBoundary>
             </div>
         </div>
         <div class="container pdp-after">

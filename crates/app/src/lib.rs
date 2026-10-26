@@ -15,8 +15,6 @@ pub mod tenant;
 #[cfg(feature = "ssr")]
 pub mod server;
 
-#[cfg(feature = "hydrate")]
-pub mod client;
 
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;

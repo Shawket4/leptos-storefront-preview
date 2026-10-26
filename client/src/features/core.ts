@@ -235,6 +235,16 @@ register("rail", (r) => {
   };
 });
 
+// ── Category strip (components::header::CatNav): the current chip in view ────────────────────
+// Moves the strip sideways only (never the page), at once: on a deep link, and after back/forward.
+register("cat-nav", (nav) => {
+  const list = $(".cat-nav__list", nav), cur = $('[aria-current="page"]', nav);
+  if (!list || !cur || list.scrollWidth <= list.clientWidth) return;
+  const pad = 16, l = list.getBoundingClientRect(), c = cur.getBoundingClientRect();
+  const delta = c.left < l.left + pad ? c.left - l.left - pad : c.right > l.right - pad ? c.right - l.right + pad : 0;
+  if (delta) list.scrollBy({ left: delta, behavior: "instant" });
+});
+
 // ── Pull to refresh ──────────────────────────────────────────────────────────────────────────
 // Touch only, from the very top of the page: a small disc follows the finger down (resisting more
 // the further it goes), its arrow turns when letting go would refresh, it spins while the page is

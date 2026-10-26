@@ -10,7 +10,7 @@
 import { createStore } from "../core/store";
 import { cfg } from "../core/page";
 import { cached, key as cacheKey } from "../core/cache";
-import { getJSON } from "../core/net";
+import { NetError, getJSON } from "../core/net";
 import type { CartQuote } from "../api/types";
 
 export interface CartLine {
@@ -157,6 +157,23 @@ export function snapshot(k: string): LineSnapshot | undefined {
 // ── Server data: prices, stock and totals for exactly this cart (cached per cart contents) ─────
 /** The server's pricing of the current cart. Cached 60 s per cart content; any change re-asks. */
 export function quote(onUpdate?: (q: CartQuote) => void): Promise<CartQuote> {
-  const sig = serialize(cart.get().lines);
-  return cached(cacheKey("cart-quote", sig), { ttl: 60_000, swr: 5 * 60_000 }, () => getJSON<CartQuote>(cfg().api.cartQuote), onUpdate);
+  const lines = cart.get().lines;
+  const sig = serialize(lines);
+  const want = lines.map((l) => `${lineKey(l)}=${l.qty}`).join("|");
+  return cached(
+    cacheKey("cart-quote", sig),
+    { ttl: 60_000, swr: 5 * 60_000 },
+    async () => {
+      const q = await getJSON<CartQuote>(cfg().api.cartQuote);
+      // The server priced the cookie as it was sent. If that isn't this cart (a retry after a
+      // change, another tab), it must not be kept under this cart's key: re-read the cookie and
+      // let the caller ask again.
+      if (q.lines.map((l) => `${l.key}=${l.qty}`).join("|") !== want) {
+        syncFromCookie();
+        throw new NetError("aborted");
+      }
+      return q;
+    },
+    onUpdate,
+  );
 }

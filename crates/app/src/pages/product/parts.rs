@@ -203,10 +203,9 @@ fn Details(pv: ProductView, lang: Lang) -> impl IntoView {
     }
 }
 
-/// "You may also like": its own streamed Suspense + ErrorBoundary (`?fail=related` demos it).
+/// "You may also like": its own data and error boundary (`?fail=related` demos it).
 #[component]
 pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -> impl IntoView {
-    let data = Resource::new(move || id, |id| api::related_products(ProductId(id), 12));
     let title = tr(lang, "You may also like", "ممكن يعجبك كمان").to_owned();
     let (hid, hid_ref) = (format!("pdp-related-{id}"), format!("pdp-related-{id}"));
     // The shelf's own name is the link: short enough to leave the title on one line.
@@ -216,7 +215,7 @@ pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -
         <section class="pdp-related" aria-labelledby=hid_ref>
             <SectionHeader title=title.clone() id=hid href=href.clone() link_label=more/>
             <CardRail
-                data=data
+                fetch=api::related_products(ProductId(id), 12)
                 label=title
                 what=tr(lang, "Similar products", "المنتجات المشابهة").to_owned()
                 empty_href=href
@@ -227,11 +226,11 @@ pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -
     }
 }
 
-/// A rail of product cards from a resource: an error that offers a retry, and a quiet line when
-/// there is nothing to show. (The page renders in order, so there is no loading state to draw.)
+/// A rail of product cards from a read: an error that offers a retry, and a quiet line when there
+/// is nothing to show. (The page renders in order, so there is no loading state to draw.)
 #[component]
-pub fn CardRail(
-    data: Resource<Result<Vec<CardData>, ServerFnError>>,
+pub fn CardRail<F>(
+    fetch: F,
     label: String,
     /// The rail's name for its error ("Similar products didn't load").
     what: String,
@@ -239,14 +238,14 @@ pub fn CardRail(
     empty_href: String,
     lang: Lang,
     numerals: Numerals,
-) -> impl IntoView {
+) -> impl IntoView
+where
+    F: std::future::Future<Output = Result<Vec<CardData>, ServerFnError>> + Send + 'static,
+{
     view! {
-        <Suspense fallback=|| ()>
-            <ErrorBoundary fallback=move |errors| view! { <SectionError errors=errors what=what.clone()/> }>
-                {move || {
-                    let (label, empty_href) = (label.clone(), empty_href.clone());
-                    Suspend::new(async move {
-                        data.await.map(|cards| {
+        <ErrorBoundary fallback=move |errors| view! { <SectionError errors=errors what=what.clone()/> }>
+                {Suspend::new(async move {
+                        fetch.await.map(|cards| {
                             if cards.is_empty() {
                                 return Either::Left(view! {
                                     <p class="pdp-rail-empty">
@@ -265,10 +264,8 @@ pub fn CardRail(
                                 </Rail>
                             })
                         })
-                    })
-                }}
-            </ErrorBoundary>
-        </Suspense>
+                })}
+        </ErrorBoundary>
     }
 }
 
@@ -317,7 +314,6 @@ fn retry_href() -> String {
 #[component]
 pub fn NotFound(slug: String, lang: Lang, numerals: Numerals) -> impl IntoView {
     let guess = slug.replace(['-', '_'], " ");
-    let popular = Resource::new(|| (), |_| api::home_rail(api::types::Rail::Bestsellers, 12));
     let title = tr(lang, "Popular right now", "الأكثر طلبًا دلوقتي").to_owned();
     view! {
         <div class="container pdp-404">
@@ -343,7 +339,7 @@ pub fn NotFound(slug: String, lang: Lang, numerals: Numerals) -> impl IntoView {
             <section class="pdp-related" aria-labelledby="pdp-404-popular">
                 <SectionHeader title=title.clone() id="pdp-404-popular" href="/search?sort=rating"/>
                 <CardRail
-                    data=popular
+                    fetch=api::home_rail(api::types::Rail::Bestsellers, 12)
                     label=title
                     what=tr(lang, "Popular products", "المنتجات الأكثر طلبًا").to_owned()
                     empty_href="/".to_owned()

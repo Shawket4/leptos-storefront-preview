@@ -79,8 +79,6 @@ pub fn CategoryPage() -> impl IntoView {
     .to_string()
     .replace("</", "<\\/");
 
-    let data = Resource::new(|| (), move |_| api::list_products(query.clone()));
-
     Either::Right(view! {
         <Title text=title.clone()/>
         <Meta name="description" content=description.clone()/>
@@ -104,7 +102,7 @@ pub fn CategoryPage() -> impl IntoView {
                 </div>
                 <p class="cat-head__count">{format::items(cat.count, lang, num)}</p>
             </header>
-            <ListingResults data aisles=aisles(Some(&slug))/>
+            <ListingResults query aisles=aisles(Some(&slug))/>
         </div>
     })
 }
@@ -139,31 +137,27 @@ fn first_suggestions(page: &ListingPage) -> Option<Suggestions> {
     }
 }
 
-/// The listing, once its first page is in (the route renders in order, so the fallback is never
-/// sent; a failed read shows `ListingFailed`).
+/// The listing for `query`, once `api::list_products` answers (the page waits for it: it renders
+/// in order); a failed read shows `ListingFailed`. A `Suspend`, not a `Resource`: nothing is
+/// serialized into the page for a client to hydrate.
 #[component]
 pub(crate) fn ListingResults(
-    data: Resource<Result<ListingPage, ServerFnError>>,
+    query: ListingQuery,
     /// Aisles the empty states offer.
     aisles: Vec<CatLink>,
 ) -> impl IntoView {
     let rq = req();
     let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
     view! {
-        <Suspense fallback=|| ()>
-            <ErrorBoundary fallback=move |_| view! { <ListingFailed lang/> }>
-                {move || {
-                    let aisles = aisles.clone();
-                    Suspend::new(async move {
-                        data.await.map(|page| {
-                            let suggest = first_suggestions(&page);
-                            let extras = view::Extras { aisles, suggest };
-                            view! { <view::Listing page extras lang num/> }
-                        })
-                    })
-                }}
-            </ErrorBoundary>
-        </Suspense>
+        <ErrorBoundary fallback=move |_| view! { <ListingFailed lang/> }>
+            {Suspend::new(async move {
+                api::list_products(query).await.map(|page| {
+                    let suggest = first_suggestions(&page);
+                    let extras = view::Extras { aisles, suggest };
+                    view! { <view::Listing page extras lang num/> }
+                })
+            })}
+        </ErrorBoundary>
     }
 }
 
