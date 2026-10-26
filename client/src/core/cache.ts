@@ -23,6 +23,7 @@ const MAX_ENTRIES = 60;
 const entries = new Map<string, Entry<unknown>>();
 const inflight = new Map<string, Promise<unknown>>();
 let generation: string | null = null;
+const counts = { hits: 0, misses: 0, stale: 0 };
 
 /** A cache key for `parts` in the current tenant and display prefs. */
 export function key(...parts: string[]): string {
@@ -42,11 +43,16 @@ export async function cached<T>(
 ): Promise<T> {
   const hit = entries.get(k) as Entry<T> | undefined;
   const age = hit ? Date.now() - hit.at : Infinity;
-  if (hit && age <= opts.ttl) return hit.value;
+  if (hit && age <= opts.ttl) {
+    counts.hits++;
+    return hit.value;
+  }
   if (hit && age <= opts.ttl + (opts.swr ?? 0)) {
+    counts.stale++;
     void load(k, opts, fetcher).then((v) => onUpdate?.(v), () => {});
     return hit.value;
   }
+  counts.misses++;
   return load(k, opts, fetcher);
 }
 
@@ -73,6 +79,17 @@ export function peek<T>(k: string): T | undefined {
 /** Drop every entry whose key contains `part` (or everything with no argument). */
 export function invalidate(part?: string): void {
   for (const k of [...entries.keys()]) if (part === undefined || k.includes(part)) entries.delete(k);
+}
+
+/** What the cache holds now, oldest first (read-only, for the showcase's inspector). */
+export function inspect(): { key: string; ageMs: number; ttl: number; swr: number }[] {
+  const now = Date.now();
+  return [...entries].map(([key, e]) => ({ key, ageMs: now - e.at, ttl: e.opts.ttl, swr: e.opts.swr ?? 0 }));
+}
+
+/** How reads were served since the page loaded: fresh hits, misses (fetched), stale (served, then refreshed). */
+export function stats(): { hits: number; misses: number; stale: number } {
+  return { ...counts };
 }
 
 /** The server's catalogue generation (response header `x-catalog-gen`): a new one drops all pages. */

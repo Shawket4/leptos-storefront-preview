@@ -1,89 +1,111 @@
-//! A quantity stepper: − value +, 44px targets, the figure in Plex Mono (in the visitor's
-//! numerals), buttons disabled at the bounds. Optionally the minus turns into a bin at the
-//! minimum (cart lines) and removes the item. For islands: the value is a signal, changes go out
-//! through `on_change`.
+//! The one quantity stepper: − input +, 44px targets, the figure in Plex Mono.
+//!
+//! Server markup only; `client/src/core/stepper.ts` (`data-ts="stepper"`) makes the buttons work,
+//! clamps what is typed to `min..=max` and fires `change` on the input — features listen for that
+//! (`input.valueAsNumber`) and never build steppers of their own. The − and + are `type="button"`
+//! and the input is a real `<input type="number" name=…>`, so in a plain form without JS the typed
+//! quantity is posted (the product page posts `name="qty"`).
+//!
+//! `removable` (cart lines): at the minimum the − turns into a bin, and pressing it sets the value
+//! to 0 and fires `change` — the listener removes the line.
 
 use super::icons::Icon;
-use crate::format;
-use crate::prefs::{tr, use_ui};
+use crate::prefs::use_ui;
+use crate::strings;
 use leptos::prelude::*;
 
 #[component]
 pub fn Stepper(
+    /// The input's form name (`qty`).
+    #[prop(optional, into)]
+    name: Option<String>,
     #[prop(into)] value: Signal<u32>,
-    on_change: Callback<u32>,
     min: u32,
     max: u32,
-    /// Names the group ("Quantity of Galaxy S25"); defaults to "Quantity".
+    /// Names the group and the input ("Quantity of Galaxy S25"); defaults to "Quantity".
     #[prop(optional, into)]
     label: MaybeProp<String>,
-    /// At the minimum, the minus becomes a bin that calls this.
+    /// At the minimum the − becomes a bin that sets the value to 0.
     #[prop(optional)]
-    on_remove: Option<Callback<()>>,
-    /// The whole control is busy (a request in flight).
+    removable: bool,
+    #[prop(optional, into)] disabled: MaybeProp<bool>,
+    /// The input's id (for a `<label for>`).
     #[prop(optional, into)]
-    disabled: MaybeProp<bool>,
+    id: Option<String>,
     #[prop(optional, into)] class: String,
+    /// Islands-era props, ignored (listen for `change` on the input instead). Remove them.
+    #[prop(optional)]
+    on_change: Option<Callback<u32>>,
+    #[prop(optional)] on_remove: Option<Callback<()>>,
 ) -> impl IntoView {
-    let ui = use_ui();
-    let busy = move || disabled.get().unwrap_or(false);
-    let at_min = move || value.get() <= min;
-    let at_max = move || value.get() >= max;
-    let removable = on_remove.is_some();
-    let group = move || {
-        label
-            .get()
-            .unwrap_or_else(|| tr(ui.lang.get(), "Quantity", "الكمية").to_owned())
-    };
-    let minus_label = move || {
-        if removable && at_min() {
-            tr(ui.lang.get(), "Remove", "شيل")
-        } else {
-            tr(ui.lang.get(), "Decrease", "قلّل")
-        }
-    };
-    let plus_label = move || tr(ui.lang.get(), "Increase", "زوّد");
-    let shown = move || format::count(value.get(), ui.numerals.get());
+    let _ = on_change;
+    let removable = removable || on_remove.is_some();
+    let lang = use_ui().lang.get_untracked();
+    let max = max.max(min);
+    let v = value
+        .get_untracked()
+        .clamp(if removable { 0 } else { min }, max);
+    let off = disabled.get_untracked().unwrap_or(false);
+    let label = label
+        .get_untracked()
+        .unwrap_or_else(|| strings::get("stepper.quantity", lang).to_owned());
+    let group_label = label.clone();
+    let bin = removable && v <= min;
     let cls = if class.is_empty() {
         "stepper".to_owned()
     } else {
         format!("stepper {class}")
     };
+    let minus_label = strings::get(
+        if bin {
+            "stepper.remove"
+        } else {
+            "stepper.decrease"
+        },
+        lang,
+    );
     view! {
-        <div class=cls role="group" aria-label=group>
+        <div
+            class=cls
+            role="group"
+            aria-label=group_label
+            data-ts="stepper"
+            data-min=min
+            data-max=max
+            data-removable=removable.then_some("")
+            data-bin=bin.then_some("")
+        >
             <button
                 type="button"
                 class="stepper__btn"
+                data-step="-1"
                 aria-label=minus_label
-                disabled=move || busy() || (at_min() && !removable)
-                on:click=move |_| {
-                    let v = value.get_untracked();
-                    if v <= min {
-                        if let Some(cb) = on_remove {
-                            cb.run(());
-                        }
-                    } else {
-                        on_change.run(v - 1);
-                    }
-                }
+                disabled=(off || (v <= min && !removable))
             >
-                {move || {
-                    let name = if removable && at_min() { "trash-2" } else { "minus" };
-                    view! { <Icon name=name size=18/> }
-                }}
+                <Icon name="minus" size=18 class="stepper__minus"/>
+                {removable.then(|| view! { <Icon name="trash-2" size=18 class="stepper__bin"/> })}
             </button>
-            <output class="stepper__value mono" aria-live="polite">{shown}</output>
+            <input
+                class="stepper__value mono"
+                type="number"
+                inputmode="numeric"
+                name=name
+                id=id
+                value=v
+                min=if removable { 0 } else { min }
+                max=max
+                step="1"
+                aria-label=label
+                autocomplete="off"
+                enterkeyhint="done"
+                disabled=off
+            />
             <button
                 type="button"
                 class="stepper__btn"
-                aria-label=plus_label
-                disabled=move || busy() || at_max()
-                on:click=move |_| {
-                    let v = value.get_untracked();
-                    if v < max {
-                        on_change.run(v + 1);
-                    }
-                }
+                data-step="1"
+                aria-label=strings::get("stepper.increase", lang)
+                disabled=(off || v >= max)
             >
                 <Icon name="plus" size=18/>
             </button>

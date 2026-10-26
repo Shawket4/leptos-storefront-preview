@@ -30,8 +30,37 @@
   cursor: default;
 }
 .stepper__value {
-  min-inline-size: 2.25rem;
+  inline-size: 2.5rem;
+  min-inline-size: 0;
+  block-size: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text);
   font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
   text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.stepper__value::-webkit-inner-spin-button,
+.stepper__value::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+.stepper__value:focus-visible {
+  outline: 2px solid var(--focus, var(--ink));
+  outline-offset: -2px;
+}
+.stepper__value:disabled {
+  color: var(--on-disabled);
+}
+/* removable: at the minimum the − is a bin (core/stepper.ts sets data-bin). */
+.stepper__bin,
+.stepper[data-bin] .stepper__minus {
+  display: none;
+}
+.stepper[data-bin] .stepper__bin {
+  display: block;
 }
