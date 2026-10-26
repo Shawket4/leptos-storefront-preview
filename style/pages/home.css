@@ -1,111 +1,80 @@
 /* Home page. Tokens only; logical properties only (RTL mirrors itself); no gradients. */
 
-/* Hero: type first, then the photo (phones) / beside it (desktop). Nothing overlaps the image. */
-.hero {
-  display: grid;
-  gap: 24px;
-  padding-block: 28px 8px;
-}
-.hero__copy { display: grid; gap: 12px; justify-items: center; text-align: center; }
-.hero__kicker {
+/* Intro: a large two-tone title, Apple Store style ("Store. The best way to buy…"). */
+.intro { padding-block: 28px 4px; }
+.intro__title,
+.two-tone {
   margin: 0;
-  color: var(--text-2);
-  font-size: .9375rem;
-  font-weight: 600;
-}
-.hero__title {
-  margin: 0;
-  font-size: clamp(2.125rem, 1.4rem + 3.4vw, 3.75rem);
-  line-height: 1.06;
-  letter-spacing: -.035em;
   font-weight: 800;
-  max-inline-size: 15ch;
+  letter-spacing: -.03em;
+  line-height: 1.1;
   text-wrap: balance;
 }
-[dir="rtl"] .hero__title { letter-spacing: 0; line-height: 1.25; }
-.hero__sub {
-  margin: 0;
-  color: var(--text-2);
-  font-size: clamp(1rem, .95rem + .3vw, 1.1875rem);
-  line-height: 1.5;
-  max-inline-size: 38ch;
-  text-wrap: pretty;
-}
-.hero__ctas {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 8px 24px;
-  margin-block-start: 8px;
-}
-.hero__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  min-block-size: 44px;
-  font-weight: 700;
-  color: var(--text);
-}
-.hero__link:hover { text-decoration: underline; text-underline-offset: 4px; }
-.hero__link:active { transform: scale(.97); transition: transform 100ms ease-out; }
-.hero__media {
-  position: relative;
-  aspect-ratio: 1;
-  border-radius: var(--r-2xl);
-  background: var(--img-color, var(--sunk)) center / cover no-repeat;
-  overflow: hidden;
-}
-@supports (corner-shape: squircle) { .hero__media { corner-shape: squircle; } }
-.hero__media img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
-.hero--plain .hero__media { display: none; }
+.intro__title { font-size: clamp(2rem, 1.35rem + 3vw, 3.5rem); max-inline-size: 22ch; }
+.intro__title span,
+.two-tone span { color: var(--text-3); }
+[dir="rtl"] .intro__title,
+[dir="rtl"] .two-tone { letter-spacing: 0; line-height: 1.3; }
+.intro__promise { margin: 12px 0 0; color: var(--text-2); font-size: .9375rem; }
+.two-tone { font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2rem); margin-block-end: 16px; }
 
-@media (min-width: 768px) {
-  .hero {
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    gap: clamp(32px, 5vw, 72px);
-    padding-block: 40px 16px;
-  }
-  .hero__copy { justify-items: start; text-align: start; }
-  .hero__ctas { justify-content: start; }
-  .hero__media { aspect-ratio: 5 / 4; }
-}
-
-/* Trust strip */
-.trust {
+/* The latest: product tiles (packshots on white, squircle), swipeable on phones. */
+.latest__rail {
   list-style: none;
-  margin-block: 18px 8px;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: 4px var(--gutter) 12px;
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(232px, 1fr);
-  gap: 10px;
+  grid-auto-columns: min(78vw, 340px);
+  gap: 14px;
   overflow-x: auto;
-  padding-block: 4px;
+  scroll-snap-type: inline mandatory;
+  scroll-padding-inline: var(--gutter);
   scrollbar-width: none;
 }
-.trust__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
+.latest__rail::-webkit-scrollbar { display: none; }
+.latest__rail > li { scroll-snap-align: start; }
+@media (min-width: 1100px) {
+  .latest__rail { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); overflow: visible; margin: 0; padding: 4px 0 12px; }
 }
-.trust__icon {
+.tile {
+  block-size: 100%;
   display: grid;
-  place-items: center;
-  inline-size: 40px;
-  block-size: 40px;
-  flex: none;
-  border-radius: var(--r-pill);
-  background: var(--brand-wash);
-  color: var(--brand-text, var(--brand));
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+  padding: 22px 20px 16px;
+  background: var(--surface);
+  border-radius: var(--r-2xl);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: box-shadow var(--dur-base) var(--ease-out), transform 100ms ease-out;
 }
-.trust__text { display: grid; line-height: 1.35; }
-.trust__text strong { font-size: .9rem; font-weight: 700; }
-.trust__text span { font-size: .8125rem; color: var(--text-2); }
+@supports (corner-shape: squircle) { .tile, .tile__buy { corner-shape: squircle; } }
+.tile:hover { box-shadow: var(--shadow-md); }
+.tile:active { transform: scale(.985); }
+.tile__text { display: grid; gap: 4px; justify-items: center; }
+.tile__eyebrow { color: var(--text-3); font-size: .8125rem; font-weight: 700; letter-spacing: .01em; }
+.tile__name { font-size: 1.375rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; text-wrap: balance; }
+[dir="rtl"] .tile__name { letter-spacing: 0; line-height: 1.35; }
+.tile__sub { color: var(--text-2); font-size: .9375rem; line-height: 1.4; text-wrap: balance; }
+.tile__price { margin-block-start: 2px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: .875rem; color: var(--text); }
+.tile__ctas { display: flex; align-items: center; justify-content: center; gap: 16px; margin-block-start: 10px; }
+.tile__buy {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-block-size: 36px; padding-inline: 18px;
+  border-radius: var(--r-md);
+  background: var(--brand); color: var(--on-brand);
+  font-weight: 700; font-size: .9375rem;
+}
+.tile__more { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; font-size: .9375rem; color: var(--text); }
+.tile__media {
+  align-self: end;
+  aspect-ratio: 1;
+  inline-size: 100%;
+  max-block-size: 300px;
+  background: center / contain no-repeat;
+}
+.tile__media img { inline-size: 100%; block-size: 100%; object-fit: contain; }
 
 /* Sections */
 .home-section { margin-block: 28px; }
@@ -163,28 +132,6 @@
   font-weight: 700;
 }
 .countdown__clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-
-/* Promos: image above a solid label row */
-.promos { display: grid; gap: 12px; }
-@media (min-width: 768px) { .promos { grid-template-columns: 1fr 1fr; gap: 16px; } }
-.promo {
-  display: grid;
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: box-shadow var(--dur-base) var(--ease-out);
-}
-.promo:hover { box-shadow: var(--shadow-md); }
-.promo__media { display: block; aspect-ratio: 16 / 9; background: var(--brand-wash); overflow: hidden; }
-.promo__media img { inline-size: 100%; block-size: 100%; object-fit: cover; background-size: cover; transition: transform var(--dur-slow) var(--ease-out); }
-.promo:hover .promo__media img { transform: scale(1.03); }
-.promo__label { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
-.promo__text { display: grid; flex: 1; line-height: 1.35; }
-.promo__text strong { font-size: 1.125rem; font-weight: 800; letter-spacing: -.01em; }
-[dir="rtl"] .promo__text strong { letter-spacing: 0; }
-.promo__text span { color: var(--text-2); font-size: .875rem; }
-.promo__go { display: grid; place-items: center; inline-size: 40px; block-size: 40px; flex: none; border-radius: var(--r-pill); background: var(--brand); color: var(--on-brand); }
 
 /* A failed widget */
 .widget-error {
