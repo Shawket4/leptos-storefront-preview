@@ -1,0 +1,119 @@
+/* Timeline (components::timeline): a vertical line behind the dots, filled (--p) up to the
+   current step; the current dot pulses a ring; the last step, done, turns success green.
+   core/timeline.ts moves it (data-state per step, --p, the times). */
+.track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.track::before,
+.track::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 11px;
+  inset-block: 12px;
+  inline-size: 2px;
+  border-radius: var(--r-xs);
+  background: var(--rule);
+}
+.track::after {
+  background: var(--brand);
+  transform-origin: 50% 0;
+  scale: 1 var(--p, 0);
+  transition: scale var(--spring-gentle-dur) var(--spring-gentle);
+}
+.track[data-stopped="true"]::after {
+  scale: 1 0;
+}
+.track__step {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  min-block-size: 24px;
+}
+.track__dot {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--rule);
+  color: transparent;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    scale var(--spring-bouncy-dur) var(--spring-bouncy);
+}
+.track__step[data-state="done"] .track__dot {
+  background: var(--brand);
+  box-shadow: none;
+  color: var(--on-brand);
+}
+.track__step[data-state="current"] .track__dot {
+  background: var(--brand);
+  box-shadow: 0 0 0 5px var(--brand-wash);
+  scale: 1.1;
+}
+.track__step[data-state="current"] .track__dot::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--brand);
+  opacity: 0;
+  animation: track-ring 2s var(--ease-out) infinite;
+}
+@keyframes track-ring {
+  0% {
+    opacity: 0.5;
+    scale: 0.9;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.5;
+  }
+}
+.track__step[data-state="done"]:last-child .track__dot {
+  background: var(--success);
+}
+.track__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-block-start: 1px;
+}
+.track__label {
+  font-weight: var(--fw-semibold);
+  color: var(--text-3);
+  transition: color var(--dur-base) var(--ease-out);
+}
+.track__step:is([data-state="done"], [data-state="current"]) .track__label {
+  color: var(--text);
+}
+.track__step[data-state="current"] .track__label {
+  font-weight: var(--fw-bold);
+}
+.track__time {
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.track__step:is([data-state="current"], [data-state="todo"]) .track__time {
+  color: var(--text-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .track__step[data-state="current"] .track__dot::after {
+    animation: none;
+  }
+}

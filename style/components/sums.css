@@ -1,0 +1,61 @@
+/* Totals (components::totals): label–amount rows, the bottom line under a rule. A row whose value
+   is hidden is hidden whole (browser code patches null to drop savings, swap delivery/free). */
+.sums {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.sums__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+}
+.sums__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.sums__row:has(> .sums__value[hidden]) {
+  display: none;
+}
+.sums__label {
+  color: var(--text-2);
+}
+.sums__value {
+  margin: 0;
+  color: var(--text);
+  text-align: end;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.sums__row--saving .sums__label,
+.sums__row--saving .sums__value,
+.sums__row--free .sums__value {
+  color: var(--success-text, var(--success));
+}
+.sums__row--free .sums__value {
+  font-weight: var(--fw-semibold);
+}
+.sums__row--total {
+  margin-block-start: var(--sp-1);
+  padding-block-start: var(--sp-3);
+  border-block-start: 1px solid var(--rule);
+}
+.sums__row--total .sums__label {
+  color: var(--text);
+  font-weight: var(--fw-bold);
+}
+.sums__row--total .sums__value {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+.sums__note {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+/* Waiting for the server's numbers (an ancestor's aria-busy): the last ones stay, dimmed. */
+[aria-busy="true"] .sums__value {
+  opacity: 0.45;
+}

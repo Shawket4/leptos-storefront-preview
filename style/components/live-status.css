@@ -1,0 +1,81 @@
+/* Live status (components::live_status): live (a breathing dot), retrying (a warning, the
+   countdown and Retry), offline (no connection), idle (just the line). core/live-status.ts
+   switches data-state and writes the line. */
+.live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-inline-size: 100%;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+}
+.live-status__dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--success);
+  animation: live-status-breathe 2.4s var(--ease-in-out) infinite;
+}
+@keyframes live-status-breathe {
+  50% {
+    opacity: 0.35;
+  }
+}
+.live-status__icon {
+  flex: none;
+  display: none;
+}
+/* A long line wraps in its own box, beside the icon; the dot, icons and Retry keep their size. */
+.live-status__msg {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+.live-status__dot,
+.live-status__retry {
+  flex: none;
+}
+.live-status__retry {
+  display: none;
+  min-block-size: 36px;
+  padding-inline: var(--sp-2);
+  margin-block: -6px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-weight: var(--fw-bold);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.live-status__retry:hover {
+  background: var(--sunk);
+}
+.live-status:not([data-state="live"]) .live-status__dot {
+  display: none;
+}
+.live-status[data-state="retrying"] {
+  color: var(--warning-text, var(--warning));
+}
+.live-status[data-state="retrying"] .live-status__icon--retrying,
+.live-status[data-state="offline"] .live-status__icon--offline {
+  display: inline-block;
+}
+.live-status[data-state="retrying"] .live-status__retry {
+  display: inline-grid;
+  place-items: center;
+}
+.live-status[data-state="idle"] {
+  font-weight: var(--fw-regular);
+  color: var(--text-3);
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-status__dot {
+    animation: none;
+  }
+}

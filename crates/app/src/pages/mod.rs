@@ -4,6 +4,7 @@ pub mod cart;
 pub mod category;
 pub mod checkout;
 pub mod core_scratch;
+mod core_scratch_components;
 pub mod errors;
 pub mod home;
 pub mod order;

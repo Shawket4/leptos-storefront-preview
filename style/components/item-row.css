@@ -1,0 +1,120 @@
+/* Item rows (components::item_row): picture, name, detail and meta lines, price and trailing
+   controls. Regular (the cart): the controls and price get the row's whole width under the
+   picture, so a 320px drawer fits. Compact (summaries): one row. */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item-list > .item-row + .item-row {
+  border-block-start: 1px solid var(--rule);
+}
+.item-list--compact {
+  gap: var(--sp-3);
+}
+.item-list--compact > .item-row + .item-row {
+  border-block-start: 0;
+}
+.item-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  grid-template-areas:
+    "media main"
+    "side side";
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-2);
+  align-items: start;
+  padding-block: var(--sp-4);
+}
+.item-row__media {
+  grid-area: media;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--well);
+}
+.item-row__img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.item-row__img:not([src]) {
+  visibility: hidden;
+}
+.item-row__main {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+.item-row__name {
+  font-weight: var(--fw-semibold);
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+a.item-row__name:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.2em;
+}
+.item-row__detail,
+.item-row__meta {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.item-row__meta {
+  color: var(--text-3);
+}
+.item-row__side {
+  grid-area: side;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-3);
+  min-inline-size: 0;
+}
+.item-row__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.item-row__price {
+  margin-inline-start: auto;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+/* Compact: a 48px picture, everything on one line. */
+.item-row--compact {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  grid-template-areas: "media main side";
+  align-items: center;
+  padding-block: 0;
+}
+.item-row--compact .item-row__name {
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-row--compact .item-row__detail,
+.item-row--compact .item-row__meta {
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-row--compact .item-row__side {
+  justify-content: flex-end;
+}
+.item-row--compact .item-row__price {
+  font-size: var(--fs-sm);
+}

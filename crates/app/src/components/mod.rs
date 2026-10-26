@@ -35,3 +35,11 @@ pub mod states;
 pub mod status_pill;
 pub mod stepper;
 pub mod toast;
+// Shared components from the cart's patterns (core agent): totals, item rows, key-value lists,
+// the step indicator, the timeline and the live status line.
+pub mod item_row;
+pub mod kv;
+pub mod live_status;
+pub mod steps;
+pub mod timeline;
+pub mod totals;
