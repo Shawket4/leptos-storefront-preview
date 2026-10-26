@@ -179,8 +179,9 @@ WWDC design principles translated for the web) and apply it to every component a
 
 ## Caching (lead's helpers, in `crate::server::cache` — ssr only)
 
-- Catalogue pages: `cache::public(&[tags])` → `Cache-Control: public, max-age=0, s-maxage=300,
-  stale-while-revalidate=60` and `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
+- Catalogue pages: `cache::public(&[tags])` → browsers `Cache-Control: no-cache` + `Vary: Cookie`
+  (prefs are cookies), edge `CDN-Cache-Control: public, s-maxage=300, stale-while-revalidate=60`,
+  `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
 - Anything personalised (cart, checkout, orders): `cache::private()` → `Cache-Control: private,
   no-store`. Never render cart contents into a public page; personal bits are islands fed by
   cookies or server functions.
