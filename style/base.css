@@ -38,6 +38,8 @@ html {
   scroll-padding-block-start: calc(var(--header-h) + var(--sp-4));
   scrollbar-width: thin;
   scrollbar-color: color-mix(in oklab, var(--text-3) 50%, transparent) transparent;
+  /* The storefront's own pull-to-refresh replaces the browser's (features/core.ts). */
+  overscroll-behavior-y: contain;
   background: var(--page);
 }
 
@@ -297,7 +299,7 @@ hr {
   animation: spin 0.8s linear infinite;
 }
 
-/* ── Page transitions (the islands router wraps each swap in a view transition) */
+/* ── Page transitions (core/router.ts wraps each page swap in a view transition) */
 /* Short: the fetch already took its time; the swap itself should feel instant. */
 ::view-transition-old(root) {
   animation: 90ms var(--ease-in) both vt-out;

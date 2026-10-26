@@ -137,7 +137,7 @@ pub fn SiteFooter(rq: RequestCtx, categories: Vec<NavItem>) -> impl IntoView {
     };
 
     view! {
-        <footer class="site-footer">
+        <footer class="site-footer" data-region="footer">
             <div class="container site-footer__top">
                 <div class="site-footer__brand">
                     <a class="site-footer__logo" href="/" aria-label=tenant_name.clone()>
