@@ -121,6 +121,39 @@ fn replace_url(v: Option<u32>) {
     if let Ok(h) = window().history() {
         let _ = h.replace_state_with_url(&wasm_bindgen::JsValue::NULL, "", Some(&url));
     }
+    keep_prefs_links(&url);
+}
+
+/// The header's language/numeral/theme links come back to `next=<this page>` as the server
+/// rendered it; after a `replaceState` that would drop the chosen variant. Point them at the
+/// current URL (harmless if the shell already does this at click time).
+fn keep_prefs_links(url: &str) {
+    use wasm_bindgen::JsCast;
+    let Ok(links) = document().query_selector_all("a[href^=\"/__prefs\"]") else {
+        return;
+    };
+    for i in 0..links.length() {
+        let Some(a) = links
+            .item(i)
+            .and_then(|n| n.dyn_into::<web_sys::Element>().ok())
+        else {
+            continue;
+        };
+        let Some(href) = a.get_attribute("href") else {
+            continue;
+        };
+        let Some((path, query)) = href.split_once('?') else {
+            continue;
+        };
+        let Ok(params) = web_sys::UrlSearchParams::new_with_str(query) else {
+            continue;
+        };
+        params.set("next", url);
+        let _ = a.set_attribute(
+            "href",
+            &format!("{path}?{}", String::from(params.to_string())),
+        );
+    }
 }
 
 #[component]
