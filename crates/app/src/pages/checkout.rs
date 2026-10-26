@@ -9,7 +9,7 @@
 //! messages, focus on the first server error, a pending state and a double-submit guard.
 //!
 //! How that meets server_fn's own redirect for form posts (verified in the 0.8.22 source): a post
-//! that `Accept`s `text/html` (a browser without JS, or the islands router) makes server_fn set
+//! that `Accept`s `text/html` (a browser without JS, or the client router) makes server_fn set
 //! `Location: <Referer>` itself — with `?__path=…&__err=…` appended on error — and *then*
 //! `leptos_axum` applies the `ResponseOptions`, whose `Location` replaces it (`HeaderMap::extend`
 //! replaces). So:
@@ -184,7 +184,7 @@ mod imp {
     use crate::server::{cart, sim, state};
     use domain::cart::CartLine;
 
-    /// A browser form post (no JS) or an islands-router post — both ask for HTML.
+    /// A browser form post (no JS) or a client-router post — both ask for HTML.
     pub fn accepts_html() -> bool {
         use_context::<http::request::Parts>()
             .and_then(|p| {
@@ -272,8 +272,8 @@ mod imp {
     }
 }
 
-/// Step 1: the delivery address. Validated with `rules::validate` — the same function the
-/// address island runs on blur and submit.
+/// Step 1: the delivery address, validated with `rules::validate` (the browser code only
+/// pre-checks the form's HTML5 constraints).
 #[server]
 pub async fn checkout_address(
     name: String,
@@ -585,7 +585,7 @@ fn CheckoutBody(
         .filter(|e| !matches!(e, CheckoutError::Invalid(_)))
         .map(|e| e.message(lang));
     // One branch per step (and a separate one for an address re-render with server errors), so
-    // the islands router replaces the step wholesale instead of patching one into another.
+    // a step change replaces the step wholesale.
     let panel = match step {
         Step::Address if field_errors.is_empty() => EitherOf5::A(view! {
             <AddressForm initial=ctx.attempt.clone().or(ctx.address.clone()).unwrap_or_default() errors=vec![] form_error=step_error.clone()/>
