@@ -1,4 +1,5 @@
-//! Server-only state: tenants, catalogues, media, read cache, carts and orders. Never in WASM.
+//! Server-only state: tenants, catalogues, media, read cache and orders. (Carts live in the
+//! browser's `cart` cookie — `server::cart` prices them.)
 
 pub mod cache;
 pub mod cart;
@@ -23,11 +24,6 @@ use std::{
 pub use catalog::TenantCatalog;
 pub use media::Media;
 
-pub const COOKIE_CART: &str = "cart";
-/// Readable (not HttpOnly) cart count, so cacheable public pages can show the badge from a cookie
-/// without rendering anything personal into their HTML.
-pub const COOKIE_CART_COUNT: &str = "cart_n";
-
 /// Shared application state, provided to every render and server function as context.
 #[derive(Clone)]
 pub struct AppState(Arc<Inner>);
@@ -37,7 +33,6 @@ struct Inner {
     catalogs: RwLock<HashMap<String, Arc<TenantCatalog>>>,
     media: Arc<Media>,
     reads: cache::ReadCache,
-    carts: cart::CartStore,
     orders: orders::OrderStore,
 }
 
@@ -87,7 +82,6 @@ impl AppState {
             catalogs: RwLock::new(catalogs),
             media,
             reads: cache::ReadCache::new(),
-            carts: cart::CartStore::new(),
             orders: orders::OrderStore::new(),
         }));
         let _ = STATE.set(state.clone());
@@ -199,10 +193,6 @@ impl AppState {
 
     pub fn reads(&self) -> &cache::ReadCache {
         &self.0.reads
-    }
-
-    pub fn carts(&self) -> &cart::CartStore {
-        &self.0.carts
     }
 
     pub fn orders(&self) -> &orders::OrderStore {

@@ -82,7 +82,7 @@ pub fn ProductCard(
         None
     };
     let quick = (card.single_variant && card.in_stock).then(|| {
-        view! { <crate::pages::cart::QuickAdd product=card.id variant=card.default_variant/> }
+        view! { <crate::pages::cart::QuickAdd card=card.clone() lang numerals/> }
     });
     let vt = format!("p{}", card.id.0);
     let cls = if oos { "pcard pcard--oos" } else { "pcard" };

@@ -18,8 +18,6 @@ pub struct RequestCtx {
     /// Path and query of this request, e.g. `/c/coffee?sort=price`.
     pub path_and_query: String,
     pub prefs: Prefs,
-    /// Raw `Cookie` header value pairs we care about (cart id, …).
-    pub cart_id: Option<String>,
 }
 
 impl RequestCtx {
@@ -118,7 +116,6 @@ mod server {
             host,
             path_and_query,
             prefs,
-            cart_id: cookie(crate::server::COOKIE_CART),
         };
         provide_context(rq.clone());
         Ui::provide(prefs);

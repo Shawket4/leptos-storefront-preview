@@ -5,7 +5,7 @@ use axum::{
     extract::{Path, Query},
     http::{HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
-    routing::get,
+    routing::{get, post},
 };
 use leptos::prelude::*;
 use leptos_axum::{LeptosRoutes, generate_route_list};
@@ -53,6 +53,10 @@ async fn main() {
         .route("/__prefs", get(set_prefs))
         .route("/__tenant/{id}", get(set_tenant))
         .route("/__sim", get(set_sim))
+        // The no-JS cart forms (AGENTS.md, "The cart"): rewrite the `cart` cookie, 303 back.
+        .route("/cart/add", post(app::server::cart::forms::add))
+        .route("/cart/set", post(app::server::cart::forms::set))
+        .route("/cart/remove", post(app::server::cart::forms::remove))
         .nest("/media", media)
         .leptos_routes_with_context(
             &leptos_options,

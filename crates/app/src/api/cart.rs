@@ -1,144 +1,141 @@
-//! Cart server functions. Shaped for `<ActionForm>` (flat, form-encodable arguments) so the same
-//! endpoints serve islands (JSON) and plain no-JS `<form method=post>` (server_fn then answers
-//! with a redirect back to the Referer, and encodes any error into that URL).
+//! The cart's one data endpoint: `GET /api/cart/quote` — the server's pricing of the cart in the
+//! request's `cart` cookie (prices, stock caps, totals), money formatted in the visitor's numerals.
+//! The browser asks for it only when it needs those numbers (the drawer, /cart after a change);
+//! adding, removing and changing quantities never call the server (`client/src/stores/cart.ts`).
 //!
-//! Every response is `Cache-Control: private, no-store` and refreshes two cookies: the HttpOnly
-//! cart id and the readable `cart_n` count that cacheable pages use for the header badge.
-//!
-//! Error codes (map them to copy in the UI): `out_of_stock`, `unknown_product`,
-//! `addon_required`, `bad_addon`.
+//! Shape: `CartQuote` in `client/src/api/types.ts`.
 
-use super::types::CartView;
 use leptos::prelude::*;
+use leptos::server_fn::codec::GetUrl;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct CartQuote {
+    pub lines: Vec<CartQuoteLine>,
+    pub count: u32,
+    pub subtotal: String,
+    pub savings: Option<String>,
+    pub delivery: String,
+    pub delivery_free: bool,
+    /// "Add EGP 120.00 more for free delivery."; `None` once it's free.
+    pub free_delivery_hint: Option<String>,
+    pub total: String,
+    pub vat_included: String,
+    pub can_checkout: bool,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct CartQuoteLine {
+    /// Same as the client's `lineKey` (`domain::cart::CartLine::key`).
+    pub key: String,
+    pub product: u32,
+    pub variant: u32,
+    pub qty: u32,
+    pub name: String,
+    pub variant_label: Option<String>,
+    pub addons: Vec<String>,
+    pub href: String,
+    pub img: Option<String>,
+    pub unit_price: String,
+    pub compare_at: Option<String>,
+    pub line_total: String,
+    /// Most the shopper can have now (stock); 0 = unavailable.
+    pub max_qty: u32,
+    pub issue: Option<LineIssue>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LineIssue {
+    OutOfStock,
+    Capped,
+    Unavailable,
+}
+
+#[cfg(feature = "ssr")]
+pub use imp::quote;
 
 #[cfg(feature = "ssr")]
 mod imp {
     use super::*;
-    use crate::server::{cart, sim, state};
-    use domain::{ProductId, VariantId};
+    use crate::format;
+    use crate::prefs::{Lang, Numerals};
+    use crate::server::cart::{Issue, Priced, issue};
+    use crate::strings;
+    use domain::Piastres;
+    use domain::cart::CartLine;
 
-    pub fn empty(tenant: &crate::tenant::Tenant) -> CartView {
-        CartView { free_delivery_over: tenant.free_delivery_over, ..Default::default() }
-    }
-
-    /// Run `f` on this visitor's cart (creating it if needed), then price it and set cookies.
-    pub async fn mutate(
-        f: impl FnOnce(&mut cart::Cart, &crate::server::TenantCatalog) -> Result<(), ServerFnError>,
-    ) -> Result<CartView, ServerFnError> {
-        let rq = crate::request::init();
-        crate::server::cache::private();
-        sim::check_fail(sim::Widget::Cart)?;
-        sim::delay(sim::Widget::Cart).await;
-        let st = state();
-        let tenant = st.tenant(&rq.tenant.id).clone();
-        let catalog = st.catalog(&tenant.id);
-        let (id, handle, _) = st.carts().get_or_create(&tenant.id, rq.cart_id.as_deref());
-        let view = {
-            let mut c = handle.lock().map_err(|_| ServerFnError::new("cart lock"))?;
-            f(&mut c, &catalog)?;
-            cart::view(&c, &tenant, &catalog, st.media())
-        };
-        if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
-            for v in cart::cookies(&id, view.count) {
-                res.append_header(http::header::SET_COOKIE, v);
-            }
+    /// The quote for `lines` (cookie order; lines the catalogue lost come back `unavailable`).
+    pub fn quote(lines: &[CartLine], p: &Priced, lang: Lang, num: Numerals) -> CartQuote {
+        let m = |x: Piastres| format::money(x, lang, num);
+        let ar = lang.is_rtl();
+        let v = &p.view;
+        let out = lines
+            .iter()
+            .map(|cl| {
+                let key = cl.key();
+                match v.lines.iter().find(|l| l.key == key) {
+                    Some(l) => CartQuoteLine {
+                        key,
+                        product: l.product.0,
+                        variant: l.variant.0,
+                        qty: l.qty,
+                        name: l.name.pick(ar).to_owned(),
+                        variant_label: Some(l.variant_label.pick(ar).to_owned())
+                            .filter(|s| !s.is_empty()),
+                        addons: l.addons.iter().map(|a| a.pick(ar).to_owned()).collect(),
+                        href: format!("/p/{}", l.slug),
+                        img: (!l.img.is_missing()).then(|| l.img.src_near(192)),
+                        unit_price: m(l.unit_price),
+                        compare_at: l.compare_at.map(m),
+                        line_total: m(l.line_total),
+                        max_qty: l.max_qty,
+                        issue: issue(l).map(|i| match i {
+                            Issue::OutOfStock => LineIssue::OutOfStock,
+                            Issue::Capped(_) => LineIssue::Capped,
+                        }),
+                    },
+                    None => CartQuoteLine {
+                        key,
+                        product: cl.product.0,
+                        variant: cl.variant.0,
+                        qty: cl.qty,
+                        issue: Some(LineIssue::Unavailable),
+                        ..Default::default()
+                    },
+                }
+            })
+            .collect();
+        let left = (v.free_delivery_over.0 - v.subtotal.0).max(0);
+        CartQuote {
+            lines: out,
+            count: lines.iter().map(|l| l.qty).sum(),
+            subtotal: m(v.subtotal),
+            savings: (v.savings.0 > 0).then(|| m(v.savings)),
+            delivery: m(v.delivery_fee),
+            delivery_free: v.delivery_fee.0 == 0,
+            free_delivery_hint: (left > 0 && v.subtotal.0 > 0).then(|| {
+                strings::get("cart.free_hint", lang).replace("{amount}", &m(Piastres(left)))
+            }),
+            total: m(v.total),
+            vat_included: m(v.tax_included),
+            can_checkout: !lines.is_empty() && !p.blocked(),
         }
-        Ok(view)
-    }
-
-    pub fn parse_addons(raw: Option<String>) -> Vec<String> {
-        raw.unwrap_or_default()
-            .split([',', ' '])
-            .map(str::trim)
-            .filter(|s| !s.is_empty())
-            .map(str::to_owned)
-            .collect()
-    }
-
-    /// Check picked add-ons against the product's Madar-style modifier groups.
-    pub fn check_addons(p: &domain::Product, addons: &[String]) -> Result<(), ServerFnError> {
-        for a in addons {
-            if !p.modifier_groups.iter().any(|g| g.options.iter().any(|o| &o.id == a)) {
-                return Err(ServerFnError::new("bad_addon"));
-            }
-        }
-        for g in &p.modifier_groups {
-            let picked = g.options.iter().filter(|o| addons.contains(&o.id)).count() as u32;
-            let min = if g.required { g.min.max(1) } else { g.min };
-            let max = match g.selection {
-                domain::SelectionType::Single => 1,
-                domain::SelectionType::Multi => g.max.unwrap_or(u32::MAX),
-            };
-            if picked < min {
-                return Err(ServerFnError::new("addon_required"));
-            }
-            if picked > max {
-                return Err(ServerFnError::new("bad_addon"));
-            }
-        }
-        Ok(())
-    }
-
-    pub fn ids(product: u32, variant: u32) -> (ProductId, VariantId) {
-        (ProductId(product), VariantId(variant))
     }
 }
 
-/// The visitor's cart (empty if they have none yet).
-#[server]
-pub async fn cart_get() -> Result<CartView, ServerFnError> {
+/// `GET /api/cart/quote`: the cart in the `cart` cookie, priced now. Personal: never cached.
+#[server(endpoint = "cart/quote", input = GetUrl)]
+pub async fn get_quote() -> Result<CartQuote, ServerFnError> {
+    use crate::server::{cart, sim};
+    // Everything from the request first: after the `.await` the client may have gone.
     let rq = crate::request::init();
     crate::server::cache::private();
-    crate::server::sim::delay(crate::server::sim::Widget::Cart).await;
+    let lines = cart::from_request();
+    sim::check_fail(sim::Widget::Cart)?;
+    sim::delay(sim::Widget::Cart).await;
     let st = crate::server::state();
     let tenant = st.tenant(&rq.tenant.id).clone();
-    let Some(handle) = rq.cart_id.as_deref().and_then(|id| st.carts().get(&tenant.id, id)) else {
-        return Ok(imp::empty(&tenant));
-    };
-    let c = handle.lock().map_err(|_| ServerFnError::new("cart lock"))?;
-    Ok(crate::server::cart::view(&c, &tenant, &st.catalog(&tenant.id), st.media()))
-}
-
-/// Add a variant (with optional comma-separated add-on ids). `qty` defaults to 1.
-#[server]
-pub async fn cart_add(product: u32, variant: u32, qty: Option<u32>, addons: Option<String>) -> Result<CartView, ServerFnError> {
-    let (pid, vid) = imp::ids(product, variant);
-    let addons = imp::parse_addons(addons);
-    imp::mutate(move |cart, catalog| {
-        let (p, v) = catalog.variant(pid, vid).ok_or_else(|| ServerFnError::new("unknown_product"))?;
-        if v.stock == 0 {
-            return Err(ServerFnError::new("out_of_stock"));
-        }
-        imp::check_addons(p, &addons)?;
-        cart.add(pid, vid, addons, qty.unwrap_or(1).max(1), v.stock);
-        Ok(())
-    })
-    .await
-}
-
-/// Set a line's quantity; 0 removes it. `key` is `CartLineView::key`.
-#[server]
-pub async fn cart_set_qty(key: String, qty: u32) -> Result<CartView, ServerFnError> {
-    imp::mutate(move |cart, catalog| {
-        let stock = cart
-            .lines
-            .iter()
-            .find(|l| l.key() == key)
-            .and_then(|l| catalog.variant(l.product, l.variant))
-            .map(|(_, v)| v.stock)
-            .unwrap_or(0);
-        cart.set_qty(&key, qty, stock);
-        Ok(())
-    })
-    .await
-}
-
-/// Remove a line.
-#[server]
-pub async fn cart_remove(key: String) -> Result<CartView, ServerFnError> {
-    imp::mutate(move |cart, _| {
-        cart.remove(&key);
-        Ok(())
-    })
-    .await
+    let priced = cart::price(&lines, &tenant, &st.catalog(&tenant.id), st.media());
+    Ok(quote(&lines, &priced, rq.prefs.lang, rq.prefs.numerals))
 }

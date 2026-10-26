@@ -1,58 +1,174 @@
 //! `/orders/:id` — order tracking.
 //!
 //! The server renders the whole page — status timeline, expected times, summary — so it's
-//! complete without JS (with a refresh link). One island, [`live::OrderLive`], owns the parts that
-//! move: it polls `order_status` every few seconds (sooner when the next step is due, never after
-//! the order is delivered, never while the tab is hidden or after the page is left), grows the
-//! progress line, and announces each new status through an `aria-live` region.
+//! complete without JS (with a refresh link). The moving parts ([`live::OrderLive`]) are kept
+//! current by `features/checkout.ts`, which polls the fixed endpoint `GET /api/orders/track?id=`
+//! ([`order_track`], shape `OrderTrack` in `client/src/api/types.ts`) — the same [`TrackJson`]
+//! the page was rendered from.
 //!
-//! Tracking links can be shared, so only the visitor who placed the order (same cart cookie) sees
-//! the name, phone and street; anyone else sees the status and the area.
+//! Tracking links can be shared, so only the visitor who placed the order (same `visitor` cookie)
+//! sees the name, phone and street; anyone else sees the status and the area.
 
 mod live;
 
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
-use crate::components::states::{SectionError, StateTone, StateView};
+use crate::components::states::{StateTone, StateView};
 use crate::format;
 use crate::media::Img;
 use crate::pages::cart::{ArtImage, art};
 use crate::pages::checkout::rules;
 use crate::prefs::{Lang, Numerals, tr};
 use crate::request::req;
-use domain::{L10n, Order, OrderStatus as Status, PaymentMethod, Piastres};
+use domain::{Order, OrderStatus as Status, PaymentMethod, Piastres};
 use leptos::either::Either;
 use leptos::prelude::*;
+use leptos::server_fn::codec::GetUrl;
 use leptos_meta::{Meta, Title};
 use leptos_router::hooks::{use_params_map, use_query_map};
 use serde::{Deserialize, Serialize};
 
 pub use live::OrderLive;
 
-/// The moving parts of an order, as the tracking island polls them.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-pub struct OrderTrack {
-    pub status: Status,
-    /// When each reached step happened (Unix ms).
-    pub times: Vec<(Status, i64)>,
-    /// The next step and when it is due.
-    pub next: Option<(Status, i64)>,
-    pub created_ms: i64,
-    /// Express: when it should arrive.
-    pub eta_ms: Option<i64>,
-    /// Scheduled: the chosen window.
-    pub slot: L10n,
-    pub express: bool,
-    /// Server clock at the time of the answer.
-    pub now_ms: i64,
+/// The moving parts of an order, formatted in the visitor's language and numerals: what the
+/// tracking block renders and what `GET /api/orders/track` answers (`OrderTrack` in TS).
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct TrackJson {
+    pub id: String,
+    /// `received`, `confirmed`, `preparing`, `ready`, `out_for_delivery`, `delivered`,
+    /// `cancelled`, `rejected`.
+    pub status: String,
+    pub headline: String,
+    pub eta: String,
+    /// One per timeline step, in order.
+    pub steps: Vec<TrackStep>,
+    /// How far the timeline's line has grown, 0..=1.
+    pub progress: f32,
+    pub cancelled: bool,
+    /// A final status: nothing will change any more (stop polling).
+    pub done: bool,
+    /// When the next step is due, from now (ms) — for pacing the polls.
+    pub next_in_ms: Option<i64>,
+    /// "Updated 06:02 PM".
+    pub updated: String,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct TrackStep {
+    /// `done`, `current` or `todo`.
+    pub state: String,
+    /// When it happened, or "Expected around …" for the next one.
+    pub time: Option<String>,
+}
+
+fn status_code(s: Status) -> &'static str {
+    match s {
+        Status::Received => "received",
+        Status::Confirmed => "confirmed",
+        Status::Preparing => "preparing",
+        Status::Ready => "ready",
+        Status::OutForDelivery => "out_for_delivery",
+        Status::Delivered => "delivered",
+        Status::Cancelled => "cancelled",
+        Status::Rejected => "rejected",
+    }
+}
+
+/// The order's tracking view now.
+pub fn track_json(o: &Order, lang: Lang, num: Numerals) -> TrackJson {
+    let now = crate::server::orders::now_ms();
+    let at = |ms| format::time_cairo(ms, lang, num);
+    let ar = lang.is_rtl();
+    let next = crate::server::orders::OrderStore::next_step_at(o);
+    let express = o.slot.en.starts_with("Express");
+    let cancelled = matches!(o.status, Status::Cancelled | Status::Rejected);
+    let terminal = o.status.is_terminal();
+    let cur = o.status.step_index().unwrap_or(0);
+    let eta = match o.status {
+        Status::Delivered => {
+            let when = o
+                .status_times_ms
+                .iter()
+                .find(|(s, _)| *s == Status::Delivered)
+                .map(|(_, ms)| at(*ms))
+                .unwrap_or_default();
+            match lang {
+                Lang::En => format!("Delivered at {when}. Enjoy!"),
+                Lang::Ar => format!("اتوصّل الساعة {when}. بالهنا والشفا!"),
+            }
+        }
+        Status::Cancelled | Status::Rejected => tr(
+            lang,
+            "If you paid, the amount will be refunded.",
+            "لو كنت دفعت، المبلغ هيرجعلك.",
+        )
+        .to_owned(),
+        _ if express => {
+            let eta = at(o.created_at_ms + o.estimated_minutes as i64 * 60_000);
+            match lang {
+                Lang::En => format!("Arriving by {eta}"),
+                Lang::Ar => format!("هيوصلك قبل {eta}"),
+            }
+        }
+        _ => match lang {
+            Lang::En => format!("Delivery window: {}", o.slot.en),
+            Lang::Ar => format!("ميعاد التوصيل: {}", o.slot.ar),
+        },
+    };
+    let steps = Status::STEPS
+        .into_iter()
+        .enumerate()
+        .map(|(i, step)| {
+            let state = if cancelled {
+                "todo"
+            } else if i < cur || (i == cur && terminal) {
+                "done"
+            } else if i == cur {
+                "current"
+            } else {
+                "todo"
+            };
+            let time = if let Some((_, ms)) = o.status_times_ms.iter().find(|(s, _)| *s == step) {
+                Some(at(*ms))
+            } else if !cancelled && next.is_some_and(|(s, _)| s == step) {
+                let when = at(next.map(|(_, ms)| ms).unwrap_or_default());
+                Some(match lang {
+                    Lang::En => format!("Expected around {when}"),
+                    Lang::Ar => format!("متوقع حوالي {when}"),
+                })
+            } else {
+                None
+            };
+            TrackStep {
+                state: state.to_owned(),
+                time,
+            }
+        })
+        .collect();
+    TrackJson {
+        id: o.id.clone(),
+        status: status_code(o.status).to_owned(),
+        headline: o.status.headline().pick(ar).to_owned(),
+        eta,
+        steps,
+        progress: if cancelled {
+            0.0
+        } else {
+            cur as f32 / (Status::STEPS.len() - 1) as f32
+        },
+        cancelled,
+        done: terminal,
+        next_in_ms: next.map(|(_, ms)| (ms - now).max(0)),
+        updated: format!("{} {}", tr(lang, "Updated", "آخر تحديث"), at(now)),
+    }
 }
 
 /// Everything the page renders.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct OrderPageData {
     pub order: Order,
-    pub track: OrderTrack,
+    pub track: TrackJson,
     /// Line images, resolved.
     pub imgs: Vec<Img>,
     /// The visitor placed this order (sees the full address).
@@ -62,24 +178,9 @@ pub struct OrderPageData {
     pub area: String,
 }
 
-#[cfg(feature = "ssr")]
-fn track_of(o: &Order) -> OrderTrack {
-    let express = o.slot.en.starts_with("Express");
-    OrderTrack {
-        status: o.status,
-        times: o.status_times_ms.clone(),
-        next: crate::server::orders::OrderStore::next_step_at(o),
-        created_ms: o.created_at_ms,
-        eta_ms: express.then(|| o.created_at_ms + o.estimated_minutes as i64 * 60_000),
-        slot: o.slot.clone(),
-        express,
-        now_ms: crate::server::orders::now_ms(),
-    }
-}
-
-/// The order's live status (polled by the tracking island). `None` for an unknown id.
-#[server]
-pub async fn order_status(id: String) -> Result<Option<OrderTrack>, ServerFnError> {
+/// `GET /api/orders/track?id=` — the order's tracking view now (`null` for an unknown id).
+#[server(endpoint = "orders/track", input = GetUrl)]
+pub async fn order_track(id: String) -> Result<Option<TrackJson>, ServerFnError> {
     let rq = crate::request::init();
     crate::server::cache::private();
     crate::server::sim::check_fail(crate::server::sim::Widget::Order)?;
@@ -87,24 +188,20 @@ pub async fn order_status(id: String) -> Result<Option<OrderTrack>, ServerFnErro
     Ok(crate::server::state()
         .orders()
         .get(&rq.tenant.id, &id)
-        .map(|o| track_of(&o)))
+        .map(|o| track_json(&o, rq.prefs.lang, rq.prefs.numerals)))
 }
 
-/// The tracking page's data. `None` for an unknown id (or another tenant's order).
-#[server]
-pub async fn order_detail(id: String) -> Result<Option<OrderPageData>, ServerFnError> {
+/// The tracking page's data, read synchronously (orders are in memory). `None` for an unknown id
+/// (or another tenant's order).
+fn order_detail(id: &str) -> Option<OrderPageData> {
     let rq = crate::request::init();
-    crate::server::cache::private();
-    crate::server::sim::check_fail(crate::server::sim::Widget::Order)?;
-    crate::server::sim::delay(crate::server::sim::Widget::Order).await;
+    let visitor = crate::pages::checkout::draft::visitor();
     let st = crate::server::state();
-    let Some(order) = st.orders().get(&rq.tenant.id, &id) else {
-        return Ok(None);
-    };
+    let order = st.orders().get(&rq.tenant.id, id)?;
     let meta = crate::pages::checkout::draft::order_meta(&order.id);
     let owner = meta
         .as_ref()
-        .is_some_and(|m| rq.cart_id.as_deref() == Some(m.owner.as_str()));
+        .is_some_and(|m| !m.owner.is_empty() && visitor.as_deref() == Some(m.owner.as_str()));
     let imgs = order
         .lines
         .iter()
@@ -115,9 +212,9 @@ pub async fn order_detail(id: String) -> Result<Option<OrderPageData>, ServerFnE
                 .unwrap_or_else(|| Img::missing(""))
         })
         .collect();
-    let track = track_of(&order);
+    let track = track_json(&order, rq.prefs.lang, rq.prefs.numerals);
     let (notes, city, area) = meta.map(|m| (m.notes, m.city, m.area)).unwrap_or_default();
-    Ok(Some(OrderPageData {
+    Some(OrderPageData {
         order,
         track,
         imgs,
@@ -125,62 +222,40 @@ pub async fn order_detail(id: String) -> Result<Option<OrderPageData>, ServerFnE
         notes,
         city,
         area,
-    }))
+    })
 }
 
 #[component]
 pub fn OrderPage() -> impl IntoView {
-    #[cfg(feature = "ssr")]
     crate::server::cache::private();
     let rq = req();
     let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
     let params = use_params_map();
     let id = params.with_untracked(|p| p.get("id")).unwrap_or_default();
     let just_placed = use_query_map().with_untracked(|q| q.get("placed").is_some());
-    // The status has to be decided before the first chunk streams; the lookup is in memory.
-    #[cfg(feature = "ssr")]
-    if crate::server::state()
-        .orders()
-        .get(&rq.tenant.id, &id)
-        .is_none()
-    {
+    // Everything is in memory: decided before the first chunk (status included), no resource.
+    let detail = order_detail(&id);
+    if detail.is_none() {
         if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
             res.set_status(http::StatusCode::NOT_FOUND);
         }
     }
     let shown_id = id.to_ascii_uppercase();
     let example = format!("{}-48213", rq.tenant.order_prefix);
-    let data = Resource::new(move || id.clone(), order_detail);
     let tenant = rq.tenant.name.pick(lang.is_rtl()).to_owned();
+    let body = match detail {
+        Some(d) => Either::Left(view! {
+            <Title text=format!("{} {} · {tenant}", tr(lang, "Order", "طلب"), d.order.id)/>
+            <OrderView d just_placed lang num/>
+        }),
+        None => Either::Right(view! {
+            <Title text=format!("{} · {tenant}", tr(lang, "Order not found", "الطلب غير موجود"))/>
+            <OrderNotFound id=shown_id example lang/>
+        }),
+    };
     view! {
         <Meta name="robots" content="noindex"/>
-        <div class="container order-page">
-            <Suspense fallback=move || view! { <OrderSkeleton/> }>
-                <ErrorBoundary fallback=move |errors| view! {
-                    <SectionError errors what=tr(lang, "this order", "الطلب").to_owned()/>
-                }>
-                    {
-                        let tenant = tenant.clone();
-                        move || {
-                            let (tenant, shown_id, example) = (tenant.clone(), shown_id.clone(), example.clone());
-                            Suspend::new(async move {
-                                let d = data.await?;
-                                Ok::<_, ServerFnError>(match d {
-                                    Some(d) => Either::Left(view! {
-                                        <Title text=format!("{} {} · {tenant}", tr(lang, "Order", "طلب"), d.order.id)/>
-                                        <OrderView d just_placed lang num/>
-                                    }),
-                                    None => Either::Right(view! {
-                                        <Title text=format!("{} · {tenant}", tr(lang, "Order not found", "الطلب غير موجود"))/>
-                                        <OrderNotFound id=shown_id.clone() example=example.clone() lang/>
-                                    }),
-                                })
-                            })
-                        }
-                    }
-                </ErrorBoundary>
-            </Suspense>
-        </div>
+        <div class="container order-page">{body}</div>
     }
 }
 
@@ -203,22 +278,6 @@ fn OrderNotFound(id: String, example: String, lang: Lang) -> impl IntoView {
             <p class="order-page__more">
                 <a class="link" href="/">{tr(lang, "Back to the shop", "ارجع للمتجر")}</a>
             </p>
-        </div>
-    }
-}
-
-#[component]
-fn OrderSkeleton() -> impl IntoView {
-    use crate::components::skeleton::Skeleton;
-    view! {
-        <div class="order-layout" aria-hidden="true">
-            <div class="card order-track">
-                <Skeleton width="40%" height="1rem"/>
-                <Skeleton width="70%" height="2.25rem"/>
-                <Skeleton width="55%" height="1rem"/>
-                <Skeleton width="100%" height="16rem"/>
-            </div>
-            <div class="card order-side"><Skeleton width="100%" height="20rem"/></div>
         </div>
     }
 }
@@ -300,18 +359,7 @@ fn OrderView(d: OrderPageData, just_placed: bool, lang: Lang, num: Numerals) -> 
         .zip(d.imgs.iter().cloned())
         .collect();
     let count: u32 = o.lines.iter().map(|l| l.quantity).sum();
-    let vat = match lang {
-        Lang::En => format!(
-            "Prices include {} VAT ({}).",
-            crate::pages::cart::math::percent(14, num),
-            format::money(o.tax_included, lang, num)
-        ),
-        Lang::Ar => format!(
-            "الأسعار شاملة ضريبة القيمة المضافة {} ({}).",
-            crate::pages::cart::math::percent(14, num),
-            format::money(o.tax_included, lang, num)
-        ),
-    };
+    let vat = crate::pages::cart::vat_note(o.tax_included, lang, num);
     view! {
         {(just_placed && d.owner).then(|| view! {
             <section class="placed card" aria-labelledby="placed-title">
@@ -340,7 +388,7 @@ fn OrderView(d: OrderPageData, just_placed: bool, lang: Lang, num: Numerals) -> 
                 </p>
                 <div class="order-track__body">
                     <ArtImage art=art("delivery") fallback_icon="truck" lang/>
-                    <OrderLive id=o.id.clone() track=d.track.clone()/>
+                    <OrderLive t=d.track.clone() lang/>
                 </div>
             </section>
             <aside class="card order-side" aria-label=tr(lang, "Order details", "تفاصيل الطلب")>
