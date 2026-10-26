@@ -103,6 +103,13 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   navigations always get in-order HTML (leptos_axum disables OOO for them).
   **Response headers and status must be set before the first chunk** — synchronously at the top of
   the page component (or, in PartiallyBlocked pages, before the blocking resource resolves).
+- **Islands must never be pending at hydration** (found 2026-10-26): an island whose
+  `<Suspense>`/`<Transition>` wraps a `Resource`/`LocalResource` that isn't ready synchronously
+  hydrates on a full load, but PANICS after an islands-router navigation into that page (its
+  resolved-resource inline scripts never run in DOMParser-inserted HTML, and the hydration-id
+  sequence breaks) — and the panic cascades to every island hydrated after it (header badge
+  included). Seed island data from PROPS (an `AsyncDerived`/signal ready on first poll); fetch only
+  in response to user actions after hydration (e.g. opening the drawer).
 - Data: `Resource::new(source, fetcher)` + `<Suspense fallback=…>` / `<Transition>`;
   `Suspend::new(async move { … })` inside the view; `ErrorBoundary` per section;
   `ServerAction::<Fn>::new()` + `<ActionForm action=…>` (works without JS: a plain POST to the

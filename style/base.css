@@ -298,11 +298,12 @@ hr {
 }
 
 /* ── Page transitions (the islands router wraps each swap in a view transition) */
+/* Short: the fetch already took its time; the swap itself should feel instant. */
 ::view-transition-old(root) {
-  animation: var(--dur-fast) var(--ease-in) both vt-out;
+  animation: 90ms var(--ease-in) both vt-out;
 }
 ::view-transition-new(root) {
-  animation: var(--dur-base) var(--ease-out) both vt-in;
+  animation: 140ms var(--ease-out) both vt-in;
 }
 @keyframes vt-out {
   to {

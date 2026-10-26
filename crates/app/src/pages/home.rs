@@ -1,7 +1,6 @@
-//! Home page, laid out like Apple's Store page: a large two-tone title, the category rail, then
-//! "The latest" — swipeable product tiles built from real catalogue packshots (no stock photography,
-//! nothing floating over an image). The title and tiles are plain server HTML in the first chunk
-//! (the first tile's packshot is the LCP).
+//! Home page, product-led like the marketplaces people actually use on their phones: a one-line
+//! ribbon of store promises, the category rail, then today's deals, picks and bestsellers — real
+//! products above the fold, no hero banner (owner's call).
 //! Every merchandising rail is its own `<Suspense>` + `<ErrorBoundary>` around its own server
 //! function, so with out-of-order streaming each rail arrives the moment its data does — the slow
 //! "deals" rail sits *above* "featured" yet lands after it — and a failing rail (`?fail=deals`)
@@ -38,100 +37,6 @@ fn home_art(_: &str, _: Lang) -> HomeArt {
     HomeArt::default()
 }
 
-/// One promo panel: a real product, resolved synchronously from the in-memory catalogue so it is in
-/// the first chunk (no Suspense, no layout shift).
-#[derive(Clone)]
-struct Panel {
-    slug: String,
-    eyebrow: String,
-    name: String,
-    sub: String,
-    price: String,
-    img: Img,
-}
-
-/// Which products the home page promotes (in production: the tenant's CMS campaign).
-#[cfg(feature = "ssr")]
-struct Campaign {
-    hero: (u32, L10n),
-    duo: [(u32, L10n); 2],
-}
-
-#[cfg(feature = "ssr")]
-fn campaign(tenant: &str) -> Campaign {
-    match tenant {
-        "souq" => Campaign {
-            hero: (2451, L10n::new("Fresh this week", "طازة الأسبوع ده")),
-            duo: [
-                (2053, L10n::new("Baked this morning", "مخبوز الصبح")),
-                (2501, L10n::new("Bestseller", "الأكثر مبيعًا")),
-            ],
-        },
-        _ => Campaign {
-            hero: (1202, L10n::new("Featured", "مميز")),
-            duo: [(1106, L10n::new("New", "جديد")), (1807, L10n::new("Fragrance", "عطور"))],
-        },
-    }
-}
-
-#[cfg(feature = "ssr")]
-fn panels(tenant: &str, lang: Lang, num: Numerals) -> (Option<Panel>, Vec<Panel>) {
-    let catalog = crate::server::current_catalog();
-    let ar = lang.is_rtl();
-    let make = |id: u32, eyebrow: &L10n| -> Option<Panel> {
-        let card = catalog.card(domain::ProductId(id))?;
-        let p = catalog.product(domain::ProductId(id))?;
-        if card.img.is_missing() {
-            return None;
-        }
-        let brand = card.brand.as_ref().map(|b| b.pick(ar).to_owned()).unwrap_or_default();
-        // Headline = the product, not the SKU: drop the brand prefix and the " — colour" suffix.
-        let full = card.name.pick(ar);
-        let name = full
-            .strip_prefix(brand.as_str())
-            .filter(|rest| !brand.is_empty() && rest.starts_with(' '))
-            .map(str::trim_start)
-            .unwrap_or(full);
-        let name = name.split(" — ").next().unwrap_or(name);
-        let money = format::money_short(card.price, lang, num);
-        Some(Panel {
-            slug: card.slug.clone(),
-            eyebrow: eyebrow.pick(ar).to_owned(),
-            name: no_break_hyphens(name),
-            sub: no_break_hyphens(p.subtitle.pick(ar)),
-            price: match (card.from, lang) {
-                (true, Lang::En) => format!("From {money}"),
-                (true, Lang::Ar) => format!("من {money}"),
-                _ => money,
-            },
-            img: card.img.clone(),
-        })
-    };
-    let c = campaign(tenant);
-    let hero = make(c.hero.0, &c.hero.1);
-    let duo = c.duo.iter().filter_map(|(id, e)| make(*id, e)).collect();
-    (hero, duo)
-}
-
-#[cfg(not(feature = "ssr"))]
-fn panels(_: &str, _: Lang, _: Numerals) -> (Option<Panel>, Vec<Panel>) {
-    (None, vec![])
-}
-
-/// "14-inch" must not break after the hyphen: use U+2011 (non-breaking hyphen) between word chars.
-#[cfg(feature = "ssr")]
-fn no_break_hyphens(s: &str) -> String {
-    let chars: Vec<char> = s.chars().collect();
-    chars
-        .iter()
-        .enumerate()
-        .map(|(i, c)| {
-            let around = i > 0 && i + 1 < chars.len() && chars[i - 1].is_alphanumeric() && chars[i + 1].is_alphanumeric();
-            if *c == '-' && around { '\u{2011}' } else { *c }
-        })
-        .collect()
-}
-
 /// The meta description (in production: CMS content per tenant).
 fn description(tenant: &str) -> L10n {
     match tenant {
@@ -158,7 +63,6 @@ pub fn HomePage() -> impl IntoView {
     let ar = lang.is_rtl();
     let t = rq.tenant.clone();
     let art = home_art(&t.id, lang);
-    let (hero, duo) = panels(&t.id, lang, num);
 
     let title = format!("{} · {}", t.name.pick(ar), t.tagline.pick(ar));
     let description = description(&t.id).pick(ar).to_owned();
@@ -211,23 +115,18 @@ pub fn HomePage() -> impl IntoView {
 
         <NoJsNote lang/>
         <p class="ribbon">{ribbon}</p>
-        {hero.map(|p| view! { <PromoPanel panel=p lang hero=true/> })}
-        {(!duo.is_empty()).then(|| view! {
-            <div class="duo">
-                {duo.into_iter().map(|p| view! { <PromoPanel panel=p lang/> }).collect_view()}
-            </div>
-        })}
 
         <Container>
+            <h1 class="sr-only">{format!("{} — {}", t.name.pick(ar), t.tagline.pick(ar))}</h1>
             <CategoryRail lang/>
             <RailSection rail=Rail::Deals lang num
                 title=tr(lang, "Today's deals", "عروض النهارده")
                 subtitle=tr(lang, "Fresh prices, every morning", "أسعار جديدة كل يوم الصبح")
-                href="/search?deal=1&sort=discount" countdown=true/>
+                href="/search?deal=1&sort=discount" countdown=true priority=true/>
             <RailSection rail=Rail::Featured lang num
                 title=tr(lang, "Picked for you", "اخترنالك")
                 subtitle=tr(lang, "What our buyers are excited about this week", "اللي فريقنا متحمس له الأسبوع ده")
-                href="/search?sort=rating" priority=true/>
+                href="/search?sort=rating"/>
             {express.then(|| view! {
                 <RailSection rail=Rail::Express lang num
                     title=tr(lang, "At your door in 30 minutes", "عندك في ٣٠ دقيقة")
@@ -239,45 +138,6 @@ pub fn HomePage() -> impl IntoView {
                 subtitle=tr(lang, "What everyone's ordering", "اللي الناس كلها بتطلبه")
                 href="/search?sort=rating"/>
         </Container>
-    }
-}
-
-/// An apple.com-style promo panel: eyebrow, the product as the headline, one line, the price, two
-/// actions, then the packshot — big. Type sits on a solid panel; nothing overlaps the image.
-#[component]
-fn PromoPanel(panel: Panel, lang: Lang, #[prop(optional)] hero: bool) -> impl IntoView {
-    let href = format!("/p/{}", panel.slug);
-    let heading = if hero { "promo__name promo__name--hero" } else { "promo__name" };
-    view! {
-        <section class="promo" class:promo--hero=hero aria-label=panel.name.clone()>
-            <p class="promo__eyebrow">{panel.eyebrow}</p>
-            {if hero {
-                view! { <h1 class=heading>{panel.name.clone()}</h1> }.into_any()
-            } else {
-                view! { <h2 class=heading>{panel.name.clone()}</h2> }.into_any()
-            }}
-            <p class="promo__sub">{panel.sub}</p>
-            <p class="promo__price">{panel.price}</p>
-            <p class="promo__ctas">
-                <a class="promo__buy" href=href.clone()>{tr(lang, "Buy", "اشتري")}</a>
-                <a class="promo__more" href=href.clone()>
-                    {tr(lang, "Learn more", "اعرف أكتر")}<Icon name="chevron-right" size=18 class="flip-rtl"/>
-                </a>
-            </p>
-            <a class="promo__media" href=href tabindex="-1" aria-hidden="true">
-                <img
-                    src=panel.img.src_near(960)
-                    srcset=panel.img.srcset()
-                    sizes=if hero { "(min-width: 768px) 560px, 86vw" } else { "(min-width: 768px) 380px, 70vw" }
-                    alt=""
-                    width="960"
-                    height="960"
-                    loading=if hero { "eager" } else { "lazy" }
-                    fetchpriority=if hero { "high" } else { "auto" }
-                    decoding="async"
-                />
-            </a>
-        </section>
     }
 }
 

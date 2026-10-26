@@ -99,7 +99,8 @@ impl ListingQuery {
         let mut q = ListingQuery { category, page: 1, ..Default::default() };
         for pair in qs.trim_start_matches('?').split('&').filter(|s| !s.is_empty()) {
             let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
-            let v = url_decode(v);
+            // Figures may arrive in Arabic-Indic digits from a no-JS form (٥٠٠ → 500).
+            let v = ascii_digits(&url_decode(v));
             match k {
                 "q" if !v.trim().is_empty() => q.q = Some(v.trim().to_owned()),
                 "min" => q.min = v.parse().ok().filter(|n: &i64| *n >= 0),
@@ -168,6 +169,20 @@ impl ListingQuery {
     pub fn has_filters(&self) -> bool {
         self.min.is_some() || self.max.is_some() || !self.brands.is_empty() || self.in_stock || self.deal
     }
+}
+
+/// `٠-٩` / `۰-۹` → `0-9`, and the Arabic thousands/decimal separators dropped/normalised, so
+/// numbers typed with Arabic-Indic digits parse like Western ones.
+pub fn ascii_digits(s: &str) -> String {
+    s.chars()
+        .filter_map(|c| match c {
+            '٠'..='٩' => char::from_u32('0' as u32 + (c as u32 - '٠' as u32)),
+            '۰'..='۹' => char::from_u32('0' as u32 + (c as u32 - '۰' as u32)),
+            '\u{066C}' => None,      // Arabic thousands separator
+            '\u{066B}' => Some('.'), // Arabic decimal separator
+            c => Some(c),
+        })
+        .collect()
 }
 
 pub fn url_encode(s: &str) -> String {

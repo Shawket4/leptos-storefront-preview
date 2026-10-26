@@ -31,10 +31,15 @@ pub fn price_label(min: Option<i64>, max: Option<i64>, lang: Lang, num: Numerals
     }
 }
 
-/// Which results are on screen: `1–24 of 187 items` / `١–٢٤ من ١٨٧ منتجًا`.
+/// Which results are on screen: `1–24 of 187 items` / `١–٢٤ من ١٨٧ منتجًا`; just the count
+/// when they all fit on one page.
 pub fn range_label(page: u32, total: u32, lang: Lang, num: Numerals) -> String {
     if total == 0 {
         return tr(lang, "No items", "مفيش منتجات").to_owned();
+    }
+    // One page holds them all: the range would only repeat the count.
+    if total <= PER_PAGE {
+        return format::items(total, lang, num);
     }
     let first = (page.max(1) - 1) * PER_PAGE + 1;
     let last = (page.max(1) * PER_PAGE).min(total);
