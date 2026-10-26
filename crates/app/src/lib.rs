@@ -54,6 +54,11 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <meta name="color-scheme" content=color_scheme/>
                 {home_nojs_fallback(&rq.path_and_query)}
                 <link rel="stylesheet" id="leptos" href="/pkg/storefront.css"/>
+                // Per-tenant icons (WebP, like every image asset here).
+                <link rel="icon" type="image/webp" sizes="64x64" href=format!("/media/brand/{}-icon-64.webp", t.id)/>
+                <link rel="icon" type="image/webp" sizes="192x192" href=format!("/media/brand/{}-icon-192.webp", t.id)/>
+                <link rel="apple-touch-icon" href=format!("/media/brand/{}-icon-192.webp", t.id)/>
+                <meta name="theme-color" content=if p.theme == prefs::Theme::Dark { "#0B0B0C" } else { "#FAFAF9" }/>
                 <AutoReload options=options.clone()/>
                 <HydrationScripts options islands=true islands_router=true/>
                 <MetaTags/>

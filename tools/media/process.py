@@ -39,6 +39,9 @@ import sys
 
 from PIL import Image
 
+# Pillow < 9.1 has no Image.Resampling enum (this machine ships 9.0.1).
+Resampling = getattr(Image, "Resampling", Image)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MEDIA = os.path.join(ROOT, "data", "media")
 
@@ -96,7 +99,7 @@ def dominant_hex(im: Image.Image) -> str:
     rgba = im.convert("RGBA")
     bg = Image.new("RGBA", rgba.size, (255, 255, 255, 255))
     flat = Image.alpha_composite(bg, rgba).convert("RGB")
-    r, g, b = flat.resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))
+    r, g, b = flat.resize((1, 1), Resampling.BOX).getpixel((0, 0))
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
@@ -104,7 +107,7 @@ def lqip(im: Image.Image, alpha: bool) -> str:
     w, h = im.size
     tw = 20
     th = max(1, round(h * tw / w))
-    small = im.resize((tw, th), Image.Resampling.BOX)
+    small = im.resize((tw, th), Resampling.BOX)
     buf = io.BytesIO()
     small.save(buf, "WEBP", quality=35, method=6)
     return "data:image/webp;base64," + base64.b64encode(buf.getvalue()).decode()
@@ -120,7 +123,7 @@ def save_ladder(im: Image.Image, key: str, kind: str, alpha: bool) -> list[int]:
     os.makedirs(out_dir, exist_ok=True)
     for w in widths:
         h = round(im.size[1] * w / src_w)
-        rung = im if w == src_w else im.resize((w, h), Image.Resampling.LANCZOS)
+        rung = im if w == src_w else im.resize((w, h), Resampling.LANCZOS)
         path = os.path.join(MEDIA, f"{key}-{w}.webp")
         params = dict(quality=QUALITY[kind], method=6)
         if alpha:
