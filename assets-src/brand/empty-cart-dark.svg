@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>Empty cart</title>
+  <!-- Storefront empty-state art, dark version. Derived from empty-cart-light.svg by tools/brand/build.py (ART_DARK); edit the light file. -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#232326"/>
+  <g stroke="#B4B4BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- basket -->
+    <path d="M64.53 84H198L182 136H81.51Z" fill="#232326"/>
+    <path d="M97.9 84L106.63 136M131.27 84L131.76 136M164.63 84L156.88 136M73.02 110H190" fill="none"/>
+    <!-- frame, chassis, struts -->
+    <path d="M58 64L90 162H174L198 84" fill="none"/>
+    <path d="M102 162V167M162 162V167" fill="none"/>
+    <!-- handle -->
+    <rect x="36" y="59" width="26" height="10" rx="5" fill="#232326"/>
+    <!-- wheels -->
+    <circle cx="102" cy="178" r="11" fill="#18181B"/>
+    <circle cx="162" cy="178" r="11" fill="#18181B"/>
+  </g>
+  <g fill="#B4B4BB">
+    <circle cx="102" cy="178" r="3"/>
+    <circle cx="162" cy="178" r="3"/>
+  </g>
+  <!-- one item on its way in -->
+  <path d="M204 22Q180 26 160 50" fill="none" stroke="#B4B4BB" stroke-width="2" stroke-linecap="round" stroke-dasharray="0 6"/>
+  <circle cx="153" cy="60" r="6" fill="#F4F4F5"/>
+</svg>

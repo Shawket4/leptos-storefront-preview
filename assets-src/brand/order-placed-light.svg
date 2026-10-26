@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>Order placed</title>
+  <!-- Storefront empty-state art, light version (the storefront opens in light mode).
+       Global Porcelain + graphite palette, by role: line #52525B, fill #F1F1F0, fill-2 #E4E4E7,
+       surface #FFFFFF, lit face #FDFDFC, accent #111111. No gradients. The -dark file is derived
+       from this one by tools/brand/build.py (role-for-role colour swap). -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#F1F1F0"/>
+  <g stroke="#52525B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- sealed parcel (isometric, 30 deg) -->
+    <path d="M61.77 163L112 192V140L61.77 111Z" fill="#F1F1F0"/>
+    <path d="M112 192L162.23 163V111L112 140Z" fill="#E4E4E7"/>
+    <path d="M112 140L162.23 111L112 82L61.77 111Z" fill="#FDFDFC"/>
+    <!-- tape over the seam and down the front -->
+    <path d="M142.74 122.25L131.49 128.75L81.26 99.75L92.51 93.25Z" fill="#F1F1F0"/>
+    <path d="M131.49 128.75L142.74 122.25V174.25L131.49 180.75Z" fill="#F1F1F0"/>
+    <!-- address label -->
+    <path d="M99.88 172L80.82 161V146L99.88 157Z" fill="#FFFFFF"/>
+    <path d="M96.41 162.5L86.02 156.5" fill="none"/>
+    <!-- confirmation -->
+    <circle cx="176" cy="70" r="22" fill="#FFFFFF"/>
+    <path d="M165.5 70.5L172.5 77.5L186.5 63.5" fill="none"/>
+    <!-- sparkles -->
+    <path d="M60 52V64M54 58H66M204 112V120M200 116H208" fill="none"/>
+  </g>
+  <circle cx="148" cy="44" r="5" fill="#111111"/>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>On its way</title>
+  <!-- Storefront empty-state art, light version (the storefront opens in light mode).
+       Global Porcelain + graphite palette, by role: line #52525B, fill #F1F1F0, fill-2 #E4E4E7,
+       surface #FFFFFF, lit face #FDFDFC, accent #111111. No gradients. The -dark file is derived
+       from this one by tools/brand/build.py (role-for-role colour swap). -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#F1F1F0"/>
+  <g transform="translate(12 0)">
+  <!-- speed lines -->
+  <path d="M8 104H20M4 120H18M10 136H20" fill="none" stroke="#52525B" stroke-width="2" stroke-linecap="round"/>
+  <g stroke="#52525B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- delivery box on the rack -->
+    <path d="M28 124H76M40 124L52 145" fill="none"/>
+    <rect x="30" y="80" width="42" height="44" rx="6" fill="#F1F1F0"/>
+    <path d="M30 92H72M45 80V92M57 80V92" fill="none"/>
+    <!-- wheels -->
+    <circle cx="70" cy="180" r="16" fill="#F1F1F0"/>
+    <circle cx="180" cy="180" r="16" fill="#F1F1F0"/>
+    <circle cx="70" cy="180" r="6" fill="#FFFFFF"/>
+    <circle cx="180" cy="180" r="6" fill="#FFFFFF"/>
+    <!-- body: rear cowl with a wheel arch, floorboard, leg shield -->
+    <path d="M46 172C44 152 54 134 76 132H112C122 132 126 138 126 148V160H144C152 160 156 152 158 140L164 104H172C174 122 172 148 160 164L158 172H94A25.3 25.3 0 0 0 46 172Z" fill="#E4E4E7"/>
+    <!-- front fender -->
+    <path d="M160.06 170.7A22 22 0 0 1 199.94 170.7L197.22 171.97A19 19 0 0 0 162.78 171.97Z" fill="#E4E4E7"/>
+    <!-- seat -->
+    <rect x="74" y="123" width="42" height="9" rx="4.5" fill="#FFFFFF"/>
+    <!-- stem and handlebar -->
+    <path d="M168 104L170 92M160 91H184" fill="none"/>
+  </g>
+  <!-- headlight -->
+  <circle cx="177.5" cy="110" r="4.5" fill="#111111"/>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <title>No results</title>
+  <!-- Storefront empty-state art, dark version. Derived from empty-search-light.svg by tools/brand/build.py (ART_DARK); edit the light file. -->
+  <ellipse cx="120" cy="196" rx="78" ry="7" fill="#232326"/>
+  <g stroke="#B4B4BB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- results card -->
+    <rect x="36" y="44" width="128" height="132" rx="12" fill="#18181B"/>
+    <rect x="50" y="58" width="100" height="22" rx="11" fill="#232326" stroke="none"/>
+    <circle cx="63" cy="69" r="4.5" fill="none"/>
+    <path d="M66.5 72.5L69.5 75.5M77 69H97" fill="none"/>
+    <!-- empty result slots -->
+    <g fill="none" stroke-dasharray="3 6">
+      <rect x="50" y="92" width="100" height="18" rx="6"/>
+      <rect x="50" y="118" width="100" height="18" rx="6"/>
+      <rect x="50" y="144" width="100" height="18" rx="6"/>
+    </g>
+    <!-- magnifier -->
+    <rect x="-6" y="-4" width="12" height="34" rx="6" fill="#2C2C30" transform="translate(172.63 164.63) rotate(-45)"/>
+    <circle cx="150" cy="142" r="32" fill="#232326"/>
+    <circle cx="150" cy="142" r="24" fill="#18181B"/>
+    <path d="M136 132A17 17 0 0 1 146 125" fill="none"/>
+  </g>
+  <!-- the caret: typed, nothing found -->
+  <circle cx="105" cy="69" r="3.5" fill="#F4F4F5"/>
+</svg>
