@@ -2,7 +2,7 @@
 // server renders every result; this file only makes the trip quick.
 
 import { register } from "../core/mount";
-import { $, $$, on } from "../core/dom";
+import { $, $$, on, patch } from "../core/dom";
 import { navigate, routing } from "../core/router";
 
 // ── Listing ─────────────────────────────────────────────────────────────────────────────────────
@@ -66,6 +66,7 @@ register("listing", (root) => {
   const results = $(".lx-results", root);
   const body = $(".lx-results-body", root);
   const progress = $(".lx-progress", root);
+  // The design system's Menu (a `details[data-popover]`: core gives it light dismiss and Escape).
   const sortMenu = $<HTMLDetailsElement>("details.lx-sort", root);
   let timer = 0;
   let source: HTMLFormElement | null = null;
@@ -128,14 +129,15 @@ register("listing", (root) => {
       schedule(el as HTMLFormElement, 0);
     }),
     // Sort: the menu says the new order at once; the results follow.
-    on(root, "click", "a.lx-sort-opt[data-sort]", (ev, a) => {
+    on(root, "click", "details.lx-sort a[data-sort]", (ev, a) => {
       if (ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
       ev.preventDefault();
       const code = a.dataset.sort ?? "relevance";
-      for (const opt of $$("a.lx-sort-opt", root)) opt.setAttribute("aria-current", String(opt === a));
-      const v = $(".lx-sort-v", root);
-      if (v) v.textContent = a.textContent?.trim() ?? "";
-      if (sortMenu) sortMenu.open = false;
+      for (const opt of $$("a[data-sort]", sortMenu ?? root)) opt.setAttribute("aria-current", String(opt === a));
+      if (sortMenu) {
+        patch(sortMenu, { value: a.textContent?.trim() ?? "" });
+        sortMenu.open = false;
+      }
       for (const f of forms()) {
         const s = f.querySelector<HTMLInputElement>("input[name=sort]");
         if (s) s.value = code;
@@ -177,17 +179,7 @@ register("listing", (root) => {
     on(root, "click", ".lx-show", () => {
       if (timer) go();
     }),
-    // The sort menu: Escape and a press elsewhere close it.
-    on(root, "keydown", "details.lx-sort", (ev) => {
-      if (ev.key !== "Escape" || !sortMenu?.open) return;
-      sortMenu.open = false;
-      sortMenu.querySelector("summary")?.focus();
-    }),
   ];
-  const outside = (ev: PointerEvent) => {
-    if (sortMenu?.open && !sortMenu.contains(ev.target as Node)) sortMenu.open = false;
-  };
-  document.addEventListener("pointerdown", outside, true);
   // Results dim while the router fetches the next ones.
   const unsub = routing.subscribe((r) => busy(r.pending));
   // Back here through the back-forward cache after a plain page load: not loading any more.
@@ -200,7 +192,6 @@ register("listing", (root) => {
     clearTimeout(timer);
     for (const off of offs) off();
     unsub();
-    document.removeEventListener("pointerdown", outside, true);
     removeEventListener("pageshow", shown);
   };
 });

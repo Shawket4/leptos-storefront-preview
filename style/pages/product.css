@@ -125,13 +125,15 @@
   user-select: none;
 }
 /* Packshots carry a faint white haze: multiply it away on light wells (light theme only). */
-:root[data-theme="light"] :is(.pg__slide, .pg__thumb) .pic--alpha img,
+:root[data-theme="light"] :is(.pg__slide,
+.pg__thumb) .pic--alpha img,
 :root[data-theme="light"] .pv__img {
   mix-blend-mode: multiply;
 }
 @media (prefers-color-scheme: light) {
-  :root[data-theme="system"] :is(.pg__slide, .pg__thumb) .pic--alpha img,
-  :root[data-theme="system"] .pv__img {
+  :root[data-theme="system"] :is(.pg__slide,
+.pg__thumb) .pic--alpha img,
+:root[data-theme="system"] .pv__img {
     mix-blend-mode: multiply;
   }
 }
@@ -215,7 +217,7 @@
 }
 @media (scripting: none) {
   .pg__nav,
-  .pg__expand {
+.pg__expand {
     display: none;
   }
 }
@@ -567,7 +569,8 @@ html.pv-open {
   color: var(--danger-text);
 }
 /* One icon per stock state; the browser code switches the state class. */
-.pp-stock__state:is(.is-low, .is-out) .pp-stock__ic--in,
+.pp-stock__state:is(.is-low,
+.is-out) .pp-stock__ic--in,
 .pp-stock__state:not(.is-low) .pp-stock__ic--low,
 .pp-stock__state:not(.is-out) .pp-stock__ic--out {
   display: none;
@@ -589,271 +592,12 @@ html.pv-open {
   flex-direction: column;
   gap: var(--sp-4);
 }
-.pp-axis__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--sp-2);
-  margin: 0 0 var(--sp-2);
-  font-size: var(--fs-sm);
-}
-.pp-axis__name {
-  font-weight: var(--fw-bold);
-}
-.pp-axis__value {
-  color: var(--text-2);
-}
-.pp-chips,
-.pp-swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-.pp-chip {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: 44px;
-  min-inline-size: 64px;
-  padding-inline: var(--sp-4);
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-  color: var(--text);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  text-decoration: none;
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: box-shadow var(--dur-fast) var(--ease-out), scale var(--press-dur) ease-out, background-color var(--dur-fast) var(--ease-out);
-}
-.pp-chip:hover {
-  box-shadow: inset 0 0 0 1px var(--text-3);
-}
-.pp-chip.is-on {
-  box-shadow: inset 0 0 0 2px var(--text);
-}
-.pp-chip:active:not(.is-off) {
-  scale: var(--press);
-}
-.pp-chip.is-off {
-  background: var(--disabled);
-  box-shadow: none;
-  color: var(--on-disabled);
-  cursor: not-allowed;
-}
-.pp-chip.is-off .pp-chip__label {
-  text-decoration: line-through;
-  text-decoration-thickness: 1px;
-}
-.pp-chip.is-off.is-on {
-  box-shadow: inset 0 0 0 2px var(--on-disabled);
-}
-
-.pp-swatch {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  border-radius: 50%;
-  corner-shape: round;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: scale var(--press-dur) var(--ease-out);
-}
-.pp-swatch__dot {
-  inline-size: 32px;
-  block-size: 32px;
-  border-radius: 50%;
-  corner-shape: round;
-  background: var(--sw, var(--sunk));
-  box-shadow: inset 0 0 0 1px var(--line-strong);
-}
-.pp-swatch::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: 50%;
-  corner-shape: round;
-  box-shadow: 0 0 0 2px transparent;
-  transition: box-shadow var(--dur-fast) var(--ease-out);
-}
-.pp-swatch:hover::before {
-  box-shadow: 0 0 0 2px var(--line-strong);
-}
-.pp-swatch.is-on::before {
-  box-shadow: 0 0 0 2px var(--text);
-}
-.pp-swatch:active:not(.is-off) {
-  scale: 0.94;
-}
-.pp-swatch.is-off {
-  cursor: not-allowed;
-}
-.pp-swatch.is-off .pp-swatch__dot {
-  opacity: 0.4;
-}
-/* A diagonal stroke across what can't be picked (a solid line, not a gradient). */
-.pp-swatch.is-off::after {
-  content: "";
-  position: absolute;
-  inline-size: 2px;
-  block-size: 34px;
-  border-radius: var(--r-xs); /* clamps to the 2px stroke's round ends */
-  background: var(--text-2);
-  rotate: 45deg;
-}
-.pp-axis__note {
-  margin: var(--sp-2) 0 0;
-  color: var(--text-2);
-  font-size: var(--fs-xs);
-  line-height: var(--lh-snug);
-}
-.pp-axis__note.is-empty {
-  display: none;
-}
 
 /* Add-on groups (Madar modifier groups) */
 .pp-groups {
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
-}
-.pp-group {
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.pp-group__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  inline-size: 100%;
-  margin: 0 0 var(--sp-2);
-  padding: 0;
-  font-size: var(--fs-sm);
-}
-.pp-group__name {
-  font-weight: var(--fw-bold);
-}
-.pp-group__hint {
-  color: var(--text-3);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-}
-.pp-group__hint.is-req {
-  color: var(--text-2);
-}
-.pp-group__opts {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: var(--r-lg);
-  corner-shape: squircle;
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  transition: box-shadow var(--dur-fast) var(--ease-out);
-}
-.pp-group.is-bad .pp-group__opts {
-  box-shadow: inset 0 0 0 1.5px var(--danger);
-}
-.pp-opt {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--sp-3);
-  min-block-size: 52px;
-  padding: var(--sp-2) var(--sp-4);
-  cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease-out);
-}
-.pp-opt + .pp-opt {
-  box-shadow: inset 0 1px 0 var(--line);
-}
-.pp-opt:hover {
-  background: color-mix(in oklab, var(--sunk) 55%, transparent);
-}
-.pp-opt:active {
-  background: var(--sunk);
-}
-/* The native input covers the row (keyboard, forms and screen readers keep working). */
-.pp-opt__input {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: inherit;
-}
-.pp-opt:has(.pp-opt__input:focus-visible) {
-  box-shadow: inset 0 0 0 3px var(--focus);
-}
-.pp-opt__box {
-  display: grid;
-  place-items: center;
-  inline-size: 20px;
-  block-size: 20px;
-  border-radius: 50%;
-  corner-shape: round;
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1.5px var(--line-strong);
-  color: var(--on-brand);
-  transition: box-shadow var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
-}
-.pp-opt:has(.pp-opt__input[type="checkbox"]) .pp-opt__box {
-  border-radius: var(--r-xs);
-  corner-shape: squircle;
-}
-.pp-opt:has(.pp-opt__input[type="radio"]:checked) .pp-opt__box {
-  box-shadow: inset 0 0 0 6px var(--brand);
-}
-.pp-opt:has(.pp-opt__input[type="checkbox"]:checked) .pp-opt__box {
-  background: var(--brand);
-  box-shadow: none;
-}
-.pp-opt__box .icon {
-  opacity: 0;
-  scale: 0.6;
-  transition: opacity var(--dur-fast) var(--ease-out), scale var(--dur-base) var(--ease-pop);
-}
-.pp-opt:has(.pp-opt__input:checked) .pp-opt__box .icon {
-  opacity: 1;
-  scale: 1;
-}
-.pp-opt__name {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
-}
-.pp-opt__price {
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-  white-space: nowrap;
-}
-.pp-opt.is-full {
-  cursor: not-allowed;
-}
-.pp-opt.is-full .pp-opt__name,
-.pp-opt.is-full .pp-opt__price {
-  color: var(--on-disabled);
-}
-.pp-group__err {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  margin: var(--sp-2) 0 0;
-  color: var(--danger-text);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-}
-.pp-group:not(.is-bad) .pp-group__err {
-  display: none;
 }
 
 /* Quantity + add */
@@ -897,56 +641,6 @@ html.pv-open {
 }
 .pp-msgs:focus {
   outline: none;
-}
-.pp-msg {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-2);
-  margin: 0;
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-}
-.pp-msg + .pp-msg {
-  margin-block-start: var(--sp-2);
-}
-.pp-msg--error {
-  background: var(--danger-wash);
-  color: var(--danger-text);
-}
-.pp-msg--ok {
-  background: var(--success-wash);
-  color: var(--success-text);
-}
-.pp-msg--info {
-  background: var(--info-wash);
-  color: var(--info-text);
-}
-.pp-msg__text {
-  flex: 1;
-  min-inline-size: 12rem;
-}
-.pp-msg__action {
-  min-block-size: 36px;
-  padding-inline: var(--sp-3);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--text);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  transition: scale var(--press-dur) var(--ease-out);
-}
-.pp-msg__action:active {
-  scale: var(--press);
-}
-.pp-msg__link {
-  margin-inline-start: auto;
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 /* The phone's sticky bar: slides up above the tab bar once the main button is gone. */

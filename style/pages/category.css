@@ -159,189 +159,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Sort: a disclosure (works without JS) styled as a secondary button, its menu a
-   popover anchored to it. */
+/* Sort (components::menu) at the end of the bar; active filters (components::filter_chips)
+   under it. */
 .lx-sort {
-  position: relative;
   min-inline-size: 0;
   margin-inline-start: auto;
 }
-.lx-sort-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-block-size: 44px;
-  padding-inline: var(--sp-4) var(--sp-3);
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: var(--sunk);
-  color: var(--text);
-  max-inline-size: 100%;
-  font-size: 0.9375rem;
-  font-weight: var(--fw-bold);
-  line-height: 1.2;
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  list-style: none;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    scale 100ms var(--ease-out);
-}
-.lx-sort-btn::-webkit-details-marker {
-  display: none;
-}
-.lx-sort-btn:hover {
-  background: var(--sunk-2);
-}
-.lx-sort-btn:active {
-  scale: var(--press);
-}
-.lx-sort-btn:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-.lx-sort-k {
-  color: var(--text-2);
-  font-weight: var(--fw-semibold);
-}
-.lx-sort-v {
-  min-inline-size: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* Narrow phones: the glyph says "sort", the value says which; the word stays
-   for screen readers. */
-@media (max-width: 479.98px) {
-  .lx-sort-k {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-.lx-sort-chev {
-  color: var(--text-3);
-  transition: rotate var(--dur-fast) var(--ease-out);
-}
-.lx-sort[open] .lx-sort-chev {
-  rotate: 180deg;
-}
-.lx-sort-menu {
-  position: absolute;
-  inset-block-start: calc(100% + var(--sp-2));
-  inset-inline-end: 0;
-  z-index: var(--z-popover);
-  min-inline-size: 15rem;
-  margin: 0;
-  padding: var(--sp-1);
-  list-style: none;
-  border-radius: var(--r-lg);
-  corner-shape: squircle;
-  background: var(--surface-2);
-  box-shadow: var(--shadow-float);
-  transform-origin: top right;
-  transition:
-    opacity var(--dur-fast) var(--ease-out),
-    scale var(--spring-snappy-dur, var(--dur-base)) var(--spring-snappy, var(--ease-out));
-}
-[dir="rtl"] .lx-sort-menu {
-  transform-origin: top left;
-}
-@starting-style {
-  .lx-sort[open] .lx-sort-menu {
-    opacity: 0;
-    scale: 0.96;
-  }
-}
-.lx-sort-opt {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-4);
-  min-block-size: 44px;
-  padding-inline: var(--sp-3);
-  border-radius: var(--r-sm);
-  corner-shape: squircle;
-  color: var(--text);
-  font-size: 0.9375rem;
-  font-weight: var(--fw-medium);
-  text-decoration: none;
-}
-.lx-sort-opt:hover {
-  background: var(--sunk);
-}
-.lx-sort-opt:active {
-  background: var(--sunk-2);
-}
-.lx-sort-opt[aria-current="true"] {
-  font-weight: var(--fw-bold);
-}
-.lx-sort-tick {
-  visibility: hidden;
-}
-.lx-sort-opt[aria-current="true"] .lx-sort-tick {
-  visibility: visible;
-}
-
-/* Active filters: removable chips. Squircles, 32px, never pills. */
 .lx-chips {
-  display: flex;
-  gap: var(--sp-2);
-  margin: var(--sp-1) calc(var(--gutter) * -1) var(--sp-3);
-  padding: var(--sp-1) var(--gutter);
-  list-style: none;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.lx-chips::-webkit-scrollbar {
-  display: none;
-}
-.lx-chips > li {
-  flex: none;
-}
-.lx-chip,
-.lx-chip-clear {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  block-size: 2rem;
-  padding-inline: var(--sp-3) var(--sp-2);
-  border-radius: var(--r-sm);
-  corner-shape: squircle;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  white-space: nowrap;
-  text-decoration: none;
-  text-box: trim-both cap alphabetic;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    scale 100ms var(--ease-out);
-}
-.lx-chip {
-  background: var(--sunk);
-  color: var(--text);
-}
-.lx-chip:hover {
-  background: var(--sunk-2);
-}
-.lx-chip .icon {
-  color: var(--text-2);
-}
-.lx-chip-clear {
-  padding-inline: var(--sp-2);
-  color: var(--text-2);
-}
-.lx-chip-clear:hover {
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.lx-chip:active,
-.lx-chip-clear:active {
-  scale: var(--press);
+  margin-block: var(--sp-1) var(--sp-3);
 }
 
 /* ── Filters ─────────────────────────────────────────────────────────────── */
@@ -359,24 +184,6 @@
 .lx-form-title {
   font-size: var(--fs-lg);
   font-weight: var(--fw-heavy);
-}
-.lx-group {
-  margin: 0;
-  padding: var(--sp-4) 0;
-  border: 0;
-  border-block-start: 1px solid var(--rule);
-  min-inline-size: 0;
-}
-.lx-legend {
-  float: inline-start;
-  inline-size: 100%;
-  margin-block-end: var(--sp-3);
-  padding: 0;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-}
-.lx-legend + * {
-  clear: both;
 }
 
 .lx-price {
@@ -431,80 +238,6 @@
 .lx-input input::placeholder {
   color: var(--text-3);
   opacity: 1;
-}
-
-.lx-checks {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.lx-check {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  min-block-size: 44px;
-  margin-inline: calc(var(--sp-2) * -1);
-  padding-inline: var(--sp-2);
-  border-radius: var(--r-sm);
-  corner-shape: squircle;
-  cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease-out);
-}
-.lx-check:hover {
-  background: var(--sunk);
-}
-.lx-check input {
-  flex: none;
-  inline-size: 1.25rem;
-  block-size: 1.25rem;
-  margin: 0;
-  accent-color: var(--brand);
-  cursor: pointer;
-}
-.lx-check input:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
-}
-.lx-check-label {
-  flex: 1;
-  min-inline-size: 0;
-  font-size: 0.9375rem;
-  line-height: var(--lh-snug);
-}
-.lx-check-n {
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-variant-numeric: tabular-nums;
-}
-.lx-more {
-  margin-block-start: var(--sp-1);
-}
-.lx-more-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  min-block-size: 44px;
-  color: var(--text);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  cursor: pointer;
-  list-style: none;
-}
-.lx-more-btn::-webkit-details-marker {
-  display: none;
-}
-.lx-more-btn .icon {
-  color: var(--text-3);
-  transition: rotate var(--dur-fast) var(--ease-out);
-}
-.lx-more[open] > .lx-more-btn .icon {
-  rotate: 180deg;
-}
-.lx-more[open] > .lx-more-btn {
-  margin-block-end: var(--sp-1);
 }
 
 .lx-form-foot {
@@ -638,87 +371,6 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-
-/* A failed load: the previous results stay, under this. */
-.lx-notice {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-3);
-  margin-block-end: var(--sp-4);
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-lg);
-  corner-shape: squircle;
-  background: var(--warning-wash);
-  color: var(--text);
-}
-.lx-notice-icon {
-  color: var(--warning-text);
-  flex: none;
-}
-.lx-notice-text {
-  flex: 1 1 14rem;
-  font-size: var(--fs-sm);
-}
-.lx-notice-text span {
-  color: var(--text-2);
-}
-.lx-notice--block {
-  margin-block-start: var(--sp-4);
-}
-.lx-notice--offline {
-  background: var(--info-wash);
-}
-.lx-notice--offline .lx-notice-icon {
-  color: var(--info-text);
-}
-
-/* ── Pagination ──────────────────────────────────────────────────────────── */
-.lx-pages {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-1);
-  margin-block-start: var(--sp-10);
-}
-.lx-page-list {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.lx-page {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-1);
-  min-inline-size: 44px;
-  block-size: 44px;
-  padding-inline: var(--sp-2);
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  font-variant-numeric: tabular-nums;
-  text-decoration: none;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    scale 100ms var(--ease-out);
-}
-a.lx-page:hover {
-  background: var(--sunk);
-}
-a.lx-page:active {
-  scale: var(--press);
-}
-.lx-page.is-current {
-  background: var(--brand);
-  color: var(--on-brand);
-}
 .lx-page--step {
   padding-inline: var(--sp-3);
   font-family: var(--font-sans);
@@ -727,32 +379,10 @@ a.lx-page:active {
 .lx-page--step.is-disabled {
   color: var(--on-disabled);
 }
-.lx-gap {
-  min-inline-size: 1.5rem;
-  color: var(--text-3);
-  text-align: center;
-}
 @media (max-width: 479.98px) {
-  .lx-page-list > .is-far {
-    display: none;
-  }
-  .lx-step-label {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
   .lx-page--step {
     padding-inline: var(--sp-2);
   }
-}
-
-/* ── The phone sheet (components::drawer, its body pads the form) ─────────── */
-.lx-form--sheet > .lx-group:first-of-type {
-  border-block-start: 0;
-  padding-block-start: var(--sp-2);
 }
 .lx-sheet-foot {
   display: flex;
@@ -760,6 +390,10 @@ a.lx-page:active {
 }
 .lx-sheet-foot > .lx-show {
   flex: 1;
+}
+.lx-form--sheet > .facet:first-of-type {
+  padding-block-start: 0;
+  border-block-start: 0;
 }
 /* The count on "Show N items" is the last page's while the next one loads. */
 .lx-show__busy {
@@ -810,10 +444,7 @@ a.lx-page:active {
   }
   .lx-chips {
     grid-area: chips;
-    flex-wrap: wrap;
     margin: 0 0 var(--sp-4);
-    padding: 0;
-    overflow: visible;
   }
   .lx-body {
     display: contents;
@@ -862,54 +493,6 @@ a.lx-page:active {
   gap: var(--sp-6);
   padding-block: var(--sp-4) var(--sp-8);
 }
-.lx-more-ways {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
-  max-inline-size: 40rem;
-}
-.lx-more-ways__title {
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-}
-.lx-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--sp-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.lx-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-block-size: 44px;
-  padding-inline: var(--sp-4);
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  font-size: 0.9375rem;
-  font-weight: var(--fw-semibold);
-  text-decoration: none;
-  transition:
-    box-shadow var(--dur-fast) var(--ease-out),
-    scale 100ms var(--ease-out);
-}
-.lx-pill .icon {
-  color: var(--text-2);
-}
-.lx-pill:hover {
-  box-shadow: var(--shadow-md);
-}
-.lx-pill:active {
-  scale: var(--press);
-}
 
 /* ── Not found ───────────────────────────────────────────────────────────── */
 .listing--missing {
@@ -919,36 +502,10 @@ a.lx-page:active {
   max-inline-size: 36rem;
   margin: var(--sp-6) auto 0;
 }
-.cat-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--sp-2);
+.listing-missing__aisles {
   max-inline-size: 48rem;
   margin: var(--sp-8) auto 0;
-  padding: 0;
-  list-style: none;
-}
-.cat-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-block-size: 44px;
-  padding-inline: var(--sp-4);
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  font-weight: var(--fw-semibold);
-  text-decoration: none;
-  transition:
-    box-shadow var(--dur-fast) var(--ease-out),
-    scale 100ms var(--ease-out);
-}
-.cat-pill:hover {
-  box-shadow: var(--shadow-md);
-}
-.cat-pill:active {
-  scale: var(--press);
+}/* The first page of results failed (components::notice). */
+.lx-failed {
+  margin-block-start: var(--sp-4);
 }

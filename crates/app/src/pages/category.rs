@@ -14,8 +14,14 @@ use crate::api::{
     self,
     types::{ListingQuery, NavCategory},
 };
-use crate::components::button::{Button, ButtonKind};
-use crate::components::{breadcrumbs::Breadcrumbs, empty_state::EmptyState, icons::Icon};
+use crate::components::button::{Button, ButtonKind, ButtonSize};
+use crate::components::notice::{Notice, Tone};
+use crate::components::{
+    breadcrumbs::Breadcrumbs,
+    empty_state::EmptyState,
+    icons::Icon,
+    link_chips::{LinkChip, LinkChips},
+};
 use crate::format;
 use crate::pages::search::suggest::{CatLink, Suggestions};
 use crate::pages::search::{HeaderSearch, SearchBox};
@@ -182,17 +188,16 @@ fn ListingFailed(lang: Lang) -> impl IntoView {
         })
         .unwrap_or_else(|| rq.path_and_query.clone());
     view! {
-        <div class="lx-notice lx-notice--block" role="alert">
-            <Icon name="triangle-alert" size=20 class="lx-notice-icon"/>
-            <p class="lx-notice-text">
-                <strong>{tr(lang, "We couldn't load these products.", "تعذّر تحميل المنتجات.")}</strong>
-                " "
-                <span>{tr(lang, "The rest of the shop is working normally.", "باقي المتجر يعمل بشكل طبيعي.")}</span>
-            </p>
-            <Button kind=ButtonKind::Secondary href=retry icon="rotate-ccw">
+        <Notice
+            tone=Tone::Warning
+            title=tr(lang, "We couldn't load these products.", "تعذّر تحميل المنتجات.")
+            body=tr(lang, "The rest of the shop is working normally.", "باقي المتجر يعمل بشكل طبيعي.")
+            class="lx-failed"
+        >
+            <Button kind=ButtonKind::Secondary size=ButtonSize::Sm href=retry icon="rotate-ccw">
                 {tr(lang, "Try again", "حاول مرة أخرى")}
             </Button>
-        </div>
+        </Notice>
     }
 }
 
@@ -202,16 +207,15 @@ fn CategoryNotFound() -> impl IntoView {
     let rq = req();
     let lang = rq.prefs.lang;
     let ar = lang.is_rtl();
-    #[cfg(feature = "ssr")]
-    let cats: Vec<NavCategory> = {
-        if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
-            res.set_status(http::StatusCode::NOT_FOUND);
-        }
-        crate::server::cache::public(&[]);
-        crate::server::current_catalog().nav().to_vec()
-    };
-    #[cfg(not(feature = "ssr"))]
-    let cats: Vec<NavCategory> = Vec::new();
+    if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
+        res.set_status(http::StatusCode::NOT_FOUND);
+    }
+    crate::server::cache::public(&[]);
+    let aisles = crate::server::current_catalog()
+        .nav()
+        .iter()
+        .map(|c| LinkChip::new(c.name.pick(ar), format!("/c/{}", c.slug)).icon(&c.icon))
+        .collect::<Vec<_>>();
     let site = rq.tenant.name.pick(ar).to_owned();
     view! {
         <Title text=format!("{} · {site}", tr(lang, "Aisle not found", "القسم مش موجود"))/>
@@ -226,19 +230,7 @@ fn CategoryNotFound() -> impl IntoView {
             <div class="listing-missing__search">
                 <HeaderSearch kind=SearchBox::Page/>
             </div>
-            <ul class="cat-pills" role="list">
-                {cats
-                    .into_iter()
-                    .map(|c| view! {
-                        <li>
-                            <a class="cat-pill" href=format!("/c/{}", c.slug)>
-                                <Icon name=c.icon.clone() size=18/>
-                                <span>{c.name.pick(ar).to_owned()}</span>
-                            </a>
-                        </li>
-                    })
-                    .collect_view()}
-            </ul>
+            <LinkChips items=aisles label=tr(lang, "Every aisle", "كل الأقسام") hide_label=true center=true class="listing-missing__aisles"/>
         </div>
     }
 }
