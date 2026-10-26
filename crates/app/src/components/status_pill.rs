@@ -43,7 +43,7 @@ impl Tone {
 #[component]
 pub fn StatusPill(
     #[prop(optional)] tone: Tone,
-    /// The label (reactive inside islands).
+    /// The label.
     #[prop(into)]
     label: TextProp,
     /// A lucide icon; defaults to the tone's own.

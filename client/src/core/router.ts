@@ -17,7 +17,7 @@
 import { createStore } from "./store";
 import { NetError, isOnline, request } from "./net";
 import { cached, invalidate, key, noteGeneration, peek } from "./cache";
-import { unmountAll } from "./mount";
+import { preload, unmountAll } from "./mount";
 import { prefersReducedMotion } from "./dom";
 
 type Listener = (url: URL) => void;
@@ -65,6 +65,9 @@ const noHash = (u: URL | string): string => {
 };
 // Theme is part of the key: a page cached in light mode carries data-theme="light".
 const pageKey = (href: string) => key("page", document.documentElement.dataset.theme ?? "", href, "");
+
+/** The `data-ts` names in a page's HTML: its on-demand feature chunks can start loading. */
+const featuresIn = (html: string) => new Set(Array.from(html.matchAll(/data-ts="([^"]+)"/g), (m) => m[1]!.split(/\s+/)).flat());
 
 async function fetchPage(url: string, init?: RequestInit): Promise<Page> {
   const res = await request(url, {
@@ -160,6 +163,7 @@ async function go(g: Go): Promise<void> {
   }
   consumed.add(page);
   if (id !== seq) return; // a newer navigation took over
+  preload(featuresIn(page.html)); // the page's feature chunks load while it's being swapped in
   fails.delete(href);
   if (g.method === "GET" && !g.pop && !g.url.pathname.startsWith("/__") && !landingWarmed) warmLanding();
   await show(page, g);
@@ -243,9 +247,26 @@ async function show(page: Page, g: Go): Promise<void> {
     update();
     return;
   }
-  const vt = document.startViewTransition(update);
-  void vt.finished.finally(() => nameMedia(null));
-  await vt.updateCallbackDone.catch((e: unknown) => console.error(e));
+  // A transition can be skipped or aborted (a newer one, the tab hidden, Chrome's DOM-update
+  // timeout on a slow device): its promises reject, and the swap must still happen exactly once.
+  let ran = false;
+  const once = () => {
+    if (ran) return;
+    ran = true;
+    update();
+  };
+  const vt = document.startViewTransition(once);
+  const fallback = window.setTimeout(once, 1500);
+  vt.ready.catch(() => {});
+  vt.finished.then(
+    () => nameMedia(null),
+    () => nameMedia(null),
+  );
+  await vt.updateCallbackDone.catch((e: unknown) => {
+    if (__DEV__) console.warn("view transition:", e);
+  });
+  clearTimeout(fallback);
+  once(); // aborted before the browser called it
 }
 
 /** The background refresh of a page that was shown stale: swap what changed, keep everything else. */
@@ -508,6 +529,7 @@ function warm(href: string): void {
   loadGet(href).then(
     (p) => {
       if (p.personal && !consumed.has(p)) warmPersonal.set(pageKey(href), { page: p, at: Date.now() });
+      preload(featuresIn(p.html)); // and the chunks it needs, so the tap finds them ready
     },
     () => {}, // a failed warm costs nothing
   );

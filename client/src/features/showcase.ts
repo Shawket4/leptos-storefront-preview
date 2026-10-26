@@ -12,7 +12,8 @@ import { cached, inspect, invalidate, key as cacheKey, peek, stats } from "../co
 import { onNavigate, prefetch, refresh, routing } from "../core/router";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
 import { stepperValue } from "../core/stepper";
-import { add, cart, lineKey, quote, remove, serialize } from "../stores/cart";
+import type { SegChange } from "../core/segmented";
+import { add, cart, lineKey, quote, remove, serialize, type LineSnapshot } from "../stores/cart";
 import { toast, toasts } from "../stores/toasts";
 import type { CacheInfo } from "../api/types";
 import { previewNet } from "./core";
@@ -285,8 +286,15 @@ register("sc-cart", (root) => {
   const d = root.dataset;
   const item = { product: Number(d.product), variant: Number(d.variant) };
   const k = lineKey({ ...item, addons: [] });
-  const name = d.name ?? "";
-  const snap = { name, img: d.img, price: d.price, href: d.href };
+  // The priced snapshot the server rendered (like a card's quick add): the cart shows and prices
+  // the line from it, so adding asks the server nothing.
+  let snap: LineSnapshot | undefined;
+  try {
+    snap = d.snapshot ? (JSON.parse(d.snapshot) as LineSnapshot) : undefined;
+  } catch {
+    snap = undefined;
+  }
+  const name = snap?.name ?? "";
   reveal(root);
   const afterChange = (t0: number) =>
     setTimeout(() => {
@@ -496,9 +504,10 @@ register("sc-spring", (root) => {
       const i = s.indexOf(nearest(spring.value));
       aim(s[Math.min(Math.max(i + (ev.key === fwd ? 1 : -1), 0), s.length - 1)] ?? 0);
     }),
-    on(root, "click", "button[data-spring]", (_, b) => {
-      preset = SPRING[(b.dataset.spring ?? "default") as keyof typeof SPRING] ?? SPRING.default;
-      for (const o of $$("button[data-spring]", root)) o.setAttribute("aria-pressed", String(o === b));
+    // The preset picker is core's SegmentedToggle: it fires `change` with the pressed value.
+    on(root, "change", "[data-ts~=seg-toggle]", (ev) => {
+      const v = (ev as CustomEvent<SegChange>).detail?.value ?? "default";
+      preset = SPRING[v as keyof typeof SPRING] ?? SPRING.default;
     }),
     // Interruptible: the second target starts from wherever the first left the dot, at its speed.
     on(root, "click", "button[data-act=interrupt]", () => {

@@ -1,8 +1,8 @@
 //! The header's cart button and the quick-add "+" on product cards.
 
+use crate::components::button::{ButtonKind, IconButton};
 use crate::components::icons::Icon;
 use crate::components::product_card::CardData;
-use crate::format;
 use crate::prefs::{Lang, Numerals, use_ui};
 use crate::strings;
 use leptos::prelude::*;
@@ -14,11 +14,11 @@ use leptos::prelude::*;
 pub fn CartButton() -> impl IntoView {
     let lang = use_ui().lang.get_untracked();
     view! {
-        <a href="/cart" class="icon-btn icon-btn--ghost cart-btn" data-ts="cart-badge" data-count="0"
-            aria-label=strings::get("cart.title", lang) aria-haspopup="dialog" aria-controls="cart-drawer">
-            <Icon name="shopping-bag" size=22/>
+        <IconButton icon="shopping-bag" label=strings::get("cart.title", lang) href="/cart"
+            kind=ButtonKind::Ghost class="cart-btn" attr:data-ts="cart-badge" attr:data-count="0"
+            attr:aria-haspopup="dialog" attr:aria-controls="cart-drawer">
             <span class="icon-btn__badge cart-btn__badge" aria-hidden="true"></span>
-        </a>
+        </IconButton>
     }
 }
 
@@ -30,9 +30,19 @@ pub fn QuickAdd(card: CardData, lang: Lang, numerals: Numerals) -> impl IntoView
     let ar = lang.is_rtl();
     let name = card.name.pick(ar).to_owned();
     let label = crate::pages::cart::tx("cart.add_item", lang, &[("name", &name)]);
-    let href = format!("/p/{}", card.slug);
-    let img = (!card.img.is_missing()).then(|| card.img.src_near(192));
-    let price = format::money(card.price, lang, numerals);
+    let _ = numerals;
+    // The line's snapshot (display data + prices in piastres): the cart is computed in the
+    // browser from it, without asking the server.
+    let line = domain::cart::CartLine {
+        product: card.id,
+        variant: card.default_variant,
+        qty: 1,
+        addons: vec![],
+    };
+    let st = crate::server::state();
+    let snapshot =
+        crate::server::cart::snapshot(&line, &crate::server::current_catalog(), st.media(), lang)
+            .and_then(|s| serde_json::to_string(&s).ok());
     // Come back to this page (without a previous add's notice).
     let next = crate::request::req()
         .path_and_query
@@ -42,15 +52,13 @@ pub fn QuickAdd(card: CardData, lang: Lang, numerals: Numerals) -> impl IntoView
         .to_owned();
     view! {
         <form class="quick-add" method="post" action="/cart/add" data-ts="quick-add"
-            data-product=card.id.0 data-variant=card.default_variant.0 data-name=name.clone()
-            data-img=img data-price=price data-href=href>
+            data-product=card.id.0 data-variant=card.default_variant.0 data-snapshot=snapshot>
             <input type="hidden" name="product" value=card.id.0/>
             <input type="hidden" name="variant" value=card.default_variant.0/>
             <input type="hidden" name="qty" value="1"/>
             <input type="hidden" name="next" value=next/>
-            <button type="submit" class="quick-add__btn" data-state="idle" aria-label=label>
-                <Icon name="plus" size=20 class="quick-add__plus"/>
-                <Icon name="check" size=20 class="quick-add__check"/>
+            <button type="submit" class="quick-add__btn" aria-label=label>
+                <Icon name="plus" size=20/>
             </button>
         </form>
     }

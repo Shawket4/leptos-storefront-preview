@@ -4,6 +4,7 @@
 use super::{CheckoutPayment, CheckoutPlace, CheckoutSlot, Ctx, Step, fee_label};
 use crate::api::types::{CartView, DeliverySlot};
 use crate::components::button::{Button, ButtonKind, ButtonSize};
+use crate::components::form::{RadioCard, RadioGroup};
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
@@ -123,73 +124,48 @@ pub fn SlotStep(
 ) -> impl IntoView {
     let ar = lang.is_rtl();
     let checked = chosen.or_else(|| slots.iter().find(|s| s.available).map(|s| s.id.clone()));
-    let groups = groups(&slots);
     view! {
-        <form class="co-form" method="post" action=CheckoutSlot::url() data-pending-ui="" aria-busy="false">
+        <form class="co-form" method="post" action=CheckoutSlot::url()>
             <StepHeading text=tr(lang, "When should we deliver?", "نوصّل لك إمتى؟")
                 sub=tr(lang, "Pick a window that suits you — we'll text you when the courier sets off.", "اختار الميعاد اللي يناسبك، وهنبعتلك رسالة لما المندوب يتحرك.")/>
             <StepError message=error/>
-            <fieldset class="slots">
-                <legend class="sr-only">{tr(lang, "Delivery time", "ميعاد التوصيل")}</legend>
-                <For each=move || groups.clone() key=|(day, _, list)| format!("{}:{}", day.en, list.first().map(|s| s.id.clone()).unwrap_or_default()) let:group>
-                    {
-                        let (day, express, list) = group;
-                        let date = (!express).then(|| list.first().and_then(|s| slot_date(&s.id, now_ms, lang, num))).flatten();
-                        let checked = checked.clone();
-                        view! {
-                            <div class="slot-group">
-                                <h3 class="slot-group__title">
-                                    {express.then(|| view! { <Icon name="zap" size=16/> })}
-                                    <span>{day.pick(ar).to_owned()}</span>
-                                    {date.map(|d| view! { <span class="slot-group__date">{d}</span> })}
-                                </h3>
-                                <div class="slot-grid">
-                                    <For each=move || list.clone() key=|s| s.id.clone() let:item>
-                                        <SlotCard is_checked={checked.as_deref() == Some(item.id.as_str())} item lang num/>
-                                    </For>
-                                </div>
-                            </div>
-                        }
-                    }
-                </For>
-            </fieldset>
+            // One group per day (Express, Today, Tomorrow), its date in the legend.
+            {groups(&slots).into_iter().map(|(day, express, list)| {
+                let date = (!express).then(|| list.first().and_then(|s| slot_date(&s.id, now_ms, lang, num))).flatten();
+                let legend = match date {
+                    Some(d) => format!("{} · {d}", day.pick(ar)),
+                    None => day.pick(ar).to_owned(),
+                };
+                let checked = checked.clone();
+                view! {
+                    <RadioGroup legend=legend class="co-slots">
+                        {list.into_iter().map(|s| {
+                            let why = (!s.available).then(|| if s.express {
+                                tr(lang, "Express runs 9 AM – 11 PM", "التوصيل السريع من ٩ الصبح لـ ١١ بالليل")
+                            } else {
+                                tr(lang, "Too late for today", "الميعاد ده فات النهارده")
+                            });
+                            let (on, label, fee) = (checked.as_deref() == Some(s.id.as_str()), s.window.pick(ar).to_owned(), fee_label(s.fee, lang, num));
+                            match why {
+                                Some(why) => view! {
+                                    <RadioCard name="slot" value=s.id.clone() label trailing=fee description=why
+                                        checked=on disabled=!s.available/>
+                                }.into_any(),
+                                None => view! {
+                                    <RadioCard name="slot" value=s.id.clone() label trailing=fee checked=on disabled=!s.available/>
+                                }.into_any(),
+                            }
+                        }).collect_view()}
+                    </RadioGroup>
+                }
+            }).collect_view()}
             <NetNotice lang/>
             <div class="co-actions">
-                <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right" attr:data-focus-id="co-next">
+                <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right">
                     {tr(lang, "Continue to payment", "كمّل للدفع")}
                 </Button>
             </div>
         </form>
-    }
-}
-
-#[component]
-fn SlotCard(item: DeliverySlot, is_checked: bool, lang: Lang, num: Numerals) -> impl IntoView {
-    let slot = item;
-    let ar = lang.is_rtl();
-    let reason_id = format!("slot-{}-why", slot.id);
-    let reason = (!slot.available).then(|| {
-        if slot.express {
-            tr(
-                lang,
-                "Express runs 9 AM – 11 PM",
-                "التوصيل السريع من ٩ الصبح لـ ١١ بالليل",
-            )
-        } else {
-            tr(lang, "Too late for today", "الميعاد ده فات النهارده")
-        }
-    });
-    view! {
-        <label class="slot" data-available=slot.available.to_string()>
-            <input class="slot__input" type="radio" name="slot" value=slot.id.clone() checked=is_checked
-                disabled={!slot.available} aria-describedby=reason_id.clone()/>
-            <span class="slot__body">
-                <span class="slot__window">{slot.window.pick(ar).to_owned()}</span>
-                <span class={if slot.fee.0 == 0 { "slot__fee slot__fee--free" } else { "slot__fee" }}>{fee_label(slot.fee, lang, num)}</span>
-                {reason.map(|r| view! { <span class="slot__why" id=reason_id>{r}</span> })}
-            </span>
-            <span class="slot__tick" aria-hidden="true"><Icon name="check" size=14/></span>
-        </label>
     }
 }
 
@@ -226,24 +202,14 @@ pub fn PaymentStep(
         ),
     ];
     view! {
-        <form class="co-form" method="post" action=CheckoutPayment::url() data-pending-ui="" aria-busy="false">
+        <form class="co-form" method="post" action=CheckoutPayment::url()>
             <StepHeading text=tr(lang, "How would you like to pay?", "هتدفع إزاي؟")/>
             <StepError message=error/>
-            <fieldset class="pay">
-                <legend class="sr-only">{tr(lang, "Payment method", "طريقة الدفع")}</legend>
-                <label class="pay-opt">
-                    <input class="pay-opt__input" type="radio" name="payment" value="cod" checked=true
-                        aria-describedby="pay-cod-note"/>
-                    <span class="pay-opt__icon" aria-hidden="true"><Icon name="banknote" size=22/></span>
-                    <span class="pay-opt__text">
-                        <span class="pay-opt__title">{tr(lang, "Cash on delivery", "كاش عند الاستلام")}</span>
-                        <span class="pay-opt__note" id="pay-cod-note">
-                            {tr(lang, "Pay the courier when your order arrives. Have the exact amount ready if you can.", "ادفع للمندوب لما الطلب يوصلك، ويا ريت المبلغ يكون فكّة.")}
-                        </span>
-                    </span>
-                    <span class="pay-opt__tick" aria-hidden="true"><Icon name="check" size=14/></span>
-                </label>
-            </fieldset>
+            <RadioGroup legend=tr(lang, "Payment method", "طريقة الدفع") class="co-pay">
+                <RadioCard name="payment" value="cod" icon="banknote" checked=true
+                    label=tr(lang, "Cash on delivery", "كاش عند الاستلام")
+                    description=tr(lang, "Pay the courier when your order arrives. Have the exact amount ready if you can.", "ادفع للمندوب لما الطلب يوصلك، ويا ريت المبلغ يكون فكّة.")/>
+            </RadioGroup>
             <div class="pay-soon" role="group" aria-label=tr(lang, "Coming soon", "قريبًا")>
                 {soon.into_iter().map(|(icon, title, note)| view! {
                     <div class="pay-opt pay-opt--soon">
@@ -260,7 +226,7 @@ pub fn PaymentStep(
             </div>
             <NetNotice lang/>
             <div class="co-actions">
-                <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right" attr:data-focus-id="co-next">
+                <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right">
                     {tr(lang, "Review your order", "راجع طلبك")}
                 </Button>
             </div>

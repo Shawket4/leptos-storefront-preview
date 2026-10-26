@@ -35,6 +35,8 @@ export interface CartQuoteLine {
   /** Most the shopper can have now (stock); 0 = unavailable. */
   max_qty: number;
   issue: "out_of_stock" | "capped" | "unavailable" | null;
+  /** What the cart keeps for this line (null: unavailable). Rust: `api::cart::Snapshot`. */
+  snapshot: import("../stores/cart").PricedSnapshot | null;
 }
 
 // ── Browse (owner: the browse agent) ─────────────────────────────────────────────────────────

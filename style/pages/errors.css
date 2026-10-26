@@ -64,7 +64,7 @@
   color: var(--text-2);
 }
 
-/* Search: one field with the button inside its row. */
+/* Search: one field with the (design-system) button inside its row. */
 .err-search {
   position: relative;
   display: flex;
@@ -97,23 +97,6 @@
 }
 .err-search__input::-webkit-search-cancel-button {
   -webkit-appearance: none;
-}
-.err-search__go {
-  min-block-size: 44px;
-  padding-inline: var(--sp-5);
-  border-radius: 10px;
-  background: var(--brand);
-  color: var(--on-brand);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  text-box: trim-both cap alphabetic;
-  transition: background-color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
-}
-.err-search__go:hover {
-  background: var(--brand-hover);
-}
-.err-search__go:active {
-  scale: var(--press);
 }
 .err-page__links {
   display: flex;
@@ -183,33 +166,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-2);
-}
-.err-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-block-size: 48px;
-  padding-inline: var(--sp-5);
-  border-radius: var(--r-md);
-  background: var(--sunk);
-  color: var(--text);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-bold);
-  text-box: trim-both cap alphabetic;
-  transition: background-color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
-}
-.err-btn:hover {
-  background: var(--sunk-2);
-}
-.err-btn:active {
-  scale: var(--press);
-}
-.err-btn--primary {
-  background: var(--brand);
-  color: var(--on-brand);
-}
-.err-btn--primary:hover {
-  background: var(--brand-hover);
 }
 .err-page__detail,
 .section-error__detail {

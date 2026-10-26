@@ -24,6 +24,7 @@ use crate::components::price::{Price, PriceSize};
 use crate::components::stepper::Stepper;
 use crate::format;
 use crate::prefs::{Lang, Numerals, tr};
+use crate::server::TenantCatalog;
 use crate::strings;
 use domain::{OptionKind, Piastres, SelectionType, Variant};
 use leptos::either::Either;
@@ -38,12 +39,19 @@ struct PickerData {
     /// The product page (`?v=` is added per variant).
     href: String,
     name: String,
-    /// The line's picture in the cart drawer until its quote arrives.
-    img: Option<String>,
     selected: u32,
     /// Most of one line (stock caps it further).
     max_qty: u32,
     variants: Vec<VariantData>,
+    /// Every add-on option of the product, by id: its name and surcharge (piastres), for the cart
+    /// line's snapshot.
+    addons: std::collections::BTreeMap<String, AddonData>,
+}
+
+#[derive(Serialize)]
+struct AddonData {
+    name: String,
+    price: i64,
 }
 
 #[derive(Serialize)]
@@ -64,6 +72,18 @@ struct VariantData {
     price_tpl: String,
     /// Index into the gallery's photos.
     image: Option<usize>,
+    // ── The cart line's priced snapshot (`api::cart::Snapshot`, as `server::cart::snapshot`
+    // builds it), so an add needs no request and the drawer prices the line at once. ──
+    /// The variant's price without add-ons, piastres.
+    unit: i64,
+    /// Its "was" price, piastres (only when higher).
+    compare_at: Option<i64>,
+    /// Stock, at most the cart's per-line limit.
+    snap_max: u32,
+    /// "Titanium Black · 256 GB" (none for a single-variant product).
+    label: Option<String>,
+    /// The line's picture (the variant's photo, else the first).
+    img: Option<String>,
     /// The picked value's label on each axis.
     labels: Vec<String>,
     /// Per axis, per value (in markup order): what picking it does from this variant.
@@ -195,11 +215,6 @@ pub fn PurchasePanel(
         product: pid,
         href: format!("/p/{}", p.slug),
         name: text(&p.name, lang),
-        img: pv
-            .images
-            .first()
-            .filter(|i| !i.is_missing())
-            .map(|i| i.src_near(240)),
         selected: cur.id.0,
         max_qty,
         variants: p
@@ -222,10 +237,39 @@ pub fn PurchasePanel(
                     save: saving(v, lang, num),
                     price_tpl: format!("pdp-price-{}", price_key_index(&keys, v)),
                     image: v.image.filter(|i| *i < pv.images.len()),
+                    unit: v.price.0,
+                    compare_at: v.compare_at.filter(|c| *c > v.price).map(|c| c.0),
+                    snap_max: v.stock.min(max_qty),
+                    label: Some(
+                        TenantCatalog::variant_label(p, v)
+                            .pick(lang.is_rtl())
+                            .to_owned(),
+                    )
+                    .filter(|l| !l.is_empty()),
+                    img: v
+                        .image
+                        .and_then(|i| pv.images.get(i))
+                        .or_else(|| pv.images.first())
+                        .filter(|i| !i.is_missing())
+                        .map(|i| i.src_near(192)),
                     labels,
                     values,
                     notes,
                 }
+            })
+            .collect(),
+        addons: p
+            .modifier_groups
+            .iter()
+            .flat_map(|g| &g.options)
+            .map(|o| {
+                (
+                    o.id.clone(),
+                    AddonData {
+                        name: text(&o.name, lang),
+                        price: o.price.0,
+                    },
+                )
             })
             .collect(),
     };

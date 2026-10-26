@@ -8,10 +8,12 @@ use super::line::{CART_PATH, CartSummary, LineData, LineRow, SummaryData, percen
 use super::parts::QuickAdd;
 use super::tx;
 use crate::api::types::{CartView, Rail};
+use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
 use crate::components::product_card::CardData;
+use crate::components::states::{StateTone, StateView};
 use crate::format;
 use crate::media::Img;
 use crate::prefs::{Lang, Numerals, tr};
@@ -115,11 +117,15 @@ pub fn CartPage() -> impl IntoView {
         )
     });
     let (lines, priced) = crate::server::cart::priced_for_request();
-    let api = crate::api::cart::quote(&lines, &priced, lang, num);
-    // The browser code starts from the very quote this page was rendered from.
-    let quote_json = serde_json::to_string(&api)
-        .unwrap_or_default()
-        .replace('<', "\\u003c");
+    let catalog = crate::server::current_catalog();
+    let st = crate::server::state();
+    let snaps: Vec<_> = lines
+        .iter()
+        .map(|l| crate::server::cart::snapshot(l, &catalog, st.media(), lang))
+        .collect();
+    let api = crate::api::cart::quote(&lines, &snaps, &priced, lang, num);
+    // The browser code keeps these as the lines' snapshots (and says so if a price moved).
+    let snapshots_json = snapshots_json(&lines, &snaps);
     let rows: Vec<LineData> = lines
         .iter()
         .map(
@@ -137,7 +143,6 @@ pub fn CartPage() -> impl IntoView {
         delivery_free: api.delivery_free,
         hint: api.free_delivery_hint,
         total: api.total,
-        vat: api.vat_included,
         can_checkout: api.can_checkout,
         empty,
     };
@@ -154,7 +159,7 @@ pub fn CartPage() -> impl IntoView {
         <Title text=title/>
         <Meta name="robots" content="noindex"/>
         <div class="container cart-page" data-ts="cart-page">
-            <script type="application/json" data-ts-json="" inner_html=quote_json></script>
+            <script type="application/json" data-ts-json="" inner_html=snapshots_json></script>
             <header class="cart-page__head">
                 <h1 class="t-h1" id="cart-title" tabindex="-1">{strings::get("cart.title", lang)}</h1>
                 <p class="cart-page__count" data-slot="count" hidden=empty>{count}</p>
@@ -169,11 +174,12 @@ pub fn CartPage() -> impl IntoView {
                     <Icon name="circle-alert" size=20/><span>{strings::get(&format!("cart.err.{code}"), lang)}</span>
                 </p>
             })}
+            <PriceChanged lang/>
             <div class="cart-empty card" data-cart-empty="" hidden=!empty>
-                <ArtImage art=art("empty-cart") fallback_icon="shopping-bag" lang/>
-                <p class="cart-empty__title">{strings::get("cart.empty_title", lang)}</p>
-                <p class="cart-empty__body">{strings::get("cart.empty_body", lang)}</p>
-                <a class="btn btn--primary btn--lg" href="/">{strings::get("cart.start", lang)}</a>
+                <StateView tone=StateTone::Empty art="empty-cart"
+                    title=strings::get("cart.empty_title", lang) body=strings::get("cart.empty_body", lang)>
+                    <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{strings::get("cart.start", lang)}</Button>
+                </StateView>
             </div>
             <div class="cart-layout" data-cart-full="" hidden=empty>
                 <section class="cart-lines card" aria-labelledby="cart-title">
@@ -191,6 +197,32 @@ pub fn CartPage() -> impl IntoView {
             </div>
             {(!picks.is_empty()).then(|| view! { <Picks picks lang num/> })}
         </div>
+    }
+}
+
+/// `{key: snapshot}` for the browser code (`<script type="application/json">`, `<` escaped).
+pub fn snapshots_json(
+    lines: &[domain::cart::CartLine],
+    snaps: &[Option<crate::api::cart::Snapshot>],
+) -> String {
+    let map: std::collections::BTreeMap<String, &crate::api::cart::Snapshot> = lines
+        .iter()
+        .zip(snaps)
+        .filter_map(|(l, s)| s.as_ref().map(|s| (l.key(), s)))
+        .collect();
+    serde_json::to_string(&map)
+        .unwrap_or_else(|_| "{}".into())
+        .replace('<', "\\u003c")
+}
+
+/// Shown by the browser code when the server's prices differ from what the cart showed.
+#[component]
+pub fn PriceChanged(lang: Lang) -> impl IntoView {
+    view! {
+        <p class="notice notice--info" data-price-changed="" role="status" hidden="">
+            <Icon name="info" size=20/>
+            <span>{strings::get("cart.price_changed", lang)}</span>
+        </p>
     }
 }
 

@@ -13,18 +13,6 @@ leptos_router = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 http = { workspace = true }
-wasm-bindgen = { workspace = true }
-js-sys = { workspace = true }
-web-sys = { workspace = true, features = [
-  "Document", "Element", "HtmlElement", "HtmlDocument", "Window", "Location", "History",
-  "KeyboardEvent", "MouseEvent", "PointerEvent", "TouchEvent", "TouchList", "Touch", "Event",
-  "EventTarget", "DomRect", "HtmlInputElement", "HtmlFormElement", "HtmlDialogElement",
-  "ScrollBehavior", "ScrollToOptions", "ScrollIntoViewOptions", "ScrollLogicalPosition",
-  "MediaQueryList", "Storage", "Navigator", "UrlSearchParams", "Url", "CssStyleDeclaration",
-  "IntersectionObserver", "IntersectionObserverEntry", "IntersectionObserverInit",
-  "ResizeObserver", "ResizeObserverEntry", "DomTokenList", "HtmlCollection", "NodeList",
-  "MutationObserver", "MutationObserverInit", "MutationRecord",
-] }
 
 # server-only
 leptos_axum = { workspace = true, optional = true }
@@ -42,7 +30,6 @@ uuid = { version = "1", features = ["v4"], optional = true }
 
 [features]
 default = []
-hydrate = ["leptos/hydrate"]
 ssr = [
   "leptos/ssr",
   "leptos_meta/ssr",

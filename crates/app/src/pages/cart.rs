@@ -12,7 +12,7 @@ mod parts;
 
 pub use drawer::CartDrawer;
 pub use line::{CartSummary, LineData, LineRow, SummaryData};
-pub use page::{Art, ArtImage, CartPage, Totals, art, vat_note};
+pub use page::{Art, ArtImage, CartPage, PriceChanged, Totals, art, snapshots_json, vat_note};
 pub use parts::{CartButton, QuickAdd};
 
 use crate::prefs::Lang;

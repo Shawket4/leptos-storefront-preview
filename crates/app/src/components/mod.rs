@@ -21,7 +21,6 @@ pub mod image;
 pub mod layout;
 pub mod link_chips;
 pub mod menu;
-pub mod net;
 pub mod notice;
 pub mod offline;
 pub mod pager;

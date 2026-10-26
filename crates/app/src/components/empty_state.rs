@@ -3,7 +3,7 @@
 //! reach for it most.
 //!
 //! `art` names an illustration in `data/media/brand` (`empty-cart`, `empty-search`, `not-found`,
-//! `error`, `order-placed`, `delivery`), served on one fixed ladder so this works in islands too.
+//! `error`, `order-placed`, `delivery`), served on one fixed ladder (no manifest lookup).
 //!
 //! `suggestion` adds "Did you mean *term*?" above the action, the term a link (a respelt search).
 

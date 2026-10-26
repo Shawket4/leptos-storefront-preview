@@ -1,6 +1,6 @@
 //! The phone tab bar (below 960px): Home, Categories, Deals, Cart, Account — plain links on a
-//! translucent material, the current tab in ink. The cart tab carries a count slot for the cart
-//! island (`.bottom-nav__badge`).
+//! translucent material, the current tab in ink. The cart tab carries a count slot the browser
+//! code fills from the cart cookie (`.bottom-nav__badge`).
 
 use super::icons::Icon;
 use crate::prefs::{Lang, tr};
@@ -41,7 +41,7 @@ pub const ACCOUNT_HREF: &str = "/orders";
 pub fn BottomNav(
     lang: Lang,
     current: Option<Tab>,
-    /// Rendered inside the cart tab (the commerce agent's count island), if any.
+    /// Rendered inside the cart tab's badge slot, if any.
     #[prop(optional)]
     cart_badge: Option<Children>,
 ) -> impl IntoView {

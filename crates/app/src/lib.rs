@@ -8,7 +8,6 @@ pub mod media;
 pub mod pages;
 pub mod prefs;
 pub mod request;
-pub mod stores;
 pub mod strings;
 pub mod tenant;
 
@@ -73,6 +72,8 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <AutoReload options=options.clone()/>
                 // The browser code: TypeScript bundled into one ES module (client/, build.rs).
                 <script type="module" src=client_js::APP_JS_PATH></script>
+                // The chunks the entry imports, fetched in parallel with it (no waterfall).
+                {client_js::PRELOAD.iter().map(|href| view! { <link rel="modulepreload" href=*href/> }).collect_view()}
                 <MetaTags/>
             </head>
             <body>
