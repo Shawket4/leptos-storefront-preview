@@ -9,11 +9,19 @@ import { syncFromCookie } from "./stores/cart";
 import { mountToaster } from "./stores/toasts";
 
 // Features register their `data-ts` names on import. One file per area, one owner per file.
-// With the page, on every page: core (drawer, stepper, offline, nav feedback…), the cart (badge,
-// drawer, quick add) and the header search.
+// With the page, on every page: core (drawer, stepper, offline, nav feedback…) and the cart (badge,
+// drawer, quick add).
 import "./features/core";
 import "./features/cart";
-import "./features/search";
+// The instant search (the header's box is on every page) loads when the box is reached for, or
+// when the page has settled; at once on /search, or when its field already has focus or a value.
+lazyOnIntent(["search-box"], () => import("./features/search"), {
+  now: (el) =>
+    location.pathname === "/search" ||
+    el.contains(document.activeElement) ||
+    !!el.querySelector<HTMLInputElement>("input")?.value,
+  idle: true,
+});
 // On demand: a separate chunk, loaded the first time a page has one of its `data-ts` names
 // (shared code lands in shared chunks, so nothing loads twice).
 lazy(["listing"], () => import("./features/listing"));
