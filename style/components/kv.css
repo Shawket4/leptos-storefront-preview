@@ -1,0 +1,62 @@
+/* Key–value list (components::kv): an icon and a label over the value lines, an action at the
+   row's end ("Edit"). Rows divided by a hairline. */
+.kv {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+.kv__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "key action"
+    "value value";
+  gap: var(--sp-1) var(--sp-3);
+  padding-block: var(--sp-3);
+}
+.kv__row + .kv__row {
+  border-block-start: 1px solid var(--rule);
+}
+.kv__key {
+  grid-area: key;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+}
+.kv__value {
+  grid-area: value;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding-inline-start: calc(18px + var(--sp-2));
+  overflow-wrap: anywhere;
+}
+.kv__line {
+  color: var(--text);
+}
+.kv__line:first-child {
+  font-weight: var(--fw-semibold);
+}
+.kv__action {
+  grid-area: action;
+  align-self: center;
+  display: inline-grid;
+  place-items: center;
+  min-block-size: 44px;
+  margin-block: -10px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.2em;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.kv__action:hover {
+  background: var(--sunk);
+}

@@ -25,6 +25,7 @@ if (__DEV__) {
     now: (el) => el.hasAttribute("data-now"),
   });
   if (location.pathname === "/core-scratch") lazyOnIntent(["scratch-idle"], () => import("../core/scratch-idle"), { idle: true });
+  lazy(["scratch-components"], () => import("../core/scratch-components"));
 }
 // Pull to refresh: touch devices only, once the page has settled.
 if (matchMedia("(pointer: coarse)").matches) {

@@ -41,6 +41,14 @@
 @import "./components/drawer.css";
 @import "./components/toast.css";
 
+/* Commerce composites (core): totals, item rows, key-value lists, steps, timeline, live status */
+@import "./components/sums.css";
+@import "./components/item-row.css";
+@import "./components/kv.css";
+@import "./components/steps.css";
+@import "./components/track.css";
+@import "./components/live-status.css";
+
 /* Pages (one file per page agent) */
 @import "./pages/home.css";
 @import "./pages/category.css";
@@ -52,3 +60,4 @@
 @import "./pages/showcase.css";
 @import "./pages/errors.css";
 @import "./pages/ui-kit.css";
+@import "./pages/core-scratch.css";

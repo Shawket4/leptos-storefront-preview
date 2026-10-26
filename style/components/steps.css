@@ -1,0 +1,86 @@
+/* Step indicator (components::steps): numbered dots on a track that fills to the current step,
+   labels under them. The track runs between the first and the last dot's centres (--n steps); the
+   fill grows from the reading start (mirrored in Arabic). */
+.steps__list {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.steps__list::before,
+.steps__list::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 15px;
+  inset-inline: calc(50% / var(--n, 4));
+  block-size: 2px;
+  border-radius: var(--r-xs);
+  background: var(--rule);
+}
+.steps__list::after {
+  background: var(--brand);
+  transform-origin: 0 50%;
+  scale: var(--p, 0) 1;
+  transition: scale var(--spring-default-dur) var(--spring-default);
+}
+[dir="rtl"] .steps__list::after {
+  transform-origin: 100% 50%;
+}
+.steps__step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+}
+.steps__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-inline-size: 44px;
+  padding-block-end: 2px;
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-align: center;
+  text-decoration: none;
+}
+a.steps__link:hover {
+  color: var(--text);
+}
+.steps__dot {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--page);
+  box-shadow: inset 0 0 0 2px var(--rule);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.steps__step[data-state="done"] .steps__dot {
+  background: var(--brand);
+  box-shadow: none;
+  color: var(--on-brand);
+}
+.steps__step[data-state="done"] .steps__link {
+  color: var(--text-2);
+}
+.steps__step[data-state="current"] .steps__dot {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--brand), 0 0 0 4px var(--brand-wash);
+  color: var(--text);
+  scale: 1.08;
+}
+.steps__step[data-state="current"] .steps__link {
+  color: var(--text);
+}

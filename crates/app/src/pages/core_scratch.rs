@@ -9,7 +9,11 @@ use leptos_meta::Title;
 #[component]
 pub fn CoreScratchPage() -> impl IntoView {
     let rq = crate::request::req();
-    let query = rq.path_and_query.split_once('?').map(|(_, q)| q.to_owned()).unwrap_or_default();
+    let query = rq
+        .path_and_query
+        .split_once('?')
+        .map(|(_, q)| q.to_owned())
+        .unwrap_or_default();
     let case = query
         .split('&')
         .find_map(|kv| kv.strip_prefix("case="))
@@ -44,7 +48,7 @@ pub fn CoreScratchPage() -> impl IntoView {
             </section>
         }
         .into_any(),
-        _ => view! { <p>"Shared components: coming next."</p> }.into_any(),
+        _ => super::core_scratch_components::Specimens().into_any(),
     };
     view! {
         <Title text="Core scratch"/>
