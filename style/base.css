@@ -28,6 +28,13 @@
   text-box: trim-both cap alphabetic;
 }
 
+/* Arabic-script words on a page that isn't Arabic (the language and numerals options): the
+   system's Arabic face, as iOS and Android show a language's own name — so an English visit never
+   downloads the Arabic web font for two labels. */
+:root:not([lang="ar"]) [data-script="arab"] {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
