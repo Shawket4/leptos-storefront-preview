@@ -3,14 +3,26 @@
 // and retry, prefetch on intent (Madar's gesture model) and the page cache (core/cache.ts).
 // Until then navigations are ordinary page loads, which is always a correct fallback.
 
+import { createStore } from "./store";
+
 type Listener = (url: URL) => void;
 const listeners = new Set<Listener>();
+
+export interface NavigateOpts {
+  /** Replace the current history entry instead of pushing one (filters, `?v=`). */
+  replace?: boolean;
+  /** "top" (default for new pages) or "keep" (same page with new data: filters, sort). */
+  scroll?: "top" | "keep";
+}
+
+/** A navigation is under way (listings dim their results; the progress bar shows past 150 ms). */
+export const routing = createStore<{ pending: boolean; to: string | null }>({ pending: false, to: null });
 
 /** Start intercepting links and forms (called once at boot). */
 export function startRouter(): void {}
 
 /** Go to `url` (pushes history unless `replace`). */
-export async function navigate(url: string, opts: { replace?: boolean } = {}): Promise<void> {
+export async function navigate(url: string, opts: NavigateOpts = {}): Promise<void> {
   if (opts.replace) location.replace(url);
   else location.assign(url);
 }

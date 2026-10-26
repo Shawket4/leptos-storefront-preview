@@ -112,10 +112,11 @@ mounts the new regions.
 | `core/store.ts` | `createStore(initial)` → `get/set/update/subscribe` — only `stores/*` create stores |
 | `core/net.ts` | `request`, `getJSON<T>(url, opts)`, `NetError` (`offline/timeout/http/parse/aborted`), `isOnline`, `onOnline` |
 | `core/cache.ts` | `cached(key, {ttl, swr}, fetcher, onUpdate?)`, `key(...parts)`, `peek`, `invalidate`, `noteGeneration` |
-| `core/router.ts` | `startRouter`, `navigate(url, {replace})`, `refresh()`, `prefetch(url)`, `onNavigate(fn)` |
+| `core/router.ts` | `startRouter`, `navigate(url, {replace, scroll: "top"|"keep"})`, `refresh()`, `prefetch(url)`, `onNavigate(fn)`, `routing` (store: `pending`, `to`) |
 | `core/motion.ts` | `SpringValue`, `SPRING`, `project`, `rubberband`, `VelocityTracker` |
 | `stores/cart.ts` | `cart` (store: `lines`, `count`), `add(item, snapshot?)`, `setQty(key, n)`, `remove(key)` → undo, `clear()`, `lineKey`, `snapshot(key)`, `quote(onUpdate?)`, `syncFromCookie()` |
 | `stores/toasts.ts` | `toast(msg, kind, action?)`, `dismiss(id)` |
+| `features/cart.ts` (cart agent) | `addAndConfirm(item, snapshot)`: the one "add to cart" with its feedback (toast, badge pulse) — quick add and the product page both use it |
 
 Rules: features register in their own `features/<area>.ts`; they touch the DOM only inside the
 element they're mounted on (plus the page singletons: header badge, drawer, toaster); they subscribe
