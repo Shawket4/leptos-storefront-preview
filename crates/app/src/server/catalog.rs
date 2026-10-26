@@ -2,7 +2,7 @@
 //! `data/catalog/<tenant>.json`; every query returns ready-to-render, serializable views.
 
 use super::media::Media;
-use super::search::{self, DocText, SearchIndex};
+use super::search::{DocText, SearchIndex, Synonyms};
 use crate::api::types::*;
 use crate::components::product_card::CardData;
 use domain::{Brand, Catalog, CategoryId, L10n, Piastres, Product, ProductId, Tag, Variant, VariantId};
@@ -25,7 +25,7 @@ fn pounds_floor(p: Piastres) -> i64 {
 }
 
 impl TenantCatalog {
-    pub fn new(mut catalog: Catalog, media: &Media) -> Self {
+    pub fn new(mut catalog: Catalog, media: &Media, synonyms: Synonyms) -> Self {
         catalog.categories.sort_by_key(|c| (c.display_order, c.id));
         let brands: HashMap<String, usize> =
             catalog.brands.iter().enumerate().map(|(i, b)| (b.id.clone(), i)).collect();
@@ -79,7 +79,7 @@ impl TenantCatalog {
                 // tahini"), so its words name other products.
                 details: p.highlights.iter().chain(p.specs.iter().map(|s| &s.v)).flat_map(both).collect(),
             }
-        }));
+        }), synonyms);
 
         TenantCatalog { tenant: catalog.tenant.clone(), catalog, by_id, by_slug, cards, nav, nav_by_id, brands, index }
     }
@@ -282,18 +282,18 @@ impl TenantCatalog {
     }
 
     pub fn search(&self, q: &str, limit: usize) -> SearchResults {
-        let scores = self.index.matches(q);
+        let query = self.index.query(q);
+        let scores = self.index.matches_query(&query);
         let mut hits: Vec<(usize, u32)> = scores.into_iter().collect();
         hits.sort_by_key(|&(i, s)| {
             let c = &self.cards[i];
             (std::cmp::Reverse(s), !c.in_stock, std::cmp::Reverse(c.reviews))
         });
         let total = hits.len() as u32;
-        let query = search::Query::parse(q);
         let categories = self
             .nav
             .iter()
-            .filter(|c| query.matches_text(&format!("{} {}", c.name.en, c.name.ar)))
+            .filter(|c| self.index.text_matches(&query, &format!("{} {}", c.name.en, c.name.ar)))
             .take(3)
             .cloned()
             .collect();
@@ -304,8 +304,8 @@ impl TenantCatalog {
                 let p = &self.catalog.products[i];
                 SearchHit {
                     card: self.cards[i].clone(),
-                    name_en: search::highlight(&p.name.en, q),
-                    name_ar: search::highlight(&p.name.ar, q),
+                    name_en: query.highlight(&p.name.en),
+                    name_ar: query.highlight(&p.name.ar),
                     category: self.category(p.category).map(|c| c.name.clone()).unwrap_or_default(),
                 }
             })

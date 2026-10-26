@@ -13,3 +13,7 @@ app = { workspace = true, features = ["hydrate"] }
 leptos = { workspace = true, features = ["hydrate", "islands", "islands-router"] }
 wasm-bindgen = { workspace = true }
 console_error_panic_hook = { workspace = true }
+
+[features]
+# See `app/split`.
+split = ["app/split"]

@@ -206,7 +206,8 @@ impl Cx {
     }
 }
 
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn CatalogExplorer(initial: ListingPage, site_name: String, extras: Extras) -> impl IntoView {
     let ui = use_ui();
     let is_search = initial.query.category.is_none();

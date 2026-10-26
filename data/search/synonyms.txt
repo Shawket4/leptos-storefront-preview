@@ -1,0 +1,509 @@
+# Search synonyms, shared by every shop. One group per line; any word in a group finds the others
+# (whole words only), in either direction. Shop-only synonyms go in synonyms.<shop>.txt.
+#
+# - Mix English, standard Arabic and Egyptian Arabic freely, and write each word once: hamza
+#   (أ إ آ ا), ة/ه, ى/ي, diacritics, tatweel and case are folded, and the article (ال، بال، وال…)
+#   comes off by itself. Plurals ending in ات or -s are stemmed; list other plurals (شنط، اطباق).
+# - A multi-word entry ("لاب توب") is matched as one word: «لاب توب» finds laptop and لابتوب.
+# - Leave out words that often mean something else in product text: ساعة alone in specs means
+#   hours; شراب is a drink and socks; عروسة is a doll and the El Arosa brand; جوز is walnuts but
+#   جوز هند is coconut; محمول alone is "portable"; حمام is pigeon and bathroom; قدر is a pot and
+#   "amount"; عجلة is a bicycle and a wheel; "soda" is also baking soda; "tee" is also a golf tee.
+# - Edits apply within seconds; the search caches are dropped with them.
+
+## Fruit and vegetables
+fruit, fruits, فاكهة, فواكه
+vegetables, veggies, خضار, خضروات, خضراوات
+tomatoes, tomato, طماطم, قوطة, بندورة
+potatoes, potato, بطاطس
+sweet potatoes, sweet potato, بطاطا, بطاطا حلوة
+onions, onion, بصل
+garlic, ثوم, توم
+cucumbers, cucumber, خيار
+carrots, carrot, جزر
+zucchini, courgette, courgettes, كوسة
+eggplant, eggplants, aubergine, aubergines, باذنجان, بتنجان, بدنجان
+peppers, pepper, capsicum, bell pepper, فلفل, فلفل رومي, فلفل ألوان
+chili, chilli, chillies, hot sauce, شطة, فلفل حار
+lemons, lemon, lime, limes, ليمون, لمون
+oranges, برتقال
+mandarins, mandarin, tangerines, tangerine, clementines, يوسفي, يوسف أفندي
+bananas, banana, موز
+grapes, grape, عنب
+watermelon, watermelons, بطيخ
+melon, cantaloupe, شمام, كنتالوب
+peaches, peach, خوخ
+apricots, apricot, مشمش
+strawberries, strawberry, فراولة
+mango, mangoes, مانجو, مانجة, منجا
+guava, guavas, جوافة
+pomegranates, pomegranate, رمان
+figs, fig, تين
+pears, pear, كمثرى
+pineapple, pineapples, أناناس
+kiwi, kiwis, كيوي
+avocado, avocados, أفوكادو
+coconut, coconuts, جوز هند, جوز الهند
+dates, date, تمر, بلح, تمور, عجوة
+lettuce, خس
+cabbage, كرنب, ملفوف
+cauliflower, قرنبيط, قرنابيط
+broccoli, بروكلي
+spinach, سبانخ
+molokhia, mulukhiyah, jute mallow, ملوخية
+okra, بامية
+green beans, فاصوليا خضرا, فاصوليا خضراء
+peas, green peas, بسلة, بازلاء, بازلا
+corn, sweetcorn, maize, ذرة
+beetroot, beetroots, beets, بنجر, شمندر
+radish, radishes, فجل
+turnip, turnips, لفت
+celery, كرفس
+parsley, بقدونس
+coriander, cilantro, كزبرة
+dill, شبت
+mint, نعناع
+basil, ريحان
+rocket, arugula, جرجير
+thyme, زعتر
+rosemary, روزماري, إكليل الجبل
+ginger, زنجبيل, جنزبيل
+mushrooms, mushroom, مشروم, عيش الغراب
+fresh, طازة, طازج, طازجة
+frozen, مجمد, مجمدة, فروزن
+organic, أورجانيك, عضوي
+baladi, بلدي
+
+## Dairy and eggs
+dairy, ألبان
+milk, لبن, حليب
+yogurt, yoghurt, زبادي, روب, رايب
+cheese, cheeses, جبنة, جبن, أجبان
+white cheese, feta, جبنة بيضا, جبنة بيضاء, فيتا, دمياطي
+cheddar, شيدر
+mozzarella, موتزاريلا, موزاريلا, موزريلا
+romy, roumy, جبنة رومي
+cream, قشطة, كريمة, ishta
+butter, زبدة
+ghee, سمنة, سمن
+eggs, egg, بيض
+labneh, لبنة
+
+## Meat, poultry and fish
+meat, beef, لحمة, لحم, لحوم
+veal, بتلو
+lamb, mutton, ضاني, خروف, ضأن
+chicken, فراخ, فرخة, دجاج, دجاجة
+poultry, دواجن
+duck, ducks, بط, بطة
+turkey, ديك رومي
+liver, كبدة, كبد
+sausage, sausages, سجق, سوسيس
+luncheon, لانشون
+pastrami, بسطرمة, بسطورمة
+burger, burgers, برجر, برغر
+kofta, كفتة
+minced, mince, ground, مفروم, مفرومة
+steak, steaks, ستيك, استيك
+fillet, fillets, filet, فيليه
+breast, breasts, صدور, صدر
+wings, أجنحة, جوانح
+thighs, drumsticks, أوراك, وراك
+fish, سمك, أسماك
+tilapia, بلطي
+mullet, بوري
+sardines, sardine, سردين
+tuna, تونة
+salmon, سلمون, سالمون
+shrimp, prawns, prawn, جمبري, روبيان, قريدس
+crab, crabs, كابوريا, سلطعون
+calamari, squid, كاليماري, سبيط
+mackerel, ماكريل, إسقمري
+seafood, مأكولات بحرية
+
+## Bakery and breakfast
+bread, خبز, عيش
+baladi bread, عيش بلدي
+toast, توست
+croissant, croissants, كرواسون, كرواسان
+cake, cakes, كيك, كيكة, كعكة
+biscuits, cookies, بسكويت, بسكوت, كوكيز
+pastries, pastry, baked goods, مخبوزات, معجنات, فطائر, فطاير
+feteer, فطير
+rusks, rusk, بقسماط
+cereal, cereals, cornflakes, corn flakes, سيريال, كورن فليكس
+oats, oatmeal, شوفان
+jam, jams, مربى, مربة
+honey, عسل
+halawa, halva, حلاوة, حلاوة طحينية
+
+## Rice, pasta and pulses
+rice, أرز, رز
+pasta, macaroni, spaghetti, penne, مكرونة, معكرونة, إسباجتي, سباجيتي
+vermicelli, شعرية
+lentils, lentil, عدس
+fava beans, foul, ful, فول, فول مدمس
+haricot beans, white beans, kidney beans, فاصوليا
+chickpeas, chickpea, garbanzo, حمص
+black eyed peas, لوبيا
+bulgur, burghul, برغل
+freekeh, فريك
+quinoa, كينوا
+flour, دقيق, طحين
+pulses, legumes, بقول, بقوليات
+grains, حبوب
+
+## Pantry
+oil, oils, زيت, زيوت
+olives, olive, زيتون
+sugar, سكر
+salt, ملح
+vinegar, خل
+tomato paste, صلصة, صلصة طماطم
+sauce, sauces, صوص
+ketchup, كاتشب, كاتشاب
+mayonnaise, mayo, مايونيز
+mustard, مستردة, مسطردة, خردل
+stock, broth, bouillon, stock cubes, مرقة, ماجي
+yeast, خميرة
+baking powder, بيكنج بودر
+starch, cornstarch, نشا
+vanilla, فانيليا, فانيلا
+spices, بهارات, توابل, عطارة
+cumin, كمون
+cinnamon, قرفة
+cardamom, حبهان, هيل
+black pepper, فلفل أسود
+paprika, بابريكا
+turmeric, كركم
+nutmeg, جوزة الطيب
+sesame, سمسم
+tahini, tahina, طحينة
+canned, tinned, معلبات, معلب
+breakfast, فطار, فطور
+pantry, مونة
+
+## Drinks
+drinks, beverages, مشروبات
+water, مياه, مية, ماء, مايه
+mineral water, مياه معدنية
+juice, juices, عصير, عصاير, عصائر
+soft drinks, fizzy drinks, cola, colas, كولا, مياه غازية, مشروبات غازية, حاجة ساقعة
+tea, شاي
+green tea, شاي أخضر
+coffee, قهوة, بن
+cocoa, كاكاو
+anise, aniseed, ينسون, يانسون
+hibiscus, karkade, كركديه
+tamarind, تمر هندي
+sugarcane, قصب, عصير قصب
+sahlab, salep, سحلب
+licorice, liquorice, عرقسوس, عرق سوس
+energy drink, energy drinks, مشروب طاقة, مشروبات طاقة
+
+## Snacks and sweets
+snacks, تسالي, سناكس
+chips, potato chips, شيبسي, شيبس
+nuts, مكسرات
+peanuts, peanut, سوداني, فول سوداني
+almonds, almond, لوز
+cashews, cashew, كاجو
+hazelnuts, hazelnut, بندق
+walnuts, walnut, عين جمل
+pistachios, pistachio, فستق
+raisins, زبيب
+seeds, لب, بذور
+chocolate, chocolates, شوكولاتة, شيكولاتة, شوكولا, شوكلاتة
+sweets, desserts, حلويات
+candy, sweets, ملبس, بونبون
+wafer, wafers, ويفر
+jelly, جيلي
+ice cream, آيس كريم, ايس كريم, جيلاتي
+popcorn, فشار
+peanut butter, زبدة فول سوداني
+
+## Household and baby
+diapers, nappies, حفاضات, حفاض, بامبرز
+wipes, مناديل مبللة
+tissues, مناديل
+toilet paper, ورق تواليت
+detergent, detergents, منظف, منظفات
+washing powder, laundry detergent, مسحوق غسيل
+bleach, كلور, كلوركس
+soap, صابون
+
+## Electronics
+phone, phones, mobile, mobiles, smartphone, smartphones, cellphone, موبايل, تليفون, هاتف, جوال
+tablet, tablets, تابلت
+laptop, laptops, notebook, لابتوب, لاب توب, كمبيوتر محمول
+computer, computers, pc, desktop, كمبيوتر, حاسوب, حاسب
+screen, monitor, display, شاشة
+tv, television, تلفزيون, تليفزيون, تلفاز
+headphones, headphone, earphones, earbuds, headset, سماعة, سماعات, هيدفون
+speaker, speakers, سبيكر, مكبر صوت
+charger, chargers, شاحن
+cable, cables, كابل, كيبل, وصلة, سلك
+power bank, battery pack, باور بانك, باوربانك, بطارية متنقلة
+case, جراب, كفر
+screen protector, إسكرينة, سكرينة, لزقة شاشة
+smartwatch, smart watch, ساعة ذكية
+camera, cameras, كاميرا
+printer, طابعة, برنتر
+mouse, ماوس, فأرة
+keyboard, كيبورد, لوحة مفاتيح
+router, راوتر
+hard disk, hard drive, hdd, ssd, هارد
+flash drive, usb, فلاشة
+memory card, sd card, ميموري, كارت ميموري
+playstation, ps5, ps4, بلايستيشن, بلاي ستيشن
+xbox, إكس بوكس
+nintendo, نينتندو
+controller, gamepad, joystick, دراع, دراعة, يد تحكم, ذراع تحكم
+games, game, gaming, ألعاب, لعبة, جيمز, جيمنج
+battery, batteries, بطارية, حجارة
+wireless, لاسلكي, لاسلكية, وايرلس
+bluetooth, بلوتوث
+smart, ذكي, ذكية, سمارت
+renewed, refurbished, مجدد, ريفربش
+original, أصلي, أوريجينال
+accessories, إكسسوارات, اكسسوار
+
+## Appliances
+fridge, refrigerator, تلاجة, ثلاجة
+freezer, فريزر, ديب فريزر
+washing machine, washer, غسالة
+dishwasher, غسالة أطباق, غسالة صحون
+cooker, stove, بوتاجاز, موقد
+oven, فرن
+microwave, ميكروويف, ميكرويف
+blender, blenders, خلاط
+food processor, محضر طعام
+steam iron, clothes iron, مكواة, مكواة بخار
+vacuum, vacuum cleaner, مكنسة, مكنسة كهربائية
+air conditioner, ac, تكييف, مكيف
+fan, fans, مروحة, مراوح
+heater, دفاية, مدفأة
+water heater, سخان
+kettle, كاتل, غلاية
+coffee machine, coffee maker, ماكينة قهوة, مكنة قهوة
+air fryer, إير فراير, قلاية هوائية
+toaster, توستر, محمصة
+range hood, cooker hood, شفاط
+
+## Kitchen and dining
+kitchen, مطبخ
+pot, pots, حلة, حلل, طنجرة
+pan, frying pan, مقلاة, طاسة
+tray, trays, صينية
+cup, cups, mug, mugs, كوباية, كوب, مج, فنجان
+plate, plates, dish, dishes, طبق, أطباق, صحن
+spoon, spoons, معلقة, ملعقة
+fork, forks, شوكة
+knife, knives, سكينة, سكين
+jar, jars, برطمان
+thermos, flask, ترمس
+strainer, colander, مصفاة
+cutting board, chopping board, لوح تقطيع
+lunch box, لانش بوكس
+cookware set, طقم حلل
+
+## Home and furniture
+furniture, أثاث, عفش
+sofa, couch, كنبة, كنب, أنتريه
+chair, chairs, كرسي, كراسي
+table, tables, ترابيزة, طاولة
+bed, beds, سرير
+mattress, مرتبة
+wardrobe, closet, دولاب
+carpet, rug, rugs, سجادة, سجاد, موكيت
+curtains, curtain, ستارة, ستائر, ستاير
+pillow, pillows, cushion, cushions, مخدة, وسادة, خدادية
+blanket, blankets, بطانية, بطاطين
+duvet, quilt, comforter, لحاف, كوفرتة
+sheets, bedsheet, bed sheet, ملاية, ملاءة
+towel, towels, فوطة, منشفة, بشكير
+lamp, lamps, أباجورة, مصباح
+chandelier, نجفة
+mirror, mirrors, مراية, مرآة
+shelf, shelves, رف, رفوف
+plant, plants, نبات, زرع
+vase, فازة, مزهرية
+wall clock, ساعة حائط
+decor, ديكور
+
+## Fashion
+clothes, clothing, ملابس, هدوم
+t-shirt, tshirt, تيشيرت, تي شيرت
+shirt, shirts, قميص, قمصان
+pants, trousers, بنطلون, بنطال, بناطيل
+jeans, جينز
+shorts, شورت
+jacket, jackets, جاكيت, جاكت, جاكتة
+sweater, pullover, jumper, سويتر, بلوفر, كنزة
+hoodie, hoodies, هودي
+dress, dresses, فستان, فساتين
+skirt, skirts, جيبة, تنورة
+suit, suits, بدلة
+pajamas, pyjamas, بيجامة, بيجاما
+abaya, عباية
+hijab, حجاب, طرحة
+scarf, scarves, shawl, شال, إيشارب
+cap, caps, hat, hats, كاب, طاقية, قبعة
+underwear, ملابس داخلية
+belt, belts, حزام
+wallet, wallets, محفظة
+bag, bags, handbag, handbags, شنطة, شنط, حقيبة, حقائب
+backpack, شنطة ضهر, شنطة ظهر, حقيبة ظهر
+glasses, sunglasses, eyewear, نظارة, نضارة, نظارات, نظارة شمس
+watch, watches, wristwatch, ساعة, ساعات, ساعة يد
+ring, rings, خاتم, دبلة
+necklace, chain, سلسلة, قلادة
+earrings, حلق, أقراط
+bracelet, bracelets, إنسيال, أسورة, سوار
+jewelry, jewellery, مجوهرات
+gold, golden, ذهب, ذهبي, دهب, دهبي
+silver, فضة, فضي
+kids, children, أطفال, عيال
+women, womens, ladies, حريمي, نسائي, نساء
+men, mens, رجالي, رجال
+girls, بنات, بناتي
+boys, ولادي, أولاد
+baby, babies, بيبي, رضع
+
+## Shoes
+shoes, shoe, footwear, حذاء, أحذية, جزمة, جزم
+sneakers, trainers, كوتشي, حذاء رياضي
+sandals, صندل, صنادل
+slippers, flip flops, شبشب, شباشب
+boots, بوت, بوط
+heels, high heels, كعب, كعب عالي
+
+## Colours
+black, أسود, سودا, سوداء
+white, أبيض, بيضا, بيضاء
+red, أحمر, حمرا, حمراء
+blue, أزرق, زرقا, زرقاء
+green, أخضر, خضرا, خضراء
+yellow, أصفر, صفرا, صفراء
+pink, وردي, بمبي
+grey, gray, رمادي, رصاصي
+brown, بني
+beige, بيج
+navy, كحلي
+purple, بنفسجي, موف
+orange, برتقالي
+
+## Beauty and care
+beauty, تجميل
+perfume, perfumes, fragrance, fragrances, cologne, عطر, عطور, برفان, برفيوم, بارفان
+makeup, make up, مكياج, ميك اب, ميكب
+lipstick, روج, أحمر شفاه
+mascara, ماسكرا, مسكرة
+eyeliner, kohl, كحل, آيلاينر
+eyeshadow, آيشادو, ظلال عيون
+foundation, فاونديشن, كريم أساس
+nail polish, مناكير, طلاء أظافر
+moisturizer, moisturiser, lotion, كريم, لوشن, مرطب
+sunscreen, sunblock, صن بلوك, واقي شمس
+shampoo, شامبو
+conditioner, بلسم
+hair dye, صبغة, صبغة شعر
+deodorant, مزيل عرق, ديودرنت
+toothpaste, معجون أسنان
+toothbrush, فرشة أسنان, فرشاة أسنان
+razor, shaver, ماكينة حلاقة
+hair dryer, سشوار, استشوار, مجفف شعر
+
+## Sports
+sports, sport, رياضة, رياضي, رياضية
+ball, balls, كورة, كرة, كور
+football, soccer, كرة قدم, كورة قدم
+basketball, كرة سلة
+tennis, تنس
+racket, racquet, مضرب
+dumbbells, dumbbell, دمبل, دمبلز
+treadmill, مشاية
+bicycle, bicycles, bike, bikes, دراجة
+yoga mat, مات يوجا, سجادة يوجا
+jump rope, skipping rope, نط حبل, حبل نط
+tent, tents, خيمة
+toys, toy, لعب أطفال, ألعاب أطفال, لعبة
+
+## Brands written in Arabic (brand pages already carry both spellings; this covers new data)
+samsung, سامسونج, سامسونغ
+xiaomi, شاومي, شياومي
+huawei, هواوي
+honor, هونر
+oppo, أوبو
+realme, ريلمي, ريل مي
+vivo, فيفو
+infinix, إنفنيكس, إنفينكس
+tecno, تكنو
+nokia, نوكيا
+lenovo, لينوفو
+hp, إتش بي
+dell, ديل
+asus, أسوس
+acer, أيسر
+sony, سوني
+toshiba, توشيبا
+philips, فيليبس, فيلبس
+braun, براون
+kenwood, كينوود
+moulinex, مولينكس
+tornado, تورنادو
+zanussi, زانوسي
+ariston, أريستون
+nike, نايكي, نايك
+adidas, أديداس
+puma, بوما
+reebok, ريبوك
+skechers, سكيتشرز
+zara, زارا
+defacto, دي فاكتو, ديفاكتو
+waikiki, وايكيكي
+ray-ban, rayban, راي بان, ريبان
+casio, كاسيو
+rolex, رولكس
+swatch, سواتش
+fossil, فوسيل
+calvin klein, كالفن كلاين
+l'oreal, loreal, لوريال
+nivea, نيفيا
+dove, دوف
+garnier, جارنييه, غارنييه
+maybelline, ميبيلين, ميبلين
+flormar, فلورمار
+pampers, بامبرز
+juhayna, جهينة
+almarai, المراعي
+domty, دومتي
+president, بريزيدون
+kiri, كيري
+heinz, هاينز
+knorr, كنور
+maggi, ماجي
+lipton, ليبتون
+el arosa, العروسة
+abu auf, أبو عوف
+pepsi, بيبسي
+coca cola, coke, كوكاكولا, كوكا كولا, كوكا
+sprite, سبرايت
+fanta, فانتا
+mirinda, ميرندا
+schweppes, شويبس
+nestle, نستله
+nescafe, نسكافيه
+nutella, نوتيلا
+kellogg's, kelloggs, كيلوجز, كلوجز
+regina, ريجينا
+el doha, الضحى
+isis, إيزيس
+cadbury, كادبوري
+kitkat, kit kat, كيت كات
+twix, تويكس
+oreo, أوريو
+chipsy, شيبسي
+molto, مولتو
+edita, إديتا
+bisco misr, بسكو مصر
