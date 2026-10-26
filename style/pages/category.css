@@ -511,8 +511,10 @@
 }
 
 /* Phones: the sidebar is off-canvas. With JS the explorer opens a sheet (the
-   Drawer); without JS, "Filters" is a link to #lx-filters and :target turns this
-   very panel into a sheet, with its own Close link and Apply button. */
+   Drawer, in the top layer); without JS, "Filters" is a link to #lx-filters and
+   :target opens this very panel in the page flow — the browser scrolls to it —
+   with its own Close link and Apply button. (A fixed overlay can't rise above
+   the header and tab bar from inside <main> without JS.) */
 .lx-sheet-close {
   display: inline-flex;
   align-items: center;
@@ -526,25 +528,13 @@
     display: none;
   }
   .lx-filters:target {
-    position: fixed;
-    inset: auto 0 0;
-    z-index: var(--z-drawer);
     display: block;
-    max-block-size: 88dvh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: var(--sp-4) var(--gutter) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
-    border-start-start-radius: var(--r-2xl);
-    border-start-end-radius: var(--r-2xl);
+    margin-block: var(--sp-2) var(--sp-5);
+    padding: var(--sp-4);
+    border-radius: var(--r-xl);
+    corner-shape: squircle;
     background: var(--surface);
-    box-shadow: 0 0 0 100vmax var(--scrim), var(--shadow-modal);
-  }
-  .lx-filters:target .lx-form-foot {
-    position: sticky;
-    inset-block-end: calc(var(--sp-4) * -1);
-    margin-inline: calc(var(--gutter) * -1);
-    padding: var(--sp-3) var(--gutter) var(--sp-4);
-    background: var(--surface);
+    box-shadow: var(--shadow-sm);
   }
 }
 
