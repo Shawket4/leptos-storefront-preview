@@ -160,8 +160,7 @@ register("search-box", (root) => {
       });
   };
 
-  /** The field changed (`now`: ask without the typing pause — the shopper already paused). */
-  const changed = (now = false) => {
+  const changed = () => {
     const q = text();
     clearTimeout(timer);
     if (clearBtn) clearBtn.hidden = !input.value;
@@ -193,8 +192,7 @@ register("search-box", (root) => {
     }
     setOpen(true);
     if (!shown) view("loading");
-    if (now) ask(q);
-    else timer = window.setTimeout(() => ask(q), SUGGEST_DEBOUNCE_MS);
+    timer = window.setTimeout(() => ask(q), SUGGEST_DEBOUNCE_MS);
   };
 
   // ── The phone overlay: the same form, full screen, in the top layer ──
@@ -258,7 +256,7 @@ register("search-box", (root) => {
   };
 
   const offs = [
-    on(input, "input", "*", () => changed()),
+    on(input, "input", "*", changed),
     on(input, "keydown", "*", onKey),
     on(input, "focus", "*", () => {
       if (shown && shown.q === text()) setOpen(true);
@@ -312,13 +310,19 @@ register("search-box", (root) => {
     }),
   ];
 
+  // From now on the phone trigger opens the overlay: the router shouldn't follow or warm /search
+  // for it (before this loaded, it was the router's link to /search — the fallback).
+  trigger?.setAttribute("data-router", "off");
+
   // This module loads on the box's first use (main.ts), so the shopper may already be typing:
-  // adopt the field as it is (value, caret and focus are the DOM's own, untouched) and answer now.
-  if (document.activeElement === input && input.value) changed(true);
+  // adopt the field as it is (value, caret and focus are the DOM's own, untouched) and ask, after
+  // the usual pause (they may still be typing: one question, not one per chunk of keystrokes).
+  if (document.activeElement === input && input.value) changed();
 
   return () => {
     clearTimeout(timer);
     seq++;
+    trigger?.removeAttribute("data-router");
     closeOverlay(false);
     for (const off of offs) off();
   };
