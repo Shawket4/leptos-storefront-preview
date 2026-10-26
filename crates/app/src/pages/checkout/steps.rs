@@ -21,7 +21,8 @@ use leptos::server_fn::ServerFn;
 /// Focus the step's heading (`#co-step-title`) when this step arrived by an islands-router
 /// navigation, so keyboard and screen-reader users land on the new step, not on <body>. On a
 /// full page load it does nothing (the browser's own focus order applies).
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn StepFocus() -> impl IntoView {
     Effect::new(move |_| {
         if crate::pages::cart::store::arrived_by_navigation() {

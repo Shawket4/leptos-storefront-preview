@@ -42,6 +42,10 @@ uuid = { version = "1", features = ["v4"], optional = true }
 [features]
 default = []
 hydrate = ["leptos/hydrate"]
+# Page-specific islands become `#[island(lazy)]`: each loads as its own WASM chunk on the pages
+# that use it. Only for builds with `--split` (`cargo leptos build --release --split
+# --lib-features split`); without --split a lazy island breaks hydration of every island.
+split = []
 ssr = [
   "leptos/ssr",
   "leptos_meta/ssr",

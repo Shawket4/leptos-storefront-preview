@@ -86,7 +86,8 @@ fn with_param(url: &str, key: &str, value: &str) -> String {
     format!("{base}?{}", kept.join("&"))
 }
 
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn PurchasePanel(data: PanelData) -> impl IntoView {
     view! { <PanelBody data=data/> }
 }

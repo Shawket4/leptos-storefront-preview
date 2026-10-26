@@ -95,7 +95,8 @@ fn input_from(f: &CheckoutAddress) -> AddressInput {
     }
 }
 
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn AddressForm(
     initial: AddressInput,
     errors: Vec<FieldError>,
