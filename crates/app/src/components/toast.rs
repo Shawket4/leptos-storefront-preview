@@ -12,12 +12,14 @@ use leptos::prelude::*;
 /// The toast region, mounted once by the shell. The browser code fills it (`stores/toasts.ts`):
 /// each toast is a clone of `#tpl-toast` with its message (and an optional action) put in, and a
 /// `data-kind` that picks the icon. A polite live region, so screen readers hear each one.
+/// A manual popover: shown in the top layer, and raised again above any drawer that opens (a
+/// modal dialog), so a toast from inside the cart drawer is seen and its action can be pressed.
 #[component]
 pub fn Toaster() -> impl IntoView {
     let ui = use_ui();
     let lang = ui.lang.get_untracked();
     view! {
-        <section class="toaster" id="toaster" aria-label=tr(lang, "Notifications", "التنبيهات")>
+        <section class="toaster" id="toaster" popover="manual" aria-label=tr(lang, "Notifications", "التنبيهات")>
             <ol class="toaster__list" role="status" aria-live="polite"></ol>
         </section>
         <template id="tpl-toast">
