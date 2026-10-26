@@ -14,7 +14,7 @@ mod live;
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
-use crate::components::states::{SectionError, StateTone, StateView};
+use crate::components::states::{StateTone, StateView};
 use crate::format;
 use crate::media::Img;
 use crate::pages::cart::{ArtImage, art};
@@ -176,18 +176,13 @@ pub async fn order_track(id: String) -> Result<Option<TrackJson>, ServerFnError>
         .map(|o| track_json(&o, rq.prefs.lang, rq.prefs.numerals)))
 }
 
-/// The tracking page's data. `None` for an unknown id (or another tenant's order).
-#[server]
-pub async fn order_detail(id: String) -> Result<Option<OrderPageData>, ServerFnError> {
+/// The tracking page's data, read synchronously (orders are in memory). `None` for an unknown id
+/// (or another tenant's order).
+fn order_detail(id: &str) -> Option<OrderPageData> {
     let rq = crate::request::init();
-    crate::server::cache::private();
     let visitor = crate::pages::checkout::draft::visitor();
-    crate::server::sim::check_fail(crate::server::sim::Widget::Order)?;
-    crate::server::sim::delay(crate::server::sim::Widget::Order).await;
     let st = crate::server::state();
-    let Some(order) = st.orders().get(&rq.tenant.id, &id) else {
-        return Ok(None);
-    };
+    let order = st.orders().get(&rq.tenant.id, id)?;
     let meta = crate::pages::checkout::draft::order_meta(&order.id);
     let owner = meta
         .as_ref()
@@ -204,7 +199,7 @@ pub async fn order_detail(id: String) -> Result<Option<OrderPageData>, ServerFnE
         .collect();
     let track = track_json(&order, rq.prefs.lang, rq.prefs.numerals);
     let (notes, city, area) = meta.map(|m| (m.notes, m.city, m.area)).unwrap_or_default();
-    Ok(Some(OrderPageData {
+    Some(OrderPageData {
         order,
         track,
         imgs,
@@ -212,7 +207,7 @@ pub async fn order_detail(id: String) -> Result<Option<OrderPageData>, ServerFnE
         notes,
         city,
         area,
-    }))
+    })
 }
 
 #[component]
@@ -223,49 +218,29 @@ pub fn OrderPage() -> impl IntoView {
     let params = use_params_map();
     let id = params.with_untracked(|p| p.get("id")).unwrap_or_default();
     let just_placed = use_query_map().with_untracked(|q| q.get("placed").is_some());
-    // The status has to be decided before the first chunk streams; the lookup is in memory.
-    if crate::server::state()
-        .orders()
-        .get(&rq.tenant.id, &id)
-        .is_none()
-    {
+    // Everything is in memory: decided before the first chunk (status included), no resource.
+    let detail = order_detail(&id);
+    if detail.is_none() {
         if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
             res.set_status(http::StatusCode::NOT_FOUND);
         }
     }
     let shown_id = id.to_ascii_uppercase();
     let example = format!("{}-48213", rq.tenant.order_prefix);
-    let data = Resource::new(move || id.clone(), order_detail);
     let tenant = rq.tenant.name.pick(lang.is_rtl()).to_owned();
+    let body = match detail {
+        Some(d) => Either::Left(view! {
+            <Title text=format!("{} {} · {tenant}", tr(lang, "Order", "طلب"), d.order.id)/>
+            <OrderView d just_placed lang num/>
+        }),
+        None => Either::Right(view! {
+            <Title text=format!("{} · {tenant}", tr(lang, "Order not found", "الطلب غير موجود"))/>
+            <OrderNotFound id=shown_id example lang/>
+        }),
+    };
     view! {
         <Meta name="robots" content="noindex"/>
-        <div class="container order-page">
-            <Suspense fallback=move || view! { <OrderSkeleton/> }>
-                <ErrorBoundary fallback=move |errors| view! {
-                    <SectionError errors what=tr(lang, "this order", "الطلب").to_owned()/>
-                }>
-                    {
-                        let tenant = tenant.clone();
-                        move || {
-                            let (tenant, shown_id, example) = (tenant.clone(), shown_id.clone(), example.clone());
-                            Suspend::new(async move {
-                                let d = data.await?;
-                                Ok::<_, ServerFnError>(match d {
-                                    Some(d) => Either::Left(view! {
-                                        <Title text=format!("{} {} · {tenant}", tr(lang, "Order", "طلب"), d.order.id)/>
-                                        <OrderView d just_placed lang num/>
-                                    }),
-                                    None => Either::Right(view! {
-                                        <Title text=format!("{} · {tenant}", tr(lang, "Order not found", "الطلب غير موجود"))/>
-                                        <OrderNotFound id=shown_id.clone() example=example.clone() lang/>
-                                    }),
-                                })
-                            })
-                        }
-                    }
-                </ErrorBoundary>
-            </Suspense>
-        </div>
+        <div class="container order-page">{body}</div>
     }
 }
 
@@ -288,22 +263,6 @@ fn OrderNotFound(id: String, example: String, lang: Lang) -> impl IntoView {
             <p class="order-page__more">
                 <a class="link" href="/">{tr(lang, "Back to the shop", "ارجع للمتجر")}</a>
             </p>
-        </div>
-    }
-}
-
-#[component]
-fn OrderSkeleton() -> impl IntoView {
-    use crate::components::skeleton::Skeleton;
-    view! {
-        <div class="order-layout" aria-hidden="true">
-            <div class="card order-track">
-                <Skeleton width="40%" height="1rem"/>
-                <Skeleton width="70%" height="2.25rem"/>
-                <Skeleton width="55%" height="1rem"/>
-                <Skeleton width="100%" height="16rem"/>
-            </div>
-            <div class="card order-side"><Skeleton width="100%" height="20rem"/></div>
         </div>
     }
 }

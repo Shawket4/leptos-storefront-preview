@@ -5,7 +5,6 @@
 //!
 //! Shape: `CartQuote` in `client/src/api/types.ts`.
 
-use crate::api::types::CartView;
 use leptos::prelude::*;
 use leptos::server_fn::codec::GetUrl;
 use serde::{Deserialize, Serialize};
@@ -137,27 +136,4 @@ pub async fn get_quote() -> Result<CartQuote, ServerFnError> {
     let tenant = st.tenant(&rq.tenant.id).clone();
     let priced = cart::price(&lines, &tenant, &st.catalog(&tenant.id), st.media());
     Ok(quote(&lines, &priced, rq.prefs.lang, rq.prefs.numerals))
-}
-
-/// TRANSITIONAL — only the old product-page island (`pages/product/panel.rs`, browse agent) calls
-/// this; it goes when that page posts `/cart/add` and uses `addAndConfirm`. Adds to the cookie
-/// cart like the no-JS form and returns the priced cart.
-#[server]
-pub async fn cart_add(product: u32, variant: u32, qty: Option<u32>, addons: Option<String>) -> Result<CartView, ServerFnError> {
-    use crate::server::cart;
-    let rq = crate::request::init();
-    crate::server::cache::private();
-    let st = crate::server::state();
-    let tenant = st.tenant(&rq.tenant.id).clone();
-    let catalog = st.catalog(&tenant.id);
-    let mut lines = cart::from_request();
-    let addons = addons.unwrap_or_default().split(',').map(str::trim).filter(|s| !s.is_empty()).map(str::to_owned).collect();
-    let pid = domain::ProductId(product);
-    let vid = domain::VariantId(variant);
-    cart::add(&mut lines, &catalog, pid, vid, qty.unwrap_or(1).max(1), addons)
-        .map_err(|e| ServerFnError::new(e.code()))?;
-    if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
-        res.append_header(http::header::SET_COOKIE, cart::set_cookie(&lines));
-    }
-    Ok(cart::price(&lines, &tenant, &catalog, st.media()).view)
 }
