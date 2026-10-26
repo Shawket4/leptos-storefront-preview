@@ -4,6 +4,8 @@
 //! the live status with the real helpers (`setTimeline`, `setLiveStatus`, `retryIn`).
 
 use crate::components::button::{Button, ButtonKind, ButtonSize, IconButton};
+use crate::components::choice_list::{ChoiceList, ChoiceRow};
+use crate::components::form::{Radio, RadioGroup};
 use crate::components::item_row::{ItemList, ItemRow, ItemSize};
 use crate::components::kv::{KeyValueList, KvRow};
 use crate::components::live_status::{LiveState, LiveStatus};
@@ -136,6 +138,24 @@ pub fn Specimens() -> impl IntoView {
                     </ItemRow>
                 </template>
                 <ItemList attr:id="rows-target"/>
+            </section>
+
+            <section class="core-scratch__card" id="sc-radio">
+                <h2>"Radio · ChoiceList"</h2>
+                <RadioGroup legend=t("Size", "المقاس")>
+                    <Radio name="size" value="s" label=t("Small", "صغير")/>
+                    <Radio name="size" value="m" label=t("Medium", "وسط") description=t("Most picked", "الأكتر طلبًا") checked=true/>
+                    <Radio name="size" value="l" label=t("Large", "كبير") meta=m(1_500) disabled=true/>
+                </RadioGroup>
+                <ChoiceList legend=t("Milk", "اللبن") name="milk" single=true items=vec![
+                    ChoiceRow::new("full", t("Full cream", "كامل الدسم")).checked(true),
+                    ChoiceRow::new("oat", t("Oat", "شوفان")).meta(format!("+ {}", m(1_000))),
+                    ChoiceRow::new("none", t("No milk", "من غير لبن")).description(t("Black", "سادة")),
+                ]/>
+                <ChoiceList legend=t("Extras", "إضافات") name="extra" items=vec![
+                    ChoiceRow::new("shot", t("Extra shot", "شوت زيادة")).meta(format!("+ {}", m(1_500))),
+                    ChoiceRow::new("syrup", t("Vanilla syrup", "سيرب فانيليا")).checked(true),
+                ]/>
             </section>
 
             <section class="core-scratch__card" id="sc-kv">
