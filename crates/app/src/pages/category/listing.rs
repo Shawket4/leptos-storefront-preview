@@ -1,8 +1,7 @@
-//! Listing state helpers shared by the category and search pages (server components) and the
-//! `CatalogExplorer` island, so the server's first render and the island's later renders agree
-//! on every URL, label and title. Compiled into both bundles: keep it small.
+//! Listing helpers shared by the category and search pages: the URL each control leads to (every
+//! one through `ListingQuery`), and the labels and titles they show.
 
-use crate::api::types::{ListingQuery, NavCategory, PER_PAGE, Sort, url_decode};
+use crate::api::types::{ListingQuery, NavCategory, PER_PAGE, Sort};
 use crate::format;
 use crate::prefs::{Lang, Numerals, tr};
 use domain::L10n;
@@ -52,42 +51,6 @@ pub fn range_label(page: u32, total: u32, lang: Lang, num: Numerals) -> String {
     match lang {
         Lang::En => format!("{span} of {all}"),
         Lang::Ar => format!("{} من {all}", format::ltr(&span)),
-    }
-}
-
-/// Parse an amount typed by a shopper: Western or Arabic-Indic digits, thousands separators and
-/// spaces ignored. `None` for empty or non-numeric input.
-pub fn parse_amount(s: &str) -> Option<i64> {
-    let mut digits = String::new();
-    for c in s.trim().chars() {
-        match c {
-            '0'..='9' => digits.push(c),
-            '٠'..='٩' => digits.push(char::from_u32('0' as u32 + (c as u32 - '٠' as u32))?),
-            '۰'..='۹' => digits.push(char::from_u32('0' as u32 + (c as u32 - '۰' as u32))?),
-            ',' | '٬' | ' ' | '\u{a0}' | '\u{202f}' => {}
-            // Decimals are cut: the filter works in whole pounds.
-            '.' | '٫' => break,
-            _ => return None,
-        }
-    }
-    if digits.is_empty() {
-        None
-    } else {
-        digits.parse().ok()
-    }
-}
-
-/// The listing a link or `data-listing-href` points at: `/c/<slug>?…` or `/search?…`.
-pub fn query_from_href(href: &str) -> Option<ListingQuery> {
-    let href = href.split('#').next().unwrap_or_default();
-    let (path, qs) = href.split_once('?').unwrap_or((href, ""));
-    if let Some(slug) = path.strip_prefix("/c/") {
-        let slug = url_decode(slug.trim_end_matches('/'));
-        (!slug.is_empty() && !slug.contains('/')).then(|| ListingQuery::from_query(Some(slug), qs))
-    } else if path == "/search" {
-        Some(ListingQuery::from_query(None, qs))
-    } else {
-        None
     }
 }
 

@@ -29,20 +29,6 @@ pub enum ToastKind {
 }
 
 impl ToastKind {
-    fn icon(self) -> &'static str {
-        match self {
-            ToastKind::Success => "circle-check",
-            ToastKind::Error => "circle-x",
-            ToastKind::Info => "info",
-        }
-    }
-    fn code(self) -> &'static str {
-        match self {
-            ToastKind::Success => "success",
-            ToastKind::Error => "error",
-            ToastKind::Info => "info",
-        }
-    }
     /// How long it stays, in ms. Errors linger: they usually need reading.
     fn ttl_ms(self) -> u64 {
         match self {
@@ -136,16 +122,9 @@ impl Toasts {
     }
 }
 
-/// Run `f` after `ms` in the browser; nothing on the server (toasts only live in the client).
+/// Timers never run on the server, where this deprecated store still lives: a no-op.
 fn after_ms(ms: u64, f: impl FnOnce() + 'static) {
-    #[cfg(feature = "hydrate")]
-    {
-        set_timeout(f, std::time::Duration::from_millis(ms));
-    }
-    #[cfg(not(feature = "hydrate"))]
-    {
-        let _ = (ms, f);
-    }
+    let _ = (ms, f);
 }
 
 /// Provide the toast store (called on the server per request and once on the client).

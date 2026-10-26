@@ -21,7 +21,7 @@ pub mod client;
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
 #[cfg(feature = "ssr")]
-use leptos_meta::MetaTags;
+use leptos_meta::{HashedStylesheet, MetaTags};
 use leptos_router::{
     SsrMode,
     components::{Route, Router, Routes},
@@ -65,7 +65,8 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                         <link rel="preload" href="/fonts/ibm-plex-mono-latin-600-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
                     }.into_any(),
                 }}
-                <link rel="stylesheet" id="leptos" href="/pkg/storefront.css"/>
+                // Content-hashed by cargo-leptos (hash-files), so it is served immutable.
+                <HashedStylesheet options=options.clone() id="leptos"/>
                 // Per-tenant icons (WebP, like every image asset here).
                 <link rel="icon" type="image/webp" sizes="64x64" href=format!("/media/brand/{}-icon-64.webp", t.id)/>
                 <link rel="icon" type="image/webp" sizes="192x192" href=format!("/media/brand/{}-icon-192.webp", t.id)/>

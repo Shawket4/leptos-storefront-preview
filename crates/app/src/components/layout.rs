@@ -109,7 +109,7 @@ pub fn Rail(
         format!("rail {class}")
     };
     view! {
-        <div class=cls data-rail="" data-at="start">
+        <div class=cls data-rail="" data-ts="rail" data-at="start">
             <IconButton
                 icon="chevron-left"
                 label=tr(lang, "Previous", "السابق")

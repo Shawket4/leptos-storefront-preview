@@ -55,7 +55,7 @@ main:focus {
   color: var(--text);
 }
 
-/* ── Navigation progress (shell.js: only past 150 ms) ─────────────────────── */
+/* ── Navigation progress (features/core.ts: only past 150 ms) ──────────────── */
 .nav-progress {
   position: fixed;
   z-index: var(--z-toast);
@@ -97,7 +97,7 @@ main:focus {
   }
 }
 
-/* ── A navigation that failed (shell.js) ──────────────────────────────────── */
+/* ── A navigation that failed (features/core.ts) ──────────────────────────── */
 .nav-alert {
   position: fixed;
   z-index: var(--z-toast);
@@ -219,4 +219,60 @@ main:focus {
 }
 .offline__retry:hover {
   background: color-mix(in oklab, var(--on-ink) 22%, transparent);
+}
+
+/* ── Pull to refresh (features/core.ts) ───────────────────────────────────────
+   A disc that comes down from above the top edge with the finger (its transform
+   and opacity are set per frame by a spring); the arrow turns as the pull nears
+   the point where letting go refreshes, then a spinner while the page reloads. */
+.ptr {
+  position: fixed;
+  z-index: calc(var(--z-header) + 1);
+  inset-block-start: calc(env(safe-area-inset-top, 0px) - 2.5rem);
+  inset-inline: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+}
+.ptr:not([data-state]) {
+  visibility: hidden;
+}
+.ptr__disc {
+  display: grid;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--surface);
+  color: var(--text-2);
+  box-shadow: var(--shadow-md);
+}
+.ptr__disc > * {
+  grid-area: 1 / 1;
+}
+.ptr__arrow {
+  rotate: var(--ptr-turn, 0deg);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.ptr[data-armed] .ptr__arrow {
+  color: var(--text);
+}
+.ptr__spin {
+  display: none;
+}
+.ptr[data-state="refreshing"] .ptr__arrow,
+.ptr[data-state="done"] .ptr__arrow {
+  display: none;
+}
+.ptr[data-state="refreshing"] .ptr__spin {
+  display: block;
+  animation: spin 0.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ptr[data-state="refreshing"] .ptr__spin {
+    animation-duration: 0.8s !important;
+    animation-iteration-count: infinite !important;
+  }
 }

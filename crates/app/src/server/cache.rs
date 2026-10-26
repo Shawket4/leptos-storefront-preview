@@ -30,6 +30,7 @@ use std::{
 
 pub const CACHE_TAG: HeaderName = HeaderName::from_static("cache-tag");
 pub const CDN_CACHE_CONTROL: HeaderName = HeaderName::from_static("cdn-cache-control");
+pub const CATALOG_GEN: HeaderName = HeaderName::from_static("x-catalog-gen");
 
 pub fn tag_tenant(tenant: &str) -> String {
     format!("t{tenant}")
@@ -62,6 +63,10 @@ pub fn public(tags: &[String]) {
             HeaderValue::from_static("public, s-maxage=300, stale-while-revalidate=60"),
         );
     }
+    // The catalogue generation: when it changes, the browser's page cache drops what it holds
+    // (client/src/core/cache.ts `noteGeneration`).
+    let generation = crate::server::state().reads().generation(&rq.tenant.id);
+    res.insert_header(CATALOG_GEN, HeaderValue::from(generation));
     let mut all = vec![tag_tenant(&rq.tenant.id)];
     all.extend(tags.iter().cloned());
     if let Ok(v) = HeaderValue::from_str(&all.join(",")) {
