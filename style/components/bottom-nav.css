@@ -1,1 +1,65 @@
-/* bottom-nav */
+/* Phone tab bar (components::bottom_nav): five links on a translucent material,
+   the current tab in ink with a heavier stroke. Hidden from 960px. */
+.bottom-nav {
+  position: fixed;
+  z-index: var(--z-bottom-nav);
+  inset-inline: 0;
+  inset-block-end: 0;
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+  background: var(--material-thick);
+  -webkit-backdrop-filter: var(--material-filter);
+  backdrop-filter: var(--material-filter);
+  box-shadow: 0 -1px 0 var(--material-edge);
+}
+@media (min-width: 960px) {
+  .bottom-nav {
+    display: none;
+  }
+}
+.bottom-nav__list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  block-size: 3.75rem;
+}
+.bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  block-size: 100%;
+  color: var(--text-3);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-small);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+:root[lang="ar"] .bottom-nav__link {
+  font-size: 0.72rem;
+}
+.bottom-nav__link[aria-current="page"] {
+  color: var(--text);
+}
+.bottom-nav__link[aria-current="page"] .icon {
+  stroke-width: 2.4;
+}
+.bottom-nav__link:active {
+  scale: 0.94;
+  transition: scale var(--press-dur) ease-out;
+}
+.bottom-nav__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  block-size: 1.75rem;
+}
+.bottom-nav__badge {
+  position: absolute;
+  inset-block-start: -0.25rem;
+  inset-inline-start: 0.875rem;
+}
+.bottom-nav__badge:empty {
+  display: none;
+}

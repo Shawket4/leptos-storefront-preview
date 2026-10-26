@@ -1,0 +1,530 @@
+# fruits & vegetables
+Tomatoes
+Tomato
+Cherry Tomatoes
+Plum Tomatoes
+Vine Tomatoes
+Beef tomatoes
+Onions
+Onion
+Red Onions
+Yellow Onion
+Garlic
+Garlic Bulb
+Garlic Clove
+Potatoes
+Sweet Potatoes
+Baby New Potatoes
+Carrots
+Cucumber
+Persian Cucumber
+Zucchini
+Courgettes
+Aubergine
+Egg Plants
+Baby Aubergine
+Green Pepper
+Red Pepper
+Yellow Pepper
+Mixed peppers
+Green Chilli
+Red Chilli
+Jalapeno
+Lemon
+Lemons
+Lime
+Unwaxed Lime
+Orange
+Banana
+Apples
+Apple Juice
+Braeburn Apples
+Bramley Apples
+Cooking Apples
+Mango
+Strawberries
+Pomegranate
+Figs
+Apricot
+Peaches
+Pears
+Cherry
+Kiwi
+Grapefruit
+Coconut
+Avocado
+Spinach
+Mulukhiyah
+Cabbage
+White Cabbage
+Red Cabbage
+Lettuce
+Iceberg Lettuce
+Little Gem Lettuce
+Rocket
+Parsley
+Cilantro
+Coriander Leaves
+Dill
+Mint
+Spring Onions
+Leek
+Celery
+Radish
+Beetroot
+Beets
+Turnips
+Green Beans
+Peas
+Broad Beans
+Corn On The Cob
+Pumpkin
+Butternut Squash
+Taro
+Mushrooms
+Broccoli
+Fennel Bulb
+Ginger
+Raspberries
+Blueberries
+Blackberries
+Cranberry
+Pineapple Chunks
+Plantain
+Medjool Dates
+Stoned Dates
+Pitted Dates
+# bakery
+Bread
+Baguette
+Pita Bread
+Bread Rolls
+Ciabatta
+Wholegrain Bread
+Rye Bread
+Toast
+Crusty Bread
+Naan Bread
+Muffins
+English Muffins
+Bun
+Buns
+Sesame Seed Burger Buns
+Puff Pastry
+Filo Pastry
+Phyllo Dough
+Knafeh
+Tortillas
+Flour Tortilla
+White bread
+Cuban Bread
+# dairy & eggs
+Milk
+Whole Milk
+Semi-skimmed Milk
+Yogurt
+Full Fat Yogurt
+Greek Yogurt
+Natural Yoghurt
+Strained Yoghurt
+Buttermilk
+Sour Milk
+Cream
+Heavy Cream
+Double Cream
+Whipping Cream
+Clotted Cream
+Malai
+Sour Cream
+Butter
+Salted Butter
+Unsalted Butter
+Ghee
+Eggs
+Egg
+Condensed Milk
+Sweetened Condensed Milk
+Evaporated Milk
+Almond Milk
+Soya Milk
+Coconut Milk
+# cheese & deli
+Cheese
+Feta
+Cubed Feta Cheese
+Cheddar Cheese
+Mature Cheddar
+Mozzarella
+Mozzarella Balls
+Gouda Cheese
+Parmesan
+Parmesan Cheese
+Pecorino
+Emmentaler Cheese
+Swiss Cheese
+Brie
+Goats Cheese
+Cream Cheese
+Cottage Cheese
+Ricotta
+Mascarpone
+Cheese Slices
+Liquid Cheese
+Paneer
+Queso Fresco
+Farmers Cheese
+Turkey Ham
+Corned Beef
+# meat & poultry
+Beef
+Beef Fillet
+Beef Brisket
+Beef Shin
+Minced Beef
+Ground Beef
+Lean Minced Beef
+Oxtail
+Beef Kidney
+Tripe
+Veal
+Lamb
+Lamb Loin Chops
+Lamb Leg
+Lamb Shoulder
+Lamb Mince
+Lamb Shanks
+Goat Meat
+Sirloin steak
+Flank Steak
+Chuck Roast
+Beef Shoulder
+Beef Cutlet
+Sausages
+Doner Meat
+Chicken
+Chicken Breast
+Chicken Breasts
+Chicken Thighs
+Chicken Legs
+Chicken drumsticks
+Chicken Wings
+Chicken Liver
+Ground Chicken
+Duck
+Duck Legs
+Turkey
+Turkey Mince
+# fish
+Salmon
+Smoked Salmon
+Sea Bass
+Sea Bass Fillets
+Red Snapper
+Snapper Fish
+Mackerel
+Sardines
+Herring
+Tuna
+White Fish
+White Fish Fillets
+Fish fillet
+Cod
+Hake
+Trout
+barramundi
+Shrimp
+Prawns
+King Prawns
+Tiger Prawns
+Jumbo Shrimp
+Squid
+Baby Squid
+Mussels
+Clams
+Crab Meay
+Lobster
+Frozen Seafood mix
+Anchovy Fillet
+Pilchards
+# rice, grains & pulses
+Rice
+Arabic Rice
+Basmati Rice
+Brown Rice
+Jasmine Rice
+Dessert Rice
+Macaroni
+Penne Rigate
+Penne Pasta
+Spaghetti
+Vermicelli Pasta
+Fideo
+Sevaiiya
+Lasagne Sheets
+Farfalle
+Rigatoni
+Couscous
+Freekeh
+Bulgur Wheat
+Semolina
+Oats
+Rolled Oats
+Porridge oats
+Quinoa
+Lentils
+Brown Lentils
+Green Red Lentils
+Chickpeas
+Black Eyed Peas
+Kidney Beans
+Dried white beans
+Haricot Beans
+Cannellini Beans
+Butter Beans
+Yellow Split Peas
+Split Peas
+Mung Beans
+Whole Wheat
+Mixed Grain
+# spices & herbs
+Cumin
+Cumin Seeds
+Ground Cumin
+Coriander
+Coriander Seeds
+Ground Coriander
+Black Pepper
+Peppercorns
+Whole black peppercorns
+Ground Black Pepper
+Paprika
+Smoked Paprika
+Chili Powder
+Chilli Powder
+Red Chilli Flakes
+Cayenne Pepper
+Turmeric
+Ground Turmeric
+Turmeric Powder
+Cinnamon
+Cinnamon Stick
+Ground Cinnamon
+Cardamom
+Green Cardamom Pods
+Hail
+Ground Cardomom
+Cloves
+Ground Clove
+Bay Leaves
+Bay Leaf
+Sumac
+Saffron
+Dried Mint
+Oregano
+Dried Oregano
+Thyme
+Rosemary
+Nutmeg
+Ground Nutmeg
+Allspice
+Ground Allspice
+Mixed Spice
+Ground Ginger
+Fenugreek
+Anise
+Fennel Seeds
+Star Anise
+Sesame Seed
+Ground Mahleb
+Kabse Spice
+Ras el hanout
+Garlic Powder
+Garlic Granules
+Salt
+Sea Salt
+Coarse Salt
+Mustard Seeds
+Caraway Seed
+Dried Chillies
+Seasoning
+Mixture Powder
+Curry Powder
+Garam Masala
+Pul Biber
+Dried Dill
+# oils, tahini, honey
+Olive Oil
+Extra Virgin Olive Oil
+Sunflower Oil
+Vegetable Oil
+Oil
+Canola Oil
+Peanut Oil
+Coconut Oil
+Sesame Seed Oil
+Tahini
+Tahini Paste
+Honey
+Clear Honey
+Molasses
+Date Molasses
+Pomegranate Molasses
+Black Treacle
+Vinegar
+White Vinegar
+Apple Cider Vinegar
+Cider Vinegar
+# dates & sweets
+Turkish Delight
+Peanut Brittle
+Marzipan
+Milk Chocolate
+Dark Chocolate
+White Chocolate
+Plain Chocolate
+Chocolate
+Mars Bar
+Nutella
+Caramel
+Dulce de leche
+Nougatine
+Toffee Popcorn
+Miniature Marshmallows
+Rice Krispies
+Ice Cream
+Custard
+Vanilla Custard
+Glace Cherry
+Candied Peel
+Pistachio Paste
+Almond Paste
+# coffee & tea
+Coffee
+Espresso
+Tea
+Cocoa
+Cocoa Powder
+Cacao
+Unsweetened Cocoa
+Dried Sorrel
+Cafe La Llave
+# beverages
+Water
+Soda Water
+Orange Juice
+Apple Juice
+Pineapple Juice
+Peach Juice
+Lemonade
+Lemon Juice
+Lime juice
+Ginger Cordial
+Rose water
+Orange Blossom Water
+Tamarind Pulp
+Tamarind Ball
+Tamarind Paste
+Sugar Syrup
+Passion Fruit Pulp
+Vegetable Millk
+Ice Cubes
+# snacks & nuts
+Peanuts
+Roasted Peanut
+Unsalted Peanuts
+Cashew Nuts
+Cashews
+Almonds
+Flaked Almonds
+Ground Almonds
+Walnuts
+Hazlenuts
+Shelled Hazelnuts
+Pistachio
+Unsalted Pistachio
+Ground Pistachios
+Pine Nuts
+Pecan Nuts
+Chestnuts
+Raisins
+Sultanas
+Light Raisins
+Currants
+Dried Apricots
+Prunes
+Dried cranberries
+Dried Cherries
+Dried Fruit
+Fruit Mix
+Desiccated Coconut
+Coconut Flakes
+Shredded Coconut
+Seeds
+Pretzels
+Digestive Biscuits
+Maria Cookies
+Oreo Cream Biscuits
+Peanut Cookies
+Grape Nut Cereal
+# breakfast & pantry
+Canned Beans
+Baked Beans
+Can of chickpeas
+Canned Tomatoes
+Chopped Tomatoes
+Tinned Tomatos
+Tomato Puree
+Passata
+Tomato Sauce
+Tomato Ketchup
+Mayonnaise
+Mustard
+Dijon Mustard
+Hotsauce
+Sriracha
+Green Olives
+Black Olives
+Pitted Black Olives
+Pimento Stuffed Olives
+Dill Pickles
+Vine Leaves
+Grape leaves
+Pickled Grape Leaves
+Hummus
+Falafel
+Jam
+Apricot Jam
+Raspberry Jam
+Plum Jam
+Blackcurrant Jam
+Sorrel Jam
+Peanut Butter
+Sugar
+Granulated Sugar
+Brown Sugar
+Caster Sugar
+Icing Sugar
+Powdered Sugar
+Flour
+Plain Flour
+White Flour
+All purpose flour
+Yeast
+Instant Yeast
+Baking Powder
+Bicarbonate Of Soda
+Vanilla
+Vanilla Extract
+vanilla sugar
+Custard Powder
+Cornstarch
+Starch
+Corn Flour
+Chicken Stock Cube
+Beef Stock Cubes
+Bouillon Cubes
+Vegetable Stock Cube
+Chicken Bouillon Powder
+Mixed Peel
+Raw Vegetables
+Vegetables

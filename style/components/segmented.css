@@ -1,1 +1,62 @@
-/* segmented */
+/* Segmented control (components::segmented): links on a sunk track, the current
+   one raised on a thumb. 32px segments (44px hit area), 10px track corners. */
+.seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 10px;
+  /* A tint of ink, so the track reads on any ground (page, card, footer band). */
+  background: color-mix(in oklab, var(--text) 6%, transparent);
+}
+.seg--full {
+  display: flex;
+  inline-size: 100%;
+}
+.seg--full .seg__item {
+  flex: 1 1 0;
+}
+.seg__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-inline-size: 0;
+  block-size: 2rem;
+  padding: 0 0.75rem;
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-small);
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.seg__item::after {
+  content: "";
+  position: absolute;
+  inset: -0.375rem 0;
+}
+.seg__item .icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+:root:not([lang="ar"]) .seg__label {
+  text-box: trim-both cap alphabetic;
+}
+.seg__item:hover {
+  color: var(--text);
+}
+.seg__item[aria-current="true"] {
+  background: var(--seg-thumb);
+  color: var(--text);
+  box-shadow: var(--shadow-sm), 0 0 0 0.5px var(--line-2);
+}
+.seg__item:active {
+  scale: var(--press);
+  transition: scale var(--press-dur) ease-out;
+}
