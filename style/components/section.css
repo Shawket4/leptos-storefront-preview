@@ -1,0 +1,111 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Section header and rail (components::layout).
+   ───────────────────────────────────────────────────────────────────────────── */
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-block-end: var(--sp-4);
+}
+.section-head__text {
+  min-inline-size: 0;
+}
+.section-head__title {
+  font-size: clamp(1.25rem, 1.05rem + 0.9vw, 1.625rem);
+  font-weight: var(--fw-heavy);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+.section-head__sub {
+  margin-block-start: 2px;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.section-head__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  min-block-size: 44px;
+  margin-block-end: -10px;
+  padding-inline: var(--sp-2) 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--brand-text);
+  white-space: nowrap;
+}
+.section-head__link .icon {
+  transition: translate var(--dur-fast) var(--ease-out);
+}
+.section-head__link:hover .icon {
+  translate: 2px 0;
+}
+[dir="rtl"] .section-head__link:hover .icon {
+  translate: -2px 0;
+}
+
+/* ── Rail: a scroll-snap row that bleeds to the viewport edge on phones ───── */
+.rail {
+  --rail-cols: 2.3;
+  --rail-gap: var(--sp-3);
+  position: relative;
+}
+@media (min-width: 600px) {
+  .rail { --rail-cols: 3.3; --rail-gap: var(--sp-4); }
+}
+@media (min-width: 960px) {
+  .rail { --rail-cols: 4.3; }
+}
+@media (min-width: 1280px) {
+  .rail { --rail-cols: 5; --rail-gap: var(--sp-5); }
+}
+.rail__track {
+  display: flex;
+  gap: var(--rail-gap);
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+  /* Room for card shadows and the focus ring, which the scroller would clip. */
+  padding-block: 6px 12px;
+  margin-block: -6px -12px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: none;
+  /* The one faint gradient allowed: the gutters fade so cards slide out softly. */
+  mask-image: linear-gradient(to right, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
+}
+.rail__track::-webkit-scrollbar {
+  display: none;
+}
+.rail__track > * {
+  flex: 0 0 calc((100% - var(--rail-gap) * (var(--rail-cols) - 1)) / var(--rail-cols));
+  scroll-snap-align: start;
+}
+.rail__track:focus-visible {
+  outline-offset: -3px;
+}
+/* Arrow buttons: pointer devices with scripting only (the shell script scrolls). */
+.rail__btn {
+  position: absolute;
+  z-index: 4;
+  inset-block-start: calc(50% - 22px);
+  display: none;
+}
+.rail__btn--prev { inset-inline-start: calc(var(--sp-3) * -1); }
+.rail__btn--next { inset-inline-end: calc(var(--sp-3) * -1); }
+@media (hover: hover) and (pointer: fine) and (scripting: enabled) and (min-width: 960px) {
+  .rail__btn {
+    display: inline-grid;
+  }
+  .rail[data-at="start"] .rail__btn--prev,
+  .rail[data-at="end"] .rail__btn--next,
+  .rail[data-at="none"] .rail__btn {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+.rail__btn::before {
+  box-shadow: var(--shadow-md) !important;
+}

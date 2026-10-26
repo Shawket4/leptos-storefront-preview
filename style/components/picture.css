@@ -1,0 +1,62 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Picture (components::image): the box reserves the aspect ratio; the LQIP
+   (blurred) sits on the dominant colour until the WebP arrives. Transparent
+   packshots rest on the flat --well. The fade-in only exists with scripting,
+   so with JS off images are simply there.
+   ───────────────────────────────────────────────────────────────────────────── */
+.pic {
+  position: relative;
+  overflow: hidden;
+  inline-size: 100%;
+  background-color: var(--img-color, var(--sunk));
+  border-radius: var(--pic-radius, 0);
+  isolation: isolate;
+}
+.pic::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--lqip, none);
+  background-size: cover;
+  background-position: center;
+  filter: blur(14px);
+  transform: scale(1.12);
+}
+.pic img {
+  position: relative;
+  z-index: 1;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.pic--alpha {
+  background-color: var(--well);
+}
+.pic--alpha::before {
+  opacity: 0.55;
+}
+.pic--alpha img {
+  object-fit: contain;
+}
+.pic--cover img {
+  object-fit: cover;
+}
+.pic--missing {
+  display: grid;
+  place-items: center;
+  background-color: var(--well);
+  color: var(--text-3);
+}
+.pic--missing::before {
+  content: none;
+}
+
+@media (scripting: enabled) {
+  .pic img {
+    transition: opacity var(--dur-slow) var(--ease-out);
+  }
+  .pic img:not([data-loaded], [fetchpriority="high"]) {
+    opacity: 0;
+  }
+}

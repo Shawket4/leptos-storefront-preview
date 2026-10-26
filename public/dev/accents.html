@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accent options · Porcelain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Cairo, system-ui, sans-serif; background: #FAFAF9; color: #111111; }
+  header { padding: 24px 16px 8px; max-width: 1200px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+  header p { margin: 4px 0 0; color: #52525B; font-size: 14px; }
+  h2 { max-width: 1200px; margin: 28px auto 10px; padding: 0 16px; font-size: 20px; font-weight: 800; }
+  h2 small { font-weight: 600; color: #52525B; font-size: 13px; margin-inline-start: 8px; }
+  .grid { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .opt { background: #FFFFFF; border-radius: 20px; padding: 14px; box-shadow: 0 1px 2px rgb(17 17 17 / .05), 0 1px 1px rgb(17 17 17 / .03); }
+  .opt h3 { margin: 0; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 18px; height: 18px; border-radius: 999px; display: inline-block; }
+  .hex { font: 600 11px "IBM Plex Mono", monospace; color: #52525B; margin: 2px 0 10px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  .btn { padding: 10px 14px; border-radius: 12px; font-weight: 700; font-size: 14px; }
+  .chip { padding: 4px 11px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+  .link { font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+  .price { font: 600 15px "IBM Plex Mono", monospace; }
+  .dark { margin-top: 12px; border-radius: 14px; padding: 12px; background: #0B0B0C; color: #F4F4F5; }
+  .dark .hex { color: #B4B4BB; margin: 0 0 6px; }
+  .tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: #F1F1F0; color: #52525B; }
+  .cur { background: #111111; color: #FAFAF9; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Accent options on Porcelain</h1>
+  <p>Each tenant keeps its own accent. Light is the default; the dark strip shows the opt-in dark mode. Pick one per tenant (or send any hex).</p>
+</header>
+<h2>Nile <small>general marketplace · English first</small></h2>
+<div class="grid" id="nile"></div>
+<h2>Souq <small>grocery & pantry · Arabic first</small></h2>
+<div class="grid" id="souq"></div>
+<script>
+const nile = [
+  ["N1 · Teal (current — Madar's colour)", "#0D6273", "#2E94A6", true],
+  ["N2 · Cobalt", "#1F4FD8", "#7DA2FF"],
+  ["N3 · Lapis", "#1E5A96", "#6FA8E6"],
+  ["N4 · Indigo", "#4338CA", "#8B85F7"],
+  ["N5 · Emerald", "#0B7A55", "#4CC79F"],
+  ["N6 · Graphite (monochrome)", "#111111", "#F4F4F5"],
+];
+const souq = [
+  ["S1 · Terracotta (current)", "#A8431E", "#F08A5D", true],
+  ["S2 · Saffron", "#B45309", "#F5A524"],
+  ["S3 · Pomegranate", "#B4234A", "#F2668B"],
+  ["S4 · Tomato", "#C2361F", "#FF7A5C"],
+  ["S5 · Olive", "#4D6B12", "#A5C95A"],
+  ["S6 · Date", "#7A4B2A", "#D9A67E"],
+];
+const label = (hex) => { // white or ink, whichever reads better (WCAG)
+  const L = (h) => { const c = [1,3,5].map(i => parseInt(h.slice(i, i+2), 16) / 255).map(v => v <= .03928 ? v/12.92 : ((v+.055)/1.055) ** 2.4); return .2126*c[0] + .7152*c[1] + .0722*c[2]; };
+  const cr = (a, b) => { const [x, y] = [L(a), L(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+  return cr("#FFFFFF", hex) >= cr("#111111", hex) ? "#FFFFFF" : "#111111";
+};
+const card = ([name, l, d, cur]) => `
+  <div class="opt">
+    <h3><span class="dot" style="background:${l}"></span>${name}${cur ? ' <span class="tag cur">now</span>' : ""}</h3>
+    <div class="hex">${l} light · ${d} dark</div>
+    <div class="row">
+      <span class="btn" style="background:${l};color:${label(l)}">Add to cart</span>
+      <span class="chip" style="background:color-mix(in oklab, ${l} 12%, #fff);color:${l}">Express 30 min</span>
+    </div>
+    <div class="row">
+      <span class="price">EGP 1,299.00</span>
+      <span class="chip" style="background:${l};color:${label(l)}">−20%</span>
+      <span class="link" style="color:${l}">See all</span>
+    </div>
+    <div class="dark">
+      <div class="hex">dark mode</div>
+      <div class="row">
+        <span class="btn" style="background:${d};color:${label(d)}">Add to cart</span>
+        <span class="chip" style="background:color-mix(in oklab, ${d} 18%, #18181B);color:${d}">Express</span>
+        <span class="link" style="color:${d}">See all</span>
+      </div>
+    </div>
+  </div>`;
+document.getElementById("nile").innerHTML = nile.map(card).join("");
+document.getElementById("souq").innerHTML = souq.map(card).join("");
+</script>
+</body>
+</html>

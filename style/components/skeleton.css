@@ -1,0 +1,37 @@
+/* Skeletons (components::skeleton): solid --sunk blocks that pulse (opacity),
+   sized exactly like what replaces them. */
+.skeleton {
+  display: block;
+  background: var(--sunk);
+  border-radius: var(--r-sm);
+  animation: pulse 1.6s var(--ease-in-out) infinite;
+}
+.skeleton--text {
+  block-size: 0.8em;
+  margin-block: 0.25em;
+  border-radius: var(--r-xs);
+}
+.skeleton--circle {
+  border-radius: var(--r-pill);
+}
+.skeleton-text {
+  display: flex;
+  flex-direction: column;
+}
+.skeleton-text__line {
+  display: flex;
+  align-items: center;
+  block-size: 1lh;
+}
+.skeleton-text__line .skeleton {
+  inline-size: 100%;
+  margin: 0;
+}
+.skeleton-text__line:last-child:not(:only-child) .skeleton {
+  inline-size: 62%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
