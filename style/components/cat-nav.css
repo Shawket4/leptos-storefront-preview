@@ -13,8 +13,8 @@
   scroll-snap-type: x proximity;
   scroll-padding-inline: var(--gutter);
   scrollbar-width: none;
-  /* The one faint gradient allowed: edges fade where chips slide out. */
-  mask-image: linear-gradient(to right, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
+  /* No fade (no gradients): the strip bleeds into the gutters, so chips slide off the screen
+     edge itself, the way iOS scroll views do. */
 }
 .cat-nav__list::-webkit-scrollbar {
   display: none;
@@ -71,5 +71,5 @@
 }
 .cat-nav__link:active {
   scale: var(--press);
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-press);
 }
