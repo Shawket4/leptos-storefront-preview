@@ -1,5 +1,6 @@
 #![recursion_limit = "512"]
 
+pub mod api;
 pub mod brand;
 pub mod components;
 pub mod format;

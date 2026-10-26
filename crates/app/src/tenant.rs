@@ -31,6 +31,14 @@ pub struct Tenant {
     pub on_accent: String,
     /// Logo asset key under /media (see data/media).
     pub logo: String,
+    /// Order reference prefix (`NIL-48213`), like Madar's branch `code` in `delivery_ref`.
+    pub order_prefix: String,
+    /// Flat delivery fee and the subtotal from which delivery is free (Madar keeps the fee
+    /// outside the tax base: `delivery_fee` on `delivery_orders`).
+    pub delivery_fee: domain::Piastres,
+    pub free_delivery_over: domain::Piastres,
+    /// Minutes for an express slot, if the tenant offers one.
+    pub express_minutes: Option<u32>,
 }
 
 /// How the current request chose its tenant.

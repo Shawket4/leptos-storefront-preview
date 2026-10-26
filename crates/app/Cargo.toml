@@ -32,6 +32,12 @@ axum = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true }
 moka = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
+# Madar's pricing + money rules, by path (clean crates: no actix/DB deps). Server-only so the WASM
+# bundle stays lean. Local checkout of madar-shared (v0.12.0 at the time of writing).
+madar-catalog = { path = "/home/apex/ClaudeProjects/madar-shared/crates/madar-catalog", optional = true }
+madar-money = { path = "/home/apex/ClaudeProjects/madar-shared/crates/madar-money", optional = true }
+rust_decimal = { version = "1", default-features = false, optional = true }
+uuid = { version = "1", features = ["v4"], optional = true }
 
 [features]
 default = []
@@ -45,4 +51,8 @@ ssr = [
   "dep:tokio",
   "dep:moka",
   "dep:tracing",
+  "dep:madar-catalog",
+  "dep:madar-money",
+  "dep:rust_decimal",
+  "dep:uuid",
 ]
