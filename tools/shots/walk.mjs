@@ -88,10 +88,12 @@ await check("open a category (router)", async () => {
   return page.url().replace(base, "");
 }, { expectRequests: only(/^GET \/c\//) });
 await check("filter (one navigation)", async () => {
-  const f = page.locator('[data-drawer-open], [data-ts~="filters"] input[type=checkbox]').first();
+  // The listing's filter sheet (the header's cart button is a drawer trigger too).
+  const f = page.locator('[data-drawer-open="lx-sheet"]').first();
   await f.tap();
   await page.waitForTimeout(300);
-  const box = page.locator('[data-ts~="drawer"] input[type=checkbox], [data-ts~="filters"] input[type=checkbox]').first();
+  // The design system's Checkbox hides its input: tap the row's label, as a finger would.
+  const box = page.locator('#lx-sheet label.check').first();
   if (await box.count()) await box.tap();
   await page.waitForTimeout(1200);
   // An open sheet survives the navigation (by design) and keeps the page behind it inert: close it.

@@ -10,7 +10,14 @@ use axum::{
 use leptos::prelude::*;
 use leptos_axum::{LeptosRoutes, generate_route_list};
 use std::collections::HashMap;
-use tower_http::{compression::CompressionLayer, services::ServeDir, set_header::SetResponseHeaderLayer};
+use tower_http::{
+    compression::{
+        CompressionLayer,
+        predicate::{DefaultPredicate, NotForContentType, Predicate},
+    },
+    services::ServeDir,
+    set_header::SetResponseHeaderLayer,
+};
 
 #[tokio::main]
 async fn main() {
@@ -103,7 +110,9 @@ async fn main() {
             let prod = matches!(leptos_options.env, leptos::config::Env::PROD);
             move |uri: axum::http::Uri, res: Response| async move { static_cache_headers(&uri, res, prod) }
         }))
-        .layer(CompressionLayer::new())
+        // Fonts are WOFF2 (brotli inside) and images are compressed formats: compressing them again
+        // costs CPU on every response and can make them bigger. (The default skips images.)
+        .layer(CompressionLayer::new().compress_when(DefaultPredicate::new().and(NotForContentType::const_new("font/"))))
         .with_state(leptos_options);
 
     let listener = tokio::net::TcpListener::bind(&addr).await.expect("bind");
@@ -120,7 +129,7 @@ fn static_cache_headers(uri: &axum::http::Uri, mut res: Response, prod: bool) ->
     if !res.headers().contains_key(header::CACHE_CONTROL) && res.status().is_success() {
         let value = if path.starts_with("/fonts/") || (prod && is_hashed_pkg(path)) {
             Some("public, max-age=31536000, immutable")
-        } else if path.starts_with("/pkg/") || path.starts_with("/dev/") {
+        } else if path.starts_with("/pkg/") {
             Some("no-cache")
         } else {
             None

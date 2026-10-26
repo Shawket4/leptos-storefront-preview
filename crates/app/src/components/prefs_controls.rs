@@ -44,11 +44,19 @@ pub fn prefs_href(key: &str, value: &str, next: &str) -> String {
 
 fn groups(p: Prefs, next: &str) -> impl IntoView + use<> {
     let lang = p.lang;
+    // «العربية» and «١٢٣» are the only Arabic-script text on an English page: `data-script` gives
+    // them the system's Arabic face there (base.css), the way iOS and Android show a language's
+    // own name, so an English visit never downloads the Arabic web font for two labels.
     let lang_items = [Lang::En, Lang::Ar]
         .into_iter()
         .map(|l| {
-            SegItem::new(l.endonym(), prefs_href("lang", l.code(), next), p.lang == l)
-                .lang(l.code())
+            let item = SegItem::new(l.endonym(), prefs_href("lang", l.code(), next), p.lang == l)
+                .lang(l.code());
+            if l.is_rtl() {
+                item.attr("data-script", "arab")
+            } else {
+                item
+            }
         })
         .collect::<Vec<_>>();
     let num_items = vec![
@@ -61,7 +69,9 @@ fn groups(p: Prefs, next: &str) -> impl IntoView + use<> {
             "١٢٣",
             prefs_href("num", "arab", next),
             p.numerals == Numerals::Arab,
-        ),
+        )
+        .lang("ar")
+        .attr("data-script", "arab"),
     ];
     let theme_items = [
         (Theme::Light, "sun", tr(lang, "Light", "فاتح")),

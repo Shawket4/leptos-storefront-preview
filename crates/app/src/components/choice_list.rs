@@ -3,8 +3,8 @@
 //! checkboxes, so a plain form posts `name=value` for each choice without JS.
 //!
 //! Built on [`RadioGroup`] — the `<fieldset>`, legend, hint and inline error, wired with
-//! `aria-describedby` / `aria-invalid` exactly as there — and [`Checkbox`] for the rows (a radio
-//! row is the same row with a round dot). The rows sit in one inset list, divided by hairlines.
+//! `aria-describedby` / `aria-invalid` exactly as there — and [`Checkbox`] / [`Radio`] for the
+//! rows (the same row, square or round). The rows sit in one inset list, divided by hairlines.
 //!
 //! Validating in the browser (min / max picks): put the rule in `hint` ("Choose up to 3") and
 //! set `aria-invalid="true"` on the fieldset while it's broken — the list takes the danger edge
@@ -16,7 +16,7 @@
 //! ```
 
 use super::attrs::{Attrs, spread};
-use super::form::{Checkbox, RadioGroup};
+use super::form::{Checkbox, Radio, RadioGroup};
 use leptos::either::{Either, EitherOf4};
 use leptos::prelude::*;
 
@@ -95,28 +95,22 @@ pub fn ChoiceList(
     let rows = items
         .into_iter()
         .map(|r| {
+            // The rows' optional props take a value, not an Option: an empty one renders nothing
+            // visible (`.check__desc:empty`, `.check__meta:empty`).
             if single {
                 Either::Left(view! {
-                    <label class="check check--radio" data-press="" {..spread(r.attrs)}>
-                        <input
-                            class="check__input"
-                            type="radio"
-                            name=name.clone()
-                            value=r.value
-                            checked=r.checked
-                            disabled=r.disabled
-                        />
-                        <span class="check__box is-round" aria-hidden="true"></span>
-                        <span class="check__text">
-                            <span class="check__label">{r.label}</span>
-                            {r.description.map(|d| view! { <span class="check__desc">{d}</span> })}
-                        </span>
-                        {r.meta.map(|m| view! { <span class="check__meta">{m}</span> })}
-                    </label>
+                    <Radio
+                        name=name.clone()
+                        value=r.value
+                        label=r.label
+                        description=r.description.unwrap_or_default()
+                        meta=r.meta.unwrap_or_default()
+                        checked=r.checked
+                        disabled={r.disabled}
+                        {..spread(r.attrs)}
+                    />
                 })
             } else {
-                // Checkbox's optional props take a value, not an Option: an empty one renders
-                // nothing visible (`.check__desc:empty`, `.check__meta:empty`).
                 Either::Right(view! {
                     <Checkbox
                         name=name.clone()

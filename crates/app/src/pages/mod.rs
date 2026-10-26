@@ -4,6 +4,7 @@ pub mod cart;
 pub mod category;
 pub mod checkout;
 pub mod core_scratch;
+#[cfg(debug_assertions)]
 mod core_scratch_components;
 pub mod errors;
 pub mod home;

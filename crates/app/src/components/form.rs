@@ -369,3 +369,40 @@ pub fn Checkbox(
         </label>
     }
 }
+
+/// A radio with its label (and an optional line under it, and an optional figure at the end): the
+/// checkbox row with a round dot. One of a group sharing a `name` — put them in a [`RadioGroup`]
+/// (or use `ChoiceList`). For delivery slots and payment methods, the larger [`RadioCard`].
+#[component]
+pub fn Radio(
+    #[prop(into)] name: String,
+    /// What the row posts when chosen.
+    #[prop(into)]
+    value: String,
+    #[prop(into)] label: TextProp,
+    #[prop(optional, into)] description: Option<TextProp>,
+    /// Trailing, quiet: a count or a price ("+ EGP 10"), formatted.
+    #[prop(optional, into)]
+    meta: Option<TextProp>,
+    #[prop(optional, into)] checked: MaybeProp<bool>,
+    #[prop(optional, into)] disabled: MaybeProp<bool>,
+) -> impl IntoView {
+    view! {
+        <label class="check check--radio" data-press="">
+            <input
+                class="check__input"
+                type="radio"
+                name=name
+                value=value
+                checked=checked.get_untracked().unwrap_or(false)
+                disabled=move || disabled.get().unwrap_or(false)
+            />
+            <span class="check__box is-round" aria-hidden="true"></span>
+            <span class="check__text">
+                <span class="check__label">{move || label.get()}</span>
+                {description.map(|d| view! { <span class="check__desc">{move || d.get()}</span> })}
+            </span>
+            {meta.map(|m| view! { <span class="check__meta">{move || m.get()}</span> })}
+        </label>
+    }
+}
