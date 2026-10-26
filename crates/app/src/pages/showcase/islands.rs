@@ -823,7 +823,9 @@ pub fn CacheLab(initial: CacheInfo, tenant: String) -> impl IntoView {
         None => {}
     });
     // stats → read → stats: the misses counter tells whether the read was served from the cache.
-    let read = Action::new_local(move |_: &()| async move {
+    // A plain (Send) action: an island body also runs during SSR, and `new_local`/`new_unsync`
+    // would put SendWrappers in the request's arena, which may be dropped on another worker.
+    let read = Action::new(move |_: &()| async move {
         let before = api::cache_stats().await.ok();
         #[cfg(feature = "hydrate")]
         let t0 = js::now();
