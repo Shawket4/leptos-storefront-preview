@@ -1,7 +1,13 @@
 /* Icons (components::icons): lucide geometry, sized by their width/height
-   attributes; CSS may override with inline-size/block-size. */
+   attributes; CSS may override with inline-size/block-size. The stroke is a
+   token (bolder than lucide's 2), lighter at 16px and below so dense glyphs
+   don't clog; a context can set --icon-stroke for its own icons. */
 .icon {
   display: inline-block;
   flex-shrink: 0;
   vertical-align: middle;
+  stroke-width: var(--icon-stroke);
+}
+.icon:is([width="12"], [width="14"], [width="16"]) {
+  --icon-stroke: var(--icon-stroke-sm);
 }

@@ -74,8 +74,7 @@
   scroll-snap-type: x mandatory;
   scroll-padding-inline: var(--gutter);
   scrollbar-width: none;
-  /* The one faint gradient allowed: the gutters fade so cards slide out softly. */
-  mask-image: linear-gradient(to right, transparent, #000 var(--gutter), #000 calc(100% - var(--gutter)), transparent);
+  /* No fade (no gradients): the track bleeds into the gutters, so cards slide off the edge. */
 }
 .rail__track::-webkit-scrollbar {
   display: none;

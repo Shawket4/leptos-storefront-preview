@@ -7,6 +7,7 @@
 import { register } from "../core/mount";
 import { mountDrawer } from "../core/drawer";
 import { mountStepper } from "../core/stepper";
+import { mountSegToggle } from "../core/segmented";
 import { $, $$, on, prefersReducedMotion } from "../core/dom";
 import { t } from "../core/page";
 import { isOnline, onOnline } from "../core/net";
@@ -16,6 +17,7 @@ import { toast } from "../stores/toasts";
 
 register("drawer", mountDrawer);
 register("stepper", mountStepper);
+register("seg-toggle", mountSegToggle);
 
 // ── Navigation progress ──────────────────────────────────────────────────────────────────────
 // A thin bar at the top, only when a navigation takes longer than 150 ms; it completes when the

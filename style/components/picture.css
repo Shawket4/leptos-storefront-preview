@@ -9,7 +9,7 @@
   overflow: hidden;
   inline-size: 100%;
   background-color: var(--img-color, var(--sunk));
-  border-radius: var(--pic-radius, 0);
+  border-radius: var(--r-pic, 0);
   isolation: isolate;
 }
 .pic::before {

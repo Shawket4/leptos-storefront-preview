@@ -40,7 +40,7 @@
 /* SkeletonMedia: a ratio-reserved block with the Picture's own corner. */
 .skeleton-media {
   inline-size: 100%;
-  border-radius: var(--pic-radius, 0);
+  border-radius: var(--r-pic, 0);
 }
 /* SkeletonField: the label line and the field's own box (form.css: .input is 52px; a 3-row
    .input--area is 3 lines of body text plus its padding, at least 6.5rem). */

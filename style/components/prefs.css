@@ -53,7 +53,7 @@
 }
 .prefs__trigger:active {
   scale: var(--press);
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-press);
 }
 .prefs__code {
   min-inline-size: 1.25em;

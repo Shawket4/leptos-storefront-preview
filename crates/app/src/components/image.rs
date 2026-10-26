@@ -3,8 +3,8 @@
 //! The box reserves the image's aspect ratio before a byte arrives; photos show the 20px LQIP
 //! (blurred) over their dominant colour until the WebP (`srcset` ladder) paints over it, and
 //! transparent packshots rest on the flat well. The image is never hidden while it loads: no
-//! opacity gate waits on the inline `onload` (pages the islands router patches in come from
-//! DOMParser, where inline handlers may never fire); `onload` only lets CSS drop the LQIP.
+//! opacity gate waits on the inline `onload` (pages the router swaps in come from DOMParser, where
+//! inline handlers may never fire); `onload` only lets CSS drop the LQIP.
 
 use super::icons::Icon;
 use crate::media::Img;

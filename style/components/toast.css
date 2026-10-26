@@ -5,11 +5,26 @@
   position: fixed;
   z-index: var(--z-toast);
   inset-inline: 0;
-  inset-block-end: calc(var(--bottom-nav-h) + var(--sp-4));
+  inset-block: auto calc(var(--bottom-nav-h) + var(--sp-4));
   display: grid;
   justify-items: center;
-  padding-inline: var(--gutter);
+  inline-size: auto;
+  block-size: auto;
+  margin: 0;
+  padding: 0 var(--gutter);
+  border: 0;
+  background: none;
+  color: inherit;
+  overflow: visible;
   pointer-events: none;
+}
+/* A manual popover (top layer): hidden until the browser code shows it. */
+.toaster:not(:popover-open)[popover] {
+  display: none;
+}
+/* Inside an open drawer the tab bar is covered: sit at the bottom edge. */
+.drawer .toaster {
+  inset-block-end: max(env(safe-area-inset-bottom, 0px), var(--sp-4));
 }
 @media (min-width: 960px) {
   .toaster {
@@ -148,7 +163,7 @@
 /* Reduced motion: places change at once; arrivals and exits fade (base.css). */
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    transition: opacity var(--dur-fast) linear;
+    transition: opacity var(--dur-fast) var(--ease-linear);
   }
 }
 .toast__icon {
@@ -160,6 +175,31 @@
 .toast__msg {
   flex: 1;
   min-inline-size: 0;
+}
+/* The action ("View cart", "Undo"): a real button on the ink, 44px to the finger. */
+.toast__action {
+  flex: none;
+  min-block-size: 2.75rem;
+  padding: 0 0.875rem;
+  border: 0;
+  border-radius: var(--r-md);
+  background: color-mix(in oklab, var(--on-ink) 16%, transparent);
+  color: var(--on-ink);
+  font: inherit;
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out), scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.toast__action:hover {
+  background: color-mix(in oklab, var(--on-ink) 24%, transparent);
+}
+.toast__action:active {
+  scale: var(--press);
+  transition: scale var(--press-dur) var(--ease-press);
+}
+.toast__action[hidden] {
+  display: none;
 }
 .toast__close {
   display: grid;

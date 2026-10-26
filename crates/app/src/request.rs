@@ -119,7 +119,6 @@ mod server {
         };
         provide_context(rq.clone());
         Ui::provide(prefs);
-        crate::stores::provide_all();
         rq
     }
 }

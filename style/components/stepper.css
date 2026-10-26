@@ -23,7 +23,7 @@
 }
 .stepper__btn:active:not(:disabled) {
   scale: 0.9;
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-press);
 }
 .stepper__btn:disabled {
   color: var(--on-disabled);

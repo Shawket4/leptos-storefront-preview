@@ -243,9 +243,26 @@ async function show(page: Page, g: Go): Promise<void> {
     update();
     return;
   }
-  const vt = document.startViewTransition(update);
-  void vt.finished.finally(() => nameMedia(null));
-  await vt.updateCallbackDone.catch((e: unknown) => console.error(e));
+  // A transition can be skipped or aborted (a newer one, the tab hidden, Chrome's DOM-update
+  // timeout on a slow device): its promises reject, and the swap must still happen exactly once.
+  let ran = false;
+  const once = () => {
+    if (ran) return;
+    ran = true;
+    update();
+  };
+  const vt = document.startViewTransition(once);
+  const fallback = window.setTimeout(once, 1500);
+  vt.ready.catch(() => {});
+  vt.finished.then(
+    () => nameMedia(null),
+    () => nameMedia(null),
+  );
+  await vt.updateCallbackDone.catch((e: unknown) => {
+    if (__DEV__) console.warn("view transition:", e);
+  });
+  clearTimeout(fallback);
+  once(); // aborted before the browser called it
 }
 
 /** The background refresh of a page that was shown stale: swap what changed, keep everything else. */

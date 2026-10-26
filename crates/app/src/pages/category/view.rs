@@ -116,13 +116,13 @@ pub fn Listing(page: ListingPage, extras: Extras, lang: Lang, num: Numerals) -> 
                         class="lx-sheet"
                         footer=Box::new(move || view! {
                             <div class="lx-sheet-foot">
-                                <button type="button" class="btn btn--ghost btn--md" data-clear="all" data-press="">
-                                    <span class="btn__label">{clear}</span>
-                                </button>
-                                <button type="button" class="btn btn--primary btn--md lx-show" data-drawer-close="" data-press="">
+                                <Button kind=ButtonKind::Ghost attr:data-clear="all">{clear}</Button>
+                                // The count is the last page's while the next loads: a spinner
+                                // says so (`.is-pending`, features/listing.ts).
+                                <Button kind=ButtonKind::Primary class="lx-show" attr:data-drawer-close="">
                                     <Icon name="loader-circle" size=18 class="spin lx-show__busy"/>
-                                    <span class="btn__label">{foot}</span>
-                                </button>
+                                    {foot}
+                                </Button>
                             </div>
                         }.into_any())
                     >
