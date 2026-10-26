@@ -60,3 +60,14 @@
     opacity: 0;
   }
 }
+
+/* Dark mode: transparent packshots get a rim light — a hairline of light along
+   their own silhouette — so dark products keep their edges on the dark well. */
+:root[data-theme="dark"] .pic--alpha img {
+  filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.55)) drop-shadow(0 0 8px rgb(255 255 255 / 0.07));
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .pic--alpha img {
+    filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.55)) drop-shadow(0 0 8px rgb(255 255 255 / 0.07));
+  }
+}

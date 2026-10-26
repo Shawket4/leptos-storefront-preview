@@ -2,102 +2,107 @@
    Tokens — the one place for colour, type, space, radii, elevation, motion and
    layers. Components and pages use these custom properties only (no raw hex).
 
-   The storefront's own look (owner, 2026-10-26): warm linen/sand neutrals, the
-   tenant's accent as the only colour, soft round surfaces resting on faint
-   shadows, Cairo for words and IBM Plex Mono for figures. No gradients.
+   Owner's decisions (2026-10-26, AGENTS.md "Design rules"): one global palette
+   for every shop — "Porcelain" neutrals with a graphite accent — so colour in
+   the UI comes from product photography and the status colours only. Apple's
+   design principles (.claude/skills/apple-design): continuous corners, springs,
+   response on pointer-down, translucent material chrome. No gradients.
 
-   Theme: <html data-theme="light|dark|system">, light by default. `dark`
-   forces dark; `system` follows the device. The dark block is written twice
-   (for `dark`, and inside the media query for `system`) — keep them identical.
-
-   The tenant colour arrives from the shell's inline <style id="tenant-brand">
-   as --brand-l / --on-brand-l (light) and --brand-d / --on-brand-d (dark),
-   already walked to WCAG AA against the page grounds below (#FAFAF9 / #0B0B0C,
-   crate::brand GROUND_LIGHT / GROUND_DARK): keep them in step.
+   Theme: <html data-theme="light|dark|system">, light by default (even on a
+   dark-mode phone). `dark` forces dark; `system` follows the device. The dark
+   block is written twice — for `dark`, and inside the media query for
+   `system` — keep the two identical.
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
   color-scheme: light;
 
-  /* ── Colour roles (light) ─────────────────────────────────────────────── */
-  --page: #FAFAF9;              /* linen ground */
+  /* ── Colour roles (light: Porcelain) ──────────────────────────────────── */
+  --page: #FAFAF9;
   --surface: #FFFFFF;           /* cards */
   --surface-2: #FFFFFF;         /* raised: popovers, menus, sheets (with --shadow-float) */
   --sunk: #F1F1F0;              /* secondary buttons, segment tracks, chips at rest */
   --sunk-2: #E7E7E5;            /* sunk, hovered or pressed */
   --well: #F4F4F3;              /* packshot backdrop */
 
-  --text: #111111;              /* warm ink, 17.7:1 on surface */
-  --text-2: #52525B;            /* secondary, 7.4:1 */
-  --text-3: #71717A;            /* tertiary: placeholders, captions (3.8:1, never the only carrier) */
+  --text: #111111;              /* 18.9:1 on surface */
+  --text-2: #52525B;            /* secondary, 7.7:1 */
+  --text-3: #71717A;            /* tertiary: captions, placeholders (4.8:1) */
 
   --line: rgb(17 17 17 / 0.08);         /* hairline inside a surface */
   --line-2: rgb(17 17 17 / 0.12);       /* a firmer divider, chip edges */
   --line-strong: rgb(17 17 17 / 0.16);  /* a field's edge */
   --rule: #E4E4E7;                      /* rules between rows */
 
+  /* The accent is graphite, the same for every shop: primary buttons are near-
+     black in light mode and near-white in dark. */
   --brand: #111111;
   --on-brand: #FFFFFF;
-  --brand-hover: color-mix(in oklab, var(--brand) 84%, #fff);
+  --brand-hover: #2A2A2D;
   --brand-wash: color-mix(in oklab, var(--brand) 8%, var(--surface));
-  --brand-wash-2: color-mix(in oklab, var(--brand) 6%, var(--surface));
-  /* Brand as text: AA on page, surface and its own wash (crate::brand walks it). */
   --brand-text: var(--brand);
-  --brand-line: color-mix(in oklab, var(--brand) 40%, var(--surface));
+  --brand-line: color-mix(in oklab, var(--brand) 30%, var(--surface));
 
-  /* Inverted surfaces (toasts, the Madar badge): ink on the linen page, linen on
-     the charcoal one. */
+  /* Inverted surfaces (toasts, the "Powered by Madar" badge). */
   --ink: #111111;
   --on-ink: #FAFAF9;
-  --on-ink-2: color-mix(in oklab, var(--on-ink) 70%, var(--ink));
+  --on-ink-2: color-mix(in oklab, var(--on-ink) 68%, var(--ink));
 
   --success: #15803D;
   --success-wash: #E8F5EC;
   --warning: #B45309;
   --warning-wash: #FDF3E7;
-  --danger: #DC2626;
+  --danger: #DC2626;             /* sale prices and discount badges */
   --danger-wash: #FDECEC;
   --info: #2563EB;
   --info-wash: #EAF1FE;
-  /* Status as small text on its wash, on surface and on page — all ≥ 4.5:1. */
-  --success-text: var(--success);
-  --warning-text: color-mix(in oklab, var(--warning) 88%, var(--text));
-  --danger-text: var(--danger);
+  /* Status as small text on its own wash, on surface and on page (≥ 4.5:1). */
+  --success-text: #11703A;
+  --warning-text: var(--warning);
+  --danger-text: #C81E1E;
   --info-text: var(--info);
-  /* Status colours on the inverted toast. */
-  --success-on-ink: color-mix(in oklab, var(--success) 45%, var(--on-ink));
-  --warning-on-ink: color-mix(in oklab, var(--warning) 45%, var(--on-ink));
-  --danger-on-ink: color-mix(in oklab, var(--danger) 45%, var(--on-ink));
-  --info-on-ink: color-mix(in oklab, var(--info) 45%, var(--on-ink));
+  /* Status on the inverted toast. */
+  --success-on-ink: #4ADE80;
+  --warning-on-ink: #FBBF24;
+  --danger-on-ink: #F87171;
+  --info-on-ink: #60A5FA;
 
-  --star: #E09A12;              /* rating stars (decorative: the figure carries the value) */
+  --star: #F59E0B;               /* rating stars (decorative: the figure carries the value) */
   --star-empty: #E4E4E7;
 
-  --disabled: #F1F1F0;          /* neutral, never a faded brand colour */
+  --seg-thumb: #FFFFFF;          /* the selected segment of a segmented control */
+
+  --disabled: #F1F1F0;           /* neutral; never a faded accent */
   --on-disabled: #A1A1AA;
 
-  /* Focus: a 3px ring of the tenant colour at ~50%, offset from the edge. */
-  --focus: color-mix(in oklab, var(--brand) 55%, transparent);
+  /* Focus: a 3px ring, offset from the edge. */
+  --focus: color-mix(in oklab, var(--info) 55%, transparent);
 
-  --scrim: rgb(17 17 17 / 0.42);          /* behind drawers and sheets */
-  --veil: rgb(255 255 255 / 0.6);         /* out-of-stock veil over a packshot (no text on it) */
+  --scrim: rgb(9 9 11 / 0.36);           /* behind modal drawers and sheets */
+  --veil: rgb(255 255 255 / 0.58);       /* out-of-stock veil over a packshot (no text on it) */
+
+  /* Translucent material for floating chrome (header, tab bar, sheets' grabbers):
+     a semi-transparent solid + blur. Solid under prefers-reduced-transparency. */
+  --material: rgb(250 250 249 / 0.8);
+  --material-thick: rgb(250 250 249 / 0.9);
+  --material-filter: blur(20px) saturate(180%);
+  --material-edge: rgb(17 17 17 / 0.08);
 
   /* ── Type ─────────────────────────────────────────────────────────────── */
-  /* Cairo carries both scripts (one variable file per subset, wght 200–1000),
-     so a bilingual line sits on one skeleton. Plex Mono for figures. Fallback
-     faces are metric-matched (fonts.css) so the swap moves nothing. */
+  /* Cairo carries both scripts; Arabic pages use the same files with Arabic-
+     centred vertical metrics (fonts.css). Plex Mono for figures. */
   --font-sans: "Cairo", "Cairo Fallback", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
   --font-mono: "IBM Plex Mono", "Plex Mono Fallback", "Cairo", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   --fs-2xs: 0.6875rem;  /* 11 */
   --fs-xs: 0.75rem;     /* 12 */
   --fs-sm: 0.875rem;    /* 14 */
-  --fs-md: 1rem;        /* 16 — storefront body; inputs never below this (iOS zoom) */
+  --fs-md: 1rem;        /* 16 — body; inputs never below this (iOS zoom) */
   --fs-lg: 1.125rem;    /* 18 */
   --fs-xl: 1.375rem;    /* 22 */
   --fs-2xl: 1.75rem;    /* 28 */
-  --fs-3xl: clamp(1.875rem, 1.4rem + 1.8vw, 2.625rem);  /* 30 → 42 */
-  --fs-display: clamp(2.25rem, 1.35rem + 3.8vw, 4.25rem); /* 36 → 68 */
+  --fs-3xl: clamp(1.875rem, 1.4rem + 1.8vw, 2.5rem);    /* 30 → 40 */
+  --fs-display: clamp(2.25rem, 1.35rem + 3.8vw, 4rem);  /* 36 → 64 */
 
   --fw-regular: 400;
   --fw-medium: 500;
@@ -105,16 +110,19 @@
   --fw-bold: 700;
   --fw-heavy: 800;
 
-  /* Cairo's vertical metrics are tall (ascent 1.30, descent 0.57): these keep
-     lines open without gaping. */
-  --lh-tight: 1.15;
-  --lh-snug: 1.3;
+  /* Leading tracks size inversely; Arabic looser still (below). */
+  --lh-display: 1.06;
+  --lh-tight: 1.18;
+  --lh-snug: 1.32;
   --lh-body: 1.55;
-  --tracking-tight: -0.02em;    /* headings (Latin only) */
-  --tracking-display: -0.035em;
-  --tracking-caps: 0.06em;      /* small-caps kickers (Latin only) */
+  /* Tracking is size-specific: tighter as text grows, slightly open when small. */
+  --tracking-display: -0.028em;
+  --tracking-tight: -0.018em;    /* headings */
+  --tracking-body: 0;
+  --tracking-small: 0.012em;     /* 11–13px labels */
+  --tracking-caps: 0.06em;       /* small-caps kickers */
 
-  /* ── Space (4px steps) ────────────────────────────────────────────────── */
+  /* ── Space (rem on a 4/8px grid) ──────────────────────────────────────── */
   --sp-1: 0.25rem;   /* 4 */
   --sp-2: 0.5rem;    /* 8 */
   --sp-3: 0.75rem;   /* 12 */
@@ -128,14 +136,14 @@
   --sp-20: 5rem;     /* 80 */
   --section-y: clamp(2rem, 1.2rem + 3vw, 3.5rem);
 
-  /* ── Radii: soft and round ────────────────────────────────────────────── */
-  --r-xs: 6px;
-  --r-sm: 8px;
-  --r-md: 12px;     /* controls: buttons, fields */
-  --r-lg: 16px;
+  /* ── Corners: Apple continuous corners (squircles, base.css) ──────────── */
+  --r-xs: 6px;      /* badges */
+  --r-sm: 8px;      /* chips, tags */
+  --r-md: 12px;     /* buttons 44–48px, inputs */
+  --r-lg: 16px;     /* small cards, wells */
   --r-xl: 20px;     /* cards */
-  --r-2xl: 28px;    /* sheets, hero */
-  --r-pill: 999px;
+  --r-2xl: 26px;    /* sheets, hero, large media */
+  --r-pill: 999px;  /* true circles only: round icon buttons, count badges */
 
   /* ── Elevation: cards rest on a faint shadow, no hairline ──────────────── */
   --shadow-sm: 0 1px 2px rgb(17 17 17 / 0.05), 0 1px 1px rgb(17 17 17 / 0.03);
@@ -143,30 +151,42 @@
   --shadow-float: 0 18px 40px -16px rgb(17 17 17 / 0.22), 0 2px 6px rgb(17 17 17 / 0.04);
   --shadow-modal: 0 30px 80px -20px rgb(17 17 17 / 0.35);
 
-  /* ── Motion ───────────────────────────────────────────────────────────── */
-  --dur-fast: 160ms;   /* hover, press, every exit */
-  --dur-base: 220ms;   /* entrances, overlays, route changes */
-  --dur-slow: 320ms;   /* sheets, drawers, toasts */
-  --dur-brand: 500ms;  /* brand-surface entrances */
+  /* ── Motion: springs, not fixed curves (CSS linear() samples of Apple's
+        spring for each damping/response; -dur is where it settles) ────────── */
+  --spring-default: linear(0, 0.057, 0.18, 0.32, 0.455, 0.573, 0.671, 0.75, 0.812, 0.86, 0.896, 0.924, 0.944, 0.96, 0.971, 0.979, 0.985, 0.989, 0.992, 0.994, 0.996, 0.997, 0.998, 0.999, 1);
+  --spring-default-dur: 510ms;   /* damping 1, response 0.35s */
+  --spring-snappy: var(--spring-default);
+  --spring-snappy-dur: 370ms;    /* damping 1, response 0.25s */
+  --spring-gentle: var(--spring-default);
+  --spring-gentle-dur: 730ms;    /* damping 1, response 0.5s */
+  --spring-bouncy: linear(0, 0.051, 0.17, 0.315, 0.462, 0.597, 0.711, 0.803, 0.874, 0.926, 0.963, 0.987, 1.002, 1.011, 1.014, 1.015, 1.014, 1.012, 1.01, 1.008, 1.006, 1.004, 1.003, 1.002, 1);
+  --spring-bouncy-dur: 400ms;    /* damping 0.8, response 0.3s — only after a flick or throw */
+  /* Press: respond on pointer-down. */
+  --press: 0.97;
+  --press-dur: 100ms;
+  /* Plain curves, for what isn't spatial (colour, opacity). */
+  --dur-fast: 160ms;
+  --dur-base: 220ms;
+  --dur-slow: 320ms;
+  --dur-brand: 500ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.5, 0, 0.75, 0);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --press: 0.97;       /* pressed card or control */
 
   /* ── Layout ───────────────────────────────────────────────────────────── */
   --gutter: clamp(1rem, 0.4rem + 2.6vw, 2.5rem);
   --container: 1320px;       /* content width; the gutter sits outside it */
-  --header-h: 60px;          /* the part of the header that stays pinned (see header.css) */
+  --header-h: 3.75rem;       /* the part of the header that stays pinned (header.css) */
   --bottom-nav-h: 0px;       /* set on phones, where the tab bar shows */
 
   /* Breakpoints (custom media isn't available to us; write the numbers):
-       sm  ≥ 600px   3-column grids
-       md  ≥ 768px   search moves into the header bar
-       lg  ≥ 960px   4 columns; the bottom tab bar gives way to the header
-       xl  ≥ 1280px  5 columns                                                  */
+       sm ≥ 600px   3-column grids
+       md ≥ 768px   search moves into the header bar
+       lg ≥ 960px   4 columns; the bottom tab bar gives way to the header nav
+       xl ≥ 1280px  5 columns                                                   */
 
   /* ── Layers ───────────────────────────────────────────────────────────── */
   --z-raised: 1;
@@ -179,28 +199,32 @@
   --z-skip: 90;
 }
 
-/* Arabic: taller lines, no tracking. */
+/* Arabic: the Arabic-centred Cairo, looser leading, no tracking. */
 :root[lang="ar"] {
-  --lh-tight: 1.35;
+  --font-sans: "Cairo AR", "Cairo AR Fallback", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", sans-serif;
+  --font-mono: "IBM Plex Mono", "Plex Mono Fallback", "Cairo AR", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --lh-display: 1.3;
+  --lh-tight: 1.38;
   --lh-snug: 1.5;
-  --lh-body: 1.7;
-  --tracking-tight: 0;
+  --lh-body: 1.72;
   --tracking-display: 0;
+  --tracking-tight: 0;
+  --tracking-small: 0;
   --tracking-caps: 0;
 }
 
 @media (max-width: 959.98px) {
   :root {
-    --bottom-nav-h: calc(60px + env(safe-area-inset-bottom, 0px));
+    --bottom-nav-h: calc(3.75rem + env(safe-area-inset-bottom, 0px));
   }
 }
 @media (min-width: 768px) {
   :root {
-    --header-h: 72px;
+    --header-h: 4.5rem;
   }
 }
 
-/* ── Dark (chosen): warm charcoal ──────────────────────────────────────── */
+/* ── Dark (chosen) ─────────────────────────────────────────────────────── */
 :root[data-theme="dark"] {
   color-scheme: dark;
   --page: #0B0B0C;
@@ -208,8 +232,7 @@
   --surface-2: #1F1F23;
   --sunk: #232326;
   --sunk-2: #2C2C30;
-  /* A dimmed linen: dark products keep their edges, light ones stay visible. */
-  --well: #A1A1AA;
+  --well: #2C2C30;              /* packshots get a rim light in dark mode (picture.css) */
   --text: #F4F4F5;
   --text-2: #B4B4BB;
   --text-3: #8E8E96;
@@ -219,41 +242,45 @@
   --rule: #27272A;
   --brand: #F4F4F5;
   --on-brand: #111111;
-  --brand-hover: color-mix(in oklab, var(--brand) 88%, #000);
-  --brand-wash: color-mix(in oklab, var(--brand) 16%, var(--surface));
-  --brand-wash-2: color-mix(in oklab, var(--brand) 9%, var(--surface));
-  --brand-text: color-mix(in oklab, var(--brand) 82%, #fff);
-  --brand-line: color-mix(in oklab, var(--brand) 45%, var(--surface));
+  --brand-hover: #DCDCDF;
+  --brand-wash: color-mix(in oklab, var(--brand) 12%, var(--surface));
+  --brand-text: var(--brand);
+  --brand-line: color-mix(in oklab, var(--brand) 35%, var(--surface));
   --ink: #F4F4F5;
   --on-ink: #0B0B0C;
+  --on-ink-2: color-mix(in oklab, var(--on-ink) 70%, var(--ink));
   --success: #4ADE80;
   --warning: #FBBF24;
   --danger: #F87171;
   --info: #60A5FA;
-  --success-wash: color-mix(in oklab, var(--success) 16%, var(--surface));
-  --warning-wash: color-mix(in oklab, var(--warning) 16%, var(--surface));
-  --danger-wash: color-mix(in oklab, var(--danger) 16%, var(--surface));
-  --info-wash: color-mix(in oklab, var(--info) 16%, var(--surface));
+  --success-wash: color-mix(in oklab, var(--success) 14%, var(--surface));
+  --warning-wash: color-mix(in oklab, var(--warning) 14%, var(--surface));
+  --danger-wash: color-mix(in oklab, var(--danger) 14%, var(--surface));
+  --info-wash: color-mix(in oklab, var(--info) 14%, var(--surface));
   --success-text: var(--success);
   --warning-text: var(--warning);
   --danger-text: var(--danger);
   --info-text: var(--info);
-  --success-on-ink: color-mix(in oklab, #15803D 85%, #111111);
-  --warning-on-ink: color-mix(in oklab, #B45309 85%, #111111);
-  --danger-on-ink: color-mix(in oklab, #DC2626 90%, #111111);
-  --info-on-ink: color-mix(in oklab, #2563EB 90%, #111111);
-  --star: #F2B53A;
+  --success-on-ink: #15803D;
+  --warning-on-ink: #B45309;
+  --danger-on-ink: #C81E1E;
+  --info-on-ink: #2563EB;
+  --star: #FBBF24;
   --star-empty: #3F3F46;
+  --seg-thumb: #3F3F46;
   --disabled: #1F1F23;
   --on-disabled: #71717A;
-  --focus: color-mix(in oklab, var(--brand) 65%, transparent);
-  --scrim: rgb(0 0 0 / 0.6);
+  --focus: color-mix(in oklab, var(--info) 70%, transparent);
+  --scrim: rgb(0 0 0 / 0.58);
   --veil: rgb(11 11 12 / 0.55);
-  /* Shadows don't read on charcoal: surfaces get a faint edge instead. */
+  --material: rgb(11 11 12 / 0.78);
+  --material-thick: rgb(18 18 20 / 0.9);
+  --material-edge: rgb(255 255 255 / 0.08);
+  /* Shadows don't read on near-black: surfaces get a faint edge instead. */
   --shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.06);
-  --shadow-md: 0 0 0 1px rgb(255 255 255 / 0.09), 0 12px 28px -12px rgb(0 0 0 / 0.6);
-  --shadow-float: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.75);
-  --shadow-modal: 0 0 0 1px rgb(255 255 255 / 0.08), 0 30px 80px -20px rgb(0 0 0 / 0.85);
+  --shadow-md: 0 0 0 1px rgb(255 255 255 / 0.09), 0 12px 28px -12px rgb(0 0 0 / 0.7);
+  --shadow-float: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.8);
+  --shadow-modal: 0 0 0 1px rgb(255 255 255 / 0.08), 0 30px 80px -20px rgb(0 0 0 / 0.9);
 }
 
 /* ── Dark (system) — identical to the block above ────────────────────────── */
@@ -265,7 +292,7 @@
     --surface-2: #1F1F23;
     --sunk: #232326;
     --sunk-2: #2C2C30;
-    --well: #A1A1AA;
+    --well: #2C2C30;
     --text: #F4F4F5;
     --text-2: #B4B4BB;
     --text-3: #8E8E96;
@@ -275,39 +302,53 @@
     --rule: #27272A;
     --brand: #F4F4F5;
     --on-brand: #111111;
-    --brand-hover: color-mix(in oklab, var(--brand) 88%, #000);
-    --brand-wash: color-mix(in oklab, var(--brand) 16%, var(--surface));
-    --brand-wash-2: color-mix(in oklab, var(--brand) 9%, var(--surface));
-    --brand-text: color-mix(in oklab, var(--brand) 82%, #fff);
-    --brand-line: color-mix(in oklab, var(--brand) 45%, var(--surface));
+    --brand-hover: #DCDCDF;
+    --brand-wash: color-mix(in oklab, var(--brand) 12%, var(--surface));
+    --brand-text: var(--brand);
+    --brand-line: color-mix(in oklab, var(--brand) 35%, var(--surface));
     --ink: #F4F4F5;
     --on-ink: #0B0B0C;
+    --on-ink-2: color-mix(in oklab, var(--on-ink) 70%, var(--ink));
     --success: #4ADE80;
     --warning: #FBBF24;
     --danger: #F87171;
     --info: #60A5FA;
-    --success-wash: color-mix(in oklab, var(--success) 16%, var(--surface));
-    --warning-wash: color-mix(in oklab, var(--warning) 16%, var(--surface));
-    --danger-wash: color-mix(in oklab, var(--danger) 16%, var(--surface));
-    --info-wash: color-mix(in oklab, var(--info) 16%, var(--surface));
+    --success-wash: color-mix(in oklab, var(--success) 14%, var(--surface));
+    --warning-wash: color-mix(in oklab, var(--warning) 14%, var(--surface));
+    --danger-wash: color-mix(in oklab, var(--danger) 14%, var(--surface));
+    --info-wash: color-mix(in oklab, var(--info) 14%, var(--surface));
     --success-text: var(--success);
     --warning-text: var(--warning);
     --danger-text: var(--danger);
     --info-text: var(--info);
-    --success-on-ink: color-mix(in oklab, #15803D 85%, #111111);
-    --warning-on-ink: color-mix(in oklab, #B45309 85%, #111111);
-    --danger-on-ink: color-mix(in oklab, #DC2626 90%, #111111);
-    --info-on-ink: color-mix(in oklab, #2563EB 90%, #111111);
-    --star: #F2B53A;
+    --success-on-ink: #15803D;
+    --warning-on-ink: #B45309;
+    --danger-on-ink: #C81E1E;
+    --info-on-ink: #2563EB;
+    --star: #FBBF24;
     --star-empty: #3F3F46;
+    --seg-thumb: #3F3F46;
     --disabled: #1F1F23;
     --on-disabled: #71717A;
-    --focus: color-mix(in oklab, var(--brand) 65%, transparent);
-    --scrim: rgb(0 0 0 / 0.6);
+    --focus: color-mix(in oklab, var(--info) 70%, transparent);
+    --scrim: rgb(0 0 0 / 0.58);
     --veil: rgb(11 11 12 / 0.55);
+    --material: rgb(11 11 12 / 0.78);
+    --material-thick: rgb(18 18 20 / 0.9);
+    --material-edge: rgb(255 255 255 / 0.08);
     --shadow-sm: 0 0 0 1px rgb(255 255 255 / 0.06);
-    --shadow-md: 0 0 0 1px rgb(255 255 255 / 0.09), 0 12px 28px -12px rgb(0 0 0 / 0.6);
-    --shadow-float: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.75);
-    --shadow-modal: 0 0 0 1px rgb(255 255 255 / 0.08), 0 30px 80px -20px rgb(0 0 0 / 0.85);
+    --shadow-md: 0 0 0 1px rgb(255 255 255 / 0.09), 0 12px 28px -12px rgb(0 0 0 / 0.7);
+    --shadow-float: 0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 44px -16px rgb(0 0 0 / 0.8);
+    --shadow-modal: 0 0 0 1px rgb(255 255 255 / 0.08), 0 30px 80px -20px rgb(0 0 0 / 0.9);
+  }
+}
+
+/* Reduced transparency: the material goes solid (after the theme blocks, at
+   their specificity, so it wins in every theme). */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme] {
+    --material: var(--page);
+    --material-thick: var(--surface);
+    --material-filter: none;
   }
 }

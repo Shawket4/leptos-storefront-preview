@@ -1,1 +1,127 @@
-/* prefs */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Preferences (components::prefs_controls). Menu: a <details> popover anchored
+   to its trigger — it grows out of the button's corner on a spring and goes
+   back the same way ([data-closing], set by the shell script). Inline: the
+   three groups in the open (footer).
+   ───────────────────────────────────────────────────────────────────────────── */
+.prefs__group {
+  display: grid;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+}
+.prefs__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-small);
+  color: var(--text-2);
+}
+.prefs__label .icon {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+}
+
+/* ── Menu ── */
+.prefs--menu {
+  position: relative;
+}
+.prefs__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  block-size: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.prefs__trigger::-webkit-details-marker {
+  display: none;
+}
+.prefs__trigger:hover,
+.prefs[open] > .prefs__trigger {
+  background: var(--sunk);
+}
+.prefs__trigger:active {
+  scale: var(--press);
+  transition: scale var(--press-dur) ease-out;
+}
+.prefs__code {
+  min-inline-size: 1.25em;
+  text-align: center;
+}
+.prefs__panel {
+  position: absolute;
+  z-index: var(--z-popover);
+  inset-block-start: calc(100% + 0.375rem);
+  inset-inline-end: 0;
+  display: grid;
+  gap: var(--sp-4);
+  inline-size: min(20rem, calc(100vw - var(--gutter) * 2));
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-float);
+  transform-origin: right top;
+  animation: pop-in var(--spring-default-dur) var(--spring-default) both;
+}
+[dir="rtl"] .prefs__panel {
+  transform-origin: left top;
+}
+.prefs[data-closing] > .prefs__panel {
+  animation: pop-out 140ms var(--ease-in) both;
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@keyframes pop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+/* ── Inline (footer) ── */
+.prefs--inline {
+  display: grid;
+  gap: var(--sp-5);
+  inline-size: 100%;
+}
+@media (min-width: 768px) {
+  .prefs--inline {
+    grid-template-columns: repeat(3, minmax(0, max-content));
+    gap: var(--sp-8);
+    inline-size: auto;
+  }
+  .prefs--inline .seg {
+    inline-size: auto;
+  }
+}
+
+/* Phones: the trigger sits mid-bar, so the panel spans the bar's content width
+   (still growing out of the trigger's corner). */
+@media (max-width: 767.98px) {
+  .site-header__bar {
+    position: relative;
+  }
+  .prefs--menu {
+    position: static;
+  }
+  .prefs__panel {
+    inset-block-start: calc(var(--row1, 3.25rem) - 0.125rem);
+    inset-inline: var(--gutter);
+    inline-size: auto;
+  }
+}
