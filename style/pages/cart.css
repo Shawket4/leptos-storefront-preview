@@ -711,3 +711,43 @@ dialog.drawer[data-cart] .drawer__body {
 html:has(dialog.drawer[data-cart][open]) {
   overflow: hidden;
 }
+
+/* ── Line problems: stock moved, a change didn't save ─────────────────────── */
+.line-issue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  margin-block-start: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--danger-wash);
+  color: var(--danger-text, var(--danger));
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.line-issue .icon {
+  flex: none;
+}
+.line-issue--offline {
+  background: var(--warning-wash);
+  color: var(--warning-text, var(--warning));
+}
+.line-issue .link-btn,
+.line-issue__fix .link-btn {
+  min-block-size: 32px;
+  margin: 0;
+  padding-inline: var(--sp-2);
+  color: inherit;
+  text-decoration-color: currentColor;
+}
+.line-issue__fix {
+  display: inline-flex;
+  margin-inline-start: auto;
+}
+.cart-summary__blocked {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--danger-text, var(--danger));
+}

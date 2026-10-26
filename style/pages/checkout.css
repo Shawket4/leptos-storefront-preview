@@ -780,3 +780,54 @@ a.co-step__link:hover {
 .co-empty {
   margin-block-start: var(--sp-6);
 }
+
+/* ── Payment methods that aren't built yet ─────────────────────────────────── */
+.pay-soon {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-block-start: var(--sp-2);
+}
+.pay-opt--soon {
+  cursor: default;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--rule);
+  padding-inline-end: var(--sp-4);
+}
+.pay-opt--soon:active {
+  scale: 1;
+}
+.pay-opt--soon .pay-opt__icon {
+  background: var(--sunk);
+  color: var(--text-3);
+}
+.pay-opt--soon .pay-opt__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  color: var(--text-2);
+}
+
+/* A blocking notice with a title and an action (stock changed). */
+.notice--block {
+  align-items: flex-start;
+}
+.notice__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-weight: var(--fw-regular);
+}
+.notice__body p {
+  margin: 0;
+}
+.notice__title {
+  font-weight: var(--fw-bold);
+}
+.mini-line__stock {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--danger-text, var(--danger));
+}

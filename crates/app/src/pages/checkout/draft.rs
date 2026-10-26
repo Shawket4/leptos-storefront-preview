@@ -16,6 +16,8 @@ pub struct Draft {
     /// errors themselves travel in the redirect URL; personal data never does).
     pub attempt: Option<AddressInput>,
     pub slot: Option<String>,
+    /// The window picked on a submit that failed (kept so the page shows the same choice).
+    pub attempt_slot: Option<String>,
     pub payment: Option<PaymentMethod>,
     /// The order this cart already became (a second "place order" — double click, back button,
     /// no-JS resubmit — lands on it instead of failing).

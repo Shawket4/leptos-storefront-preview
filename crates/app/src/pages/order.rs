@@ -11,7 +11,7 @@
 
 mod live;
 
-use crate::components::button::{Button, ButtonKind, ButtonSize};
+use crate::components::button::{Button, ButtonKind};
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
@@ -148,6 +148,8 @@ pub fn OrderPage() -> impl IntoView {
             res.set_status(http::StatusCode::NOT_FOUND);
         }
     }
+    let shown_id = id.to_ascii_uppercase();
+    let example = format!("{}-48213", rq.tenant.order_prefix);
     let data = Resource::new(move || id.clone(), order_detail);
     let tenant = rq.tenant.name.pick(lang.is_rtl()).to_owned();
     view! {
@@ -158,7 +160,7 @@ pub fn OrderPage() -> impl IntoView {
                     {
                         let tenant = tenant.clone();
                         move || {
-                            let tenant = tenant.clone();
+                            let (tenant, shown_id, example) = (tenant.clone(), shown_id.clone(), example.clone());
                             Suspend::new(async move {
                                 let d = data.await?;
                                 Ok::<_, ServerFnError>(match d {
@@ -168,7 +170,7 @@ pub fn OrderPage() -> impl IntoView {
                                     }),
                                     None => Either::Right(view! {
                                         <Title text=format!("{} · {tenant}", tr(lang, "Order not found", "الطلب غير موجود"))/>
-                                        <OrderNotFound lang/>
+                                        <OrderNotFound id=shown_id.clone() example=example.clone() lang/>
                                     }),
                                 })
                             })
@@ -181,15 +183,26 @@ pub fn OrderPage() -> impl IntoView {
 }
 
 #[component]
-fn OrderNotFound(lang: Lang) -> impl IntoView {
+fn OrderNotFound(id: String, example: String, lang: Lang) -> impl IntoView {
+    let body = match lang {
+        Lang::En => format!(
+            "There's no order {id} in this shop — the link may be mistyped, or the order is older than we keep. Try the number from your confirmation message."
+        ),
+        Lang::Ar => format!(
+            "مفيش طلب برقم {id} في المتجر ده — يمكن اللينك فيه غلطة، أو الطلب أقدم من المدة اللي بنحتفظ بيها. جرّب الرقم اللي في رسالة التأكيد."
+        ),
+    };
     view! {
-        <div class="cart-empty cart-empty--page card order-missing">
-            <ArtImage art=art("not-found") fallback_icon="package" lang/>
-            <h1 class="cart-empty__title">{tr(lang, "We couldn't find that order", "مش لاقيين الطلب ده")}</h1>
-            <p class="cart-empty__body">
-                {tr(lang, "Check the link in your message, or start a new order.", "اتأكد من اللينك اللي في الرسالة، أو ابدأ طلب جديد.")}
+        <div class="order-missing">
+            <div class="cart-empty order-missing__head">
+                <ArtImage art=art("not-found") fallback_icon="package" lang/>
+                <h1 class="cart-empty__title">{tr(lang, "We couldn't find that order", "مش لاقيين الطلب ده")}</h1>
+                <p class="cart-empty__body">{body}</p>
+            </div>
+            <crate::pages::orders_lookup::LookupForm value=String::new() error=None example lang/>
+            <p class="order-page__more">
+                <a class="link" href="/">{tr(lang, "Back to the shop", "ارجع للمتجر")}</a>
             </p>
-            <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{tr(lang, "Back to the shop", "ارجع للمتجر")}</Button>
         </div>
     }
 }

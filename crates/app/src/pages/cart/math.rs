@@ -182,3 +182,50 @@ mod tests {
         assert_eq!(parse_key("1001-2"), Some((1001, 2, vec![])));
     }
 }
+
+/// Whether a line can still be sent as it stands (stock can move after an item is added).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Stock {
+    Ok,
+    /// Nothing left.
+    SoldOut,
+    /// Fewer left than the line asks for.
+    Only(u32),
+}
+
+pub fn stock(l: &CartLineView) -> Stock {
+    if l.max_qty == 0 {
+        Stock::SoldOut
+    } else if l.qty > l.max_qty {
+        Stock::Only(l.max_qty)
+    } else {
+        Stock::Ok
+    }
+}
+
+/// Any line that can't be sent as it is (checkout waits until it's fixed).
+pub fn stock_blocked(v: &CartView) -> bool {
+    v.lines.iter().any(|l| stock(l) != Stock::Ok)
+}
+
+/// The shopper-facing explanation of a stock problem (MSA in Arabic, like other errors).
+pub fn stock_message(
+    s: Stock,
+    lang: crate::prefs::Lang,
+    num: crate::prefs::Numerals,
+) -> Option<String> {
+    use crate::prefs::Lang;
+    match (s, lang) {
+        (Stock::Ok, _) => None,
+        (Stock::SoldOut, Lang::En) => {
+            Some("Sold out since you added it. Remove it to check out.".into())
+        }
+        (Stock::SoldOut, Lang::Ar) => Some("نفدت الكمية بعد إضافته. احذفه لإتمام الطلب.".into()),
+        (Stock::Only(n), Lang::En) => {
+            Some(format!("Only {} left now.", crate::format::count(n, num)))
+        }
+        (Stock::Only(n), Lang::Ar) => {
+            Some(format!("المتوفر الآن {} فقط.", crate::format::count(n, num)))
+        }
+    }
+}

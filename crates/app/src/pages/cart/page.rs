@@ -280,9 +280,21 @@ fn PageLine(
         }
     );
     let inc_label = format!("{}: {name}", tr(lang, "One more", "زوّد واحد"));
-    let low = (line.max_qty > 0 && line.max_qty <= 5).then(|| match lang {
-        Lang::En => format!("Only {} in stock", format::count(line.max_qty, num)),
-        Lang::Ar => format!("المتاح {} بس", format::count(line.max_qty, num)),
+    let stock = super::math::stock(&line);
+    let low =
+        (stock == super::math::Stock::Ok && line.max_qty > 0 && line.max_qty <= 5).then(|| {
+            match lang {
+                Lang::En => format!("Only {} in stock", format::count(line.max_qty, num)),
+                Lang::Ar => format!("المتاح {} بس", format::count(line.max_qty, num)),
+            }
+        });
+    // Stock moved after this was added: explain, and offer the fix right here.
+    let issue = super::math::stock_message(stock, lang, num).map(|msg| {
+        let fix = match stock {
+            super::math::Stock::Only(n) => Some((key.clone(), n)),
+            _ => None,
+        };
+        (msg, fix)
     });
     let inc = if q >= line.max_qty {
         Either::Left(view! {
@@ -313,6 +325,23 @@ fn PageLine(
                     <Price amount=line.unit_price compare_at=line.compare_at size=PriceSize::Sm no_badge=true lang numerals=num/>
                 </div>
                 {low.map(|t| view! { <p class="cline__stock">{t}</p> })}
+                {issue.map(|(msg, fix)| view! {
+                    <div class="line-issue" role="status">
+                        <Icon name="triangle-alert" size=16/>
+                        <span>{msg}</span>
+                        {fix.map(|(k, n)| view! {
+                            <ActionForm action=set_qty attr:class="line-issue__fix" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
+                                <input type="hidden" name="key" value=k/>
+                                <button type="submit" name="qty" value=n.to_string() class="link-btn">
+                                    {match lang {
+                                        Lang::En => format!("Change to {}", format::count(n, num)),
+                                        Lang::Ar => format!("خليها {}", format::count(n, num)),
+                                    }}
+                                </button>
+                            </ActionForm>
+                        })}
+                    </div>
+                })}
                 <ActionForm action=remove attr:class="cline__remove" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
                     <input type="hidden" name="key" value=key_rm/>
                     <button type="submit" class="link-btn" data-focus-id=rm_id aria-label=rm_label>
@@ -418,14 +447,29 @@ pub fn Totals(
 
 #[component]
 fn PageSummary(v: CartView, lang: Lang, num: Numerals) -> impl IntoView {
+    let blocked = super::math::stock_blocked(&v);
     view! {
         <aside class="cart-summary card" aria-label=tr(lang, "Order summary", "ملخص الطلب")>
             <ShipMeter v=v.clone() lang num/>
             <Totals v lang num/>
             <div class="cart-summary__actions">
-                <Button href="/checkout" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true icon_end="arrow-right">
-                    {tr(lang, "Checkout", "كمّل الطلب")}
-                </Button>
+                {if blocked {
+                    Either::Left(view! {
+                        <p class="cart-summary__blocked" id="checkout-blocked">
+                            {tr(lang, "Fix the items marked above to check out.", "عدّل المنتجات المحددة فوق علشان تكمّل الطلب.")}
+                        </p>
+                        <Button kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true disabled=true
+                            attr:aria-describedby="checkout-blocked">
+                            {tr(lang, "Checkout", "كمّل الطلب")}
+                        </Button>
+                    })
+                } else {
+                    Either::Right(view! {
+                        <Button href="/checkout" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true icon_end="arrow-right">
+                            {tr(lang, "Checkout", "كمّل الطلب")}
+                        </Button>
+                    })
+                }}
                 <Button href="/" kind=ButtonKind::Ghost full_width=true>{tr(lang, "Continue shopping", "كمّل تسوق")}</Button>
             </div>
             <ul class="assure" role="list">

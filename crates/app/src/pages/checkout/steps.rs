@@ -8,6 +8,7 @@ use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
+use crate::components::status_pill::{StatusPill, Tone};
 use crate::format;
 use crate::pages::cart::{ArtImage, Totals, art};
 use crate::prefs::{Lang, Numerals, tr};
@@ -198,39 +199,19 @@ pub fn PaymentStep(
     error: Option<String>,
     lang: Lang,
 ) -> impl IntoView {
-    let chosen = chosen.unwrap_or(PaymentMethod::CashOnDelivery);
-    let options: [(
-        PaymentMethod,
-        &str,
-        &'static str,
-        &'static str,
-        &'static str,
-    ); 3] = [
+    let _ = chosen;
+    // Card and wallet payments aren't built yet: shown as what's coming, never as a dead choice.
+    let soon: [(&'static str, &'static str, &'static str); 2] = [
         (
-            PaymentMethod::CashOnDelivery,
-            "cod",
-            "banknote",
-            tr(lang, "Cash on delivery", "كاش عند الاستلام"),
-            tr(
-                lang,
-                "Pay the courier when your order arrives.",
-                "ادفع للمندوب لما الطلب يوصلك.",
-            ),
-        ),
-        (
-            PaymentMethod::Card,
-            "card",
             "credit-card",
             tr(lang, "Debit or credit card", "كارت بنكي"),
             tr(
                 lang,
-                "Online card payments aren't switched on in this preview — you can still choose it to see the flow. Nothing is charged.",
-                "الدفع بالكارت أونلاين مش متفعّل في النسخة التجريبية دي — تقدر تختاره وتشوف الخطوات، ومفيش أي مبلغ هيتخصم.",
+                "Online card payments are on their way. Until then, the courier takes cash.",
+                "الدفع بالكارت أونلاين جاي قريب. لحد ما يجهز، الدفع كاش مع المندوب.",
             ),
         ),
         (
-            PaymentMethod::Wallet,
-            "wallet",
             "smartphone",
             tr(
                 lang,
@@ -239,8 +220,8 @@ pub fn PaymentStep(
             ),
             tr(
                 lang,
-                "You'd get a payment request after ordering. In this preview nothing is sent.",
-                "هيوصلك طلب دفع بعد ما تأكد الطلب. في النسخة التجريبية مفيش حاجة هتتبعت.",
+                "Pay from Vodafone Cash, other wallets or InstaPay — coming soon.",
+                "الدفع من فودافون كاش أو أي محفظة أو InstaPay — قريب.",
             ),
         ),
     ];
@@ -250,22 +231,33 @@ pub fn PaymentStep(
             <StepError message=error/>
             <fieldset class="pay">
                 <legend class="sr-only">{tr(lang, "Payment method", "طريقة الدفع")}</legend>
-                {options.into_iter().map(|(method, code, icon, title, note)| {
-                    let note_id = format!("pay-{code}-note");
-                    view! {
-                        <label class="pay-opt">
-                            <input class="pay-opt__input" type="radio" name="payment" value=code checked={method == chosen}
-                                aria-describedby=note_id.clone()/>
-                            <span class="pay-opt__icon" aria-hidden="true"><Icon name=icon size=22/></span>
-                            <span class="pay-opt__text">
-                                <span class="pay-opt__title">{title}</span>
-                                <span class="pay-opt__note" id=note_id>{note}</span>
-                            </span>
-                            <span class="pay-opt__tick" aria-hidden="true"><Icon name="check" size=14/></span>
-                        </label>
-                    }
-                }).collect_view()}
+                <label class="pay-opt">
+                    <input class="pay-opt__input" type="radio" name="payment" value="cod" checked=true
+                        aria-describedby="pay-cod-note"/>
+                    <span class="pay-opt__icon" aria-hidden="true"><Icon name="banknote" size=22/></span>
+                    <span class="pay-opt__text">
+                        <span class="pay-opt__title">{tr(lang, "Cash on delivery", "كاش عند الاستلام")}</span>
+                        <span class="pay-opt__note" id="pay-cod-note">
+                            {tr(lang, "Pay the courier when your order arrives. Have the exact amount ready if you can.", "ادفع للمندوب لما الطلب يوصلك، ويا ريت المبلغ يكون فكّة.")}
+                        </span>
+                    </span>
+                    <span class="pay-opt__tick" aria-hidden="true"><Icon name="check" size=14/></span>
+                </label>
             </fieldset>
+            <div class="pay-soon" role="group" aria-label=tr(lang, "Coming soon", "قريبًا")>
+                {soon.into_iter().map(|(icon, title, note)| view! {
+                    <div class="pay-opt pay-opt--soon">
+                        <span class="pay-opt__icon" aria-hidden="true"><Icon name=icon size=22/></span>
+                        <span class="pay-opt__text">
+                            <span class="pay-opt__title">
+                                {title}
+                                <StatusPill tone=Tone::Neutral label=tr(lang, "Coming soon", "قريبًا") icon="clock"/>
+                            </span>
+                            <span class="pay-opt__note">{note}</span>
+                        </span>
+                    </div>
+                }).collect_view()}
+            </div>
             <div class="co-actions">
                 <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right" attr:data-focus-id="co-next">
                     {tr(lang, "Review your order", "راجع طلبك")}
@@ -366,10 +358,25 @@ pub fn ReviewStep(
         format::money(total, lang, num)
     );
     let lines = ctx.cart.lines.clone();
+    // Stock moved since these were added: say what, and where to fix it, before anything else.
+    let blocked = crate::pages::cart::math::stock_blocked(&ctx.cart);
+    let error = if blocked { None } else { error };
     view! {
         <div class="co-review">
             <StepHeading text=tr(lang, "Check and place your order", "راجع طلبك وأكّده")/>
             <StepError message=error/>
+            {blocked.then(|| view! {
+                <div class="notice notice--error notice--block" role="alert" tabindex="-1" data-autofocus="">
+                    <Icon name="triangle-alert" size=20/>
+                    <div class="notice__body">
+                        <p class="notice__title">{tr(lang, "Some items changed since you added them", "تغيّر توفّر بعض المنتجات منذ إضافتها")}</p>
+                        <p>{tr(lang, "The ones marked below can't be sent as they are. Update them in your cart, then come back to place your order.", "لا يمكن إرسال المنتجات المحددة أدناه كما هي. يرجى تعديلها في السلة ثم العودة لإتمام الطلب.")}</p>
+                        <Button href="/cart" kind=ButtonKind::Secondary size=ButtonSize::Sm icon_end="arrow-right">
+                            {tr(lang, "Fix in cart", "عدّلها في السلة")}
+                        </Button>
+                    </div>
+                </div>
+            })}
             <dl class="review">
                 <div class="review__row">
                     <dt><Icon name="map-pin" size=18/><span>{tr(lang, "Deliver to", "التوصيل على")}</span></dt>
@@ -398,9 +405,19 @@ pub fn ReviewStep(
             </div>
             <form class="co-place" method="post" action=CheckoutPlace::url() data-pending-ui="" aria-busy="false">
                 <input type="hidden" name="total" value=total.0.to_string()/>
-                <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true attr:data-focus-id="co-place">
-                    {place_label}
-                </Button>
+                {if blocked {
+                    Either::Left(view! {
+                        <Button button_type="button" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true disabled=true>
+                            {place_label.clone()}
+                        </Button>
+                    })
+                } else {
+                    Either::Right(view! {
+                        <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true attr:data-focus-id="co-place">
+                            {place_label.clone()}
+                        </Button>
+                    })
+                }}
                 <p class="co-legal">
                     {tr(lang, "By placing your order you agree to the shop's terms of sale.", "بإتمام الطلب فإنك توافق على شروط البيع الخاصة بالمتجر.")}
                 </p>
@@ -416,7 +433,9 @@ fn MiniLine(l: crate::api::types::CartLineView, lang: Lang, num: Numerals) -> im
     if !l.variant_label.pick(ar).is_empty() {
         detail.push(l.variant_label.pick(ar).to_owned());
     }
-    detail.extend(l.addons.iter().map(|a| format!("+ {}", a.pick(ar))));
+    detail.extend(l.addons.iter().map(|a| a.pick(ar).to_owned()));
+    let stock =
+        crate::pages::cart::math::stock_message(crate::pages::cart::math::stock(&l), lang, num);
     view! {
         <li class="mini-line">
             <span class="mini-line__media"><Picture img=l.img.clone() sizes="48px" lang/></span>
@@ -426,6 +445,7 @@ fn MiniLine(l: crate::api::types::CartLineView, lang: Lang, num: Numerals) -> im
                     <span class="mono">{format!("{}×", format::count(l.qty, num))}</span>
                     {(!detail.is_empty()).then(|| view! { <span>{detail.join(" · ")}</span> })}
                 </span>
+                {stock.map(|m| view! { <span class="mini-line__stock">{m}</span> })}
             </span>
             <span class="mini-line__total"><Price amount=l.line_total size=PriceSize::Sm no_badge=true lang numerals=num/></span>
         </li>

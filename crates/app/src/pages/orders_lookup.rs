@@ -129,7 +129,6 @@ pub fn OrdersLookupPage() -> impl IntoView {
         rq.tenant.name.pick(lang.is_rtl())
     );
     let value = wanted.clone().unwrap_or_else(|| raw.trim().to_owned());
-    let invalid = error.is_some();
 
     view! {
         <Title text=title/>
@@ -142,23 +141,37 @@ pub fn OrdersLookupPage() -> impl IntoView {
                     {tr(lang, "Enter the order number from your confirmation message.", "اكتب رقم الطلب اللي وصلك في رسالة التأكيد.")}
                 </p>
             </header>
-            <form class="lookup card" method="get" action="/orders" role="search">
-                <label class="field__label" for="order-id">{tr(lang, "Order number", "رقم الطلب")}</label>
-                <div class="lookup__row">
-                    <input class="field__input lookup__input mono" id="order-id" name="id" value=value dir="ltr"
-                        placeholder=example autocomplete="off" autocapitalize="characters" spellcheck="false"
-                        enterkeyhint="go" maxlength="20" aria-invalid=invalid.to_string()
-                        aria-describedby="order-id-err" autofocus=invalid/>
-                    <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right">
-                        {tr(lang, "Track", "تتبّع")}
-                    </Button>
-                </div>
-                {error.map(|e| view! {
-                    <p class="field__error" id="order-id-err" role="alert"><Icon name="circle-alert" size=16/><span>{e}</span></p>
-                })}
-            </form>
+            <LookupForm value error example lang/>
             {(!recent.is_empty()).then(|| view! { <RecentOrders recent lang num/> })}
         </section>
+    }
+}
+
+/// The order-number form (a GET to `/orders`): on this page and on the order not-found view.
+#[component]
+pub fn LookupForm(
+    value: String,
+    error: Option<String>,
+    example: String,
+    lang: Lang,
+) -> impl IntoView {
+    let invalid = error.is_some();
+    view! {
+        <form class="lookup card" method="get" action="/orders" role="search">
+            <label class="field__label" for="order-id">{tr(lang, "Order number", "رقم الطلب")}</label>
+            <div class="lookup__row">
+                <input class="field__input lookup__input mono" id="order-id" name="id" value=value dir="ltr"
+                    placeholder=example autocomplete="off" autocapitalize="characters" spellcheck="false"
+                    enterkeyhint="go" maxlength="20" aria-invalid=invalid.to_string()
+                    aria-describedby="order-id-err" autofocus=invalid/>
+                <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right">
+                    {tr(lang, "Track", "تتبّع")}
+                </Button>
+            </div>
+            {error.map(|e| view! {
+                <p class="field__error" id="order-id-err" role="alert"><Icon name="circle-alert" size=16/><span>{e}</span></p>
+            })}
+        </form>
     }
 }
 

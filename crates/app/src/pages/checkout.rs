@@ -103,6 +103,10 @@ pub enum CheckoutError {
     Missing(Step),
     /// The cart changed after the review page was shown.
     CartChanged,
+    /// Card and wallet payments aren't switched on yet.
+    PaymentUnavailable,
+    /// An item sold out, or has less stock than the cart asks for.
+    Stock,
     /// Transport, simulated outage, or a malformed request.
     Server(String),
 }
@@ -146,6 +150,14 @@ impl CheckoutError {
                 "Your cart changed since you reviewed it. Please check the new total.",
                 "تغيّرت السلة منذ مراجعتها. يرجى مراجعة الإجمالي الجديد.",
             ),
+            CheckoutError::PaymentUnavailable => (
+                "That payment method isn't available yet. Please choose cash on delivery.",
+                "طريقة الدفع هذه غير متاحة بعد. يرجى اختيار الدفع نقدًا عند الاستلام.",
+            ),
+            CheckoutError::Stock => (
+                "Some items in your cart changed since you added them. Fix them in your cart to continue.",
+                "تغيّر توفّر بعض المنتجات منذ إضافتها. يرجى تعديلها في السلة للمتابعة.",
+            ),
             CheckoutError::Server(_) => (
                 "Something went wrong on our side. Please try again.",
                 "حدث خطأ من جهتنا. يرجى المحاولة مرة أخرى.",
@@ -159,7 +171,7 @@ impl CheckoutError {
         match self {
             CheckoutError::Invalid(_) => Step::Address,
             CheckoutError::NoSlot | CheckoutError::SlotGone => Step::Slot,
-            CheckoutError::NoPayment => Step::Payment,
+            CheckoutError::NoPayment | CheckoutError::PaymentUnavailable => Step::Payment,
             CheckoutError::Missing(s) => *s,
             _ => Step::Review,
         }
@@ -308,6 +320,10 @@ pub async fn checkout_address(
 #[server]
 pub async fn checkout_slot(slot: Option<String>) -> Result<(), CheckoutError> {
     let path = <CheckoutSlot as leptos::server_fn::ServerFn>::PATH;
+    // Whatever happens next, the page that comes back shows the same choice.
+    if let Some(k) = imp::visit().key {
+        draft::update(&k, |d| d.attempt_slot = slot.clone());
+    }
     let (v, key) = imp::begin(path).await?;
     let Some(id) = slot.filter(|s| !s.is_empty()) else {
         return Err(imp::fail(CheckoutError::NoSlot, path));
@@ -318,7 +334,10 @@ pub async fn checkout_slot(slot: Option<String>) -> Result<(), CheckoutError> {
     {
         return Err(imp::fail(CheckoutError::SlotGone, path));
     }
-    draft::update(&key, |d| d.slot = Some(id));
+    draft::update(&key, |d| {
+        d.slot = Some(id);
+        d.attempt_slot = None;
+    });
     leptos_axum::redirect(&Step::Payment.href());
     Ok(())
 }
@@ -330,8 +349,10 @@ pub async fn checkout_payment(payment: Option<String>) -> Result<(), CheckoutErr
     let (_, key) = imp::begin(path).await?;
     let method = match payment.as_deref() {
         Some("cod") => PaymentMethod::CashOnDelivery,
-        Some("card") => PaymentMethod::Card,
-        Some("wallet") => PaymentMethod::Wallet,
+        // Shown as "coming soon", never as a choice; a hand-made post still can't pick them.
+        Some("card") | Some("wallet") => {
+            return Err(imp::fail(CheckoutError::PaymentUnavailable, path));
+        }
         _ => return Err(imp::fail(CheckoutError::NoPayment, path)),
     };
     draft::update(&key, |d| d.payment = Some(method));
@@ -370,9 +391,12 @@ pub async fn checkout_place(total: Option<i64>) -> Result<(), CheckoutError> {
     else {
         return Err(imp::fail(CheckoutError::SlotGone, path));
     };
-    let Some(payment) = d.payment else {
+    let Some(payment) = d.payment.filter(|p| *p == PaymentMethod::CashOnDelivery) else {
         return Err(imp::fail(CheckoutError::Missing(Step::Payment), path));
     };
+    if crate::pages::cart::math::stock_blocked(&v.cart) {
+        return Err(imp::fail(CheckoutError::Stock, path));
+    }
     let now_total = v.cart.total + slot.fee;
     if total.is_some_and(|t| t != now_total.0) {
         return Err(imp::fail(CheckoutError::CartChanged, path));
@@ -438,6 +462,8 @@ pub struct Ctx {
     pub attempt: Option<AddressInput>,
     pub slots: Vec<DeliverySlot>,
     pub slot: Option<String>,
+    /// The window picked on the last failed submit.
+    pub attempt_slot: Option<String>,
     pub payment: Option<PaymentMethod>,
     /// `forward` or `back`, from the Referer's step (picks the view-transition direction).
     pub dir: &'static str,
@@ -456,7 +482,8 @@ fn load(asked: Step) -> Option<Ctx> {
         .slot
         .as_ref()
         .is_some_and(|id| slots.iter().any(|s| &s.id == id && s.available));
-    let done = [d.address.is_some(), slot_ok, d.payment.is_some(), false];
+    let paid_ok = d.payment == Some(PaymentMethod::CashOnDelivery);
+    let done = [d.address.is_some(), slot_ok, paid_ok, false];
     let reachable = Step::ALL
         .into_iter()
         .find(|s| !done[s.index()])
@@ -492,6 +519,7 @@ fn load(asked: Step) -> Option<Ctx> {
         attempt: d.attempt,
         slots,
         slot: d.slot.filter(|_| slot_ok),
+        attempt_slot: d.attempt_slot,
         payment: d.payment,
         dir,
         now_ms: crate::server::orders::now_ms(),
@@ -576,7 +604,9 @@ fn CheckoutBody(
             <AddressForm initial=ctx.attempt.clone().or(ctx.address.clone()).unwrap_or_default() errors=field_errors form_error=step_error.clone()/>
         }),
         Step::Slot => EitherOf5::C(view! {
-            <steps::SlotStep slots=ctx.slots.clone() chosen=ctx.slot.clone() error=step_error.clone() now_ms=ctx.now_ms lang num/>
+            <steps::SlotStep slots=ctx.slots.clone()
+                chosen={if step_error.is_some() { ctx.attempt_slot.clone().or(ctx.slot.clone()) } else { ctx.slot.clone() }}
+                error=step_error.clone() now_ms=ctx.now_ms lang num/>
         }),
         Step::Payment => EitherOf5::D(
             view! { <steps::PaymentStep chosen=ctx.payment error=step_error.clone() lang/> },
