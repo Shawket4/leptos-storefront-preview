@@ -168,7 +168,9 @@ main:focus {
 .offline {
   position: fixed;
   z-index: var(--z-toast);
-  inset-block-start: max(env(safe-area-inset-top, 0px), var(--sp-2));
+  /* Under the pinned header bar, not over it: offline, the cart (computed locally) must stay one
+     tap away, and the bar holds the cart button. */
+  inset-block-start: calc(env(safe-area-inset-top, 0px) + var(--header-h) + var(--sp-2));
   inset-inline: var(--gutter);
   display: flex;
   align-items: center;
