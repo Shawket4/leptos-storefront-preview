@@ -58,7 +58,10 @@ const initial = closure(entry);
 const source = new Map(manifest.filter(([k]) => k === "source").map(([, f, m]) => [f, m]));
 const dynamic = [...new Set(edges.filter((e) => e.kind === "dynamic").map((e) => e.to))].filter((f) => !initial.has(f));
 const mainTs = fs.readFileSync(path.join(root, "client/src/main.ts"), "utf8");
-const pageFeatures = new Set([...mainTs.matchAll(/lazy\(\s*\[[^\]]*\]\s*,\s*\(\)\s*=>\s*import\("\.\/(features\/[a-z-]+)"\)/g)].map((m) => m[1] + ".ts"));
+const loadedBy = (fn) => new Set([...mainTs.matchAll(new RegExp(`\\b${fn}\\(\\s*\\[[^\\]]*\\]\\s*,\\s*\\(\\)\\s*=>\\s*import\\("\\.\\/(features\\/[a-z-]+)"\\)`, "g"))].map((m) => m[1] + ".ts"));
+// A feature also loaded on intent (lazyOnIntent: the cart drawer, search) can load on any page.
+const onIntent = loadedBy("lazyOnIntent");
+const pageFeatures = new Set([...loadedBy("lazy")].filter((m) => !onIntent.has(m)));
 const isFeature = (f) => pageFeatures.has(source.get(f));
 const label = (f) => (source.get(f) ?? f).replace(/^features\//, "").replace(/\.ts$/, "");
 const lazyChunks = [...dynamic.filter(isFeature), ...dynamic.filter((f) => !isFeature(f))];
