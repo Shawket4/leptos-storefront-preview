@@ -38,10 +38,10 @@ fn home_art(_: &str, _: Lang) -> HomeArt {
     HomeArt::default()
 }
 
-/// One "The latest" tile: a real product, resolved synchronously from the in-memory catalogue so it
-/// is in the first chunk (no Suspense, no layout shift).
+/// One promo panel: a real product, resolved synchronously from the in-memory catalogue so it is in
+/// the first chunk (no Suspense, no layout shift).
 #[derive(Clone)]
-struct Tile {
+struct Panel {
     slug: String,
     eyebrow: String,
     name: String,
@@ -50,55 +50,76 @@ struct Tile {
     img: Img,
 }
 
+/// Which products the home page promotes (in production: the tenant's CMS campaign).
 #[cfg(feature = "ssr")]
-fn latest_tiles(lang: Lang, num: Numerals) -> Vec<Tile> {
+struct Campaign {
+    hero: (u32, L10n),
+    duo: [(u32, L10n); 2],
+}
+
+#[cfg(feature = "ssr")]
+fn campaign(tenant: &str) -> Campaign {
+    match tenant {
+        "souq" => Campaign {
+            hero: (2451, L10n::new("Fresh this week", "طازة الأسبوع ده")),
+            duo: [
+                (2053, L10n::new("Baked this morning", "مخبوز الصبح")),
+                (2501, L10n::new("Bestseller", "الأكثر مبيعًا")),
+            ],
+        },
+        _ => Campaign {
+            hero: (1202, L10n::new("Featured", "مميز")),
+            duo: [(1106, L10n::new("New", "جديد")), (1807, L10n::new("Fragrance", "عطور"))],
+        },
+    }
+}
+
+#[cfg(feature = "ssr")]
+fn panels(tenant: &str, lang: Lang, num: Numerals) -> (Option<Panel>, Vec<Panel>) {
     let catalog = crate::server::current_catalog();
     let ar = lang.is_rtl();
-    let mut seen = std::collections::HashSet::new();
-    let mut picks = catalog.rail(Rail::New, 24);
-    picks.extend(catalog.rail(Rail::Featured, 24));
-    picks
-        .into_iter()
-        .filter(|c| c.in_stock && !c.img.is_missing())
-        .filter_map(|c| catalog.product(c.id).map(|p| (c, p.category, p.subtitle.clone())))
-        .filter(|(_, cat, _)| seen.insert(*cat))
-        .take(4)
-        .map(|(c, _, sub)| {
-            let money = format::money(c.price, lang, num);
-            let brand = c.brand.as_ref().map(|b| b.pick(ar).to_owned()).unwrap_or_default();
-            // The brand is the eyebrow, so don't repeat it at the start of the name.
-            let full = c.name.pick(ar);
-            let name = full
-                .strip_prefix(brand.as_str())
-                .filter(|rest| !brand.is_empty() && rest.starts_with(' '))
-                .map(|rest| rest.trim_start().to_owned())
-                .unwrap_or_else(|| full.to_owned());
-            Tile {
-                slug: c.slug.clone(),
-                eyebrow: brand,
-                name: no_break_hyphens(&name),
-                sub: no_break_hyphens(sub.pick(ar)),
-                price: if c.from {
-                    match lang {
-                        Lang::En => format!("From {money}"),
-                        Lang::Ar => format!("من {money}"),
-                    }
-                } else {
-                    money
-                },
-                img: c.img.clone(),
-            }
+    let make = |id: u32, eyebrow: &L10n| -> Option<Panel> {
+        let card = catalog.card(domain::ProductId(id))?;
+        let p = catalog.product(domain::ProductId(id))?;
+        if card.img.is_missing() {
+            return None;
+        }
+        let brand = card.brand.as_ref().map(|b| b.pick(ar).to_owned()).unwrap_or_default();
+        // Headline = the product, not the SKU: drop the brand prefix and the " — colour" suffix.
+        let full = card.name.pick(ar);
+        let name = full
+            .strip_prefix(brand.as_str())
+            .filter(|rest| !brand.is_empty() && rest.starts_with(' '))
+            .map(str::trim_start)
+            .unwrap_or(full);
+        let name = name.split(" — ").next().unwrap_or(name);
+        let money = format::money_short(card.price, lang, num);
+        Some(Panel {
+            slug: card.slug.clone(),
+            eyebrow: eyebrow.pick(ar).to_owned(),
+            name: no_break_hyphens(name),
+            sub: no_break_hyphens(p.subtitle.pick(ar)),
+            price: match (card.from, lang) {
+                (true, Lang::En) => format!("From {money}"),
+                (true, Lang::Ar) => format!("من {money}"),
+                _ => money,
+            },
+            img: card.img.clone(),
         })
-        .collect()
+    };
+    let c = campaign(tenant);
+    let hero = make(c.hero.0, &c.hero.1);
+    let duo = c.duo.iter().filter_map(|(id, e)| make(*id, e)).collect();
+    (hero, duo)
 }
 
 #[cfg(not(feature = "ssr"))]
-fn latest_tiles(_: Lang, _: Numerals) -> Vec<Tile> {
-    vec![]
+fn panels(_: &str, _: Lang, _: Numerals) -> (Option<Panel>, Vec<Panel>) {
+    (None, vec![])
 }
 
-#[cfg(feature = "ssr")]
 /// "14-inch" must not break after the hyphen: use U+2011 (non-breaking hyphen) between word chars.
+#[cfg(feature = "ssr")]
 fn no_break_hyphens(s: &str) -> String {
     let chars: Vec<char> = s.chars().collect();
     chars
@@ -137,7 +158,7 @@ pub fn HomePage() -> impl IntoView {
     let ar = lang.is_rtl();
     let t = rq.tenant.clone();
     let art = home_art(&t.id, lang);
-    let tiles = latest_tiles(lang, num);
+    let (hero, duo) = panels(&t.id, lang, num);
 
     let title = format!("{} · {}", t.name.pick(ar), t.tagline.pick(ar));
     let description = description(&t.id).pick(ar).to_owned();
@@ -158,25 +179,17 @@ pub fn HomePage() -> impl IntoView {
     .replace("</", "<\\/");
 
     let express = t.express_minutes.is_some();
-    // The promise line carries figures, so it goes through `format` like every number.
-    let promise = match t.express_minutes {
+    // The ribbon carries figures, so it goes through `format` like every number.
+    let ribbon = match t.express_minutes {
         Some(m) => match lang {
-            Lang::En => format!("Express in {} minutes · Cash on delivery", format::count(m, num)),
+            Lang::En => format!("Express delivery in {} minutes · Cash on delivery", format::count(m, num)),
             Lang::Ar => format!("توصيل سريع في {} دقيقة · الدفع عند الاستلام", format::count(m, num)),
         },
         None => match lang {
-            Lang::En => format!(
-                "Free delivery over {} · Cash on delivery · 14\u{2011}day returns",
-                format::money_short(t.free_delivery_over, lang, num)
-            ),
-            Lang::Ar => format!(
-                "توصيل مجاني فوق {} · الدفع عند الاستلام · استرجاع خلال ١٤ يوم",
-                format::money_short(t.free_delivery_over, lang, num)
-            ),
+            Lang::En => format!("Free delivery over {} · Cash on delivery", format::money_short(t.free_delivery_over, lang, num)),
+            Lang::Ar => format!("توصيل مجاني فوق {} · الدفع عند الاستلام", format::money_short(t.free_delivery_over, lang, num)),
         },
     };
-    let name = t.name.pick(ar).to_owned();
-    let tagline = t.tagline.pick(ar).to_owned();
 
     view! {
         <Title text=title.clone()/>
@@ -196,13 +209,16 @@ pub fn HomePage() -> impl IntoView {
         <Meta name="twitter:card" content="summary_large_image"/>
         <Script type_="application/ld+json">{website_ld}</Script>
 
+        <p class="ribbon">{ribbon}</p>
+        {hero.map(|p| view! { <PromoPanel panel=p lang hero=true/> })}
+        {(!duo.is_empty()).then(|| view! {
+            <div class="duo">
+                {duo.into_iter().map(|p| view! { <PromoPanel panel=p lang/> }).collect_view()}
+            </div>
+        })}
+
         <Container>
-            <header class="intro">
-                <h1 class="intro__title"><strong>{name}"."</strong>" "<span>{tagline}</span></h1>
-                <p class="intro__promise">{promise}</p>
-            </header>
             <CategoryRail lang/>
-            <LatestTiles tiles lang/>
             <RailSection rail=Rail::Deals lang num
                 title=tr(lang, "Today's deals", "عروض النهارده")
                 subtitle=tr(lang, "Fresh prices, every morning", "أسعار جديدة كل يوم الصبح")
@@ -225,49 +241,44 @@ pub fn HomePage() -> impl IntoView {
     }
 }
 
-/// "The latest": swipeable tiles on phones, a row on desktop. Each tile is one link to the product
-/// (the "Buy" and "Learn more" labels are part of it, not nested controls).
+/// An apple.com-style promo panel: eyebrow, the product as the headline, one line, the price, two
+/// actions, then the packshot — big. Type sits on a solid panel; nothing overlaps the image.
 #[component]
-fn LatestTiles(tiles: Vec<Tile>, lang: Lang) -> impl IntoView {
-    (!tiles.is_empty()).then(|| {
-        view! {
-            <section class="home-section latest" aria-labelledby="latest-title">
-                <h2 id="latest-title" class="two-tone">
-                    <strong>{tr(lang, "The latest.", "الجديد.")}</strong>" "
-                    <span>{tr(lang, "Fresh arrivals worth a look.", "وصل حديثًا ويستاهل نظرة.")}</span>
-                </h2>
-                <ul class="latest__rail">
-                    {tiles.into_iter().enumerate().map(|(i, t)| view! {
-                        <li>
-                            <a class="tile" href=format!("/p/{}", t.slug)>
-                                <span class="tile__eyebrow">{t.eyebrow}</span>
-                                <span class="tile__name">{t.name}</span>
-                                <span class="tile__sub">{t.sub}</span>
-                                <span class="tile__price">{t.price}</span>
-                                <span class="tile__ctas">
-                                    <span class="tile__buy">{tr(lang, "Buy", "اشتري")}</span>
-                                    <span class="tile__more">{tr(lang, "Learn more", "اعرف أكتر")}<Icon name="chevron-right" size=16 class="flip-rtl"/></span>
-                                </span>
-                                <span class="tile__media" style=format!("background-image:url({})", t.img.lqip)>
-                                    <img
-                                        src=t.img.src_near(640)
-                                        srcset=t.img.srcset()
-                                        sizes="(min-width: 1100px) 300px, (min-width: 768px) 45vw, 78vw"
-                                        alt=t.img.alt(lang).to_owned()
-                                        width="640"
-                                        height="640"
-                                        loading=if i == 0 { "eager" } else { "lazy" }
-                                        fetchpriority=if i == 0 { "high" } else { "auto" }
-                                        decoding="async"
-                                    />
-                                </span>
-                            </a>
-                        </li>
-                    }).collect_view()}
-                </ul>
-            </section>
-        }
-    })
+fn PromoPanel(panel: Panel, lang: Lang, #[prop(optional)] hero: bool) -> impl IntoView {
+    let href = format!("/p/{}", panel.slug);
+    let heading = if hero { "promo__name promo__name--hero" } else { "promo__name" };
+    view! {
+        <section class="promo" class:promo--hero=hero aria-label=panel.name.clone()>
+            <p class="promo__eyebrow">{panel.eyebrow}</p>
+            {if hero {
+                view! { <h1 class=heading>{panel.name.clone()}</h1> }.into_any()
+            } else {
+                view! { <h2 class=heading>{panel.name.clone()}</h2> }.into_any()
+            }}
+            <p class="promo__sub">{panel.sub}</p>
+            <p class="promo__price">{panel.price}</p>
+            <p class="promo__ctas">
+                <a class="promo__buy" href=href.clone()>{tr(lang, "Buy", "اشتري")}</a>
+                <a class="promo__more" href=href.clone()>
+                    {tr(lang, "Learn more", "اعرف أكتر")}<Icon name="chevron-right" size=18 class="flip-rtl"/>
+                </a>
+            </p>
+            <a class="promo__media" href=href tabindex="-1" aria-hidden="true">
+                <img
+                    src=panel.img.src_near(960)
+                    srcset=panel.img.srcset()
+                    sizes=if hero { "(min-width: 768px) 560px, 86vw" } else { "(min-width: 768px) 380px, 70vw" }
+                    alt=""
+                    width="960"
+                    height="960"
+                    loading=if hero { "eager" } else { "lazy" }
+                    fetchpriority=if hero { "high" } else { "auto" }
+                    decoding="async"
+                    style=format!("background-image:url({})", panel.img.lqip)
+                />
+            </a>
+        </section>
+    }
 }
 
 #[component]
