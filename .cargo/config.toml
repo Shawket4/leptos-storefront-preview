@@ -1,0 +1,13 @@
+# sccache + mold for host builds (same setup as the Madar repos' scripts/dev-env.sh).
+[build]
+rustc-wrapper = "sccache"
+# Intermediate artifacts live in one shared dir on the SSD so agent worktrees reuse compiled
+# dependencies; final binaries/wasm still land in each worktree's own target/.
+build-dir = "/home/apex/work/lsp-build"
+
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=/home/apex/.local/bin/mold"]
+
+[env]
+SCCACHE_DIR = "/home/apex/.cache/sccache"

@@ -1,0 +1,9 @@
+/target
+**/target
+node_modules/
+/tools/node_modules/
+/tools/.cache/
+/data/media/_src/
+.env
+*.log
+/shots/

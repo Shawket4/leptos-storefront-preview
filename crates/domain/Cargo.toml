@@ -1,0 +1,9 @@
+[package]
+name = "domain"
+description = "Storefront domain types. Minimal copies of Madar's types (origin noted per type); no server, DB or UI deps, so it builds for both the native server and wasm32."
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde = { workspace = true }

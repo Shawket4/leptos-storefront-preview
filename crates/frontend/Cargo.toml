@@ -1,0 +1,15 @@
+[package]
+name = "frontend"
+description = "WASM entry point: hydrates the islands."
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+app = { workspace = true, features = ["hydrate"] }
+leptos = { workspace = true, features = ["hydrate", "islands", "islands-router"] }
+wasm-bindgen = { workspace = true }
+console_error_panic_hook = { workspace = true }
