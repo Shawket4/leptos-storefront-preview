@@ -2,12 +2,12 @@
 //! not-found and coming-soon ([`StateView`]), and the "not in this preview yet" view for
 //! unbuilt features ([`ComingSoon`]).
 //!
-//! The error views built with the showcase — [`SectionError`] (one failed section, server
-//! components and islands), [`ErrorPage`] (route-level 500) and [`NotFound`] (the router's 404) —
+//! The error views built with the showcase — [`SectionError`] (one failed section),
+//! [`ErrorPage`] (route-level 500) and [`NotFound`] (the router's 404) —
 //! live in `pages::errors` and are re-exported here, so pages import every state from one place.
 //!
-//! All of these work in server components and inside islands (text follows `use_ui()`) and
-//! without JavaScript (every action is a link). Errors are worded in clear Modern Standard
+//! All of these are server markup (text in the page's language) and work without JavaScript
+//! (every action is a link). Errors are worded in clear Modern Standard
 //! Arabic; the rest in the shop's warm Egyptian register (AGENTS.md).
 //!
 //! ```ignore

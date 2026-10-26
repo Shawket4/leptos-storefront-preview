@@ -8,7 +8,6 @@ pub mod media;
 pub mod pages;
 pub mod prefs;
 pub mod request;
-pub mod stores;
 pub mod strings;
 pub mod tenant;
 

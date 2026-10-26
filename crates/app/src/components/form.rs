@@ -2,7 +2,7 @@
 //! error below (wired with `aria-describedby`, `aria-invalid`), radio cards for delivery slots
 //! and payment methods, and checkboxes. Native inputs throughout, so forms work without JS; the
 //! browser code listens for `input`/`change` on them (features/*.ts). Server markup only: values
-//! are read once, and the `on_*` callback props are islands-era leftovers that never run.
+//! are read once.
 //!
 //! Ids: a control with `id = "phone"` describes itself with `phone-hint` and `phone-error`;
 //! use the same convention when wrapping a custom control in [`Field`].
@@ -106,9 +106,7 @@ pub fn TextInput(
     /// A lucide icon inside the field, at the start.
     #[prop(optional)]
     icon: Option<&'static str>,
-    #[prop(optional)] on_input: Option<Callback<String>>,
 ) -> impl IntoView {
-    let _ = on_input;
     let has_hint = hint.is_some();
     let describe = {
         let id = id.clone();
@@ -164,9 +162,7 @@ pub fn TextArea(
     #[prop(optional, into)] placeholder: Option<TextProp>,
     #[prop(optional)] rows: Option<u32>,
     #[prop(optional)] optional: bool,
-    #[prop(optional)] on_input: Option<Callback<String>>,
 ) -> impl IntoView {
-    let _ = on_input;
     let has_hint = hint.is_some();
     let describe = {
         let id = id.clone();
@@ -205,9 +201,7 @@ pub fn Select(
     #[prop(optional, into)] hint: Option<TextProp>,
     #[prop(optional, into)] error: MaybeProp<String>,
     #[prop(optional)] optional: bool,
-    #[prop(optional)] on_change: Option<Callback<String>>,
 ) -> impl IntoView {
-    let _ = on_change;
     let has_hint = hint.is_some();
     let describe = {
         let id = id.clone();
@@ -295,9 +289,7 @@ pub fn RadioCard(
     trailing: Option<TextProp>,
     #[prop(optional, into)] checked: MaybeProp<bool>,
     #[prop(optional, into)] disabled: MaybeProp<bool>,
-    #[prop(optional)] on_select: Option<Callback<String>>,
 ) -> impl IntoView {
-    let _ = on_select;
     view! {
         <label class="radio-card" data-press="">
             <input
@@ -330,9 +322,7 @@ pub fn Checkbox(
     #[prop(optional, into)] value: Option<String>,
     #[prop(optional, into)] checked: MaybeProp<bool>,
     #[prop(optional, into)] disabled: MaybeProp<bool>,
-    #[prop(optional)] on_change: Option<Callback<bool>>,
 ) -> impl IntoView {
-    let _ = on_change;
     view! {
         <label class="check" data-press="">
             <input

@@ -20,7 +20,7 @@ use domain::{L10n, Piastres, ProductId, Tag, VariantId};
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
-/// Everything a product card needs, ready to render (server or island).
+/// Everything a product card needs, ready to render.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CardData {
     pub id: ProductId,
@@ -67,8 +67,7 @@ pub fn ProductCard(
     let oos = !card.in_stock;
     let has = |t: Tag| card.tags.contains(&t);
 
-    // Badges in fixed slots (an Option each), never a list: the islands router patches pages by
-    // walking old and new markup in lockstep, and slots keep cards structurally alike.
+    // Badges in fixed slots (an Option each), never a list: slots keep cards structurally alike.
     let express = (!oos && has(Tag::Express)).then_some(BadgeKind::Express);
     let second = if oos {
         Some(BadgeKind::OutOfStock)
@@ -146,8 +145,7 @@ pub fn ProductCardSkeleton() -> impl IntoView {
 
 /// The responsive product grid: 2 columns ≤ 599px, 3 ≥ 600, 4 ≥ 960, 5 ≥ 1280.
 ///
-/// Render the cards with `<For each=… key=|c| c.id …>` inside, so the islands router can patch a
-/// changed listing (sort, filter, next page) item by item.
+/// Render the cards inside it; the listing's sort, filters and pages are router swaps of `<main>`.
 #[component]
 pub fn ProductGrid(
     children: Children,
