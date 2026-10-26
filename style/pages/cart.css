@@ -127,9 +127,24 @@
   gap: var(--sp-1);
   color: var(--text-2);
 }
-.cline__each {
-  font-size: var(--fs-xs);
+.cline__addons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+.cline__addons .icon {
+  flex: none;
   color: var(--text-3);
+}
+.cline__breakdown {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--text-3);
+  white-space: nowrap;
 }
 .cline__stock {
   margin: 0;
@@ -145,6 +160,9 @@
   gap: var(--sp-3);
 }
 .cline__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   font-weight: var(--fw-semibold);
   text-align: end;
 }

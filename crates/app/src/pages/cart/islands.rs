@@ -463,16 +463,30 @@ fn DrawerLine(key: String) -> impl IntoView {
     let href = format!("/p/{}", first.slug);
     let name = first.name.clone();
     let detail = {
-        let (variant, addons) = (first.variant_label.clone(), first.addons.clone());
+        let variant = first.variant_label.clone();
+        move || variant.pick(ui.lang.get().is_rtl()).to_owned()
+    };
+    let addons = {
+        let addons = first.addons.clone();
         move || {
             let ar = ui.lang.get().is_rtl();
-            let mut parts: Vec<String> = Vec::new();
-            if !variant.pick(ar).is_empty() {
-                parts.push(variant.pick(ar).to_owned());
-            }
-            parts.extend(addons.iter().map(|a| format!("+ {}", a.pick(ar))));
-            parts.join(" · ")
+            addons
+                .iter()
+                .map(|a| a.pick(ar).to_owned())
+                .collect::<Vec<_>>()
+                .join(if ar { "، " } else { ", " })
         }
+    };
+    // "2 × EGP 1,899.00" under the line total explains it.
+    let breakdown = move || {
+        let (q, lang, num) = (qty(), ui.lang.get(), ui.numerals.get());
+        (q > 1).then(|| {
+            format!(
+                "{} × {}",
+                format::count(q, num),
+                format::money(unit.get(), lang, num)
+            )
+        })
     };
     let img = first.img.clone();
     let on_qty = move |input: CartSetQty| {
@@ -535,9 +549,9 @@ fn DrawerLine(key: String) -> impl IntoView {
             <div class="cline__main">
                 <a class="cline__name" href=href on:click=move |_| close_drawer()>{name_for.clone()}</a>
                 {move || { let d = detail(); (!d.is_empty()).then(|| view! { <p class="cline__detail">{d}</p> }) }}
+                {move || { let a = addons(); (!a.is_empty()).then(|| view! { <p class="cline__addons"><Icon name="plus" size=12/><span>{a}</span></p> }) }}
                 <div class="cline__unit">
                     <PriceLive amount=unit compare_at=was size=PriceSize::Sm no_badge=true/>
-                    {move || (qty() > 1).then(|| view! { <span class="cline__each">{tr(ui.lang.get(), "each", "للقطعة")}</span> })}
                 </div>
                 {move || low_stock().map(|t| view! { <p class="cline__stock">{t}</p> })}
                 <CartForm class="cline__remove" on_input=Callback::new(on_remove)>
@@ -560,7 +574,10 @@ fn DrawerLine(key: String) -> impl IntoView {
                         <Icon name="plus" size=18/>
                     </button>
                 </CartForm>
-                <span class="cline__total"><PriceLive amount=total size=PriceSize::Sm no_badge=true/></span>
+                <span class="cline__total">
+                    <PriceLive amount=total size=PriceSize::Sm no_badge=true/>
+                    {move || breakdown().map(|b| view! { <span class="cline__breakdown">{b}</span> })}
+                </span>
             </div>
         </li>
     })

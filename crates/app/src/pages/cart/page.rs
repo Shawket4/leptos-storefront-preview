@@ -256,12 +256,21 @@ fn PageLine(
     let q = line.qty;
     let href = format!("/p/{}", line.slug);
     let name = line.name.pick(ar).to_owned();
-    let mut detail: Vec<String> = Vec::new();
-    if !line.variant_label.pick(ar).is_empty() {
-        detail.push(line.variant_label.pick(ar).to_owned());
-    }
-    detail.extend(line.addons.iter().map(|a| format!("+ {}", a.pick(ar))));
-    let detail = detail.join(" · ");
+    let detail = line.variant_label.pick(ar).to_owned();
+    let addons = line
+        .addons
+        .iter()
+        .map(|a| a.pick(ar).to_owned())
+        .collect::<Vec<_>>()
+        .join(if ar { "، " } else { ", " });
+    // "2 × EGP 1,899.00" under the line total explains it.
+    let breakdown = (q > 1).then(|| {
+        format!(
+            "{} × {}",
+            format::count(q, num),
+            format::money(line.unit_price, lang, num)
+        )
+    });
     let dec_label = format!(
         "{}: {name}",
         if q <= 1 {
@@ -299,9 +308,9 @@ fn PageLine(
             <div class="cline__main">
                 <a class="cline__name" href=href>{name.clone()}</a>
                 {(!detail.is_empty()).then(|| view! { <p class="cline__detail">{detail}</p> })}
+                {(!addons.is_empty()).then(|| view! { <p class="cline__addons"><Icon name="plus" size=12/><span>{addons}</span></p> })}
                 <div class="cline__unit">
                     <Price amount=line.unit_price compare_at=line.compare_at size=PriceSize::Sm no_badge=true lang numerals=num/>
-                    {(q > 1).then(|| view! { <span class="cline__each">{tr(lang, "each", "للقطعة")}</span> })}
                 </div>
                 {low.map(|t| view! { <p class="cline__stock">{t}</p> })}
                 <ActionForm action=remove attr:class="cline__remove" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
@@ -321,7 +330,10 @@ fn PageLine(
                     <output class="qty__val mono">{format::count(q, num)}</output>
                     {inc}
                 </ActionForm>
-                <span class="cline__total"><Price amount=line.line_total size=PriceSize::Sm no_badge=true lang numerals=num/></span>
+                <span class="cline__total">
+                    <Price amount=line.line_total size=PriceSize::Sm no_badge=true lang numerals=num/>
+                    {breakdown.map(|b| view! { <span class="cline__breakdown">{b}</span> })}
+                </span>
             </div>
         </li>
     }

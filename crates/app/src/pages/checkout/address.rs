@@ -371,11 +371,13 @@ fn AreaSelect(form: Form, autofocus: bool) -> impl IntoView {
         }
     };
     view! {
+        <span class="select-wrap">
         <select class="field__input field__select" id="co-area" name="area" autocomplete="address-level2"
             prop:value=area aria-invalid=move || { form.error(Field::Area).is_some().to_string() }
             aria-describedby=Field::Area.error_id() aria-required="true" autofocus=autofocus>
             {options}
         </select>
+        </span>
     }
 }
 

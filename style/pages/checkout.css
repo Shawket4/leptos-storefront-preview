@@ -243,8 +243,20 @@ a.co-step__link:hover {
 }
 .field-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sp-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-4) var(--sp-3);
+}
+/* Phones: the building gets the full row, floor and apartment share the next. */
+.field-row > .field:first-child {
+  grid-column: 1 / -1;
+}
+@media (min-width: 600px) {
+  .field-row {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+  .field-row > .field:first-child {
+    grid-column: auto;
+  }
 }
 .field {
   display: flex;
@@ -310,15 +322,16 @@ a.co-step__link:hover {
   background-image: none;
   cursor: pointer;
 }
-.field:has(.field__select) {
+.select-wrap {
   position: relative;
+  display: block;
 }
 /* The chevron, drawn with borders so it needs no image. */
-.field:has(.field__select)::after {
+.select-wrap::after {
   content: "";
   position: absolute;
   inset-inline-end: var(--sp-4);
-  inset-block-end: 20px;
+  inset-block-start: calc(50% - 6px);
   inline-size: 8px;
   block-size: 8px;
   border-inline-end: 2px solid var(--text-2);
