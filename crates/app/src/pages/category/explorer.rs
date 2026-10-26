@@ -1159,7 +1159,7 @@ fn failed_notice(cx: Cx) -> impl IntoView {
     let offline = cx.offline.get();
     let (icon, title, body) = if offline {
         (
-            "circle-alert",
+            "wifi-off",
             tr(lang, "You're offline.", "لا يوجد اتصال بالإنترنت."),
             tr(
                 lang,

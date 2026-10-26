@@ -21,10 +21,6 @@
 .pdp-crumbs {
   padding-block: var(--sp-2);
 }
-/* category.css styles `.crumbs` unscoped (a "/" between items, on top of the chevrons). */
-.pdp-crumbs .crumbs li + li::before {
-  content: none;
-}
 /* Phones: the product name is the H1 right below; the trail stops at its shelf. */
 @media (max-width: 767.98px) {
   .pdp-crumbs .crumbs__item:last-child {
