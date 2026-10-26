@@ -1,23 +1,27 @@
-/* Status pills (components::status_pill): icon + label, 24px, pill, 12px bold on
-   the tone's wash. Tone classes are shared: .tone-neutral … .tone-info. */
+/* Status labels (components::status_pill): icon + label, 24px, 6px squircle,
+   12px bold on the tone's wash. Tone classes are shared: .tone-neutral … .tone-info. */
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  block-size: 24px;
-  padding-inline: 9px;
-  border-radius: var(--r-pill);
+  gap: 0.3125rem;
+  block-size: 1.5rem;
+  padding: 0 0.5625rem;
+  border-radius: var(--r-xs);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  line-height: 1;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-small);
   white-space: nowrap;
 }
-.pill .icon {
-  inline-size: 14px;
-  block-size: 14px;
+:root:not([lang="ar"]) .pill__label {
+  text-box: trim-both cap alphabetic;
 }
 :root[lang="ar"] .pill {
   font-size: 0.78rem;
+}
+.pill .icon {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
 }
 .tone-neutral { background: var(--sunk); color: var(--text-2); }
 .tone-brand { background: var(--brand-wash); color: var(--brand-text); }

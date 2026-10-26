@@ -90,6 +90,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("p/:slug") view=pages::ProductPage ssr=SsrMode::PartiallyBlocked/>
                     <Route path=path!("cart") view=pages::CartPage ssr=SsrMode::InOrder/>
                     <Route path=path!("checkout") view=pages::CheckoutPage ssr=SsrMode::InOrder/>
+                    <Route path=path!("orders") view=pages::OrdersLookupPage ssr=SsrMode::InOrder/>
                     <Route path=path!("orders/:id") view=pages::OrderPage ssr=SsrMode::InOrder/>
                     <Route path=path!("showcase") view=pages::ShowcasePage/>
                     <Route path=path!("ui") view=pages::UiKitPage/>
