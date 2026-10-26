@@ -163,6 +163,8 @@ pub fn Code(cut: Cut, #[prop(optional)] open: bool) -> impl IntoView {
     excerpt(cut).map(|ex| {
         let lines = ex.code.lines().count();
         let label = format!("{}:{}", ex.path, ex.line);
+        // One- to three-line excerpts are shown open: a toggle for one line is just friction.
+        let open = open || lines <= 3;
         view! {
             <details class="sc-code" open=open>
                 <summary class="sc-code__sum">

@@ -241,9 +241,9 @@ pub async fn head(url: &str, method: &str, names: &[&str]) -> Result<Head, Strin
                 .and_then(|v| v.as_string())
         })
         .collect();
-    // Drain/cancel the body so the connection is released.
-    if let Ok(body) = get(&resp, "body").dyn_into::<Object>() {
-        let _ = call(&body, "cancel", &[]);
+    // Read the (empty or tiny) body to the end: cancelling it shows up as an aborted request.
+    if let Ok(p) = call(&resp, "text", &[]) {
+        let _ = wait(p).await;
     }
     Ok(Head {
         status: num(&resp, "status") as u16,

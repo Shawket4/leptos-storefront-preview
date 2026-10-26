@@ -190,8 +190,8 @@ pub static FEATURES: &[Feature] = &[
             ),
             used(
                 Href::Path("/"),
-                "Home: every rail, hero and card is server-only",
-                "الرئيسية: كل الأقسام والكروت سيرفر بس",
+                "Home: every rail, tile and card is server-only",
+                "الرئيسية: كل الأقسام والصور والكروت سيرفر بس",
             ),
         ],
         note: None,
@@ -369,8 +369,9 @@ pub static FEATURES: &[Feature] = &[
             "الرئيسية: العد التنازلي بيقرا store الـ Ui المشترك",
         )],
         note: Some((
-            "CartStore (the header badge's signal) is defined in stores.rs; the cart islands that use it land with the commerce pages.",
-            "‏CartStore (الـ signal بتاع عدّاد الهيدر) متعرّف في stores.rs؛ وجزر السلة اللي بتستخدمه هتيجي مع صفحات الشراء.",
+            // The cart islands are on agent/commerce (2548a2f); the shell mounts the badge and drawer.
+            "CartStore (stores.rs) is the one signal behind the header badge; the commerce branch's badge, drawer and quick-add islands all read and write it, mounted by the app shell.",
+            "‏CartStore (‏stores.rs) هو الـ signal الوحيد ورا عدّاد الهيدر؛ وجزر العدّاد والدرج والإضافة السريعة في فرع الشراء كلها بتقرا وتكتب فيه، والـ shell هو اللي بيركّبها.",
         )),
         sources: &[
             "crates/app/src/client.rs",

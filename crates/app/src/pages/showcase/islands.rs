@@ -805,6 +805,10 @@ pub fn CacheLab(initial: CacheInfo, tenant: String) -> impl IntoView {
 
     let refresh = ServerAction::<api::CacheStats>::new();
     let bump = ServerAction::<api::CacheBump>::new();
+    // The server's numbers were taken before this page's own reads; fetch fresh ones once hydrated.
+    Effect::new(move |_| {
+        refresh.dispatch(api::CacheStats {});
+    });
     Effect::new(move |_| match refresh.value().get() {
         Some(Ok(v)) => info.set(v),
         Some(Err(_)) => note.set(Some(LabNote::Failed)),
@@ -929,67 +933,79 @@ pub async fn pager_page(page: u32) -> Result<crate::api::types::ListingPage, Ser
 /// page stays (dimmed) until the next one has arrived. `pages` comes from the server.
 #[island]
 pub fn ListingPager(pages: u32) -> impl IntoView {
-    let ui = use_ui();
     let page = RwSignal::new(1u32);
     let pending = RwSignal::new(false);
     let data = Resource::new(move || page.get(), pager_page);
-    let pages = move || Some(pages);
     view! {
         <div class="sc-pager" class:is-pending=move || pending.get() aria-busy=move || pending.get().to_string()>
-            <div class="sc-pager__bar">
-                <button class="sc-ibtn" type="button" disabled=move || page.get() <= 1
-                    on:click=move |_| page.update(|p| *p = p.saturating_sub(1).max(1))
-                    aria-label=move || tr(ui.lang.get(), "Previous page", "الصفحة اللي قبل")>
-                    <Icon name="chevron-left" size=18 class="flip-rtl"/>
-                </button>
-                <span class="sc-pager__label mono" aria-live="polite">
-                    {move || {
-                        let n = ui.numerals.get();
-                        let of = pages().map(|p| format::count(p, n)).unwrap_or_else(|| "…".into());
-                        match ui.lang.get() {
-                            Lang::En => format!("Page {} of {of}", format::count(page.get(), n)),
-                            Lang::Ar => format!("صفحة {} من {of}", format::count(page.get(), n)),
-                        }
-                    }}
-                </span>
-                <button class="sc-ibtn" type="button" disabled=move || pages().is_some_and(|n| page.get() >= n)
-                    on:click=move |_| page.update(|p| *p += 1)
-                    aria-label=move || tr(ui.lang.get(), "Next page", "الصفحة اللي بعد")>
-                    <Icon name="chevron-right" size=18 class="flip-rtl"/>
-                </button>
-                <span class="sc-pager__state">
-                    <Icon name="loader-circle" size=16 class="spin"/>
-                    <span>{move || tr(ui.lang.get(), "loading — old page stays", "بيحمّل — القديمة فاضلة")}</span>
-                </span>
-            </div>
+            <PagerBar page pages/>
+            // After the first load, a refetch keeps the old page on screen; `set_pending` dims it.
             <Transition fallback=|| view! { <ThumbsSkeleton/> } set_pending=pending.write_only()>
                 <ErrorBoundary fallback=|errors| view! { <SectionError errors compact=true/> }>
                     {move || Suspend::new(async move {
-                        data.await.map(|lp| {
-                            view! {
-                                <ul class="sc-thumbs">
-                                    {lp.items.into_iter().map(|c| {
-                                        let name = StoredValue::new(c.name.clone());
-                                        let label = move || name.with_value(|n| n.pick(ui.lang.get().is_rtl()).to_owned());
-                                        let img = c.img.clone();
-                                        view! {
-                                            <li>
-                                                <a class="sc-thumb" href=format!("/p/{}", c.slug) title=label>
-                                                    {(!img.is_missing()).then(|| view! {
-                                                        <img src=img.src_near(240) srcset=img.srcset() sizes="80px" alt=label
-                                                            width="240" height="240" loading="lazy" decoding="async"/>
-                                                    })}
-                                                </a>
-                                            </li>
-                                        }
-                                    }).collect_view()}
-                                </ul>
-                            }
-                        })
+                        data.await.map(|lp| view! { <Thumbs items=lp.items/> })
                     })}
                 </ErrorBoundary>
             </Transition>
         </div>
+    }
+}
+
+/// Previous / "Page n of m" / next, and the "loading" note the pending state reveals.
+#[component]
+fn PagerBar(page: RwSignal<u32>, pages: u32) -> impl IntoView {
+    let ui = use_ui();
+    view! {
+        <div class="sc-pager__bar">
+            <button class="sc-ibtn" type="button" disabled=move || page.get() <= 1
+                on:click=move |_| page.update(|p| *p = p.saturating_sub(1).max(1))
+                aria-label=move || tr(ui.lang.get(), "Previous page", "الصفحة اللي قبل")>
+                <Icon name="chevron-left" size=18 class="flip-rtl"/>
+            </button>
+            <span class="sc-pager__label mono" aria-live="polite">
+                {move || {
+                    let n = ui.numerals.get();
+                    match ui.lang.get() {
+                        Lang::En => format!("Page {} of {}", format::count(page.get(), n), format::count(pages, n)),
+                        Lang::Ar => format!("صفحة {} من {}", format::count(page.get(), n), format::count(pages, n)),
+                    }
+                }}
+            </span>
+            <button class="sc-ibtn" type="button" disabled=move || page.get() >= pages
+                on:click=move |_| page.update(|p| *p += 1)
+                aria-label=move || tr(ui.lang.get(), "Next page", "الصفحة اللي بعد")>
+                <Icon name="chevron-right" size=18 class="flip-rtl"/>
+            </button>
+            <span class="sc-pager__state">
+                <Icon name="loader-circle" size=16 class="spin"/>
+                <span>{move || tr(ui.lang.get(), "loading — old page stays", "بيحمّل — القديمة فاضلة")}</span>
+            </span>
+        </div>
+    }
+}
+
+/// 24 packshots, each a link to its product.
+#[component]
+fn Thumbs(items: Vec<crate::components::product_card::CardData>) -> impl IntoView {
+    let ui = use_ui();
+    view! {
+        <ul class="sc-thumbs">
+            {items.into_iter().map(|c| {
+                let name = StoredValue::new(c.name.clone());
+                let label = move || name.with_value(|n| n.pick(ui.lang.get().is_rtl()).to_owned());
+                let img = c.img.clone();
+                view! {
+                    <li>
+                        <a class="sc-thumb" href=format!("/p/{}", c.slug) title=label>
+                            {(!img.is_missing()).then(|| view! {
+                                <img src=img.src_near(240) srcset=img.srcset() sizes="80px" alt=label
+                                    width="240" height="240" loading="lazy" decoding="async"/>
+                            })}
+                        </a>
+                    </li>
+                }
+            }).collect_view()}
+        </ul>
     }
 }
 

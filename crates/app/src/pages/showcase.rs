@@ -195,6 +195,8 @@ pub(crate) struct Ctx {
     pub listing: Option<(crate::api::types::ListingQuery, Vec<CardData>, u32)>,
     /// Pages in the Transition demo's listing (all products, 24 per page).
     pub pager_pages: u32,
+    /// In-stock products priced under the free-delivery line (price calculator).
+    pub calc_units: Vec<CardData>,
 }
 
 impl Ctx {
@@ -373,6 +375,26 @@ fn build_ctx(q: Query) -> Ctx {
             ..Default::default()
         })
         .pages;
+    // Calculator: real products under the free-delivery line, so a few steps cross it.
+    let free = t.free_delivery_over.0;
+    let mut calc_units: Vec<CardData> = Vec::new();
+    for c in &cats {
+        if calc_units.len() == 3 {
+            break;
+        }
+        let page = cat.listing(&ListingQuery {
+            category: Some(c.slug.clone()),
+            page: 1,
+            ..Default::default()
+        });
+        if let Some(card) = page
+            .items
+            .into_iter()
+            .find(|x| x.in_stock && x.price.0 >= free / 6 && x.price.0 < free * 9 / 10)
+        {
+            calc_units.push(card);
+        }
+    }
 
     Ctx {
         lang: rq.prefs.lang,
@@ -416,6 +438,7 @@ fn build_ctx(q: Query) -> Ctx {
         clock: Arc::new(Clock::new()),
         listing,
         pager_pages,
+        calc_units,
         q,
     }
 }
@@ -461,6 +484,7 @@ fn build_ctx(q: Query) -> Ctx {
         clock: Arc::new(Clock::new()),
         listing: None,
         pager_pages: 1,
+        calc_units: vec![],
     }
 }
 
@@ -786,20 +810,12 @@ fn cuts_for(id: &str) -> Vec<Cut> {
             "^}",
             8,
         )],
-        "transition" => vec![
-            cut(
-                Src::Islands,
-                "let data = Resource::new(move || page.get(), pager_page);",
-                "",
-                1,
-            ),
-            cut(
-                Src::Islands,
-                "<Transition fallback",
-                "<Transition fallback",
-                1,
-            ),
-        ],
+        "transition" => vec![cut(
+            Src::Islands,
+            "let data = Resource::new(move || page.get(), pager_page);",
+            "</Transition>",
+            14,
+        )],
         "sim" => vec![cut(Src::Sim, "pub fn check_fail", "^}", 12)],
         "action-form" => vec![
             cut(
@@ -887,7 +903,10 @@ fn Card(f: &'static Feature, cx: Arc<Ctx>) -> impl IntoView {
             <footer class="sc-card__foot">
                 <div class="sc-used">
                     <span class="sc-foot__label">{tr(lang, "Used in", "مستخدمة في")}</span>
-                    {if used.is_empty() {
+                    {if used.is_empty() && f.note.is_some() {
+                        // The note says why the demo is the only usage.
+                        ().into_any()
+                    } else if used.is_empty() {
                         view! { <span class="sc-used__none">{tr(lang, "This demo is its only usage so far.", "الديمو ده هو الاستخدام الوحيد لحد دلوقتي.")}</span> }.into_any()
                     } else {
                         view! {

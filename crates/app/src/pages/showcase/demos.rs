@@ -495,9 +495,9 @@ fn MetaDemo(cx: Arc<Ctx>) -> impl IntoView {
 #[component]
 fn ReactivityDemo(cx: Arc<Ctx>) -> impl IntoView {
     let free = cx.tenant.free_over.0;
-    // Prefer products whose price sits under the free-delivery line, so steps cross it.
-    let mut units: Vec<Unit> = cx
-        .picks
+    // Products from this shop's catalogue priced under the free-delivery line (see build_ctx).
+    let source = if cx.calc_units.is_empty() { &cx.picks } else { &cx.calc_units };
+    let units: Vec<Unit> = source
         .iter()
         .map(|c| Unit {
             en: c.name.en.clone(),
@@ -505,15 +505,6 @@ fn ReactivityDemo(cx: Arc<Ctx>) -> impl IntoView {
             price: c.price.0,
         })
         .collect();
-    units.sort_by_key(|u| (u.price >= free, u.price));
-    let fallback = Unit {
-        en: "Coffee beans 250 g".into(),
-        ar: "بن ٢٥٠ جم".into(),
-        price: free / 3 + 900,
-    };
-    if units.iter().all(|u| u.price >= free) {
-        units.insert(0, fallback);
-    }
     view! { <islands::PriceCalc units fee=cx.tenant.delivery_fee.0 free_over=free/> }
 }
 
@@ -564,7 +555,7 @@ fn ServerFnsDemo(cx: Arc<Ctx>) -> impl IntoView {
     let t = cx.tenant.id.clone();
     view! {
         <islands::CacheLab initial=cx.cache.clone() tenant=t.clone()/>
-        <ul class="sc-steps" role="list">
+        <ul class="sc-steps">
             <li>{tr(lang, "Every catalogue read goes through a moka cache keyed by tenant + generation + query (the shape of Madar's menu cache).", "كل قراءة من الكتالوج بتعدّي على كاش moka بمفتاح المتجر + الجيل + الاستعلام (نفس شكل كاش المنيو في مدار).")}</li>
             <li>
                 {tr(lang, "Bumping the generation makes every key of this shop unreachable at once — no scan. In production the same edit purges the CDN: ", "زيادة الجيل بتخلي كل مفاتيح المتجر ده مش بتتلقي مرة واحدة — من غير ما نلف عليها. وفي الإنتاج نفس التعديل بيمسح الـ CDN: ")}
@@ -645,7 +636,7 @@ fn ActionFormDemo(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
     view! {
         <islands::NoteBoard board=cx.board.clone() error=cx.note_error.clone()/>
-        <ol class="sc-steps" role="list">
+        <ol class="sc-steps">
             <li>{tr(lang, "With JavaScript: the island prevents the native submit, dispatches the ServerAction (a fetch), and swaps in the Board it returns. pending() drives the button's spinner.", "مع JavaScript: الـ island بتمنع الإرسال العادي، وتشغّل الـ ServerAction (‏fetch)، وتحط الـ Board اللي راجع. و pending()‎ هو اللي مشغّل اللودر في الزرار.")}</li>
             <li>{tr(lang, "Without JavaScript: the browser posts the form to the server function's URL; server_fn sees Accept: text/html and answers 302 back to this page, which renders the new board. A validation error comes back as ?__err=… and shows the same message.", "من غير JavaScript: المتصفح بيبعت الفورم لـ URL دالة السيرفر؛ و server_fn بيشوف Accept: text/html فيرد بـ 302 لنفس الصفحة، اللي بترسم اللستة الجديدة. ولو فيه خطأ بيرجع كـ ‎?__err=…‎ ويظهر نفس الرسالة.")}</li>
         </ol>
@@ -850,7 +841,7 @@ fn CachingDemo(cx: Arc<Ctx>) -> impl IntoView {
     let via_cookie = cx.tenant.via == Some(TenantVia::Cookie);
     view! {
         <islands::HeaderProbe targets/>
-        <ul class="sc-steps" role="list">
+        <ul class="sc-steps">
             <li>{tr(lang, "Catalogue pages: public, s-maxage=300 (5 min at the edge), stale-while-revalidate=60; tagged t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}.", "صفحات الكتالوج: ‏public و s-maxage=300 (٥ دقايق على الـ CDN) و stale-while-revalidate=60؛ ومتاجة بـ t{tenant} و t{tenant}-p{id} و t{tenant}-cat{id}.")}</li>
             <li>{tr(lang, "Cart, checkout, orders, this page: private, no-store — personal data never reaches a shared cache.", "السلة والدفع والطلبات والصفحة دي: ‏private, no-store — البيانات الشخصية عمرها ما بتوصل لكاش مشترك.")}</li>
             <li>{tr(lang, "x-read-cache is set by the read cache. On a streamed page it only appears when the read finished before the headers left — headers go out with the first chunk.", "‏x-read-cache بيتحط من كاش القراءة. وفي الصفحة المتبعتة بيظهر بس لو القراءة خلصت قبل ما الهيدرز تطلع — الهيدرز بتطلع مع أول chunk.")}</li>
@@ -1031,7 +1022,7 @@ fn I18nDemo(cx: Arc<Ctx>) -> impl IntoView {
             }).collect_view()}
         </div>
         <islands::LiveLang amount=129_950 items=3 at_ms=at/>
-        <ol class="sc-steps" role="list">
+        <ol class="sc-steps">
             <li>{tr(lang, "A plain link to /__prefs?lang=ar&next=… sets a cookie and redirects back.", "لينك عادي لـ ‎/__prefs?lang=ar&next=…‎ بيحط كوكي ويرجّعك.")}</li>
             <li>{tr(lang, "The islands router follows the redirect and diffs the server's Arabic HTML into the page: <html lang dir> flip, the layout mirrors (logical CSS only).", "الـ islands router بيتبع التحويل ويعمل diff للـ HTML العربي: ‏<html lang dir> بيتقلبوا، والتصميم بيتعكس (CSS منطقي بس).")}</li>
             <li>{tr(lang, "Islands are skipped by the diff, so a MutationObserver on <html> copies lang/data-numerals/data-theme into the Ui store and every island re-renders its own text.", "الـ islands مش بيتعملها diff، فـ MutationObserver على <html> بينقل lang و data-numerals و data-theme للـ store بتاع الـ Ui وكل island بتعيد رسم نصها.")}</li>
@@ -1138,7 +1129,7 @@ fn A11yDemo(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
     view! {
         <islands::SheetDemo/>
-        <ul class="sc-steps" role="list">
+        <ul class="sc-steps">
             <li>{tr(lang, "Modal sheets: a native <dialog> with showModal() — focus moves in, the page behind is inert, Esc closes, focus returns to the trigger. No focus-trap library.", "الشاشات المنبثقة: ‏<dialog> أصلي مع showModal()‎ — الفوكس بيدخل جواه، والصفحة اللي ورا بتتقفل، وEsc بيقفل، والفوكس بيرجع للزرار. من غير مكتبة focus-trap.")}</li>
             <li>{tr(lang, "Status messages: role=status / aria-live=polite regions (the wishlist tray above announces each change; failed sections use role=status).", "رسايل الحالة: مناطق role=status و aria-live=polite (لستة المحفوظ فوق بتعلن كل تغيير؛ والأقسام الواقعة بتستخدم role=status).")}</li>
             <li>{tr(lang, "Toggle buttons use aria-pressed, links in a set use aria-current, every icon-only button has a name, and the visible focus ring is a 3px outline.", "زراير التبديل بتستخدم aria-pressed، واللينكات في مجموعة بتستخدم aria-current، وكل زرار أيقونة ليه اسم، وحلقة الفوكس الظاهرة outline بعرض ٣ بكسل.")}</li>
@@ -1203,12 +1194,12 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
                 "لينكات ‎#anchor‎ بتتحول لتنقل",
             ),
             (
-                "The router intercepts every same-origin <a>, including href=\"#…\": it re-fetches the page and never scrolls.",
-                "الراوتر بيعترض أي <a> على نفس الموقع، حتى href=\"#…\": بيجيب الصفحة تاني ومابيعملش scroll.",
+                "The router intercepts every same-origin <a>, including href=\"#…\": it re-fetches the page and never scrolls. Leaving the click to the browser isn't enough either — the hash change fires popstate, and the router answers that with a full re-fetch too.",
+                "الراوتر بيعترض أي <a> على نفس الموقع، حتى href=\"#…\": بيجيب الصفحة تاني ومابيعملش scroll. وإنك تسيب الضغطة للمتصفح مش كفاية — تغيير الـ hash بيطلّع popstate، والراوتر بيرد عليه بإعادة تحميل الصفحة من السيرفر برضه.",
             ),
             (
-                "This page stops those clicks before they reach the router (TocFilter); the app shell should do it globally (skip link too).",
-                "الصفحة دي بتوقف الضغطات دي قبل ما توصل للراوتر (‏TocFilter)؛ والـ shell المفروض يعملها لكل الصفحات (ولينك «تخطّى للمحتوى» كمان).",
+                "This page handles in-page links itself (scroll, focus, replaceState — no popstate) before the router sees them; the app shell should do the same globally (the skip link too).",
+                "الصفحة دي بتتعامل مع اللينكات الداخلية بنفسها (scroll وفوكس و replaceState — من غير popstate) قبل ما الراوتر يشوفها؛ والـ shell المفروض يعمل كده لكل الصفحات (ولينك «تخطّى للمحتوى» كمان).",
             ),
         ),
         (
