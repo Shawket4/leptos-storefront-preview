@@ -65,11 +65,19 @@ fn latest_tiles(lang: Lang, num: Numerals) -> Vec<Tile> {
         .take(4)
         .map(|(c, _, sub)| {
             let money = format::money(c.price, lang, num);
+            let brand = c.brand.as_ref().map(|b| b.pick(ar).to_owned()).unwrap_or_default();
+            // The brand is the eyebrow, so don't repeat it at the start of the name.
+            let full = c.name.pick(ar);
+            let name = full
+                .strip_prefix(brand.as_str())
+                .filter(|rest| !brand.is_empty() && rest.starts_with(' '))
+                .map(|rest| rest.trim_start().to_owned())
+                .unwrap_or_else(|| full.to_owned());
             Tile {
                 slug: c.slug.clone(),
-                eyebrow: c.brand.as_ref().map(|b| b.pick(ar).to_owned()).unwrap_or_default(),
-                name: c.name.pick(ar).to_owned(),
-                sub: sub.pick(ar).to_owned(),
+                eyebrow: brand,
+                name: no_break_hyphens(&name),
+                sub: no_break_hyphens(sub.pick(ar)),
                 price: if c.from {
                     match lang {
                         Lang::En => format!("From {money}"),
@@ -87,6 +95,20 @@ fn latest_tiles(lang: Lang, num: Numerals) -> Vec<Tile> {
 #[cfg(not(feature = "ssr"))]
 fn latest_tiles(_: Lang, _: Numerals) -> Vec<Tile> {
     vec![]
+}
+
+#[cfg(feature = "ssr")]
+/// "14-inch" must not break after the hyphen: use U+2011 (non-breaking hyphen) between word chars.
+fn no_break_hyphens(s: &str) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    chars
+        .iter()
+        .enumerate()
+        .map(|(i, c)| {
+            let around = i > 0 && i + 1 < chars.len() && chars[i - 1].is_alphanumeric() && chars[i + 1].is_alphanumeric();
+            if *c == '-' && around { '\u{2011}' } else { *c }
+        })
+        .collect()
 }
 
 /// The meta description (in production: CMS content per tenant).
@@ -144,7 +166,7 @@ pub fn HomePage() -> impl IntoView {
         },
         None => match lang {
             Lang::En => format!(
-                "Free delivery over {} · Cash on delivery · 14-day returns",
+                "Free delivery over {} · Cash on delivery · 14\u{2011}day returns",
                 format::money_short(t.free_delivery_over, lang, num)
             ),
             Lang::Ar => format!(
@@ -218,15 +240,13 @@ fn LatestTiles(tiles: Vec<Tile>, lang: Lang) -> impl IntoView {
                     {tiles.into_iter().enumerate().map(|(i, t)| view! {
                         <li>
                             <a class="tile" href=format!("/p/{}", t.slug)>
-                                <span class="tile__text">
-                                    {(!t.eyebrow.is_empty()).then(|| view! { <span class="tile__eyebrow">{t.eyebrow}</span> })}
-                                    <span class="tile__name">{t.name}</span>
-                                    {(!t.sub.is_empty()).then(|| view! { <span class="tile__sub">{t.sub}</span> })}
-                                    <span class="tile__price">{t.price}</span>
-                                    <span class="tile__ctas">
-                                        <span class="tile__buy">{tr(lang, "Buy", "اشتري")}</span>
-                                        <span class="tile__more">{tr(lang, "Learn more", "اعرف أكتر")}<Icon name="chevron-right" size=16 class="flip-rtl"/></span>
-                                    </span>
+                                <span class="tile__eyebrow">{t.eyebrow}</span>
+                                <span class="tile__name">{t.name}</span>
+                                <span class="tile__sub">{t.sub}</span>
+                                <span class="tile__price">{t.price}</span>
+                                <span class="tile__ctas">
+                                    <span class="tile__buy">{tr(lang, "Buy", "اشتري")}</span>
+                                    <span class="tile__more">{tr(lang, "Learn more", "اعرف أكتر")}<Icon name="chevron-right" size=16 class="flip-rtl"/></span>
                                 </span>
                                 <span class="tile__media" style=format!("background-image:url({})", t.img.lqip)>
                                     <img
