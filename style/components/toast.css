@@ -148,7 +148,7 @@
 /* Reduced motion: places change at once; arrivals and exits fade (base.css). */
 @media (prefers-reduced-motion: reduce) {
   .toast {
-    transition: opacity var(--dur-fast) linear;
+    transition: opacity var(--dur-fast) var(--ease-linear);
   }
 }
 .toast__icon {

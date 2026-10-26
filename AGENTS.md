@@ -20,8 +20,10 @@ fragile hydration). Ask the lead before departing from anything here.
    don't build a local variant.
 3. **Markup lives in Rust, once.** The client never builds HTML strings. When it must show data
    (a cart line, a toast, a search suggestion) it fills a server-rendered `<template>` via
-   `fill()` (`core/dom.ts`). Money, dates and numbers arrive **formatted by the server**
-   (`crate::format`, the visitor's numerals) — the client never formats or computes money.
+   `fill()` (`core/dom.ts`). Server-rendered money and dates are formatted by `crate::format`.
+   **The cart is the one place the client computes money** (owner, 2026-10-26): integer piastres,
+   formatted by `core/money.ts`, an exact port of `crate::format::money` (same output for the same
+   input). Anything else money-shaped arrives formatted.
 4. **Progressive enhancement.** Pages work without JS (plain links and forms, server-side
    validation); the TS makes them instant. Forms the TS takes over keep a working `action`.
 5. **Fail loudly in dev, gracefully for shoppers.** No silent fallbacks that create a second
@@ -179,9 +181,16 @@ chunks, so nothing loads twice. Keep a feature's `data-ts` names in its own file
   `product:variant:qty[:addon+addon]` lines joined by `|` — `crates/domain/src/cart.rs` and
   `client/src/stores/cart.ts` are the two (identical) implementations. Limits: 50 lines, 99 each.
 - Add / remove / change quantity = `stores/cart.ts` → cookie + store, instantly, **no request**.
-- The server reads the cookie when it needs to *price* the cart: `/cart`, the drawer's quote
-  (`GET /api/cart/quote` → `CartQuote`), checkout (re-prices and checks stock, like Madar at order
-  intake). It writes the cookie only for no-JS forms and clears it when an order is placed.
+  Remove is immediate (Undo puts the line back).
+- **The client computes the cart** (owner, 2026-10-26): every line carries its display data and
+  prices in piastres (unit, compare-at, add-ons, stock cap), taken from the card or product page it
+  was added from and kept with the cart (the line snapshot). Line totals, subtotal, savings and the
+  delivery rule (`cfg().cart.deliveryFee` / `freeDeliveryOver`) are TypeScript; **no request while
+  the shopper edits**.
+- The server is asked only for data the client lacks — a line with no snapshot (added without JS,
+  storage cleared): `GET /api/cart/quote` fills it — and **at checkout**, which renders the
+  authoritative prices from the cookie (re-priced, stock re-checked) and says so if anything
+  changed since the cart. It writes the cookie only for no-JS forms and clears it after an order.
 - **No-JS cart forms** (cart agent serves them; anyone may post them; with JS the TS intercepts
   them and nothing is sent). `application/x-www-form-urlencoded` POSTs, plain HTML field names:
   | Endpoint | Fields |

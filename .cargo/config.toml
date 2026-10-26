@@ -12,3 +12,7 @@ rustflags = ["-C", "link-arg=-fuse-ld=/home/apex/.local/bin/mold"]
 
 [env]
 SCCACHE_DIR = "/home/apex/.cache/sccache"
+
+# The private madar-shared git dependency: let cargo use git (and its credential helper, gh).
+[net]
+git-fetch-with-cli = true

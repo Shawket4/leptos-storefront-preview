@@ -1,10 +1,11 @@
 /* Segmented control (components::segmented): links on a sunk track, the current
-   one raised on a thumb. 32px segments (44px hit area), 10px track corners. */
+   one raised on a thumb. 32px segments (44px hit area); the track's corners are the
+   thumb's plus its 2px inset, so the two stay concentric. */
 .seg {
   display: inline-flex;
   gap: 2px;
   padding: 2px;
-  border-radius: 10px;
+  border-radius: calc(var(--r-sm) + 2px);
   /* A tint of ink, so the track reads on any ground (page, card, footer band). */
   background: color-mix(in oklab, var(--text) 6%, transparent);
 }
@@ -51,12 +52,24 @@
 .seg__item:hover {
   color: var(--text);
 }
-.seg__item[aria-current="true"] {
+.seg__item[aria-current="true"],
+.seg__item[aria-pressed="true"] {
   background: var(--seg-thumb);
   color: var(--text);
   box-shadow: var(--shadow-sm), 0 0 0 0.5px var(--line-2);
 }
 .seg__item:active {
   scale: var(--press);
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-press);
+}
+
+/* SegmentedToggle: the same segments as buttons. */
+button.seg__item {
+  border: 0;
+  background-color: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+button.seg__item[aria-pressed="true"] {
+  background: var(--seg-thumb);
 }
