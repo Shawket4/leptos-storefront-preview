@@ -15,8 +15,10 @@
 //! keeps the current value and velocity, so reversing mid-flight never hits a "brick wall". On the
 //! server (and under `prefers-reduced-motion`) animations land at once.
 
+#[cfg(feature = "hydrate")]
 use leptos::prelude::*;
 use std::collections::VecDeque;
+#[cfg(feature = "hydrate")]
 use std::rc::Rc;
 
 /// Apple's two designer-facing spring parameters.
@@ -142,6 +144,9 @@ pub fn reduced() -> bool {
     }
 }
 
+/// The animation state. Client only: it holds closures (not `Send`), and the server must never
+/// create a thread-bound value (a component's body also runs there, during SSR of its island).
+#[cfg(feature = "hydrate")]
 struct State {
     x: f64,
     v: f64,
@@ -155,42 +160,77 @@ struct State {
 }
 
 /// A number animated by a spring on the browser's frame clock. `Copy`; drives its `on_update`
-/// callback (set a transform, an opacity) every frame.
+/// callback (set a transform, an opacity) every frame. On the server it is inert.
 #[derive(Clone, Copy)]
-pub struct SpringValue(StoredValue<State, LocalStorage>);
+pub struct SpringValue {
+    #[cfg(feature = "hydrate")]
+    inner: StoredValue<State, LocalStorage>,
+}
 
+#[cfg(not(feature = "hydrate"))]
+impl SpringValue {
+    pub fn new(_initial: f64, _on_update: impl Fn(f64) + 'static) -> Self {
+        SpringValue {}
+    }
+    pub fn get(&self) -> f64 {
+        0.0
+    }
+    pub fn velocity(&self) -> f64 {
+        0.0
+    }
+    pub fn is_animating(&self) -> bool {
+        false
+    }
+    pub fn set(&self, _x: f64) {}
+    pub fn animate_to(
+        &self,
+        _target: f64,
+        _spring: Spring,
+        _velocity: Option<f64>,
+        on_rest: Option<Box<dyn FnOnce()>>,
+    ) {
+        if let Some(f) = on_rest {
+            f();
+        }
+    }
+    pub fn stop(&self) {}
+}
+
+#[cfg(feature = "hydrate")]
 impl SpringValue {
     pub fn new(initial: f64, on_update: impl Fn(f64) + 'static) -> Self {
-        SpringValue(StoredValue::new_local(State {
-            x: initial,
-            v: 0.0,
-            target: initial,
-            spring: Spring::DEFAULT,
-            running: false,
-            generation: 0,
-            last_ms: 0.0,
-            on_update: Rc::new(on_update),
-            on_rest: None,
-        }))
+        SpringValue {
+            inner: StoredValue::new_local(State {
+                x: initial,
+                v: 0.0,
+                target: initial,
+                spring: Spring::DEFAULT,
+                running: false,
+                generation: 0,
+                last_ms: 0.0,
+                on_update: Rc::new(on_update),
+                on_rest: None,
+            }),
+        }
     }
 
     /// The value on screen now.
     pub fn get(&self) -> f64 {
-        self.0.try_with_value(|s| s.x).unwrap_or_default()
+        self.inner.try_with_value(|s| s.x).unwrap_or_default()
     }
 
     /// Its velocity now, in units per second.
     pub fn velocity(&self) -> f64 {
-        self.0.try_with_value(|s| s.v).unwrap_or_default()
+        self.inner.try_with_value(|s| s.v).unwrap_or_default()
     }
 
     pub fn is_animating(&self) -> bool {
-        self.0.try_with_value(|s| s.running).unwrap_or(false)
+        self.inner.try_with_value(|s| s.running).unwrap_or(false)
     }
 
     /// Put the value somewhere now (1:1 tracking during a drag). Stops any animation in flight.
     pub fn set(&self, x: f64) {
-        let cb = self.0.try_update_value(|s| {
+        let cb = self.inner.try_update_value(|s| {
             s.x = x;
             s.v = 0.0;
             s.target = x;
@@ -214,8 +254,8 @@ impl SpringValue {
         velocity: Option<f64>,
         on_rest: Option<Box<dyn FnOnce()>>,
     ) {
-        if reduced() || cfg!(not(feature = "hydrate")) {
-            let cb = self.0.try_update_value(|s| {
+        if reduced() {
+            let cb = self.inner.try_update_value(|s| {
                 s.x = target;
                 s.v = 0.0;
                 s.target = target;
@@ -232,7 +272,7 @@ impl SpringValue {
             }
             return;
         }
-        let start = self.0.try_update_value(|s| {
+        let start = self.inner.try_update_value(|s| {
             s.target = target;
             s.spring = spring;
             if let Some(v) = velocity {
@@ -255,7 +295,7 @@ impl SpringValue {
 
     /// Stop where it is.
     pub fn stop(&self) {
-        self.0.update_value(|s| {
+        self.inner.update_value(|s| {
             s.running = false;
             s.v = 0.0;
             s.generation = s.generation.wrapping_add(1);
@@ -264,11 +304,10 @@ impl SpringValue {
     }
 
     fn frame(self, generation: u32) {
-        #[cfg(feature = "hydrate")]
         request_animation_frame(move || {
             let now = now_ms();
             // Advance inside the store, call out after (callbacks may touch the value again).
-            let step = self.0.try_update_value(|s| {
+            let step = self.inner.try_update_value(|s| {
                 if !s.running || s.generation != generation {
                     return None;
                 }
@@ -304,20 +343,12 @@ impl SpringValue {
                 }
             }
         });
-        #[cfg(not(feature = "hydrate"))]
-        let _ = generation;
     }
 }
 
+#[cfg(feature = "hydrate")]
 fn now_ms() -> f64 {
-    #[cfg(feature = "hydrate")]
-    {
-        js_sys::Date::now()
-    }
-    #[cfg(not(feature = "hydrate"))]
-    {
-        0.0
-    }
+    js_sys::Date::now()
 }
 
 #[cfg(test)]

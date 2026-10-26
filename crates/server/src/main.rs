@@ -60,6 +60,7 @@ async fn main() {
             },
             shell,
         ))
+        .layer(axum::middleware::map_response(static_cache_headers))
         .layer(CompressionLayer::new())
         .with_state(leptos_options);
 
@@ -67,6 +68,26 @@ async fn main() {
     tracing::info!("storefront listening on http://{addr}");
     tracing::info!("  local:   http://nile.localhost:{0}  http://souq.localhost:{0}", addr.port());
     axum::serve(listener, app.into_make_service()).await.expect("serve");
+}
+
+/// Static assets get explicit caching: fonts never change; `/pkg` (CSS/JS/WASM) is rebuilt by
+/// cargo-leptos under the same names, so browsers must revalidate it (in production you would turn on
+/// `hash-files` and make it immutable).
+async fn static_cache_headers(uri: axum::http::Uri, mut res: Response) -> Response {
+    let path = uri.path();
+    if !res.headers().contains_key(header::CACHE_CONTROL) {
+        let value = if path.starts_with("/fonts/") {
+            Some("public, max-age=31536000, immutable")
+        } else if path.starts_with("/pkg/") || path.starts_with("/dev/") {
+            Some("no-cache")
+        } else {
+            None
+        };
+        if let Some(v) = value {
+            res.headers_mut().insert(header::CACHE_CONTROL, HeaderValue::from_static(v));
+        }
+    }
+    res
 }
 
 fn media_dir() -> String {

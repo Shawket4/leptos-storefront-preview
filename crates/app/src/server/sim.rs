@@ -1,10 +1,12 @@
 //! Simulated upstream latency (so streaming and `<Suspense>` are visible) and fault injection
 //! (so per-section error boundaries can be demonstrated).
 //!
-//! - `SIM_LATENCY_MS` (env, default 350) is the base round-trip to a pretend catalogue backend.
-//!   Each widget waits `base × factor`, so home sections resolve at different times and stream
-//!   in out of order.
-//! - A `sim` cookie overrides the base per visitor (`/showcase` sets it: 0 / 350 / 1200).
+//! **Off by default** (owner's call). Two switches turn it on:
+//! - `SIM_LATENCY_MS` (env, default 0): the base round-trip to a pretend catalogue backend for the
+//!   whole server, e.g. `SIM_LATENCY_MS=350 cargo leptos watch`. Each widget waits `base × factor`,
+//!   so home sections resolve at different times and stream in out of order.
+//! - A `sim` cookie overrides it per visitor at runtime (`/__sim?ms=350&next=/`, used by
+//!   `/showcase`; `/__sim?ms=&next=/` clears it).
 //! - `?fail=<widget>` on the page URL (or a `fail` cookie) makes that widget's read fail.
 
 use leptos::prelude::*;
@@ -85,7 +87,7 @@ pub fn base_ms() -> u64 {
     cookie("sim")
         .and_then(|v| v.parse().ok())
         .or_else(|| std::env::var("SIM_LATENCY_MS").ok().and_then(|v| v.parse().ok()))
-        .unwrap_or(350)
+        .unwrap_or(0)
         .min(10_000)
 }
 

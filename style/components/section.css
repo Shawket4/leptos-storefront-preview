@@ -50,6 +50,7 @@
   --rail-cols: 2.3;
   --rail-gap: var(--sp-3);
   position: relative;
+  min-inline-size: 0;
 }
 @media (min-width: 600px) {
   .rail { --rail-cols: 3.3; --rail-gap: var(--sp-4); }

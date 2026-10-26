@@ -3,18 +3,24 @@
 //! visual test bench for the design system.
 
 use crate::components::badge::{Badge, BadgeKind};
+use crate::components::breadcrumbs::Breadcrumbs;
 use crate::components::button::{Button, ButtonKind, ButtonSize, IconButton};
+use crate::components::drawer::{Drawer, DrawerSide};
+use crate::components::empty_state::EmptyState;
+use crate::components::form::{Checkbox, RadioCard, Select, TextArea, TextInput};
 use crate::components::icons::{Icon, NAMES};
 use crate::components::image::Picture;
 use crate::components::layout::{Container, Rail, SectionHeader};
-use crate::components::price::{Price, PriceSize};
+use crate::components::price::{Price, PriceLive, PriceSize};
 use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton, ProductGrid};
 use crate::components::rating::Rating;
 use crate::components::segmented::{SegItem, Segmented};
 use crate::components::skeleton::{Skeleton, SkeletonText};
 use crate::components::status_pill::{StatusPill, Tone};
+use crate::components::stepper::Stepper;
+use crate::components::toast::{self, ToastKind};
 use crate::media::Img;
-use crate::prefs::{Lang, Numerals, tr};
+use crate::prefs::{Lang, Numerals, tr, use_ui};
 use domain::Piastres;
 use leptos::prelude::*;
 use leptos_meta::Title;
@@ -223,6 +229,7 @@ pub fn UiKitPage() -> impl IntoView {
                         ("colour", t("Colour", "الألوان")), ("type", t("Type", "الخط")), ("shape", t("Shape & motion", "الشكل والحركة")),
                         ("buttons", t("Buttons", "الأزرار")), ("segmented", t("Segmented", "مفاتيح")), ("labels", t("Badges & status", "شارات وحالات")),
                         ("price", t("Price & rating", "السعر والتقييم")), ("picture", t("Pictures", "الصور")), ("cards", t("Product cards", "كروت المنتجات")),
+                        ("overlays", t("Drawers & toasts", "الأدراج والتنبيهات")), ("forms", t("Forms", "النماذج")), ("states", t("Empty states", "الحالات الفاضية")),
                         ("skeletons", t("Skeletons", "هياكل التحميل")), ("icons", t("Icons", "الأيقونات")),
                     ]
                         .into_iter()
@@ -295,7 +302,7 @@ pub fn UiKitPage() -> impl IntoView {
                     <Button kind=ButtonKind::Ghost>{t("Cancel", "إلغاء")}</Button>
                     <Button kind=ButtonKind::Danger>{t("Remove", "شيل")}</Button>
                 </Row>
-                <Row label=t("Sizes 36 · 44 · 48", "المقاسات ٣٦ · ٤٤ · ٤٨")>
+                <Row label=t("Sizes", "المقاسات")>
                     <Button size=ButtonSize::Sm>{t("Small", "صغير")}</Button>
                     <Button size=ButtonSize::Md>{t("Medium", "متوسط")}</Button>
                     <Button size=ButtonSize::Lg>{t("Checkout", "إتمام الطلب")}</Button>
@@ -420,6 +427,59 @@ pub fn UiKitPage() -> impl IntoView {
                 </div>
             </Specimen>
 
+            <Specimen id="overlays" title=t("Drawers & toasts", "الأدراج والتنبيهات") note=t("Springs you can grab: drawers follow the finger, velocity decides, and they leave the way they came. Toasts are the page turned over.", "حركة تقدر تمسكها: الدرج بيمشي مع صباعك والسرعة هي اللي بتقرر، وبيخرج من نفس السكة اللي دخل منها. التنبيهات بألوان الصفحة مقلوبة.") card=true>
+                <Row label=t("Drawer & sheet", "درج وشيت")>
+                    <KitDrawers/>
+                </Row>
+                <Row label=t("Toasts", "تنبيهات")>
+                    <KitToasts/>
+                </Row>
+                <Row label=t("Quantity", "الكمية")>
+                    <KitStepper/>
+                </Row>
+            </Specimen>
+
+            <Specimen id="forms" title=t("Forms", "النماذج") note=t("52px fields with 16px text, labels above, hints and errors below — and radio cards for choices that need a line of context.", "خانات ٥٢ بكسل بخط ١٦، العنوان فوق والملاحظة والخطأ تحت — وكروت اختيار للحاجات اللي محتاجة سطر شرح.") card=true>
+                <div class="kit__form">
+                    <TextInput id="kit-name" name="name" label=t("Full name", "الاسم بالكامل") autocomplete="name" value="Mona Adel"/>
+                    <TextInput id="kit-phone" name="phone" label=t("Mobile number", "رقم الموبايل") input_type="tel" inputmode="tel" autocomplete="tel" dir="ltr" icon="phone" hint=t("We'll text you when the courier is on the way", "هنبعتلك رسالة لما المندوب يتحرك") placeholder="01x xxxx xxxx"/>
+                    <TextInput id="kit-email" name="email" label=t("Email", "الإيميل") input_type="email" optional=true dir="ltr" value="mona@" error=t("Enter a full email address, like name@example.com", "اكتب إيميل كامل، زي name@example.com")/>
+                    <Select
+                        id="kit-city"
+                        name="city"
+                        label=t("City", "المدينة")
+                        options=vec![
+                            ("cairo".to_owned(), t("Cairo", "القاهرة").to_owned()),
+                            ("giza".to_owned(), t("Giza", "الجيزة").to_owned()),
+                            ("alex".to_owned(), t("Alexandria", "الإسكندرية").to_owned()),
+                        ]
+                        value="giza"
+                    />
+                    <TextArea id="kit-notes" name="notes" label=t("Notes for the courier", "ملاحظات للمندوب") optional=true placeholder=t("Ring the bell twice", "اضرب الجرس مرتين")/>
+                    <fieldset class="radio-cards">
+                        <legend>{t("Delivery time", "ميعاد التوصيل")}</legend>
+                        <RadioCard name="slot" value="express" label=t("Express", "سريع") description=t("Within 2 hours", "خلال ساعتين") icon="zap" trailing=crate::format::money(Piastres(4_900), lang, num) checked=true/>
+                        <RadioCard name="slot" value="today" label=t("Today, 6–9 PM", "النهارده، ٦–٩ بالليل") description=t("Pick a window at checkout", "اختار الميعاد وانت بتكمّل الطلب") icon="calendar-clock" trailing=t("Free", "مجاني")/>
+                        <RadioCard name="slot" value="tomorrow" label=t("Tomorrow", "بكرة") icon="truck" trailing=t("Free", "مجاني") disabled=true/>
+                    </fieldset>
+                    <Checkbox name="save" label=t("Save this address", "احفظ العنوان ده") checked=true/>
+                </div>
+            </Specimen>
+
+            <Specimen id="states" title=t("Empty states & wayfinding", "الحالات الفاضية والتنقل") note=t("Every dead end offers a way on. Breadcrumbs say where you are.", "كل نهاية طريق فيها خطوة جاية. ومسار التنقل بيقولك انت فين.") card=true>
+                <Breadcrumbs items=vec![
+                    (t("Home", "الرئيسية").to_owned(), Some("/".to_owned())),
+                    (t("Phones", "موبايلات").to_owned(), Some("/c/phones".to_owned())),
+                    ("Galaxy S25 Ultra".to_owned(), None),
+                ]/>
+                <EmptyState
+                    art="empty-cart"
+                    title=t("Your cart is empty", "سلتك فاضية")
+                    body=t("Today's deals are a good place to start.", "عروض النهارده بداية حلوة.")
+                    action=("/search?deal=1&sort=discount".to_owned(), t("See today's deals", "شوف عروض النهارده").to_owned())
+                />
+            </Specimen>
+
             <Specimen id="skeletons" title=t("Skeletons", "هياكل التحميل") note=t("Solid blocks that pulse, exactly the size of what replaces them.", "بلوكات مصمتة بتنبض، بنفس مقاس اللي هيظهر مكانها بالظبط.") card=true>
                 <div class="kit__skeletons">
                     <Skeleton width="3.5rem" height="3.5rem" circle=true/>
@@ -448,5 +508,96 @@ pub fn UiKitPage() -> impl IntoView {
                 </ul>
             </Specimen>
         </Container>
+    }
+}
+
+/// Drawer demo: the cart slide-over and the filters bottom sheet. Drag them toward their edge.
+#[island]
+fn KitDrawers() -> impl IntoView {
+    let ui = use_ui();
+    let cart = RwSignal::new(false);
+    let sheet = RwSignal::new(false);
+    let t = move |en: &'static str, ar: &'static str| move || tr(ui.lang.get(), en, ar);
+    let qty = RwSignal::new(2u32);
+    view! {
+        <div class="kit__items">
+            <Button icon="shopping-bag" on:click=move |_| cart.set(true)>{t("Open the cart drawer", "افتح درج السلة")}</Button>
+            <Button kind=ButtonKind::Outline icon="sliders-horizontal" on:click=move |_| sheet.set(true)>
+                {t("Open the filters sheet", "افتح شيت الفلاتر")}
+            </Button>
+        </div>
+        <Drawer open=cart title=Signal::derive(move || tr(ui.lang.get(), "Your cart", "سلتك").to_owned()) id="kit-cart">
+            <div class="kit__drawer-body">
+                <p class="t-muted">{t("Drag me toward the edge — let go fast to close, slow to snap back.", "اسحبني ناحية الطرف — لو سبت بسرعة هقفل، ولو براحة هرجع مكاني.")}</p>
+                <div class="kit__line">
+                    <span class="kit__line-name">{t("Galaxy S25 Ultra", "جالاكسي S25 ألترا")}</span>
+                    <Stepper value=qty on_change=Callback::new(move |v| qty.set(v)) min=1 max=5/>
+                </div>
+                <Button size=ButtonSize::Lg full_width=true on:click=move |_| cart.set(false)>{t("Checkout", "إتمام الطلب")}</Button>
+            </div>
+        </Drawer>
+        <Drawer open=sheet side=DrawerSide::Bottom title=Signal::derive(move || tr(ui.lang.get(), "Filters", "الفلاتر").to_owned()) id="kit-sheet">
+            <div class="kit__drawer-body">
+                <p class="t-muted">{t("Pull the grabber down to dismiss.", "اسحب المقبض لتحت عشان تقفل.")}</p>
+                <Checkbox name="stock" label=t("In stock only", "المتوفر بس")/>
+                <Checkbox name="deal" label=t("On sale", "عليه خصم") checked=true/>
+                <Checkbox name="express" label=t("Express delivery", "توصيل سريع") description=t("Within hours in Cairo and Giza", "خلال ساعات في القاهرة والجيزة")/>
+                <Button size=ButtonSize::Lg full_width=true on:click=move |_| sheet.set(false)>{t("Show 128 products", "اعرض ١٢٨ منتج")}</Button>
+            </div>
+        </Drawer>
+    }
+}
+
+/// Toast demo.
+#[island]
+fn KitToasts() -> impl IntoView {
+    let ui = use_ui();
+    let t = move |en: &'static str, ar: &'static str| move || tr(ui.lang.get(), en, ar);
+    let say = move |en: &'static str, ar: &'static str, kind: ToastKind| {
+        move |_| toast::show(tr(ui.lang.get_untracked(), en, ar).to_owned(), kind)
+    };
+    view! {
+        <div class="kit__items">
+            <Button kind=ButtonKind::Secondary icon="circle-check" on:click=say("Added to your cart", "اتضاف للسلة", ToastKind::Success)>
+                {t("Success", "تمام")}
+            </Button>
+            <Button kind=ButtonKind::Secondary icon="info" on:click=say("Prices include 14% VAT", "الأسعار شاملة ضريبة ١٤٪", ToastKind::Info)>
+                {t("Info", "معلومة")}
+            </Button>
+            <Button kind=ButtonKind::Secondary icon="circle-x" on:click=say("Couldn't reach the store — try again", "مقدرناش نوصل للمتجر — جرّب تاني", ToastKind::Error)>
+                {t("Error", "خطأ")}
+            </Button>
+        </div>
+    }
+}
+
+/// Stepper demo, with a live line total (PriceLive re-renders on quantity, language, numerals).
+#[island]
+fn KitStepper() -> impl IntoView {
+    let ui = use_ui();
+    let a = RwSignal::new(1u32);
+    let b = RwSignal::new(1u32);
+    let unit = Piastres(129_900);
+    let total = Signal::derive(move || unit * a.get());
+    view! {
+        <div class="kit__items">
+            <Stepper value=a on_change=Callback::new(move |v| a.set(v)) min=1 max=5/>
+            <PriceLive amount=total size=PriceSize::Lg/>
+        </div>
+        <div class="kit__items">
+            <Stepper
+                value=b
+                on_change=Callback::new(move |v| b.set(v))
+                min=1
+                max=9
+                on_remove=Callback::new(move |_| {
+                    toast::show(
+                        tr(ui.lang.get_untracked(), "Removed from your cart", "اتشال من السلة").to_owned(),
+                        ToastKind::Info,
+                    )
+                })
+            />
+            <Stepper value=Signal::stored(3u32) on_change=Callback::new(|_| {}) min=1 max=9 disabled=true/>
+        </div>
     }
 }

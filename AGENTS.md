@@ -179,8 +179,9 @@ WWDC design principles translated for the web) and apply it to every component a
 
 ## Caching (lead's helpers, in `crate::server::cache` — ssr only)
 
-- Catalogue pages: `cache::public(&[tags])` → `Cache-Control: public, max-age=0, s-maxage=300,
-  stale-while-revalidate=60` and `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
+- Catalogue pages: `cache::public(&[tags])` → browsers `Cache-Control: no-cache` + `Vary: Cookie`
+  (prefs are cookies), edge `CDN-Cache-Control: public, s-maxage=300, stale-while-revalidate=60`,
+  `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
 - Anything personalised (cart, checkout, orders): `cache::private()` → `Cache-Control: private,
   no-store`. Never render cart contents into a public page; personal bits are islands fed by
   cookies or server functions.
@@ -206,7 +207,8 @@ are the single source of truth for listing URLs (server and islands). Errors are
 Server-only (`#[cfg(feature = "ssr")]`): `server::state()`, `server::current_catalog()`
 (synchronous, in-memory — use it to compute cache tags before streaming starts),
 `server::cache::{public, private, tag_product, tag_category}`, `server::sim::{delay, check_fail,
-Widget}` (every read already waits its simulated latency; `?fail=<widget>` on the page URL makes it
+Widget}` (simulated latency is OFF by default — `SIM_LATENCY_MS=350` env for the server, or the
+`sim` cookie via `/__sim?ms=350&next=…` per visitor; `?fail=<widget>` on the page URL makes a read
 fail — use that to demo error boundaries), `state().orders()` (`place`, `get`, `next_step_at`) and
 `server::orders::slots(&tenant, now_ms)`, `server::cart::{view, cookies}`,
 `TenantCatalog::variant_label`.

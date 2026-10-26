@@ -209,6 +209,7 @@ pub fn HomePage() -> impl IntoView {
         <Meta name="twitter:card" content="summary_large_image"/>
         <Script type_="application/ld+json">{website_ld}</Script>
 
+        <NoJsNote lang/>
         <p class="ribbon">{ribbon}</p>
         {hero.map(|p| view! { <PromoPanel panel=p lang hero=true/> })}
         {(!duo.is_empty()).then(|| view! {
@@ -274,11 +275,33 @@ fn PromoPanel(panel: Panel, lang: Lang, #[prop(optional)] hero: bool) -> impl In
                     loading=if hero { "eager" } else { "lazy" }
                     fetchpriority=if hero { "high" } else { "auto" }
                     decoding="async"
-                    style=format!("background-image:url({})", panel.img.lqip)
                 />
             </a>
         </section>
     }
+}
+
+/// Out-of-order streamed sections need JS to be put in place (each arrives as a <template> plus a
+/// script). Visitors without JS get a link to `/nojs`, the same page streamed in order. Not a meta
+/// refresh: the islands router parses pages with DOMParser (scripting off), where <noscript> markup
+/// is live — a refresh there would fire for JS users too. Also never sent on router fetches.
+#[component]
+fn NoJsNote(lang: Lang) -> impl IntoView {
+    #[cfg(feature = "ssr")]
+    let show = use_context::<leptos::hydration::IslandsRouterNavigation>().is_none()
+        && !req().path_and_query.starts_with("/nojs");
+    #[cfg(not(feature = "ssr"))]
+    let show = false;
+    show.then(|| {
+        view! {
+            <noscript>
+                <p class="nojs-note">
+                    {tr(lang, "JavaScript is off, so some sections can't load here. ", "الجافاسكريبت مقفول، فبعض الأقسام مش هتظهر هنا. ")}
+                    <a href="/nojs">{tr(lang, "Open the version that works without it", "افتح النسخة اللي بتشتغل من غيره")}</a>
+                </p>
+            </noscript>
+        }
+    })
 }
 
 #[component]
@@ -302,8 +325,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
                                                     {match c.img {
                                                         Some(img) => view! {
                                                             <img src=img.src_near(240) srcset=img.srcset() sizes="96px"
-                                                                alt="" width="96" height="96" loading="lazy" decoding="async"
-                                                                style=format!("background-image:url({})", img.lqip)/>
+                                                                alt="" width="96" height="96" loading="lazy" decoding="async"/>
                                                         }.into_any(),
                                                         None => view! { <Icon name=c.icon.clone() size=28/> }.into_any(),
                                                     }}
@@ -363,12 +385,25 @@ fn RailSection(
             <Suspense fallback=move || view! { <RailSkeleton/> }>
                 <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
                     {move || Suspend::new(async move {
-                        data.await.map(|cards| view! {
-                            <Row>
-                                {cards.into_iter().enumerate().map(|(i, card)| view! {
-                                    <ProductCard card lang numerals=num priority=priority && i < 2/>
-                                }).collect_view()}
-                            </Row>
+                        data.await.map(|cards| {
+                            if cards.is_empty() {
+                                // A real empty state, not a blank strip.
+                                return view! {
+                                    <p class="rail-empty">
+                                        {tr(lang, "Nothing here right now — new picks land every morning.", "مفيش حاجة هنا دلوقتي — بننزّل اختيارات جديدة كل يوم الصبح.")}
+                                        " "<a href="/search">{tr(lang, "Browse everything", "تصفّح كل المنتجات")}</a>
+                                    </p>
+                                }
+                                .into_any();
+                            }
+                            view! {
+                                <Row>
+                                    {cards.into_iter().enumerate().map(|(i, card)| view! {
+                                        <ProductCard card lang numerals=num priority=priority && i < 2/>
+                                    }).collect_view()}
+                                </Row>
+                            }
+                            .into_any()
                         })
                     })}
                 </ErrorBoundary>

@@ -157,7 +157,9 @@
 .pcard__price {
   display: flex;
   align-items: flex-start;
-  min-block-size: 2.6rem;
+  /* Fixed, not a minimum: a sale's two lines and a plain price take the same room in both
+     scripts, so every card (and the skeleton) is the same height. */
+  block-size: 2.75rem;
   margin-block-start: var(--sp-2);
   container: price-slot / inline-size;
 }
@@ -202,6 +204,9 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-3);
+  /* As a grid or flex item itself, never demand its cards' max-content width
+     (an fr track sized under a min-content constraint would). */
+  min-inline-size: 0;
 }
 @media (min-width: 600px) {
   .pgrid {

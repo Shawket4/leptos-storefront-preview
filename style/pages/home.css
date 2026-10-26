@@ -1,5 +1,9 @@
 /* Home page. Tokens only; logical properties only (RTL mirrors itself); no gradients. */
 
+/* No-JS note (inside <noscript>, so only visitors without JS ever see it). */
+.nojs-note { margin: 0; padding: 12px var(--gutter); text-align: center; font-size: .875rem; background: var(--warning-wash); color: var(--text); }
+.nojs-note a { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
 /* Ribbon: one quiet line of store promises (Apple's top ribbon). */
 .ribbon {
   margin: 0;
@@ -58,11 +62,6 @@
 .promo__media { display: block; inline-size: min(78vw, 360px); margin-block-start: 12px; }
 .promo--hero .promo__media { inline-size: min(92vw, 520px); }
 .promo__media img { inline-size: 100%; block-size: auto; aspect-ratio: 1; object-fit: contain; background: center / contain no-repeat; }
-/* Packshots cut from white backgrounds keep a faint white haze in their alpha edge. On the light
-   panel, multiply turns near-white into the panel colour, so the haze disappears. (Not in dark mode,
-   where multiply would darken the product itself.) */
-:root[data-theme="light"] .promo__media img { mix-blend-mode: multiply; }
-@media (prefers-color-scheme: light) { :root[data-theme="system"] .promo__media img { mix-blend-mode: multiply; } }
 @supports (corner-shape: squircle) { .promo, .promo__buy { corner-shape: squircle; } }
 
 .duo { display: grid; gap: 12px; margin-block-start: 12px; }
@@ -139,6 +138,10 @@
   font-weight: 700;
 }
 .countdown__clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+
+/* An empty rail */
+.rail-empty { margin: 0; padding: 18px; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); color: var(--text-2); font-size: .9375rem; }
+.rail-empty a { color: var(--text); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
 /* A failed widget */
 .widget-error {

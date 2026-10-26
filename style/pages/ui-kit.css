@@ -40,6 +40,7 @@
 }
 .kit__body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
 }
 .kit__body--card {
@@ -227,4 +228,28 @@
   color: var(--text-3);
   text-align: center;
   overflow-wrap: anywhere;
+}
+
+/* Forms */
+.kit__form {
+  display: grid;
+  gap: var(--sp-5);
+  max-inline-size: 30rem;
+}
+
+/* Drawer demo content */
+.kit__drawer-body {
+  display: grid;
+  gap: var(--sp-4);
+}
+.kit__line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  border-block: 1px solid var(--rule);
+}
+.kit__line-name {
+  font-weight: var(--fw-semibold);
 }
