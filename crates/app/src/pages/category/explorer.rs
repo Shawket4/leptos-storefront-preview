@@ -21,7 +21,10 @@
 
 use super::listing::*;
 use super::shim::{Drawer, DrawerSide, EmptyState};
-use crate::api::types::{BrandFacet, ListingPage, ListingQuery, Sort};
+use crate::api::{
+    self,
+    types::{BrandFacet, ListingPage, ListingQuery, Sort},
+};
 use crate::components::{
     button::{Button, ButtonKind},
     icons::Icon,
@@ -183,18 +186,6 @@ impl Cx {
     }
 }
 
-/// Local adapter until `ListingQuery.brands` is `#[serde(default)]`: server-function arguments
-/// travel URL-encoded, which drops an empty `Vec`, so the browser can't send `api::list_products`
-/// a query without brands. This sends the listing's own canonical query string instead and hands
-/// the parsed query to `api::list_products` (latency, cache, `fail` demo and all) on the server.
-#[server]
-pub async fn list_listing(
-    category: Option<String>,
-    qs: String,
-) -> Result<ListingPage, ServerFnError> {
-    crate::api::list_products(ListingQuery::from_query(category, &qs)).await
-}
-
 #[island]
 pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView {
     let ui = use_ui();
@@ -212,7 +203,7 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
                 // Ready on the first poll: no fetch, and no fallback during hydration.
                 Some(p) => Ok(p),
                 None => {
-                    let res = list_listing(q.category.clone(), q.to_query()).await;
+                    let res = api::list_products(q.clone()).await;
                     if let Ok(p) = &res {
                         seen.update_value(|s| s.put(q, p.clone()));
                     }
