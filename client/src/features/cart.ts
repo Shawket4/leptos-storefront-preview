@@ -3,7 +3,7 @@
 // instant; the server is asked only for what the client doesn't have (prices, stock, totals).
 
 import { register } from "../core/mount";
-import { cfg, t } from "../core/page";
+import { cfg, digits, t } from "../core/page";
 import { openDrawer } from "../core/drawer";
 import { add, cart, type CartResult, type LineSnapshot } from "../stores/cart";
 import { toast } from "../stores/toasts";
@@ -18,17 +18,11 @@ export interface AddItem {
   addons?: string[];
 }
 
-/** A count in the visitor's numerals. Counts are client state (the badge, a stepper), not data. */
-export function count(n: number): string {
-  const s = String(n);
-  return cfg().numerals === "arab" ? s.replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩".charAt(Number(d))) : s;
-}
-
 /** "3 items" / "٣ منتجات", with the language's plural rules. */
 export function items(n: number): string {
   const form = new Intl.PluralRules(cfg().lang).select(n);
   const key = form === "zero" ? "other" : form;
-  return t(`cart.items.${key}`, { n: count(n) });
+  return t(`cart.items.${key}`, { n: digits(n) });
 }
 
 /** On /cart and /checkout the cart is the page: no drawer over it. */
@@ -59,7 +53,7 @@ register("cart-badge", (el) => {
   let flip = false;
   const unsub = cart.subscribe(({ count: n }) => {
     el.dataset.count = String(n);
-    if (badge) badge.textContent = n ? count(n) : "";
+    if (badge) badge.textContent = n ? digits(n) : "";
     el.setAttribute("aria-label", n ? t("cart.badge", { items: items(n) }) : t("cart.badge_empty"));
     // Pop on every increase (not on the first fill): two identical animations, alternated.
     if (badge && prev !== null && n > prev) {
@@ -82,16 +76,7 @@ register("cart-badge", (el) => {
 });
 
 // ── Quick add (the "+" on product cards) ──────────────────────────────────────────────────────
-// A real form (POST /cart/add) without JS. Taps that land before this module runs are queued by a
-// tiny inline script the badge renders (`window.__qa`), and replayed here once the cart is read.
-declare global {
-  interface Window {
-    __qa?: HTMLFormElement[] | null;
-  }
-}
-const early = new Set(window.__qa ?? []);
-window.__qa = null;
-
+// A real form without JS (POST /cart/add, 303 back with ?added=); with JS nothing is sent.
 const ADDED_MS = 1600;
 
 function quickAdd(form: HTMLElement): void {
@@ -116,6 +101,5 @@ register("quick-add", (form) => {
     quickAdd(form);
   };
   form.addEventListener("submit", onSubmit);
-  if (form instanceof HTMLFormElement && early.delete(form)) quickAdd(form);
   return () => form.removeEventListener("submit", onSubmit);
 });

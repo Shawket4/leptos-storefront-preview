@@ -1,27 +1,27 @@
-//! The cart: the `/cart` page, the header button, the slide-over drawer, quick-add, and the
-//! client cart store.
-//!
-//! Two progressive-enhancement styles, side by side:
-//!
-//! - **`/cart` is a server component** (`page`). Its steppers and remove buttons are stock
-//!   `<ActionForm>`s: plain POSTs without JS; with JS, posts the islands router follows and diffs.
-//! - **The drawer, the header badge and quick-add are islands** (`islands`), sharing one store
-//!   (`stores::CartStore` + `store::CartOps`): optimistic, sequenced, rolled back on error. Their
-//!   controls are still real forms that post to the same server functions without JS.
+//! The cart: the `/cart` page, the header button, the drawer's content and quick add — server
+//! markup that the browser code (`client/src/features/cart.ts`) fills and keeps current. The cart
+//! itself is the browser's (`cart` cookie); the server prices it (`server::cart`).
 //!
 //! Names mounted by other agents: [`CartButton`] (header), [`CartDrawer`] (once, by the shell),
-//! [`QuickAdd`] (product cards), [`provide_store`] (from `stores::provide_all`).
+//! [`QuickAdd`] (product cards).
 
-mod copy;
-mod islands;
-pub mod math;
+mod drawer;
+mod line;
 mod page;
-pub mod store;
+mod parts;
 
-pub use islands::{CartButton, CartDrawer, CartForm, FreeDeliveryMeter, QuickAdd};
-pub use page::{Art, ArtImage, CartPage, ShipMeter, Totals, art};
+pub use drawer::CartDrawer;
+pub use line::{LineData, LineRow, SummaryData, CartSummary};
+pub use page::{Art, ArtImage, CartPage, Totals, art, vat_note};
+pub use parts::{CartButton, QuickAdd};
 
-/// Provide the client cart store (called on the server per request and once on the client).
-pub fn provide_store() {
-    store::provide();
+use crate::prefs::Lang;
+
+/// A catalogue string with `{name}` placeholders filled (server side of `t(key, vars)`).
+pub fn tx(key: &str, lang: Lang, vars: &[(&str, &str)]) -> String {
+    let mut s = crate::strings::get(key, lang).to_owned();
+    for (k, v) in vars {
+        s = s.replace(&format!("{{{k}}}"), v);
+    }
+    s
 }
