@@ -313,3 +313,13 @@ pub struct DeliverySlot {
     pub express: bool,
     pub available: bool,
 }
+
+/// Read-cache counters, for the showcase.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct CacheInfo {
+    pub entries: u64,
+    pub hits: u64,
+    pub misses: u64,
+    pub generation: u64,
+    pub base_latency_ms: u64,
+}

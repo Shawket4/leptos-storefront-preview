@@ -39,6 +39,7 @@ async fn main() {
     let app = Router::new()
         .route("/__prefs", get(set_prefs))
         .route("/__tenant/{id}", get(set_tenant))
+        .route("/__sim", get(set_sim))
         .nest("/media", media)
         .leptos_routes_with_context(
             &leptos_options,
@@ -117,5 +118,36 @@ async fn set_tenant(Path(id): Path<String>, Query(q): Query<HashMap<String, Stri
         .append(header::SET_COOKIE, pref_cookie(app::tenant::COOKIE_TENANT, &id));
     res.headers_mut()
         .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    res
+}
+
+/// `/__sim?ms=1200&fail=deals,related&next=/` — per-visitor simulated latency (base ms; each widget
+/// multiplies it) and fault injection, for the showcase. `ms=` empty resets to the server default;
+/// `fail=` empty clears failures.
+async fn set_sim(Query(q): Query<HashMap<String, String>>) -> Response {
+    let mut res = (StatusCode::SEE_OTHER, [(header::LOCATION, safe_next(q.get("next")))]).into_response();
+    let headers = res.headers_mut();
+    if let Some(ms) = q.get("ms") {
+        let v = ms.parse::<u64>().ok().filter(|n| *n <= 10_000);
+        headers.append(
+            header::SET_COOKIE,
+            match v {
+                Some(n) => pref_cookie("sim", &n.to_string()),
+                None => HeaderValue::from_static("sim=; Path=/; Max-Age=0; SameSite=Lax"),
+            },
+        );
+    }
+    if let Some(f) = q.get("fail") {
+        let clean: String = f.chars().filter(|c| c.is_ascii_lowercase() || *c == ',').take(120).collect();
+        headers.append(
+            header::SET_COOKIE,
+            if clean.is_empty() {
+                HeaderValue::from_static("fail=; Path=/; Max-Age=0; SameSite=Lax")
+            } else {
+                pref_cookie("fail", &clean)
+            },
+        );
+    }
+    headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
     res
 }

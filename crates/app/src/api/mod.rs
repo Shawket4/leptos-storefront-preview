@@ -87,3 +87,28 @@ pub async fn search_products(q: String, limit: u32) -> Result<SearchResults, Ser
     let v = read(Widget::Search, "search", key, move |c, _| c.search(&q, limit)).await?;
     Ok((*v).clone())
 }
+
+/// Read-cache statistics for this process (showcase).
+#[server]
+pub async fn cache_stats() -> Result<CacheInfo, ServerFnError> {
+    let rq = crate::request::init();
+    crate::server::cache::private();
+    let st = state();
+    let s = st.reads().stats();
+    Ok(CacheInfo {
+        entries: s.entries,
+        hits: s.hits,
+        misses: s.misses,
+        generation: st.reads().generation(&rq.tenant.id),
+        base_latency_ms: crate::server::sim::base_ms(),
+    })
+}
+
+/// Invalidate every cached read of the current tenant by bumping its generation (what a catalogue
+/// edit does; in production you would also purge the CDN by `Cache-Tag: t{tenant}`).
+#[server]
+pub async fn cache_bump() -> Result<CacheInfo, ServerFnError> {
+    let rq = crate::request::init();
+    state().reads().bump(&rq.tenant.id);
+    cache_stats().await
+}
