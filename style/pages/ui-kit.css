@@ -327,3 +327,56 @@
 .kit__line-name {
   font-weight: var(--fw-semibold);
 }
+
+/* Skeleton replay (kit-skeletons): each pair shows one side in place, skeleton then content, so
+   any mismatch would really move the page — the measured layout shift says whether it does. */
+.kit__replay {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.kit__pairs[data-replay] .kit__pair-side {
+  grid-column: 1;
+  grid-row: 2;
+}
+.kit__pairs[data-replay] .kit__pair-side > .kit__label {
+  display: none;
+}
+.kit__pairs[data-replay="loading"] .kit__pair-side:has(> [data-side="loaded"]),
+.kit__pairs[data-replay="loaded"] .kit__pair-side:has(> [data-side="loading"]) {
+  display: none;
+}
+
+/* A stepper's line total (formatted by the server for each quantity). */
+.kit__total {
+  min-inline-size: 9ch;
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Network states. */
+.kit__netlist {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  list-style: none;
+}
+.kit__netlist li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+  line-height: var(--lh-snug);
+}
+.kit__netlist .icon {
+  margin-block-start: 2px;
+  color: var(--text-2);
+}
+.kit__netbtns:not(:has(button:not([hidden]))) {
+  display: none;
+}

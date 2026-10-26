@@ -1478,3 +1478,8 @@ a.sc-mini__name:hover {
 :root[data-theme="dark"] :is(.sc-routes, .sc-kvs--grid .sc-kv, .sc-json, .sc-mini--wide, .sc-spring__track) {
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
 }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] :is(.sc-routes, .sc-kvs--grid .sc-kv, .sc-json, .sc-mini--wide, .sc-spring__track) {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+  }
+}
