@@ -1,8 +1,9 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Drawer (components::drawer): a modal <dialog> that fills the viewport; its
-   own scrim and panel are moved by the Rust spring (transform + opacity set per
-   frame), so CSS only lays them out. The panel enters from the inline end (the
-   left in Arabic) or from the bottom.
+   Drawer (components::drawer + client/src/core/drawer.ts): a modal <dialog>
+   that fills the viewport; its own scrim and panel are moved by a spring
+   (transform + opacity set per frame), so CSS only lays them out. The panel
+   enters from the inline end (the left in Arabic), the inline start, or the
+   bottom.
    ───────────────────────────────────────────────────────────────────────────── */
 .drawer {
   position: fixed;
@@ -24,9 +25,11 @@
 .drawer:not([open]) {
   display: none;
 }
-/* The page behind doesn't scroll while a drawer is open. */
+/* The page behind doesn't scroll while a drawer is open (the gutter stays, so
+   nothing shifts on desktop). */
 html:has(.drawer[open]) {
   overflow: hidden;
+  scrollbar-gutter: stable;
 }
 .drawer__scrim {
   position: absolute;
@@ -42,13 +45,22 @@ html:has(.drawer[open]) {
   box-shadow: var(--shadow-modal);
   touch-action: pan-y;
   will-change: transform;
+  outline: none;
+}
+.drawer--end .drawer__panel,
+.drawer--start .drawer__panel {
+  inset-block: 0;
+  inline-size: min(26rem, calc(100vw - 2.5rem));
 }
 .drawer--end .drawer__panel {
-  inset-block: 0;
   inset-inline-end: 0;
-  inline-size: min(26rem, calc(100vw - 2.5rem));
   border-start-start-radius: var(--r-2xl);
   border-end-start-radius: var(--r-2xl);
+}
+.drawer--start .drawer__panel {
+  inset-inline-start: 0;
+  border-start-end-radius: var(--r-2xl);
+  border-end-end-radius: var(--r-2xl);
 }
 .drawer--bottom .drawer__panel {
   inset-inline: 0;
@@ -94,10 +106,22 @@ html:has(.drawer[open]) {
   overscroll-behavior: contain;
   padding: 0 var(--sp-5) var(--sp-5);
 }
+/* Pinned actions under the scrolling body. */
+.drawer__foot {
+  flex: none;
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5) var(--sp-4);
+  border-block-start: 1px solid var(--line);
+}
 /* Reduced motion: no slide — the panel is placed at once (the spring jumps) and
-   simply fades in. */
+   cross-fades in and out (core/drawer.ts sets data-leaving for 160 ms). */
 @media (prefers-reduced-motion: reduce) {
-  .drawer[open] .drawer__panel {
-    animation: fade-in var(--dur-base) var(--ease-out) both;
+  .drawer[open] {
+    animation: fade-in var(--dur-fast) var(--ease-out) both;
+  }
+  .drawer[data-leaving] {
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-out);
   }
 }
