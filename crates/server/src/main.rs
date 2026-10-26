@@ -83,13 +83,13 @@ async fn main() {
     axum::serve(listener, app.into_make_service()).await.expect("serve");
 }
 
-/// Static assets get explicit caching: fonts never change; `/pkg` (CSS/JS/WASM) is rebuilt by
-/// cargo-leptos under the same names, so browsers must revalidate it (in production you would turn on
-/// `hash-files` and make it immutable).
+/// Static assets get explicit caching: fonts never change, and the stylesheet is content-hashed by
+/// cargo-leptos (`hash-files`: `/pkg/storefront.<hash>.css`), so both are cached forever. Anything in
+/// `/pkg` without a hash in its name (a build without hash-files) is revalidated.
 async fn static_cache_headers(uri: axum::http::Uri, mut res: Response) -> Response {
     let path = uri.path();
-    if !res.headers().contains_key(header::CACHE_CONTROL) {
-        let value = if path.starts_with("/fonts/") {
+    if !res.headers().contains_key(header::CACHE_CONTROL) && res.status().is_success() {
+        let value = if path.starts_with("/fonts/") || is_hashed_pkg(path) {
             Some("public, max-age=31536000, immutable")
         } else if path.starts_with("/pkg/") || path.starts_with("/dev/") {
             Some("no-cache")
@@ -101,6 +101,15 @@ async fn static_cache_headers(uri: axum::http::Uri, mut res: Response) -> Respon
         }
     }
     res
+}
+
+/// `/pkg/<name>.<hash>.<ext>`: a file name cargo-leptos stamped with its content hash.
+fn is_hashed_pkg(path: &str) -> bool {
+    let Some(file) = path.strip_prefix("/pkg/") else { return false };
+    let mut parts = file.rsplit('.');
+    let (_ext, hash, name) = (parts.next(), parts.next(), parts.next());
+    matches!((hash, name), (Some(h), Some(n)) if !n.is_empty() && h.len() >= 8
+        && h.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'))
 }
 
 fn media_dir() -> String {

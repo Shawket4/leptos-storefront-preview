@@ -50,6 +50,8 @@ pub fn Stepper(
         .get_untracked()
         .unwrap_or_else(|| strings::get("stepper.quantity", lang).to_owned());
     let group_label = label.clone();
+    let dec_off = off || (v <= min && !removable);
+    let inc_off = off || v >= max;
     let bin = removable && v <= min;
     let cls = if class.is_empty() {
         "stepper".to_owned()
@@ -80,7 +82,7 @@ pub fn Stepper(
                 class="stepper__btn"
                 data-step="-1"
                 aria-label=minus_label
-                disabled=(off || (v <= min && !removable))
+                disabled=dec_off
             >
                 <Icon name="minus" size=18 class="stepper__minus"/>
                 {removable.then(|| view! { <Icon name="trash-2" size=18 class="stepper__bin"/> })}
@@ -105,7 +107,7 @@ pub fn Stepper(
                 class="stepper__btn"
                 data-step="1"
                 aria-label=strings::get("stepper.increase", lang)
-                disabled=(off || v >= max)
+                disabled=inc_off
             >
                 <Icon name="plus" size=18/>
             </button>
