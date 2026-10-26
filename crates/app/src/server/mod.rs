@@ -82,14 +82,16 @@ impl AppState {
         let tenants = demo_tenants();
         let catalogs = load_catalogs(&tenants, &media);
         tracing::info!("media: {} images", media.len());
-        AppState(Arc::new(Inner {
+        let state = AppState(Arc::new(Inner {
             tenants,
             catalogs: RwLock::new(catalogs),
             media,
             reads: cache::ReadCache::new(),
             carts: cart::CartStore::new(),
             orders: orders::OrderStore::new(),
-        }))
+        }));
+        let _ = STATE.set(state.clone());
+        state
     }
 
     /// Reload catalogues and media manifests when their files change (polled every 3 s), then
@@ -208,9 +210,14 @@ impl AppState {
     }
 }
 
-/// The app state from context (server components and server functions).
+/// The process's one `AppState`, for when the request's context is gone (below).
+static STATE: std::sync::OnceLock<AppState> = std::sync::OnceLock::new();
+
+/// The app state: from the request's context, else the process-wide handle. Leptos runs page
+/// reads as spawned tasks that keep going after a client hangs up mid-stream, by which time the
+/// request's owner — and its context — is disposed; a context-only lookup then panicked.
 pub fn state() -> AppState {
-    expect_context::<AppState>()
+    use_context::<AppState>().or_else(|| STATE.get().cloned()).expect("AppState::load runs at startup")
 }
 
 /// The current request's tenant catalogue.

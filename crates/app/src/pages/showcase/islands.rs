@@ -1009,14 +1009,15 @@ fn Thumbs(items: Vec<crate::components::product_card::CardData>) -> impl IntoVie
     view! {
         <ul class="sc-thumbs">
             {items.into_iter().map(|c| {
-                let name = StoredValue::new(c.name.clone());
-                let label = move || name.with_value(|n| n.pick(ui.lang.get().is_rtl()).to_owned());
+                let name = c.name.clone();
+                let label = move || name.pick(ui.lang.get().is_rtl()).to_owned();
+                let alt = label.clone();
                 let img = c.img.clone();
                 view! {
                     <li>
                         <a class="sc-thumb" href=format!("/p/{}", c.slug) title=label>
                             {(!img.is_missing()).then(|| view! {
-                                <img src=img.src_near(240) srcset=img.srcset() sizes="80px" alt=label
+                                <img src=img.src_near(240) srcset=img.srcset() sizes="80px" alt=alt
                                     width="240" height="240" loading="lazy" decoding="async"/>
                             })}
                         </a>

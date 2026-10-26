@@ -48,7 +48,6 @@ pub use server::init;
 mod server {
     use super::*;
     use crate::prefs::{COOKIE_LANG, COOKIE_NUMERALS, COOKIE_THEME, Lang, Numerals, Theme, Ui};
-    use crate::server::AppState;
     use crate::tenant::{COOKIE_TENANT, DEFAULT_TENANT, TENANT_IDS, tenant_from_host};
     use http::request::Parts;
 
@@ -58,7 +57,7 @@ mod server {
         if let Some(rq) = use_context::<RequestCtx>() {
             return rq;
         }
-        let state = expect_context::<AppState>();
+        let state = crate::server::state();
         let parts = use_context::<Parts>();
 
         let header = |name: http::header::HeaderName| {

@@ -21,10 +21,12 @@ where
     T: Send + Sync + 'static,
     F: FnOnce(&crate::server::TenantCatalog, &crate::server::Media) -> T,
 {
+    // Everything from the request's context first: after the `.await` the client may have gone,
+    // and its context with it.
     let rq = crate::request::init();
+    let st = state();
     crate::server::sim::check_fail(widget)?;
     crate::server::sim::delay(widget).await;
-    let st = state();
     let catalog = st.catalog(&rq.tenant.id);
     let value = st
         .reads()
