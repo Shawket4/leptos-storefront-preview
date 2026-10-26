@@ -743,20 +743,18 @@ a.lx-page:active {
   }
 }
 
-/* ── The phone sheet's contents (inside the Drawer) ──────────────────────── */
-.lx-form--sheet {
-  padding-inline: var(--gutter);
-}
+/* ── The phone sheet's contents (inside the Drawer, whose body pads --sp-5) ── */
 .lx-form--sheet > .lx-group:first-child {
   border-block-start: 0;
   padding-block-start: var(--sp-2);
 }
 .lx-sheet-foot {
   position: sticky;
-  inset-block-end: 0;
+  inset-block-end: calc(var(--sp-5) * -1);
   display: flex;
   gap: var(--sp-2);
-  padding: var(--sp-3) var(--gutter) calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  margin: 0 calc(var(--sp-5) * -1) calc(var(--sp-5) * -1);
+  padding: var(--sp-3) var(--sp-5);
   background: var(--surface);
   box-shadow: 0 -1px 0 var(--rule);
 }
