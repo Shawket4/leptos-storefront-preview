@@ -321,12 +321,15 @@ pub fn RadioCard(
     }
 }
 
-/// A checkbox with its label (and an optional line under it).
+/// A checkbox with its label (and an optional line under it, and an optional figure at the end).
 #[component]
 pub fn Checkbox(
     #[prop(into)] name: String,
     #[prop(into)] label: TextProp,
     #[prop(optional, into)] description: Option<TextProp>,
+    /// Trailing, quiet: a count ("12") or a price ("+ EGP 10"), formatted.
+    #[prop(optional, into)]
+    meta: Option<TextProp>,
     #[prop(optional, into)] value: Option<String>,
     #[prop(optional, into)] checked: MaybeProp<bool>,
     #[prop(optional, into)] disabled: MaybeProp<bool>,
@@ -350,6 +353,7 @@ pub fn Checkbox(
                 <span class="check__label">{move || label.get()}</span>
                 {description.map(|d| view! { <span class="check__desc">{move || d.get()}</span> })}
             </span>
+            {meta.map(|m| view! { <span class="check__meta">{move || m.get()}</span> })}
         </label>
     }
 }

@@ -1,0 +1,68 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Filter groups (components::facet_group): a fieldset, its legend a small bold
+   heading, the options in a column of 44px rows. Consecutive groups are split
+   by a rule. "Show all N" is a <details> whose summary is a quiet text button
+   (44px); while open the chevron turns and it says "Show fewer".
+   ───────────────────────────────────────────────────────────────────────────── */
+.facet {
+  display: grid;
+  gap: var(--sp-1);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0 0 var(--sp-4);
+  border: 0;
+}
+.facet + .facet {
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--rule);
+}
+/* Floated, the legend leaves the fieldset's border and is laid out as the first
+   grid row, so the rule above a group never runs through it. */
+.facet__legend {
+  float: inline-start;
+  inline-size: 100%;
+  margin-block-end: var(--sp-1);
+  padding: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-snug);
+}
+.facet__options {
+  display: grid;
+  min-inline-size: 0;
+}
+
+.facet__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-block-size: 2.75rem;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+}
+.facet__toggle::-webkit-details-marker {
+  display: none;
+}
+.facet__toggle:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+.facet__chev {
+  color: var(--text-3);
+  transition: rotate var(--spring-snappy-dur) var(--spring-snappy);
+}
+.facet__more[open] > .facet__toggle .facet__chev {
+  rotate: 180deg;
+}
+.facet__hide,
+.facet__more[open] > .facet__toggle .facet__show {
+  display: none;
+}
+.facet__more[open] > .facet__toggle .facet__hide {
+  display: inline;
+}

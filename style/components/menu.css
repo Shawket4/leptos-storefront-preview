@@ -1,0 +1,174 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Menu (components::menu): a <details data-popover>. The trigger is a 44px
+   secondary-button squircle — label quiet, value bold, a chevron that turns
+   while open. The panel floats on the raised surface, anchored to the
+   trigger's corner: it grows out of it on the default spring and goes back
+   the same way ([data-closing], set by features/core.ts). 44px options, the
+   current one ticked.
+   ───────────────────────────────────────────────────────────────────────────── */
+.menu {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  padding-inline: var(--sp-4) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--sunk);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  white-space: nowrap;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.menu__trigger::-webkit-details-marker {
+  display: none;
+}
+.menu__trigger:hover,
+.menu[open] > .menu__trigger {
+  background: var(--sunk-2);
+}
+.menu__icon {
+  flex: none;
+  color: var(--text-2);
+}
+.menu__label {
+  color: var(--text-2);
+  font-weight: var(--fw-semibold);
+}
+/* A long value ends in an ellipsis; the clip box is padded out (and the padding
+   taken back) so a cap-trimmed label never loses its descenders. */
+.menu__value {
+  min-inline-size: 0;
+  margin-block: -0.3em;
+  padding-block: 0.3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:root:not([lang="ar"]) :is(.menu__label, .menu__value) {
+  text-box: trim-both cap alphabetic;
+}
+.menu__chev {
+  flex: none;
+  color: var(--text-3);
+  transition: rotate var(--spring-snappy-dur) var(--spring-snappy);
+}
+.menu[open]:not([data-closing]) .menu__chev {
+  rotate: 180deg;
+}
+/* Phones: the glyph says what, the value says which; the word stays for
+   screen readers. */
+@media (max-width: 479.98px) {
+  .menu--compact .menu__label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.menu__panel {
+  position: absolute;
+  z-index: var(--z-popover);
+  inset-block-start: calc(100% + var(--sp-2));
+  inset-inline-start: 0;
+  min-inline-size: max(100%, 14rem);
+  max-inline-size: calc(100vw - var(--gutter) * 2);
+  padding: var(--sp-1);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  box-shadow: var(--shadow-float);
+  transform-origin: left top;
+  animation: menu-in var(--spring-default-dur) var(--spring-default) both;
+}
+[dir="rtl"] .menu__panel {
+  transform-origin: right top;
+}
+.menu--end > .menu__panel {
+  inset-inline: auto 0;
+  transform-origin: right top;
+}
+[dir="rtl"] .menu--end > .menu__panel {
+  transform-origin: left top;
+}
+.menu[data-closing] > .menu__panel {
+  animation: menu-out 140ms var(--ease-in) both;
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@keyframes menu-out {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+.menu__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-block-size: 2.75rem;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-medium);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.menu__item:hover {
+  background: var(--sunk);
+}
+.menu__item:active {
+  background: var(--sunk-2);
+}
+.menu__item:focus-visible {
+  outline-offset: -2px;
+}
+.menu__item[aria-current="true"] {
+  font-weight: var(--fw-bold);
+}
+.menu__tick {
+  flex: none;
+  visibility: hidden;
+}
+.menu__item[aria-current="true"] .menu__tick {
+  visibility: visible;
+}
+
+/* Reduced motion: a short cross-fade in and out instead of the growth (the
+   base policy stops every other animation; this wins by coming later). */
+@media (prefers-reduced-motion: reduce) {
+  .menu__panel {
+    animation-name: fade-in !important;
+    animation-duration: var(--dur-base) !important;
+    animation-timing-function: var(--ease-out) !important;
+  }
+  .menu[data-closing] > .menu__panel {
+    animation-name: fade-out !important;
+    animation-duration: var(--dur-fast) !important;
+  }
+}

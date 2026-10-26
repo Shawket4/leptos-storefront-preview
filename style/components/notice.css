@@ -1,0 +1,86 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Notices (components::notice), class .callout: an inline message on its
+   tone's wash — the icon carries the tone, the words stay ink (title) and
+   secondary (line), so they read the same in every tone. Actions sit at the
+   end and wrap under the text when the row is narrow. 16px squircle, no edge.
+   ───────────────────────────────────────────────────────────────────────────── */
+.callout {
+  --callout-wash: var(--sunk);
+  --callout-ink: var(--text-2);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  min-inline-size: 0;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--callout-wash);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+.callout--brand { --callout-wash: var(--brand-wash); --callout-ink: var(--brand-text); }
+.callout--success { --callout-wash: var(--success-wash); --callout-ink: var(--success-text); }
+.callout--warning { --callout-wash: var(--warning-wash); --callout-ink: var(--warning-text); }
+.callout--danger { --callout-wash: var(--danger-wash); --callout-ink: var(--danger-text); }
+.callout--info { --callout-wash: var(--info-wash); --callout-ink: var(--info-text); }
+
+/* The icon sits on the title's first line, whatever the language's leading. */
+.callout__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  block-size: calc(0.9375rem * var(--lh-snug));
+  color: var(--callout-ink);
+}
+.callout__main {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+  min-inline-size: 0;
+}
+.callout__text {
+  display: grid;
+  flex: 1 1 15rem;
+  gap: 0.125rem;
+  min-inline-size: 0;
+}
+.callout__title {
+  font-size: 0.9375rem;
+  font-weight: var(--fw-semibold);
+  overflow-wrap: anywhere;
+}
+.callout__title:empty {
+  display: none;
+}
+.callout__body {
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.callout__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+/* A plain link as the action reads as one (buttons bring their own styles); it
+   stays a line tall to the eye and 44px to the finger. */
+.callout__actions > a:not(.btn) {
+  position: relative;
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+}
+.callout__actions > a:not(.btn):hover {
+  text-decoration-color: currentColor;
+}
+.callout__actions > a:not(.btn)::after {
+  content: "";
+  position: absolute;
+  inset: -0.8125rem -0.5rem;
+}

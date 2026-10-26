@@ -4,9 +4,12 @@
 //!
 //! `art` names an illustration in `data/media/brand` (`empty-cart`, `empty-search`, `not-found`,
 //! `error`, `order-placed`, `delivery`), served on one fixed ladder so this works in islands too.
+//!
+//! `suggestion` adds "Did you mean *term*?" above the action, the term a link (a respelt search).
 
 use super::button::{Button, ButtonKind};
 use super::states::{StateTone, StateView};
+use crate::prefs::{Lang, lang_now};
 use leptos::prelude::*;
 
 #[component]
@@ -18,6 +21,9 @@ pub fn EmptyState(
     /// `(href, label)` of the one thing to do next.
     #[prop(optional)]
     action: Option<(String, String)>,
+    /// `(href, term)`: "Did you mean *term*?", the term a link to that search.
+    #[prop(optional)]
+    suggestion: Option<(String, String)>,
     /// The page is only this state: the title is the page's `<h1>`.
     #[prop(optional)]
     page: bool,
@@ -26,10 +32,19 @@ pub fn EmptyState(
     compact: bool,
     #[prop(optional, into)] class: String,
 ) -> impl IntoView {
-    let actions = action.map(|(href, label)| {
+    let suggest = suggestion.map(|(href, term)| {
+        let (before, after) = match lang_now() {
+            Lang::En => ("Did you mean ", "?"),
+            Lang::Ar => ("تقصد ", "؟"),
+        };
+        view! { <p class="state__suggest">{before}<a class="link" href=href><bdi>{term}</bdi></a>{after}</p> }
+    });
+    let actions = (action.is_some() || suggest.is_some()).then(|| {
         Box::new(move || {
-            view! { <Button kind=ButtonKind::Primary href=href icon_end="arrow-right">{label}</Button> }
-                .into_any()
+            let button = action.map(|(href, label)| {
+                view! { <Button kind=ButtonKind::Primary href=href icon_end="arrow-right">{label}</Button> }
+            });
+            view! { {suggest}{button} }.into_any()
         }) as Children
     });
     match actions {

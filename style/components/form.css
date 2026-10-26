@@ -268,3 +268,39 @@
   font-size: 0.8125rem;
   color: var(--text-2);
 }
+/* A trailing figure (a facet's count, an add-on's price): quiet, tabular, on
+   the label's baseline at the row's end. */
+.check__meta {
+  flex: none;
+  align-self: baseline;
+  margin-inline-start: auto;
+  padding-inline-start: var(--sp-2);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--lh-snug);
+}
+.check:has(> .check__meta) > .check__text {
+  align-self: baseline;
+}
+.check:has(> .check__input:disabled) {
+  color: var(--on-disabled);
+  cursor: default;
+}
+.check:has(> .check__input:disabled) :is(.check__desc, .check__meta) {
+  color: var(--on-disabled);
+}
+/* The same row as a radio (components::choice_list): a round dot. */
+.check--radio .check__box {
+  border-radius: 50%;
+  corner-shape: round;
+}
+.check--radio .check__input:checked + .check__box {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 7px var(--brand);
+}
+.check__desc:empty,
+.check__meta:empty {
+  display: none;
+}

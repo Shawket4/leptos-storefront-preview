@@ -1,0 +1,71 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Link chips (components::link_chips): ways forward under an empty result or a
+   404. Raised squircles (surface + the faint card shadow), 44px tall — the
+   height of a button, so the button's 12px corner — icon + semibold label.
+   Long labels wrap inside the chip rather than push past the column.
+   ───────────────────────────────────────────────────────────────────────────── */
+.link-chips {
+  display: grid;
+  gap: var(--sp-3);
+  min-inline-size: 0;
+}
+.link-chips--center {
+  justify-items: center;
+  text-align: center;
+}
+.link-chips__label {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.link-chips__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.link-chips--center .link-chips__list {
+  justify-content: center;
+}
+.link-chips__list > li {
+  display: flex;
+  max-inline-size: 100%;
+}
+
+.link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  text-align: start;
+  transition:
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    scale var(--spring-snappy-dur) var(--spring-snappy);
+}
+.link-chip:hover {
+  box-shadow: var(--shadow-md);
+}
+.link-chip .icon {
+  flex: none;
+  color: var(--text-2);
+}
+.link-chip__label {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+:root:not([lang="ar"]) .link-chip__label {
+  text-box: trim-both cap alphabetic;
+}

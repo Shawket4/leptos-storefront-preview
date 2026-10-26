@@ -24,6 +24,13 @@
 @import "./components/segmented.css";
 @import "./components/breadcrumbs.css";
 @import "./components/states.css";
+@import "./components/notice.css";
+@import "./components/link-chips.css";
+@import "./components/filter-chips.css";
+@import "./components/choice-chips.css";
+@import "./components/choice-list.css";
+@import "./components/facet-group.css";
+@import "./components/pager.css";
 
 /* Composites */
 @import "./components/product-card.css";
@@ -38,6 +45,7 @@
 @import "./components/bottom-nav.css";
 
 /* Overlays */
+@import "./components/menu.css";
 @import "./components/drawer.css";
 @import "./components/toast.css";
 
