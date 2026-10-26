@@ -1,49 +1,29 @@
-//! What the showcase says: categories, and one entry per Leptos feature the storefront uses —
-//! plain explanation, why it matters here, where it is used, where the code lives.
+//! What the showcase says: two parts (Leptos on the server, the TypeScript client) plus the one
+//! decision card, and one entry per piece of the architecture as built — what it is, why it matters
+//! here, where the app uses it, where the code lives.
 //!
-//! "Used in" lists only usages that exist in this repository's code. Where a feature is not used
-//! by a page yet, the demo on /showcase is its only usage and the entry says so.
+//! "Used in" lists only usages that exist in this repository. Numbers in prose are written as
+//! `{{379}}` so the card can show them in the visitor's numerals (`Card` renders them through
+//! `crate::format::digits`); digits that are code (`2307:1:2`, `0.8.22`) stay as they are.
 
 use crate::prefs::{Lang, tr};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cat {
-    Rendering,
-    Reactivity,
-    Data,
-    Forms,
-    Routing,
-    Platform,
-    I18n,
-    Media,
-    A11y,
+    Server,
+    Client,
+    Decisions,
 }
 
 impl Cat {
-    pub const ALL: [Cat; 9] = [
-        Cat::Rendering,
-        Cat::Reactivity,
-        Cat::Data,
-        Cat::Forms,
-        Cat::Routing,
-        Cat::Platform,
-        Cat::I18n,
-        Cat::Media,
-        Cat::A11y,
-    ];
+    pub const ALL: [Cat; 3] = [Cat::Server, Cat::Client, Cat::Decisions];
 
-    /// URL / `data-cat` value.
+    /// URL (`?cat=`) and `data-cat` value.
     pub fn code(self) -> &'static str {
         match self {
-            Cat::Rendering => "rendering",
-            Cat::Reactivity => "reactivity",
-            Cat::Data => "data",
-            Cat::Forms => "forms",
-            Cat::Routing => "routing",
-            Cat::Platform => "platform",
-            Cat::I18n => "i18n",
-            Cat::Media => "media",
-            Cat::A11y => "a11y",
+            Cat::Server => "server",
+            Cat::Client => "client",
+            Cat::Decisions => "decisions",
         }
     }
 
@@ -51,18 +31,12 @@ impl Cat {
         Cat::ALL.into_iter().find(|c| c.code() == s)
     }
 
-    /// Short label (filter chips).
+    /// Short label (filter chips, card tags).
     pub fn short(self) -> (&'static str, &'static str) {
         match self {
-            Cat::Rendering => ("Rendering", "العرض"),
-            Cat::Reactivity => ("Reactivity", "التفاعلية"),
-            Cat::Data => ("Data & server", "البيانات والسيرفر"),
-            Cat::Forms => ("Forms", "الفورمز"),
-            Cat::Routing => ("Routing & navigation", "التوجيه والتنقل"),
-            Cat::Platform => ("Platform & caching", "المنصة والكاش"),
-            Cat::I18n => ("i18n / RTL", "اللغات وRTL"),
-            Cat::Media => ("Media & motion", "الصور والحركة"),
-            Cat::A11y => ("Accessibility", "الإتاحة"),
+            Cat::Server => ("Leptos on the server", "Leptos على السيرفر"),
+            Cat::Client => ("The TypeScript client", "عميل TypeScript"),
+            Cat::Decisions => ("Decisions", "قرارات"),
         }
     }
 
@@ -71,53 +45,23 @@ impl Cat {
         tr(lang, en, ar)
     }
 
-    /// One line under the category heading.
+    /// One line under the part's heading.
     pub fn blurb(self, lang: Lang) -> &'static str {
         match self {
-            Cat::Rendering => tr(
+            Cat::Server => tr(
                 lang,
-                "What runs where: HTML from the server, WebAssembly only where it's needed, streamed as data arrives.",
-                "إيه اللي بيشتغل فين: HTML من السيرفر، وWebAssembly بس في الأماكن اللي محتاجاه، وبيتبعت أول بأول مع وصول البيانات.",
+                "Every page is a Leptos component rendered on the server into one complete HTML document. No Rust runs in the browser.",
+                "كل صفحة كومبوننت Leptos بيترسم على السيرفر في مستند HTML واحد كامل. مفيش Rust بيشتغل في المتصفح.",
             ),
-            Cat::Reactivity => tr(
+            Cat::Client => tr(
                 lang,
-                "How interactive parts update: a graph of signals instead of re-rendering components.",
-                "إزاي الأجزاء التفاعلية بتتحدث: شبكة signals بدل ما الكومبوننت يترسم من الأول.",
+                "One small ES module, bundled by esbuild. It changes state on the spot and asks the server only for data it doesn't have.",
+                "ملف ES module واحد صغير، بيجمّعه esbuild. بيغيّر الحالة في ساعتها، ومابيكلمش السيرفر غير لما يحتاج بيانات مش عنده.",
             ),
-            Cat::Data => tr(
+            Cat::Decisions => tr(
                 lang,
-                "How data gets from the catalogue to the screen, and what the UI does while it waits.",
-                "إزاي البيانات بتوصل من الكتالوج للشاشة، والواجهة بتعمل إيه وهي مستنياها.",
-            ),
-            Cat::Forms => tr(
-                lang,
-                "Mutations that work with and without JavaScript.",
-                "عمليات تعديل بتشتغل بالـ JavaScript ومن غيره.",
-            ),
-            Cat::Routing => tr(
-                lang,
-                "URLs as the source of truth, and page changes that feel like an app.",
-                "الـ URL هو مصدر الحقيقة، والتنقل بين الصفحات إحساسه زي الأبلكيشن.",
-            ),
-            Cat::Platform => tr(
-                lang,
-                "Caching at the edge, and one deployment serving many shops.",
-                "الكاش على الـ CDN، ونسخة واحدة بتخدم محلات كتير.",
-            ),
-            Cat::I18n => tr(
-                lang,
-                "Arabic and English, two numeral systems, right-to-left — switched without a reload.",
-                "عربي وإنجليزي، ونظامين أرقام، ومن اليمين للشمال — والتبديل من غير ريلود.",
-            ),
-            Cat::Media => tr(
-                lang,
-                "Images sized for the device, and motion that explains where things went.",
-                "صور على مقاس الجهاز، وحركة بتوضح الحاجة راحت فين.",
-            ),
-            Cat::A11y => tr(
-                lang,
-                "Keyboard, screen readers and focus — built into the components.",
-                "الكيبورد وقارئ الشاشة والفوكس — جزء من الكومبوننتس نفسها.",
+                "What we built first, what it cost, and why we changed course.",
+                "عملنا إيه الأول، وكلّفنا كام، وليه غيّرنا الطريق.",
             ),
         }
     }
@@ -129,12 +73,8 @@ pub enum Href {
     Path(&'static str),
     /// `/c/<first category>`
     Category,
-    /// `/c/<first category>?sort=price-asc&stock=1`
-    CategoryQuery,
     /// `/p/<a product with several variants>`
     Product,
-    /// `/p/<that product>?v=<its second variant>`
-    ProductVariant,
     /// `/p/<that product>?<query>`
     ProductQuery(&'static str),
 }
@@ -158,7 +98,7 @@ pub struct Feature {
     pub what: (&'static str, &'static str),
     pub why: (&'static str, &'static str),
     pub used_in: &'static [Usage],
-    /// Shown when `used_in` is empty or partial: why the demo is the usage (EN, AR).
+    /// Shown under "Used in": why the demo is the only usage, or where the numbers come from.
     pub note: Option<(&'static str, &'static str)>,
     pub sources: &'static [&'static str],
 }
@@ -169,865 +109,341 @@ impl Feature {
     }
 }
 
-/// In display order (grouped by category, in [`Cat::ALL`] order).
+/// In display order (grouped by part, in [`Cat::ALL`] order).
 pub static FEATURES: &[Feature] = &[
-    // ── Rendering ──────────────────────────────────────────────────────────────────────────────
+    // ── Leptos on the server ───────────────────────────────────────────────────────────────────
     Feature {
-        id: "islands",
-        cat: Cat::Rendering,
-        title: ("Islands architecture", "معمارية الجزر (Islands)"),
+        id: "in-order",
+        cat: Cat::Server,
+        title: ("In-order SSR on every page", "SSR بالترتيب في كل صفحة"),
         what: (
-            "Every #[component] renders on the server only and ships no JavaScript. Only #[island] components are compiled to WebAssembly and hydrate in the browser; the rest of the page stays plain HTML.",
-            "كل ‎#[component]‎ بيترسم على السيرفر بس ومن غير أي JavaScript. الـ ‎#[island]‎ بس هي اللي بتتحول WebAssembly وتصحى في المتصفح، وباقي الصفحة HTML عادي.",
+            "Every route is rendered with SsrMode::InOrder. Leptos renders the page top to bottom and streams it in that order, waiting at each <Suspense> for its data, so every byte that leaves the server is final HTML. No script has to move anything into place.",
+            "كل route بيترسم بـ SsrMode::InOrder. ‏Leptos بيرسم الصفحة من فوق لتحت وبيبعتها بنفس الترتيب، وبيستنى عند كل <Suspense> لحد ما بياناته توصل، فكل بايت طالع من السيرفر HTML نهائي. مفيش سكريبت محتاج يحط حاجة في مكانها.",
         ),
         why: (
-            "A storefront is mostly content — grids, descriptions, prices. Paying for JavaScript only where it's interactive (add to cart, steppers, countdowns) keeps budget phones fast and the bundle flat as the catalogue grows.",
-            "المتجر أغلبه محتوى — شبكات منتجات ووصف وأسعار. لما تدفع تمن الـ JavaScript في الأجزاء التفاعلية بس (أضف للسلة، العدّاد، العد التنازلي) الموبايلات الاقتصادية بتفضل سريعة، وحجم الـ bundle مش بيكبر مع الكتالوج.",
+            "Pages must work without JavaScript, and the TypeScript router swaps whole server-rendered pages: both need complete HTML. The status code and cache headers are set before the first byte, so a 404 is a real 404.",
+            "الصفحات لازم تشتغل من غير JavaScript، والراوتر بتاع TypeScript بيبدّل صفحات كاملة جاية من السيرفر: الاتنين محتاجين HTML كامل. وكود الحالة وهيدرز الكاش بيتحددوا قبل أول بايت، فالـ 404 بيبقى 404 بجد.",
         ),
         used_in: &[
-            used(
-                Href::Path("/#rail-deals"),
-                "Home: the deals countdown",
-                "الرئيسية: العد التنازلي للعروض",
-            ),
-            used(
-                Href::Path("/"),
-                "Home: every rail, tile and card is server-only",
-                "الرئيسية: كل الأقسام والصور والكروت سيرفر بس",
-            ),
-            used(
-                Href::Product,
-                "Product page: two islands (gallery, purchase panel); specs, description and related products are plain HTML",
-                "صفحة المنتج: جزيرتين بس (الصور ولوحة الشراء)؛ والمواصفات والوصف والمنتجات المشابهة HTML عادي",
-            ),
-            used(
-                Href::Path("/cart"),
-                "Every page: the header's cart button and search box, the cart drawer, quick-add, the offline banner",
-                "كل صفحة: زرار السلة والبحث في الهيدر، ودرج السلة، والإضافة السريعة، وتنبيه انقطاع النت",
-            ),
+            used(Href::Path("/"), "Home", "الرئيسية"),
+            used(Href::Category, "Category listings", "صفحات الأقسام"),
+            used(Href::Product, "Product page", "صفحة المنتج"),
+            used(Href::Path("/cart"), "Cart and checkout", "السلة والدفع"),
         ],
         note: None,
-        sources: &[
-            "crates/frontend/src/lib.rs",
-            "crates/app/src/pages/home.rs",
-            "crates/app/src/pages/product/parts.rs",
-        ],
-    },
-    Feature {
-        id: "ssr-modes",
-        cat: Cat::Rendering,
-        title: (
-            "SSR modes per route: the honest trade-off",
-            "طرق الـ SSR لكل route: المقايضة بصراحة",
-        ),
-        what: (
-            "Leptos streams a route in one of four modes. OutOfOrder (default) sends each <Suspense> as soon as it resolves, but slots it in with a few bytes of inline JavaScript. InOrder waits at each <Suspense> in document order and needs no script. PartiallyBlocked holds the first byte until its blocking resources resolve — in 0.8.22 that is all it does: leptos_axum doesn't splice them in yet, so their <Suspense> still streams as a template + script. Async waits for everything.",
-            "‏Leptos بيبعت الـ route بواحدة من أربع طرق. OutOfOrder (الافتراضي) بيبعت كل <Suspense> أول ما يخلص، بس بيحطه مكانه بشوية JavaScript جوه الصفحة. InOrder بيستنى عند كل <Suspense> بترتيب الصفحة ومش محتاج أي سكريبت. PartiallyBlocked بيأخر أول بايت لحد ما الـ blocking resources بتاعته تخلص — وفي 0.8.22 ده كل اللي بيعمله: ‏leptos_axum لسه مابيحطهاش جوه الصفحة، فالـ <Suspense> بتاعها بيتبعت برضه كـ template و script. وAsync بيستنى كله.",
-        ),
-        why: (
-            "Out-of-order is the fastest first paint but shows skeletons forever without JavaScript, and no mode's <head> waits for streamed data — so each route picks its mode: the product page holds its first byte for its data and builds its <head> (title, OpenGraph, JSON-LD) synchronously from the in-memory catalogue; listings, cart, checkout and orders stream in order; home streams out of order with an in-order twin for no-JS visitors.",
-            "الـ OutOfOrder أسرع أول ظهور، بس من غير JavaScript الـ skeletons بتفضل للأبد، ومفيش طريقة الـ <head> بتاعها بيستنى البيانات المتبعتة — عشان كده كل route بيختار طريقته: صفحة المنتج بتأخر أول بايت لحد ما بياناتها تيجي وبتبني الـ <head> (العنوان وOpenGraph وJSON-LD) على طول من الكتالوج اللي في الذاكرة؛ والقوايم والسلة والدفع والطلبات بالترتيب؛ والرئيسية بأي ترتيب ومعاها نسخة بالترتيب للي من غير JavaScript.",
-        ),
-        used_in: &[
-            used(Href::Path("/"), "Home: OutOfOrder", "الرئيسية: OutOfOrder"),
-            used(
-                Href::Path("/nojs"),
-                "/nojs: the same home page, InOrder",
-                "‏/nojs: نفس الرئيسية، InOrder",
-            ),
-            used(
-                Href::Category,
-                "Listings and search: InOrder",
-                "القوايم والبحث: InOrder",
-            ),
-            used(
-                Href::Path("/cart"),
-                "Cart, checkout, orders: InOrder — complete without JavaScript",
-                "السلة والدفع والطلبات: InOrder — كاملة من غير JavaScript",
-            ),
-            used(
-                Href::Product,
-                "Product page: PartiallyBlocked",
-                "صفحة المنتج: PartiallyBlocked",
-            ),
-        ],
-        note: None,
-        sources: &["crates/app/src/lib.rs", "crates/app/src/pages/product.rs"],
+        sources: &["crates/app/src/lib.rs", "crates/app/src/components/shell.rs"],
     },
     Feature {
         id: "streaming",
-        cat: Cat::Rendering,
-        title: (
-            "Streaming SSR: Resource + Suspense, out of order",
-            "بث الـ SSR: ‏Resource و Suspense بأي ترتيب",
-        ),
+        cat: Cat::Server,
+        title: ("Out-of-order streaming, on its own route", "البث بأي ترتيب، في route لوحده"),
         what: (
-            "The shell and <head> go out first; each <Suspense> streams in the moment its Resource resolves, in whatever order the data arrives. A blocking resource is the opt-out: it renders inline, in the first chunk.",
-            "الهيكل والـ <head> بيوصلوا الأول؛ وكل <Suspense> بيوصل أول ما الـ Resource بتاعه يخلص، بالترتيب اللي البيانات بتيجي بيه. والـ blocking resource هو الاستثناء: بيترسم جوه أول chunk.",
+            "Leptos can also send the page's frame first and then each <Suspense> the moment its data resolves. Each section arrives as a <template> plus a small inline script that moves it into place. The demo route /showcase/stream is the only page here that streams this way.",
+            "‏Leptos يقدر كمان يبعت إطار الصفحة الأول، وبعدين كل <Suspense> أول ما بياناته تخلص. كل قسم بيوصل كـ <template> ومعاه سكريبت صغير بيحطه في مكانه. صفحة الديمو ‎/showcase/stream‎ هي الوحيدة هنا اللي بتتبعت بالطريقة دي.",
         ),
         why: (
-            "The first byte doesn't wait for the slowest backend call: the hero and prices paint while recommendations are still loading.",
-            "أول بايت مش بيستنى أبطأ نداء للباك إند: الواجهة والأسعار بتظهر والترشيحات لسه بتحمّل.",
+            "It gives the fastest first paint, but sections only land with JavaScript on, and a router that fetches the page as HTML gets it only once the slowest section is done. That's why the demo links carry data-router=\"off\": only a full page load lets you watch the stream.",
+            "بيدّي أسرع أول رسمة، بس الأقسام مابتتحطش في مكانها غير لو الـ JavaScript شغال، والراوتر اللي بيجيب الصفحة كـ HTML مش هياخدها غير لما أبطأ قسم يخلص. عشان كده لينكات الديمو عليها data-router=\"off\": التحميل الكامل للصفحة هو الطريقة الوحيدة اللي تتفرج بيها على البث.",
         ),
-        used_in: &[
-            used(
-                Href::Path("/"),
-                "Home: five rails, each its own Suspense",
-                "الرئيسية: خمس أقسام، كل واحد Suspense لوحده",
-            ),
-            used(
-                Href::Product,
-                "Product page: the product is a blocking resource; “You may also like” streams on its own",
-                "صفحة المنتج: المنتج نفسه blocking resource؛ و«ممكن يعجبك» بيتبعت لوحده",
-            ),
-            used(
-                Href::Path("/no-such-page"),
-                "404: popular categories (blocking)",
-                "صفحة 404: الأقسام (blocking)",
-            ),
-        ],
+        used_in: &[],
+        note: Some((
+            "Only the demo route streams out of order; every shop page renders in order (the card above).",
+            "صفحة الديمو بس هي اللي بتتبعت بأي ترتيب؛ كل صفحات المتجر بتترسم بالترتيب (الكارت اللي فوق).",
+        )),
+        sources: &["crates/app/src/pages/showcase/stream.rs", "crates/app/src/lib.rs"],
+    },
+    Feature {
+        id: "server-fns",
+        cat: Cat::Server,
+        title: ("Server functions are the data API", "دوال السيرفر هي الـ API"),
+        what: (
+            "#[server(endpoint = \"cache/stats\", input = GetUrl)] turns an async Rust function into an HTTP endpoint with a fixed URL. Server components call it like any function. The TypeScript client fetches the URL and gets JSON back, with money already formatted.",
+            "‏#[server(endpoint = \"cache/stats\", input = GetUrl)]‎ بيحوّل دالة Rust ‏async لـ endpoint ليه URL ثابت. كومبوننتس السيرفر بتناديها زي أي دالة. وعميل TypeScript بيعمل fetch للـ URL ويرجعله JSON، والفلوس متنسقة جاهزة.",
+        ),
+        why: (
+            "One Rust function serves the server's own reads and the client's fetches, so there's no second REST layer to keep in step. Fixed names keep URLs the same from build to build (default names carry a hash), so the client and the CDN can rely on them.",
+            "دالة Rust واحدة بتخدم قراءات السيرفر نفسه وطلبات العميل، فمفيش طبقة REST تانية لازم تفضل ماشية معاها. والأسماء الثابتة بتخلّي الـ URLs زي ما هي من build للتاني (الأسماء الافتراضية فيها hash)، فالعميل والـ CDN يقدروا يعتمدوا عليها.",
+        ),
+        used_in: &[used(
+            Href::Path("/cart"),
+            "Cart prices: GET /api/cart/quote",
+            "أسعار السلة: GET /api/cart/quote",
+        )],
         note: None,
-        sources: &[
-            "crates/app/src/pages/home.rs",
-            "crates/app/src/pages/product.rs",
-            "crates/app/src/pages/errors.rs",
-        ],
+        sources: &["crates/app/src/api/mod.rs", "client/src/core/net.ts"],
     },
     Feature {
         id: "errors",
-        cat: Cat::Rendering,
-        title: ("Per-section <ErrorBoundary>", "‏<ErrorBoundary> لكل قسم"),
+        cat: Cat::Server,
+        title: ("Error boundaries, one per section", "حدود للأخطاء، واحد لكل قسم"),
         what: (
-            "Rendering an Err bubbles up to the nearest boundary, which swaps in a fallback for that section only. Each rail and widget has its own, so one failing backend call can't blank the page.",
-            "لما تعرض Err بيطلع لأقرب boundary، وده بيحط بديل للقسم ده بس. كل قسم وكل widget ليه boundary خاص بيه، فنداء واحد فاشل للباك إند ميقدرش يفضّي الصفحة.",
+            "Each section that reads data has its own <ErrorBoundary>. When a read fails, that section says what failed and offers Retry, and the rest of the page renders normally. A failure that is known before the first byte becomes a full error page with a real 500 or 503.",
+            "كل قسم بيقرا بيانات ليه <ErrorBoundary> خاص بيه. لو القراءة فشلت، القسم ده بس بيقول إيه اللي فشل ويديك «إعادة المحاولة»، وباقي الصفحة بيترسم عادي. ولو الفشل معروف قبل أول بايت، بتطلع صفحة خطأ كاملة بـ 500 أو 503 حقيقي.",
         ),
         why: (
-            "Recommendations failing must never cost a sale: the product, the price and add-to-cart keep working.",
-            "لو الترشيحات وقعت، ده مينفعش يضيّع بيعة: المنتج والسعر وزرار الإضافة للسلة يفضلوا شغالين.",
+            "A slow or broken recommendations service shouldn't take the product page down with it. ?fail=<widget> breaks one read on purpose, so every error state can be checked.",
+            "لو خدمة الترشيحات بطيئة أو واقعة، ماينفعش توقّع صفحة المنتج معاها. و ‎?fail=<widget>‎ بيبوّظ قراءة واحدة بالقصد، عشان نقدر نجرّب كل حالة خطأ.",
         ),
         used_in: &[
             used(
                 Href::Path("/?fail=deals"),
-                "Home with the deals rail failing",
-                "الرئيسية وقسم العروض واقع",
+                "Home, with the deals rail failing",
+                "الرئيسية، وقسم العروض فاشل",
             ),
             used(
                 Href::ProductQuery("fail=related"),
-                "Product page with “You may also like” failing",
-                "صفحة المنتج و«ممكن يعجبك» واقع",
-            ),
-            used(
-                Href::ProductQuery("fail=product"),
-                "Product page with the product itself failing",
-                "صفحة المنتج والمنتج نفسه واقع",
+                "Product page, with related products failing",
+                "صفحة المنتج، والمنتجات المشابهة فاشلة",
             ),
         ],
         note: None,
-        sources: &[
-            "crates/app/src/pages/errors.rs",
-            "crates/app/src/pages/product/parts.rs",
-            "crates/app/src/server/sim.rs",
-        ],
+        sources: &["crates/app/src/pages/errors.rs", "crates/app/src/server/sim.rs"],
     },
     Feature {
-        id: "states",
-        cat: Cat::Rendering,
-        title: (
-            "Every state, designed: loading, empty, failed, offline, not found, not built",
-            "كل الحالات متصممة: تحميل، فاضي، عطل، من غير نت، مش موجود، لسه ما اتعملش",
-        ),
+        id: "read-cache",
+        cat: Cat::Server,
+        title: ("The moka read cache", "كاش القراءة (moka)"),
         what: (
-            "Skeletons the exact size of what replaces them, empty states that point somewhere, a failed section that says so and offers a retry, reads that retry by themselves, an offline banner, a designed 404, a 500/503 page and a “not in this preview yet” view — real components the pages use, shown live here.",
-            "‏Skeletons بنفس مقاس اللي هيجي مكانها، وحالات فاضية بتوجهك لحاجة، وقسم واقع بيقول كده ويعرض إعادة المحاولة، وقرايات بتعيد المحاولة لوحدها، وتنبيه لما النت يقطع، وصفحة 404 وصفحة 500/503 متصممين، وصفحة «مش موجودة في المعاينة دي لسه» — كومبوننتس حقيقية الصفحات بتستخدمها، ومعروضة هنا على الهوا.",
+            "Catalogue reads go through one moka cache keyed tenant:generation:kind:key, the shape of Madar's MenuCache. Entries expire after their TTL, and bumping a shop's generation drops all of its entries at once, without a scan.",
+            "قراءات الكتالوج كلها بتعدّي على كاش moka واحد، مفتاحه tenant:generation:kind:key، بنفس شكل MenuCache بتاع مدار. العناصر بتنتهي بعد الـ TTL بتاعها، ولو زوّدنا الـ generation بتاع محل، كل عناصره بتتشال مرة واحدة من غير ما نلف عليها.",
         ),
         why: (
-            "A shop is judged in its bad moments — slow 3G, a backend hiccup, a dead link. None of them should look broken or lose the cart.",
-            "المتجر بيتحكم عليه في لحظاته الوحشة — نت بطيء، أو عطل في الباك إند، أو لينك مش شغال. ولا واحدة منهم المفروض تبان بايظة أو تضيّع السلة.",
+            "Listings, rails and search results are computed once and served from memory to every visitor who asks the same thing. A catalogue edit is one counter bump, plus a CDN purge by Cache-Tag in production.",
+            "الليستات والأقسام ونتايج البحث بتتحسب مرة واحدة وتتقدّم من الميموري لكل زائر بيطلب نفس الحاجة. وتعديل الكتالوج مجرد زيادة عداد، ومعاها purge للـ CDN بالـ Cache-Tag في الإنتاج.",
         ),
         used_in: &[
-            used(
-                Href::Path("/no-such-page"),
-                "The router's 404 (NotFound)",
-                "صفحة 404 بتاعة الراوتر (‏NotFound)",
-            ),
-            used(
-                Href::Path("/?fail=deals"),
-                "Home: a failing rail",
-                "الرئيسية: قسم واقع",
-            ),
-            used(
-                Href::Path("/search?q=zzqx"),
-                "Search with no results (StateView)",
-                "بحث من غير نتايج (‏StateView)",
-            ),
-            used(
-                Href::Path("/checkout"),
-                "Checkout with an empty cart (StateView)",
-                "الدفع والسلة فاضية (‏StateView)",
-            ),
-            used(
-                Href::Path("/"),
-                "Every page: the offline banner (mounted once by the shell)",
-                "كل صفحة: تنبيه انقطاع النت (الـ shell بيركّبه مرة واحدة)",
-            ),
-        ],
-        note: Some((
-            "ComingSoon and net::retry aren't used by a page yet — the tiles above are their usage (and /ui).",
-            "‏ComingSoon و net::retry لسه مش مستخدمين في صفحة — المربعات اللي فوق هي استخدامهم (ومعاهم ‎/ui‎).",
-        )),
-        sources: &[
-            "crates/app/src/components/states.rs",
-            "crates/app/src/components/offline.rs",
-            "crates/app/src/components/net.rs",
-            "crates/app/src/pages/errors.rs",
-        ],
-    },
-    Feature {
-        id: "meta",
-        cat: Cat::Rendering,
-        title: (
-            "leptos_meta: the <head> from components",
-            "‏leptos_meta: الـ <head> من جوه الكومبوننتس",
-        ),
-        what: (
-            "<Title>, <Meta>, <Link> and <Script> placed anywhere in a page are collected during the render and injected into <head> before the first byte — per tenant and per language.",
-            "‏<Title> و<Meta> و<Link> و<Script> في أي حتة في الصفحة بيتجمعوا وقت الرسم ويتحطوا في الـ <head> قبل أول بايت — لكل متجر ولكل لغة.",
-        ),
-        why: (
-            "Titles, canonical URLs, OpenGraph cards and JSON-LD are what get a shop found on Google and shared on WhatsApp.",
-            "العناوين والـ canonical وكروت OpenGraph والـ JSON-LD هي اللي بتخلي المتجر يبان على جوجل ويتشير على واتساب.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/"),
-                "Home: title, OpenGraph, WebSite JSON-LD",
-                "الرئيسية: العنوان وOpenGraph و WebSite JSON-LD",
-            ),
-            used(
-                Href::Product,
-                "Product page: canonical, OpenGraph with product:price, Twitter card, LCP preload, Product + BreadcrumbList JSON-LD",
-                "صفحة المنتج: الـ canonical و OpenGraph بـ product:price وكارت تويتر و preload للصورة و JSON-LD لـ Product و BreadcrumbList",
-            ),
-            used(
-                Href::Category,
-                "Category: canonical and BreadcrumbList JSON-LD",
-                "القسم: الـ canonical و JSON-LD لـ BreadcrumbList",
-            ),
-        ],
-        note: Some((
-            "Every head tag is registered before the first chunk: in 0.8.22 a tag inside a <Suspense> never reaches <head>, even over a blocking resource (see Sharp edges).",
-            "كل تاجات الـ head بتتسجل قبل أول chunk: في 0.8.22 أي تاج جوه <Suspense> عمره ما بيوصل للـ <head>، حتى لو فوق blocking resource (شوف «حاجات جرحتنا»).",
-        )),
-        sources: &[
-            "crates/app/src/pages/home.rs",
-            "crates/app/src/pages/product/head.rs",
-            "crates/app/src/lib.rs",
-        ],
-    },
-    // ── Reactivity ─────────────────────────────────────────────────────────────────────────────
-    Feature {
-        id: "reactivity",
-        cat: Cat::Reactivity,
-        title: ("Fine-grained reactivity", "تفاعلية دقيقة (Fine-grained)"),
-        what: (
-            "Signals, derived signals, Memo and Effect form a dependency graph. The component function runs once; a change re-runs only the closures that read it and rewrites only their text nodes. There is no virtual DOM.",
-            "الـ Signals والـ derived signals والـ Memo والـ Effect بيكوّنوا شبكة اعتماديات. دالة الكومبوننت بتشتغل مرة واحدة؛ وأي تغيير بيعيد تشغيل الـ closures اللي بتقراه بس، وبيعدّل الـ text nodes بتاعتها بس. مفيش virtual DOM.",
-        ),
-        why: (
-            "Cart totals, free-delivery thresholds and variant prices update instantly on low-end phones, because nothing that didn't change is touched.",
-            "إجمالي السلة وحد التوصيل المجاني وأسعار الاختيارات بتتحدث فورًا حتى على الموبايلات الضعيفة، لأن مفيش حاجة بتتلمس إلا اللي اتغيرت فعلًا.",
-        ),
-        used_in: &[
-            used(
-                Href::ProductVariant,
-                "Product page: the variant is one signal; price, stock, SKU and photo are memos of it",
-                "صفحة المنتج: الاختيار signal واحد؛ والسعر والمخزون والـ SKU والصورة memos منه",
-            ),
-            used(
-                Href::Path("/search"),
-                "Header search: text, open and the active option are signals; the option list is a memo of the latest answer",
-                "البحث في الهيدر: النص والفتح والاختيار الحالي signals؛ وقايمة الاختيارات memo من آخر رد",
-            ),
-            used(
-                Href::Path("/#rail-deals"),
-                "Home: the countdown is a signal ticking once a second",
-                "الرئيسية: العد التنازلي signal بيتحدث كل ثانية",
-            ),
+            used(Href::Path("/"), "Home rails", "أقسام الرئيسية"),
+            used(Href::Category, "Category listings", "صفحات الأقسام"),
+            used(Href::Path("/search?q=phone"), "Search", "البحث"),
         ],
         note: None,
-        sources: &[
-            "crates/app/src/pages/product/panel.rs",
-            "crates/app/src/pages/showcase/islands.rs",
-            "crates/app/src/pages/home.rs",
-        ],
+        sources: &["crates/app/src/server/cache.rs", "crates/app/src/api/mod.rs"],
     },
     Feature {
-        id: "shared-state",
-        cat: Cat::Reactivity,
-        title: ("Shared state across islands", "حالة مشتركة بين الجزر"),
+        id: "tenancy",
+        cat: Cat::Server,
+        title: ("Tenancy by Host", "المحل من الـ Host"),
         what: (
-            "Islands are separate roots, but hydrate_islands() leaves one root owner current. Stores provided on it in client::init() are visible to every island through use_context, so islands far apart share the same signals.",
-            "كل island ليها جذر منفصل، بس hydrate_islands()‎ بيسيب owner رئيسي واحد شغال. أي store بيتوفر عليه في client::init()‎ بيبان لكل الـ islands عن طريق use_context، فالجزر البعيدة عن بعض بتشارك نفس الـ signals.",
+            "One binary serves both shops. The shop is the first label of the Host header (nile.…, souq.…), as with Madar's per-shop subdomains. It is resolved before rendering, so the logo, the name and the default language are in the first byte.",
+            "سيرفر واحد بيخدم المحلين. المحل بيتحدد من أول جزء في الـ Host ‏(nile.…‏ و souq.…)، زي الـ subdomains بتاعة كل محل في مدار. وبيتحدد قبل الرسم، فاللوجو والاسم واللغة الافتراضية بيبقوا في أول بايت.",
         ),
         why: (
-            "The header's cart badge, the cart drawer and every add-to-cart button are separate islands in different places; they all read and write one CartStore.",
-            "عدّاد السلة في الهيدر، ودرج السلة، وكل زرار «أضف للسلة» islands منفصلة في أماكن مختلفة؛ وكلهم بيقروا ويكتبوا في CartStore واحد.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/cart"),
-                "Every page: the header badge, the cart drawer and every quick-add share one CartStore",
-                "كل صفحة: عدّاد الهيدر ودرج السلة وكل زرار إضافة سريعة بيشاركوا CartStore واحد",
-            ),
-            used(
-                Href::ProductVariant,
-                "Product page: the purchase panel picks a colour, the gallery shows its photo",
-                "صفحة المنتج: لوحة الشراء بتختار اللون، والصور بتعرض صورته",
-            ),
-            used(
-                Href::Path("/#rail-deals"),
-                "Home: the countdown reads the shared Ui store",
-                "الرئيسية: العد التنازلي بيقرا store الـ Ui المشترك",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/client.rs",
-            "crates/app/src/stores.rs",
-            "crates/app/src/pages/cart/store.rs",
-        ],
-    },
-    // ── Data & server ──────────────────────────────────────────────────────────────────────────
-    Feature {
-        id: "server-fns",
-        cat: Cat::Data,
-        title: ("Server functions", "دوال السيرفر (Server functions)"),
-        what: (
-            "A #[server] async fn runs on the server and becomes a typed POST endpoint that the browser calls like a normal function. During SSR the same function is called directly, without an HTTP round-trip.",
-            "الـ ‎#[server]‎ دالة async بتشتغل على السيرفر وبتتحول لـ endpoint من نوع POST بأنواع واضحة، والمتصفح بينادي عليها كأنها دالة عادية. ووقت الـ SSR نفس الدالة بتتنادى مباشرة من غير رحلة HTTP.",
-        ),
-        why: (
-            "One Rust type crosses the wire (CartView, ListingPage), so the cart and the listings can't drift from the server's rules — prices come from madar-catalog.",
-            "نفس الـ type بتاع Rust بيعدّي بين الطرفين (CartView وListingPage)، فالسلة والقوايم مستحيل يختلفوا عن قواعد السيرفر — والأسعار جاية من madar-catalog.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/"),
-                "Home: nav_categories + home_rail during SSR",
-                "الرئيسية: nav_categories و home_rail وقت الـ SSR",
-            ),
-            used(
-                Href::Path("/cart"),
-                "Cart: cart_set_qty, cart_remove, cart_add — the same functions behind the forms and the islands",
-                "السلة: cart_set_qty و cart_remove و cart_add — نفس الدوال ورا الفورمز والـ islands",
-            ),
-            used(
-                Href::Path("/search"),
-                "Header search: search_products as you type",
-                "البحث في الهيدر: search_products وانت بتكتب",
-            ),
-            used(
-                Href::Category,
-                "Listings: list_products for each filter, sort and page",
-                "القوايم: list_products لكل فلتر وترتيب وصفحة",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/api/mod.rs",
-            "crates/app/src/api/cart.rs",
-            "crates/app/src/server/cache.rs",
-        ],
-    },
-    Feature {
-        id: "transition",
-        cat: Cat::Data,
-        title: (
-            "<Transition>: keep the old content while loading",
-            "‏<Transition>: المحتوى القديم يفضل لحد ما الجديد يوصل",
-        ),
-        what: (
-            "Like <Suspense>, but after the first load it keeps showing the previous content while its resource refetches, and reports pending so the UI can dim it.",
-            "زي <Suspense>، بس بعد أول تحميل بيفضل عارض المحتوى القديم وهو بيجيب الجديد، وبيبلّغ إنه pending عشان الواجهة تعتّمه.",
-        ),
-        why: (
-            "Paging or filtering a listing never flashes empty skeletons: the grid stays put and swaps once the next page is ready.",
-            "التنقل بين الصفحات أو الفلترة عمرها ما بتفضّي الشاشة لـ skeletons: الشبكة بتفضل مكانها وبتتبدل لما الصفحة الجاية تجهز.",
-        ),
-        used_in: &[used(
-            Href::Category,
-            "Listings: filters, sort and paging keep the old results on screen",
-            "القوايم: الفلاتر والترتيب والصفحات بتسيب النتايج القديمة على الشاشة",
-        )],
-        note: Some((
-            "The listing and the pager below both seed their first page from server props through an AsyncDerived that is ready on its first poll — a pending Resource inside an island breaks hydration after a client navigation (see Sharp edges).",
-            "القوايم والـ pager اللي تحت الاتنين بياخدوا أول صفحة من props السيرفر عن طريق AsyncDerived جاهز من أول poll — لإن Resource مستني جوه island بيكسر الـ hydration بعد التنقل (شوف «حاجات جرحتنا»).",
-        )),
-        sources: &[
-            "crates/app/src/pages/category/explorer.rs",
-            "crates/app/src/pages/showcase/islands.rs",
-        ],
-    },
-    Feature {
-        id: "sim",
-        cat: Cat::Data,
-        title: ("Simulated latency and faults", "بطء وأعطال تجريبية"),
-        what: (
-            "Every catalogue read waits its widget's pretend backend latency (a base × a per-widget factor) and can be made to fail. A cookie sets both per visitor, so streaming and error boundaries can be felt, not imagined.",
-            "كل قراءة من الكتالوج بتستنى زمن تجريبي للباك إند (أساس × معامل لكل widget) وممكن تخليها تفشل. كوكي بتظبط الاتنين لكل زائر، عشان تحس بالبث والـ error boundaries بنفسك.",
-        ),
-        why: (
-            "Real backends are slow and sometimes down. The UI has to be designed for that, not for localhost.",
-            "الباك إند الحقيقي بيبطأ وساعات بيقع. والواجهة لازم تتصمم على كده، مش على localhost.",
+            "Adding a shop is data, not a deployment. Hosts without a shop label, like a bare IP on the phone, fall back to a tenant cookie.",
+            "إضافة محل جديد بيانات، مش deployment. والـ hosts اللي من غير اسم محل، زي IP على الموبايل، بترجع لكوكي المحل.",
         ),
         used_in: &[used(
             Href::Path("/"),
-            "Every read on every page",
-            "كل قراءة في كل صفحة",
+            "Every page: logo, name, catalogue, delivery terms",
+            "كل صفحة: اللوجو والاسم والكتالوج وشروط التوصيل",
+        )],
+        note: None,
+        sources: &["crates/app/src/tenant.rs", "crates/app/src/request.rs"],
+    },
+    Feature {
+        id: "meta",
+        cat: Cat::Server,
+        title: ("Head and meta", "الـ head والـ meta"),
+        what: (
+            "<Title>, <Meta> and <Link> from leptos_meta are written synchronously from in-memory data. Title, description, canonical, OpenGraph and JSON-LD are all in the <head> of the first chunk.",
+            "‏<Title> و <Meta> و <Link> من leptos_meta بيتكتبوا في ساعتها من بيانات في الميموري. العنوان والوصف والـ canonical والـ OpenGraph والـ JSON-LD كلهم بيبقوا في الـ <head> من أول chunk.",
+        ),
+        why: (
+            "Crawlers and link previews read the first response and never run scripts. With in-order SSR and no head that waits for data, they see exactly what the shopper sees.",
+            "محركات البحث ومعاينات اللينكات بتقرا أول رد ومابتشغّلش سكريبتات. ومع الـ SSR بالترتيب ومن غير head بيستنى بيانات، بيشوفوا بالظبط اللي الزبون بيشوفه.",
+        ),
+        used_in: &[
+            used(
+                Href::Product,
+                "Product page: Product and BreadcrumbList JSON-LD",
+                "صفحة المنتج: JSON-LD للمنتج ولمسار الصفحة",
+            ),
+            used(
+                Href::Path("/"),
+                "Home: OpenGraph per shop and language",
+                "الرئيسية: OpenGraph لكل محل ولغة",
+            ),
+        ],
+        note: None,
+        sources: &["crates/app/src/pages/product/head.rs", "crates/app/src/pages/home.rs"],
+    },
+    Feature {
+        id: "sim",
+        cat: Cat::Server,
+        title: ("Simulated latency and faults", "تأخير وأعطال تجريبية"),
+        what: (
+            "/__sim?ms=350 sets a cookie for you alone. Every widget's read then waits a multiple of that base: deals {{2.6}}×, related products {{1.8}}×, search {{0.25}}×. ?fail=<widget> breaks one read for one request, and /__sim?fail=deals breaks it for the whole session.",
+            "‏‎/__sim?ms=350‎ بيحط كوكي ليك انت بس. بعدها قراءة كل widget بتستنى مضاعف من الرقم ده: العروض {{2.6}}×، والمنتجات المشابهة {{1.8}}×، والبحث {{0.25}}×. و ‎?fail=<widget>‎ بيبوّظ قراءة واحدة في طلب واحد، و ‎/__sim?fail=deals‎ بيبوّظها طول الجلسة.",
+        ),
+        why: (
+            "On localhost everything answers at once, which hides loading states, slow phones and partial failures. It's off by default, and it's how every skeleton, timeout and error state here was checked.",
+            "على localhost كل حاجة بترد في ساعتها، وده بيخبّي حالات التحميل والموبايلات البطيئة والأعطال الجزئية. هو مقفول افتراضيًا، وبيه اتجرّبت كل حالة تحميل وتأخير وخطأ هنا.",
+        ),
+        used_in: &[used(
+            Href::Path("/"),
+            "Every catalogue read in the app",
+            "كل قراءة من الكتالوج في الأبلكيشن",
         )],
         note: None,
         sources: &["crates/app/src/server/sim.rs", "crates/server/src/main.rs"],
     },
-    // ── Forms ──────────────────────────────────────────────────────────────────────────────────
-    Feature {
-        id: "action-form",
-        cat: Cat::Forms,
-        title: (
-            "ActionForm + ServerAction: progressive forms",
-            "‏ActionForm و ServerAction: فورمز شغالة في كل الأحوال",
-        ),
-        what: (
-            "<ActionForm> renders a real <form method=post> aimed at the server function. Without JavaScript the browser posts it and the server redirects back; with JavaScript it dispatches the ServerAction and updates in place, with pending and the result as signals.",
-            "‏<ActionForm> بيطلع <form method=post> حقيقي رايح لدالة السيرفر. من غير JavaScript المتصفح بيبعته والسيرفر يرجّعك لنفس الصفحة؛ ومع JavaScript بيشغّل الـ ServerAction ويحدّث مكانه، والـ pending والنتيجة متاحين كـ signals.",
-        ),
-        why: (
-            "Add to cart and checkout must work on every phone, good network or not — one server function serves both paths.",
-            "«أضف للسلة» والدفع لازم يشتغلوا على أي موبايل، النت كويس أو لأ — ودالة سيرفر واحدة بتخدم الطريقتين.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/cart"),
-                "Cart: every quantity and remove control is a stock ActionForm in a server component",
-                "السلة: كل تحكم في الكمية والحذف ActionForm عادي جوه كومبوننت سيرفر",
-            ),
-            used(
-                Href::Product,
-                "Product page: add to cart — an ActionForm in the purchase panel (no JS: it posts and comes back with ?added=)",
-                "صفحة المنتج: «أضف للسلة» — ActionForm في لوحة الشراء (من غير JS: بيبعت ويرجع بـ ‎?added=‎)",
-            ),
-            used(
-                Href::Path("/checkout"),
-                "Checkout: the address step, checked by the same Rust rules in the browser and on the server",
-                "الدفع: خطوة العنوان، بتتراجع بنفس قواعد Rust في المتصفح وعلى السيرفر",
-            ),
-        ],
-        note: Some((
-            "Two styles side by side: the cart page's forms live in a server component, so with JavaScript the islands router posts them and diffs the page the server sends back — no island at all. The product panel, checkout and this demo dispatch the ServerAction from an island.",
-            "طريقتين جنب بعض: فورمز صفحة السلة جوه كومبوننت سيرفر، فمع JavaScript الـ islands router هو اللي بيبعتها ويعمل diff للصفحة اللي راجعة — من غير أي island. ولوحة الشراء والدفع والديمو ده بيشغّلوا الـ ServerAction من جوه island.",
-        )),
-        sources: &[
-            "crates/app/src/pages/cart/page.rs",
-            "crates/app/src/pages/product/panel.rs",
-            "crates/app/src/pages/showcase/notes.rs",
-        ],
-    },
-    // ── Routing & navigation ───────────────────────────────────────────────────────────────────
-    Feature {
-        id: "islands-router",
-        cat: Cat::Routing,
-        title: (
-            "islands-router: app-like navigation, no SPA",
-            "‏islands-router: تنقل زي الأبلكيشن من غير SPA",
-        ),
-        what: (
-            "Same-origin links and forms are intercepted; the next page's HTML is fetched and diffed into the current DOM inside a View Transition. Islands are skipped by the diff, so their state survives the navigation.",
-            "اللينكات والفورمز اللي على نفس الموقع بيتم اعتراضها: الـ HTML بتاع الصفحة الجاية بيتجاب ويتعمله diff جوه الـ DOM الحالي جوه View Transition. والـ islands مش بيتعملها diff، فحالتها بتفضل زي ما هي.",
-        ),
-        why: (
-            "Page changes without a white flash and without losing the open cart, while every page is still server-rendered, cacheable HTML that works without JavaScript.",
-            "تنقل من غير وميض أبيض ومن غير ما السلة المفتوحة تتقفل، وفي نفس الوقت كل صفحة HTML متجهز على السيرفر، بيتعمله كاش، وشغال من غير JavaScript.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/"),
-                "Every link and form on every page",
-                "كل لينك وكل فورم في كل صفحة",
-            ),
-            used(
-                Href::Path("/cart"),
-                "Cart: each post is diffed in place; the lines are a keyed <For>",
-                "السلة: كل طلب بيتعمله diff مكانه؛ والسطور <For> بمفاتيح",
-            ),
-            used(
-                Href::Path("/checkout"),
-                "Checkout: each step is a form the router posts; the server redirects to the next",
-                "الدفع: كل خطوة فورم الراوتر بيبعته؛ والسيرفر بيحوّل للخطوة اللي بعدها",
-            ),
-            used(
-                Href::Product,
-                "Product → product replaces the islands (a keyed <For>); a language switch keeps them",
-                "من منتج لمنتج الـ islands بتتغير (‏<For> بمفتاح)؛ وتبديل اللغة بيسيبها زي ما هي",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/lib.rs",
-            "crates/app/src/pages/cart/page.rs",
-            "leptos-0.8.22/leptos/src/hydration/islands_routing.js",
-        ],
-    },
+    // ── The TypeScript client ──────────────────────────────────────────────────────────────────
     Feature {
         id: "router",
-        cat: Cat::Routing,
-        title: (
-            "Router: params and query drive the server render",
-            "الراوتر: الـ params والـ query بيحددوا اللي يترسم",
-        ),
+        cat: Cat::Client,
+        title: ("The router and the page cache", "الراوتر وكاش الصفحات"),
         what: (
-            "/c/:slug and /p/:slug are typed routes. use_params_map and use_query_map read the path and the query in server components, and the page is rendered for that exact URL — filters, sort, page and variant included.",
-            "‏/c/:slug و /p/:slug ‏routes بأنواع واضحة. و use_params_map و use_query_map بيقروا المسار والـ query في كومبوننتس السيرفر، والصفحة بتترسم للـ URL ده بالظبط — بالفلاتر والترتيب والصفحة والاختيار.",
+            "core/router.ts takes over same-origin links and forms. It fetches the next page's HTML, swaps the page's regions, and mounts the features in what came in. Pages are cached with a TTL and stale-while-revalidate, a hover ({{65}} ms) or a finger-down prefetches, and refresh() skips the cache.",
+            "‏core/router.ts بيمسك اللينكات والفورمز اللي على نفس الموقع. بيجيب HTML الصفحة الجاية، ويبدّل أجزاء الصفحة، ويركّب الـ features في الجزء اللي وصل. الصفحات بتتخزن بـ TTL و stale-while-revalidate، والوقوف بالماوس ({{65}} مللي ثانية) أو لمسة الصباع بيعملوا prefetch، و refresh()‎ بيتخطّى الكاش.",
         ),
         why: (
-            "Every filter, sort, page and variant is a URL you can share, cache at the edge and open without JavaScript: the URL is the state.",
-            "كل فلتر وترتيب وصفحة واختيار ليه URL تقدر تبعته، ويتعمله كاش على الـ CDN، ويفتح من غير JavaScript: الـ URL هو الحالة.",
-        ),
-        used_in: &[
-            used(
-                Href::CategoryQuery,
-                "Category: use_params_map for :slug, the query for filters/sort/page",
-                "القسم: ‏use_params_map للـ ‎:slug‎، والـ query للفلاتر والترتيب والصفحة",
-            ),
-            used(
-                Href::ProductVariant,
-                "Product page: ?v= picks the variant (variant values are links without JavaScript)",
-                "صفحة المنتج: ‎?v=‎ بيختار الاختيار (والاختيارات لينكات من غير JavaScript)",
-            ),
-            used(
-                Href::Path("/search?deal=1&sort=discount"),
-                "Search and the home page's “See all” links",
-                "البحث ولينكات «عرض الكل» في الرئيسية",
-            ),
-            used(
-                Href::Path("/orders"),
-                "Order lookup: a GET form; a known reference redirects to /orders/:id",
-                "البحث عن طلب: فورم GET؛ والرقم الصح بيحوّلك لـ ‎/orders/:id‎",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/lib.rs",
-            "crates/app/src/pages/category.rs",
-            "crates/app/src/pages/product.rs",
-            "crates/app/src/api/types.rs",
-        ],
-    },
-    Feature {
-        id: "router-patches",
-        cat: Cat::Routing,
-        title: (
-            "islands-router: what we had to patch",
-            "الـ islands-router: اللي اضطرينا نرقّعه",
-        ),
-        what: (
-            "The router itself is a small script (leptos/src/hydration/islands_routing.js) that diffs fetched HTML into the page. The app wraps it with one more script (components/shell.js, inlined once, no WASM): realign <head> before each diff, keep <noscript> inert, manage scroll, always revalidate, send the pressed submit button, warm pages on intent, show progress and failed navigations, and name only the clicked card for the photo morph. The server helps too: router responses carry no <noscript>.",
-            "الراوتر نفسه سكريبت صغير (‏leptos/src/hydration/islands_routing.js) بيعمل diff للـ HTML اللي بيجيبه جوه الصفحة. والأبلكيشن بيلفّه بسكريبت تاني (‏components/shell.js، مرة واحدة في الصفحة ومن غير WASM): يظبط الـ <head> قبل كل diff، ويخلي الـ <noscript> مالوش أثر، ويتحكم في الـ scroll، ويتأكد من السيرفر كل مرة، ويبعت الزرار اللي اتداس عليه مع الفورم، ويجهّز الصفحة قبل الضغط، ويوري التقدم والتنقل اللي فشل، ويدي اسم الـ morph للكارت اللي اتداس عليه بس. والسيرفر بيساعد كمان: مفيش <noscript> refresh في ردود الراوتر.",
-        ),
-        why: (
-            "These are the gaps between “works in the example” and “works in a shop”: without them a cross-page navigation could leave the old page on screen, a no-JS redirect could fire for JS users, every new page opened at the old scroll position, and the cart's “remove” button posted as “update”.",
-            "دي الفجوات بين «شغال في المثال» و«شغال في متجر»: من غيرها التنقل بين صفحتين ممكن يسيب الصفحة القديمة على الشاشة، وتحويل الـ no-JS ممكن يشتغل للي عندهم JS، وكل صفحة جديدة تفتح في نفس مكان الـ scroll القديم، وزرار «احذف» في السلة يتبعت كأنه «حدّث».",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/"),
-                "Every page: the shell inlines shell.js once (21 KB, about 7 KB gzipped)",
-                "كل صفحة: الـ shell بيحط shell.js مرة واحدة (‏21 KB، حوالي 7 KB مضغوط)",
-            ),
-            used(
-                Href::Path("/cart"),
-                "Cart: remove buttons reach the server with their value",
-                "السلة: زرار الحذف بيوصل للسيرفر بقيمته",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/components/shell.js",
-            "crates/app/src/components/shell.rs",
-            "crates/app/src/lib.rs",
-        ],
-    },
-    // ── Platform & caching ─────────────────────────────────────────────────────────────────────
-    Feature {
-        id: "caching",
-        cat: Cat::Platform,
-        title: (
-            "HTTP caching hooks: Cache-Control, CDN-Cache-Control, Cache-Tag",
-            "الكاش: Cache-Control و CDN-Cache-Control و Cache-Tag",
-        ),
-        what: (
-            "Each page decides its caching synchronously, before streaming starts. Catalogue pages tell browsers to revalidate (no-cache — language and theme live in cookies) and tell the edge to keep a short-lived copy (CDN-Cache-Control) tagged for targeted purges; anything personal is private, no-store. Reads behind them go through a moka cache keyed by tenant + generation.",
-            "كل صفحة بتقرر الكاش بتاعها بشكل متزامن قبل ما البث يبدأ. صفحات الكتالوج بتقول للمتصفح «اتأكد كل مرة» (‏no-cache — لإن اللغة والثيم في الكوكيز) وبتقول للـ CDN «احتفظ بنسخة قصيرة العمر» (‏CDN-Cache-Control) عليها تاجات للمسح بالتحديد؛ وأي حاجة شخصية private, no-store. والقراءات وراها بتعدّي على كاش moka بمفتاح المتجر + الـ generation.",
-        ),
-        why: (
-            "Cloudflare can serve the catalogue from the edge to every visitor, and a price change purges exactly that product's pages by tag.",
-            "‏Cloudflare يقدر يقدّم الكتالوج من أقرب سيرفر لكل زائر، وتغيير سعر بيمسح صفحات المنتج ده بس بالتاج.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/"),
-                "Home: edge copy (CDN-Cache-Control) + Cache-Tag: t{tenant}",
-                "الرئيسية: نسخة على الـ CDN (‏CDN-Cache-Control) مع Cache-Tag: t{tenant}",
-            ),
-            used(
-                Href::Product,
-                "Product page: Cache-Tag t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id} — a price change purges just those",
-                "صفحة المنتج: ‏Cache-Tag ‏t{tenant} و t{tenant}-p{id} و t{tenant}-cat{id} — تغيير السعر بيمسح دول بس",
-            ),
-            used(
-                Href::Path("/cart"),
-                "Cart, checkout, orders: private, no-store",
-                "السلة والدفع والطلبات: private, no-store",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/server/cache.rs",
-            "crates/app/src/api/mod.rs",
-            "crates/app/src/pages/product.rs",
-        ],
-    },
-    Feature {
-        id: "tenancy",
-        cat: Cat::Platform,
-        title: ("Multi-tenancy by Host", "تعدد المتاجر بالـ Host"),
-        what: (
-            "The first label of the Host header picks the tenant before anything renders (nile.…, souq.…); a cookie covers hosts that have none. Name, logo, default language, catalogue, delivery rules and cache tags all follow; the look is one platform-wide palette.",
-            "أول جزء في الـ Host بيحدد المتجر قبل أي رسم (‎nile.…‎ و ‎souq.…‎)؛ والكوكي بتغطي الـ hosts اللي من غيره. والاسم واللوجو واللغة الافتراضية والكتالوج وقواعد التوصيل وتاجات الكاش كلهم بيمشوا وراه؛ والشكل نفسه واحد للمنصة كلها.",
-        ),
-        why: (
-            "One deployment serves every shop on its own subdomain — the same model as Madar's per-shop subdomains.",
-            "نسخة واحدة من التطبيق بتخدم كل المحلات، كل محل على الـ subdomain بتاعه — نفس فكرة الـ subdomains في مدار.",
+            "Navigation feels instant without rendering pages in the browser. The server still renders every page, and the router only moves HTML. Without JavaScript the same links are ordinary page loads.",
+            "التنقل بيبقى فوري من غير ما الصفحات تترسم في المتصفح. السيرفر لسه هو اللي بيرسم كل صفحة، والراوتر بس بينقل الـ HTML. ومن غير JavaScript نفس اللينكات بتبقى تحميل صفحة عادي.",
         ),
         used_in: &[used(
             Href::Path("/"),
-            "Every request (resolved in request::init)",
-            "كل request (بيتحدد في request::init)",
+            "Every link and form on every page",
+            "كل لينك وكل فورم في كل صفحة",
         )],
         note: None,
-        sources: &[
-            "crates/app/src/tenant.rs",
-            "crates/app/src/request.rs",
-            "crates/app/src/server/mod.rs",
-        ],
+        sources: &["client/src/core/router.ts", "client/src/core/cache.ts", "client/src/main.ts"],
     },
-    // ── i18n / RTL ─────────────────────────────────────────────────────────────────────────────
     Feature {
-        id: "i18n",
-        cat: Cat::I18n,
-        title: (
-            "Language, direction, numerals, theme — no reload",
-            "اللغة والاتجاه والأرقام والثيم — من غير ريلود",
-        ),
+        id: "stores",
+        cat: Cat::Client,
+        title: ("One store per concern", "store واحد لكل حاجة"),
         what: (
-            "The toggles are plain links to /__prefs. The islands router follows the redirect and diffs the new HTML in, which rewrites <html lang dir data-theme>; a MutationObserver mirrors those attributes into the Ui store, so islands re-render their own text.",
-            "أزرار التبديل لينكات عادية لـ ‎/__prefs‎. الـ islands router بيتبع التحويل ويعمل diff للـ HTML الجديد، فبيتغير <html lang dir data-theme>؛ وفيه MutationObserver بينقل الـ attributes دي لـ store الـ Ui، فالـ islands بتعيد رسم نصوصها.",
+            "createStore(initial) is the only state primitive: a value with subscribers. Each concern has exactly one store, created once in stores/*.ts: the cart, the toast queue, the router's pending state. Every feature that needs one imports that same store.",
+            "‏createStore(initial)‎ هو الأداة الوحيدة للحالة: قيمة ومعاها مشتركين. كل حاجة ليها store واحد بس، بيتعمل مرة واحدة في stores/*.ts: السلة، وطابور التنبيهات، وحالة الراوتر وهو بيحمّل. وأي feature محتاجة واحد منهم بتستورد نفس الـ store ده.",
         ),
         why: (
-            "Egyptian shoppers switch between Arabic and English — and between ٣ and 3 — mid-session. It has to be instant and keep the cart open.",
-            "المشتري المصري بيبدّل بين العربي والإنجليزي — وبين ٣ و 3 — وهو بيتسوق. لازم يحصل فورًا ومن غير ما السلة تتقفل.",
+            "The header badge, the drawer and the cart page can't disagree when they read the same store. There's also one path per action: the cart changes only through stores/cart.ts.",
+            "علامة السلة في الهيدر والدرج وصفحة السلة مستحيل يختلفوا طالما بيقروا من نفس الـ store. وكمان فيه طريق واحد لكل عملية: السلة مابتتغيرش غير من stores/cart.ts.",
+        ),
+        used_in: &[used(
+            Href::Path("/cart"),
+            "Header badge, cart drawer and /cart",
+            "علامة السلة في الهيدر والدرج وصفحة السلة",
+        )],
+        note: None,
+        sources: &["client/src/core/store.ts", "client/src/stores/toasts.ts", "client/src/stores/cart.ts"],
+    },
+    Feature {
+        id: "cart",
+        cat: Cat::Client,
+        title: ("The cart lives in a cookie", "السلة عايشة في كوكي"),
+        what: (
+            "The browser owns the cart: lines like 2307:1:2 in the cart cookie, written only by stores/cart.ts. Adding, removing and changing a quantity happen on the spot, with no request. The server reads the same cookie only when it has to price it: on /cart, for the drawer's quote and at checkout.",
+            "المتصفح هو اللي ماسك السلة: سطور زي 2307:1:2 في كوكي cart، ومحدش بيكتبها غير stores/cart.ts. الإضافة والشيل وتغيير الكمية بيحصلوا عندك في ساعتها، من غير أي طلب. والسيرفر بيقرا نفس الكوكي بس لما يحتاج يسعّرها: في صفحة السلة، ولحساب الدرج، وعند الدفع.",
+        ),
+        why: (
+            "Taps never wait for the network, the cart survives reloads and stays in step across tabs, and no-JS forms change the very same cookie. Prices, stock and totals still come from the server, formatted.",
+            "اللمسات عمرها ما بتستنى النت، والسلة بتفضل بعد الريلود وبتفضل متظبطة بين التابات، والفورمز اللي من غير JS بتغيّر نفس الكوكي بالظبط. والأسعار والمخزون والإجمالي لسه جايين من السيرفر ومتنسقين.",
         ),
         used_in: &[
-            used(
-                Href::Path("/#rail-deals"),
-                "Home: the countdown follows the language and numerals",
-                "الرئيسية: العد التنازلي بيتبع اللغة والأرقام",
-            ),
-            used(
-                Href::CategoryQuery,
-                "Listings: switching language keeps your filters (shell.js points next= at the live address)",
-                "القوايم: تبديل اللغة بيحافظ على الفلاتر (‏shell.js بيوجّه next=‎ للعنوان الحالي)",
-            ),
-            used(
-                Href::Path("/checkout"),
-                "Checkout: field errors in the visitor's language, from the same Rust rules on both sides",
-                "الدفع: أخطاء الخانات بلغة الزائر، من نفس قواعد Rust على الناحيتين",
-            ),
+            used(Href::Path("/cart"), "/cart and checkout price the cookie", "صفحة السلة والدفع بيسعّروا الكوكي"),
+            used(Href::Product, "Product page: add to cart", "صفحة المنتج: أضف للسلة"),
         ],
         note: None,
-        sources: &[
-            "crates/server/src/main.rs",
-            "crates/app/src/client.rs",
-            "crates/app/src/prefs.rs",
-            "crates/app/src/format.rs",
-        ],
+        sources: &["client/src/stores/cart.ts", "crates/domain/src/cart.rs"],
     },
-    // ── Media & motion ─────────────────────────────────────────────────────────────────────────
     Feature {
-        id: "view-transitions",
-        cat: Cat::Media,
-        title: ("View Transitions API", "‏View Transitions API"),
+        id: "templates",
+        cat: Cat::Client,
+        title: ("Templates filled by TypeScript", "قوالب بيملاها TypeScript"),
         what: (
-            "The islands router wraps each DOM diff in document.startViewTransition(). Give an element on the old and the new page the same view-transition-name and the browser morphs one into the other.",
-            "الـ islands router بيلف كل diff جوه document.startViewTransition()‎. لو اديت عنصر في الصفحة القديمة والجديدة نفس الـ view-transition-name، المتصفح بيحوّل واحد للتاني بحركة.",
+            "When the client has to show data, such as a toast, a cart line or a search suggestion, it clones a server-rendered <template id=\"tpl-…\">, and fill() sets each [data-slot] as text. The markup and its translated labels are written once, in Rust.",
+            "لما العميل يحتاج يعرض بيانات، زي تنبيه أو سطر في السلة أو اقتراح بحث، بياخد نسخة من <template id=\"tpl-…\"> جاي من السيرفر، و fill()‎ بيحط كل [data-slot] كنص. الـ markup والكلام المترجم بتاعه متكتبين مرة واحدة، في Rust.",
         ),
         why: (
-            "A product photo can fly from its card into the product page: app-like continuity with plain links and no animation code.",
-            "صورة المنتج تقدر تطير من الكارت لصفحة المنتج: إحساس الأبلكيشن بلينكات عادية ومن غير كود أنيميشن.",
+            "There's no second copy of the UI in the client, no HTML built from strings, and nothing inserted as HTML. A change to a component's markup is made in one place, and the client picks it up.",
+            "مفيش نسخة تانية من الواجهة في العميل، ولا HTML متركّب من نصوص، ولا حاجة بتتحط كـ HTML. وأي تعديل في شكل كومبوننت بيتعمل في مكان واحد، والعميل بياخده.",
+        ),
+        used_in: &[used(
+            Href::Path("/"),
+            "The toaster (tpl-toast) on every page",
+            "التنبيهات (tpl-toast) في كل صفحة",
+        )],
+        note: None,
+        sources: &["client/src/core/dom.ts", "crates/app/src/components/toast.rs"],
+    },
+    Feature {
+        id: "data-cache",
+        cat: Cat::Client,
+        title: ("The client data cache", "كاش البيانات في العميل"),
+        what: (
+            "core/cache.ts keeps API reads and pages in memory: fresh for a TTL, then stale-while-revalidate (shown at once, refreshed in the background), then gone. Reads of one key at the same time share one request, and every key includes the shop, the language and the numerals.",
+            "‏core/cache.ts بيحتفظ بقراءات الـ API والصفحات في الميموري: طازة لمدة الـ TTL، وبعدها stale-while-revalidate (بتظهر على طول وتتحدّث في الخلفية)، وبعدين تتشال. والقراءات لنفس المفتاح في نفس الوقت بتشترك في طلب واحد، وكل مفتاح فيه المحل واللغة ونوع الأرقام.",
+        ),
+        why: (
+            "Going back to a page or reopening the drawer shows data immediately, and a language switch can never show a cached page in the other language. A new catalogue generation from the server (x-catalog-gen) drops everything.",
+            "لما ترجع لصفحة أو تفتح الدرج تاني البيانات بتظهر على طول، وتغيير اللغة عمره ما يعرض صفحة متخزنة باللغة التانية. ولو السيرفر بعت generation جديد للكتالوج (x-catalog-gen)، كل حاجة بتتشال.",
+        ),
+        used_in: &[used(
+            Href::Path("/cart"),
+            "The cart quote: {{60}} s fresh, {{5}} min stale",
+            "حساب السلة: طازة {{60}} ثانية، وقديم {{5}} دقايق",
+        )],
+        note: None,
+        sources: &["client/src/core/cache.ts"],
+    },
+    Feature {
+        id: "springs",
+        cat: Cat::Client,
+        title: ("Springs, from core/motion.ts", "حركة السبرينج من core/motion.ts"),
+        what: (
+            "SpringValue animates a number with a damped spring, solved exactly on every frame. It can be interrupted: a new target starts from the live value and velocity. A flick hands over its release velocity, project() says where it would come to rest, and rubberband() resists past an edge.",
+            "‏SpringValue بيحرّك رقم بسبرينج متخمّد، بيتحسب بالظبط في كل فريم. وتقدر تقاطعه: أي هدف جديد بيبدأ من القيمة والسرعة اللي عليها دلوقتي. والزقّة بتسلّم سرعتها لحظة ما تسيب، و project()‎ بيقول هتقف فين، و rubberband()‎ بيقاوم بعد الطرف.",
+        ),
+        why: (
+            "Drawers, sheets and the gallery follow the finger and leave the way they came, as on iOS. There's one implementation for every gesture, so nothing moves on a different curve.",
+            "الأدراج والشيتات والجاليري بيمشوا مع صباعك وبيخرجوا من نفس السكة اللي دخلوا منها، زي iOS. وفيه تنفيذ واحد لكل الحركات، فمفيش حاجة بتتحرك بمنحنى مختلف.",
         ),
         used_in: &[
-            used(
-                Href::Category,
-                "Any product card → its page: the photo flies into the product's main image",
-                "أي كارت منتج → صفحته: الصورة بتطير لصورة المنتج الرئيسية",
-            ),
-            used(
-                Href::Path("/"),
-                "Every other navigation: a cross-fade",
-                "أي تنقل تاني: cross-fade",
-            ),
+            used(Href::Path("/ui#overlays"), "The drawer and the sheet on /ui", "الدرج والشيت في ‎/ui‎"),
+            used(Href::Product, "The product gallery's swipe", "سحب الصور في صفحة المنتج"),
         ],
+        note: None,
+        sources: &["client/src/core/motion.ts"],
+    },
+    Feature {
+        id: "bundle",
+        cat: Cat::Client,
+        title: ("The size of the client", "حجم العميل"),
+        what: (
+            "All the browser code is one ES module. It is type-checked by tsc, bundled by esbuild from crates/app/build.rs, embedded in the server binary and served at a content-hashed /js/app-….js that browsers keep for good.",
+            "كود المتصفح كله ES module واحد. بيتشيك عليه tsc، وبيجمّعه esbuild من crates/app/build.rs، وبيتحط جوه السيرفر نفسه، وبيتقدّم على ‎/js/app-….js‎ باسم فيه hash، فالمتصفح بيحتفظ بيه على طول.",
+        ),
+        why: (
+            "The budget for the whole client is {{30}} KB gzip. The WASM islands it replaced cost {{379}}–{{769}} KB brotli on every page, before any page-specific chunk.",
+            "الميزانية للعميل كله {{30}} كيلوبايت gzip. وجزر الـ WASM اللي جه مكانها كانت بتكلّف من {{379}} لـ {{769}} كيلوبايت brotli في كل صفحة، قبل أي جزء خاص بالصفحة.",
+        ),
+        used_in: &[used(Href::Path("/"), "Every page loads exactly this file", "كل صفحة بتحمّل الملف ده بالظبط")],
+        note: None,
+        sources: &["client/build.mjs", "crates/app/build.rs", "crates/app/src/client_js.rs"],
+    },
+    // ── Decisions ──────────────────────────────────────────────────────────────────────────────
+    Feature {
+        id: "why-not-islands",
+        cat: Cat::Decisions,
+        title: ("Why we left WASM islands", "ليه سبنا جزر الـ WASM"),
+        what: (
+            "The first version used Leptos islands: #[island] components compiled to WebAssembly and hydrated in the browser, with the islands router doing the navigation. It worked, and we measured it in Chromium against the release server.",
+            "النسخة الأولى كانت بجزر Leptos: كومبوننتس ‎#[island]‎ بتتحول WebAssembly وتصحى في المتصفح، والـ islands router هو اللي بيعمل التنقل. كانت شغالة، وقسناها في Chromium على سيرفر الـ release.",
+        ),
+        why: (
+            "Every page paid {{379}}–{{769}} KB of brotli WASM for a storefront that is mostly static, and hydration had race bugs that broke whole pages. Here are the measurements.",
+            "كل صفحة كانت بتدفع من {{379}} لـ {{769}} كيلوبايت WASM ‏(brotli) في متجر أغلبه ثابت، والـ hydration كان فيه مشاكل توقيت بتبوّظ صفحات كاملة. ودي القياسات.",
+        ),
+        used_in: &[],
         note: Some((
-            "The card's image box carries data-vt=\"p{id}\" and the product page names its main image p{id}. shell.js names only the card that was clicked: a product can sit on a page twice, and duplicate names abort the transition.",
-            "صورة الكارت عليها data-vt=\"p{id}\" وصفحة المنتج بتدي صورتها الرئيسية الاسم p{id}. و shell.js بيدي الاسم للكارت اللي اتداس عليه بس: المنتج ممكن يتكرر في الصفحة، والأسماء المكررة بتلغي الحركة.",
+            "Measured on {{26}} October {{2026}} with Leptos 0.8.22: release builds, bytes as sent. The full report is in README.md.",
+            "اتقاس يوم {{26}} أكتوبر {{2026}} على Leptos 0.8.22: نسخ release، والبايتات زي ما اتبعتت. التقرير الكامل في README.md.",
         )),
-        sources: &[
-            "crates/app/src/components/shell.js",
-            "crates/app/src/components/product_card.rs",
-            "leptos-0.8.22/leptos/src/hydration/islands_routing.js",
-        ],
-    },
-    Feature {
-        id: "motion",
-        cat: Cat::Media,
-        title: (
-            "Apple-style motion in Rust/WASM: springs you can grab",
-            "حركة على طريقة Apple في Rust/WASM: سبرينج تقدر تمسكه",
-        ),
-        what: (
-            "components::motion solves a damped spring in closed form every frame, set by Apple's two parameters (damping, response). Motion starts from the value on screen, inherits the finger's release velocity, projects momentum to pick where a flick lands, and rubber-bands past the edges — Rust compiled into the islands' WASM, driven by requestAnimationFrame.",
-            "‏components::motion بيحل معادلة السبرينج بشكل مباشر في كل فريم، بالمعاملين بتوع Apple (‏damping و response). الحركة بتبدأ من مكان العنصر على الشاشة، وبتاخد سرعة صباعك لحظة ما تسيبه، وبتتوقع العنصر هيقف فين بعد الـ flick، وبتقاوم بنعومة لما تشده بعد الحافة — كل ده Rust متحوّل لـ WASM الـ islands، وشغال على requestAnimationFrame.",
-        ),
-        why: (
-            "Drawers and bottom sheets that follow the finger, can be caught mid-flight and settle with the hand's momentum feel native on phones; CSS transitions can't be interrupted cleanly or handed a velocity.",
-            "الأدراج والـ bottom sheets اللي بتمشي مع صباعك، وتقدر تمسكها وهي بتتحرك، وتقف بنفس اندفاع إيدك بتحس إنها جزء من الموبايل؛ والـ CSS transitions ماتقدرش تتقاطع بنعومة ولا تاخد سرعة.",
-        ),
-        used_in: &[
-            used(
-                Href::Product,
-                "Product gallery: swipe, flick, rubber-band ends, a pinch-zoom viewer",
-                "صور المنتج: سحب وقذف وحواف مطاطية وعارض بتكبير الصباعين",
-            ),
-            used(
-                Href::Path("/cart"),
-                "The cart drawer and the listing's filter sheet: drag to dismiss",
-                "درج السلة وشيت الفلاتر في القوايم: اسحب عشان تقفل",
-            ),
-            used(
-                Href::Path("/ui#overlays"),
-                "UI kit: every drawer",
-                "الـ UI kit: كل الأدراج",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/components/motion.rs",
-            "crates/app/src/components/drawer.rs",
-            "crates/app/src/pages/product/gallery.rs",
-        ],
-    },
-    Feature {
-        id: "images",
-        cat: Cat::Media,
-        title: (
-            "Responsive images: srcset, sizes, LQIP",
-            "صور متجاوبة: srcset و sizes و LQIP",
-        ),
-        what: (
-            "Every image is a key with a WebP width ladder, an aspect ratio, a 20 px blurred placeholder and a dominant colour (media::Img). The browser picks the rung from srcset + sizes; the box is reserved, so nothing jumps.",
-            "كل صورة عبارة عن مفتاح ليه سلسلة مقاسات WebP، ونسبة أبعاد، وصورة مموهة ٢٠ بكسل، ولون غالب (media::Img). المتصفح بيختار المقاس من srcset و sizes؛ والمساحة محجوزة فمفيش حاجة بتنط.",
-        ),
-        why: (
-            "Product photos are most of a shop's bytes. Picking 400w instead of 960w on a phone is the biggest single win.",
-            "صور المنتجات هي أغلب حجم المتجر. إنك تختار 400w بدل 960w على الموبايل هو أكبر مكسب لوحده.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/#latest-title"),
-                "Home: “The latest” tiles and product cards",
-                "الرئيسية: «الأحدث» وكروت المنتجات",
-            ),
-            used(
-                Href::Path("/#categories"),
-                "Home: category tiles",
-                "الرئيسية: صور الأقسام",
-            ),
-            used(
-                Href::Product,
-                "Product gallery: the first photo is preloaded in <head> with the same sizes, so the browser fetches one file",
-                "صور المنتج: أول صورة بتتعمل لها preload في الـ <head> بنفس الـ sizes، فالمتصفح بيجيب ملف واحد",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/media.rs",
-            "crates/app/src/components/image.rs",
-            "tools/media/process.py",
-        ],
-    },
-    // ── Accessibility ──────────────────────────────────────────────────────────────────────────
-    Feature {
-        id: "a11y",
-        cat: Cat::A11y,
-        title: ("Accessibility patterns", "أنماط الإتاحة"),
-        what: (
-            "Semantic HTML first, ARIA where HTML runs out: a modal sheet that moves focus in and back out, aria-live regions for status messages, labelled controls, and visible focus rings.",
-            "‏HTML الدلالي الأول، وARIA لما الـ HTML ميكفيش: شاشة منبثقة بتنقل الفوكس جواها وترجّعه، ومناطق aria-live لرسائل الحالة، وعناصر تحكم ليها labels، وحلقة فوكس واضحة.",
-        ),
-        why: (
-            "Screen-reader and keyboard users buy things too, and the same structure is what search engines read.",
-            "اللي بيستخدموا قارئ الشاشة والكيبورد بيشتروا برضه، ونفس الهيكل ده هو اللي محركات البحث بتقراه.",
-        ),
-        used_in: &[
-            used(
-                Href::Path("/search"),
-                "Header search: an ARIA combobox (aria-activedescendant, ↑/↓, Esc)",
-                "البحث في الهيدر: ‏combobox (‏aria-activedescendant، والأسهم، و Esc)",
-            ),
-            used(
-                Href::Path("/ui#overlays"),
-                "Drawers on a native <dialog>; toasts in a role=status region",
-                "أدراج على <dialog> أصلي؛ والإشعارات في منطقة role=status",
-            ),
-            used(
-                Href::Path("/checkout"),
-                "Checkout: focus moves to each new step's heading; an invalid form focuses the first problem and says how many",
-                "الدفع: الفوكس بيروح لعنوان كل خطوة جديدة؛ والفورم الغلط بيركّز على أول مشكلة ويقول عددهم",
-            ),
-            used(
-                Href::Product,
-                "Product gallery: arrows, Home/End, Enter to open, Escape to close",
-                "صور المنتج: الأسهم و Home/End و Enter للفتح و Escape للقفل",
-            ),
-            used(
-                Href::Path("/"),
-                "Skip link, labelled sections, role=status fallbacks",
-                "لينك «انتقل للمحتوى»، وأقسام ليها عناوين، و role=status للأعطال",
-            ),
-        ],
-        note: None,
-        sources: &[
-            "crates/app/src/pages/search/instant.rs",
-            "crates/app/src/components/drawer.rs",
-            "crates/app/src/components/toast.rs",
-            "crates/app/src/pages/showcase/islands.rs",
-        ],
+        sources: &["README.md"],
     },
 ];
 
-/// Display number (01, 02, …) of a feature.
+/// The feature's 1-based number in display order.
 pub fn number(id: &str) -> usize {
-    FEATURES
-        .iter()
-        .position(|f| f.id == id)
-        .map(|i| i + 1)
-        .unwrap_or(0)
+    FEATURES.iter().position(|f| f.id == id).map(|i| i + 1).unwrap_or(0)
 }

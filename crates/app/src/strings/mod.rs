@@ -35,14 +35,17 @@ fn all() -> impl Iterator<Item = &'static Entry> {
         .chain(showcase::ALL)
 }
 
-/// One string by key (server markup sharing a client string). Unknown keys render the key.
+/// One string by key (server markup sharing a client string). An unknown key is a bug: it is
+/// logged as an error and renders a visible marker — loud, but it never takes the page down
+/// (a panic here emptied every product page's response).
 pub fn get(key: &str, lang: Lang) -> &'static str {
     match all().find(|e| e.key == key) {
         Some(e) if lang.is_rtl() => e.ar,
         Some(e) => e.en,
         None => {
-            debug_assert!(false, "unknown string key {key}");
-            "?"
+            #[cfg(feature = "ssr")]
+            tracing::error!("unknown string key {key}: add it to crates/app/src/strings/");
+            "⟦missing string⟧"
         }
     }
 }

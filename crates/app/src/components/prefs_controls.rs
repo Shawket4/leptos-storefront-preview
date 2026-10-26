@@ -1,12 +1,13 @@
 //! Language, numerals and theme controls — plain links to `/__prefs?…&next=<this page>`.
 //!
-//! No island: the server sets the cookie and redirects back; the islands router follows the link
-//! and patches the page in place (and `client::init` mirrors the new `<html>` attributes into the
-//! `Ui` store, so islands re-render their own text). Without JS it is an ordinary page load.
+//! The server sets the cookie and redirects back. The router follows the link and, because the
+//! page's language/numerals/theme changed, swaps the whole frame in place (no reload); at press
+//! time features/core.ts points `next` at the live address (filters included). Without JS it is
+//! an ordinary page load.
 //!
 //! `Menu` (header) is a `<details>` disclosure — a popover anchored to its trigger that works
-//! without JS; the shell's script adds light dismiss (outside click, Escape) and the exit
-//! motion. `Inline` (footer) lays the three groups out in the open.
+//! without JS; features/core.ts adds light dismiss (outside press, Escape) and the exit motion.
+//! `Inline` (footer) lays the three groups out in the open.
 
 use super::icons::Icon;
 use super::segmented::{SegItem, Segmented};

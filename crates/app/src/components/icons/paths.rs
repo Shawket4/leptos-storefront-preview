@@ -11,6 +11,7 @@ pub fn path(name: &str) -> Option<&'static str> {
         "apple" => {
             "M12 6.528V3a1 1 0 0 1 1-1h0M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"
         }
+        "arrow-down" => "M12 5v14M19 12l-7 7 -7 -7",
         "arrow-left" => "M12 19l-7 -7 7 -7M19 12H5",
         "arrow-right" => "M5 12h14M12 5l7 7 -7 7",
         "arrow-up-down" => "M21 16l-4 4 -4 -4M17 20V4M3 8l4 -4 4 4M7 4v16",
@@ -340,8 +341,9 @@ pub fn path(name: &str) -> Option<&'static str> {
 }
 
 /// Every icon name the kit ships, sorted (the /ui page draws them all).
-pub const NAMES: [&str; 129] = [
+pub const NAMES: [&str; 130] = [
     "apple",
+    "arrow-down",
     "arrow-left",
     "arrow-right",
     "arrow-up-down",

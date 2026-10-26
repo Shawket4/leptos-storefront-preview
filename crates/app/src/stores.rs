@@ -1,6 +1,6 @@
-//! Global stores shared by every island. Provided per request on the server (inside
-//! `request::init`) and once on the client (inside `client::init`), so `use_context` resolves the
-//! same type in SSR and after hydration. Owners implement their `provide` functions in their files.
+//! Islands-era stores, provided per request on the server (inside `request::init`) for the pages
+//! that still read them while they move to the browser code (`client/src/stores/*`). Owners
+//! implement their `provide` functions in their files.
 
 use crate::api::types::CartView;
 use leptos::prelude::*;
@@ -50,21 +50,7 @@ pub fn use_cart() -> CartStore {
     })
 }
 
-#[cfg(feature = "hydrate")]
-fn initial_count() -> u32 {
-    use wasm_bindgen::JsCast;
-    let cookies = document()
-        .dyn_into::<web_sys::HtmlDocument>()
-        .ok()
-        .and_then(|d| d.cookie().ok())
-        .unwrap_or_default();
-    crate::request::parse_cookies(&cookies)
-        .find(|(k, _)| *k == "cart_n")
-        .and_then(|(_, v)| v.parse().ok())
-        .unwrap_or(0)
-}
-
-#[cfg(not(feature = "hydrate"))]
+/// Public pages never render a visitor's cart: the badge is filled by the browser code.
 fn initial_count() -> u32 {
     0
 }

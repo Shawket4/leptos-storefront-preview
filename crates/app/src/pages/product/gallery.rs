@@ -110,7 +110,7 @@ pub fn Gallery(
                 }
             })
             .collect_view();
-        view! { <div class="pg__thumbs">{items}</div> }
+        view! { <div class="pg__thumbs" data-router="off">{items}</div> }
     });
 
     let dots = multi.then(|| {

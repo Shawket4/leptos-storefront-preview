@@ -148,9 +148,10 @@ async function go(g: Go): Promise<void> {
   } catch (e) {
     if (g.method === "POST") posting = false;
     if (id !== seq) return;
-    routing.set({ pending: false, to: null });
+    // The failure first, so the progress bar knows not to play "done".
     if (e instanceof NotHtml) location.assign(e.url);
     else failed(g, e);
+    routing.set({ pending: false, to: null });
     return;
   }
   if (g.method === "POST") {

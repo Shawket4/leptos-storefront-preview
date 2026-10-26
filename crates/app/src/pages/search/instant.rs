@@ -144,7 +144,7 @@ fn Templates(lang: Lang) -> impl IntoView {
     view! {
         <template id="tpl-suggest-row">
             <a role="option" class="hs-opt hs-opt--hit" tabindex="-1" aria-selected="false" data-attr-href="href">
-                <span class="hs-thumb" data-attr-style="tint">
+                <span class="hs-thumb">
                     <img data-attr-src="img" data-attr-srcset="srcset" sizes="44px" alt="" width="44" height="44" loading="lazy" decoding="async"/>
                 </span>
                 <span class="hs-opt__main">

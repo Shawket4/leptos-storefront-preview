@@ -37,6 +37,53 @@ export interface CartQuoteLine {
   issue: "out_of_stock" | "capped" | "unavailable" | null;
 }
 
+// ── Browse (owner: the browse agent) ─────────────────────────────────────────────────────────
+
+/** `GET {api.searchSuggest}?q=` (public catalogue data). Rust: `pages::search::suggest::Suggest`. */
+export interface Suggest {
+  /** The question as the server read it (trimmed, at most 80 characters). */
+  q: string;
+  hits: SuggestHit[];
+  categories: SuggestCategory[];
+  /** "See all 37 results for “phone”"; null when nothing matched. */
+  all: { href: string; label: string } | null;
+  /** "8 suggestions" for the live region, or "No matches for “…”" (the empty state's title). */
+  status: string;
+}
+
+/** Rust: `SuggestHit`. */
+export interface SuggestHit {
+  href: string;
+  /** The name in the page's language, matched runs marked (`hit`). */
+  name: { text: string; hit: boolean }[];
+  category: string;
+  img: string | null;
+  srcset: string | null;
+  price: string;
+  was: string | null;
+}
+
+/** Rust: `SuggestCategory`. */
+export interface SuggestCategory {
+  href: string;
+  name: string;
+  /** `“phone”` / `«تليفون»`. */
+  quoted: string;
+  /** The aisle's lucide icon: the `d` of its one `<path>`. */
+  icon: string;
+}
+
+// ── Showcase (owner: the showcase agent) ───────────────────────────────────────────────────────
+
+/** `GET /api/cache/stats`, `POST /api/cache/bump`. Rust: `api::types::CacheInfo`. */
+export interface CacheInfo {
+  entries: number;
+  hits: number;
+  misses: number;
+  generation: number;
+  base_latency_ms: number;
+}
+
 // ── Cart agent: order tracking ─────────────────────────────────────────────────────────────────
 
 /** `GET {api.orderTrack}?id=` → `OrderTrack | null`. Rust: `pages::order::TrackJson`. */

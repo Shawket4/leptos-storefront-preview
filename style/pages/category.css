@@ -1,9 +1,16 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Category listing + the CatalogExplorer island (also used by /search).
+   Category listing and /search results (pages::category::view, features/browse.ts).
    Owner: browse agent. Tokens only; logical properties only (the same rules lay
-   out English and Arabic). Springs fall back to the motion tokens until
-   --spring-* land in tokens.css.
+   out English and Arabic).
    ───────────────────────────────────────────────────────────────────────────── */
+
+/* Without JS only: Apply/Clear under the in-page filter panel and its Close link
+   (with JS a change applies itself, and phones get the sheet). */
+@media (scripting: enabled) {
+  .nojs-only {
+    display: none !important;
+  }
+}
 
 .listing {
   padding-block: var(--sp-4) var(--sp-16);
@@ -509,16 +516,11 @@
 .lx-form-foot > :last-child {
   flex: 1;
 }
-.lx-form-foot[hidden],
-.lx-sheet-close[hidden] {
-  display: none;
-}
 
-/* Phones: the sidebar is off-canvas. With JS the explorer opens a sheet (the
-   Drawer, in the top layer); without JS, "Filters" is a link to #lx-filters and
+/* Phones: the sidebar is off-canvas. With JS "Filters" opens the bottom sheet
+   (the one Drawer, in the top layer); without JS it is a link to #lx-filters and
    :target opens this very panel in the page flow — the browser scrolls to it —
-   with its own Close link and Apply button. (A fixed overlay can't rise above
-   the header and tab bar from inside <main> without JS.) */
+   with its own Close link and Apply button. */
 .lx-sheet-close {
   display: inline-flex;
   align-items: center;
@@ -747,23 +749,27 @@ a.lx-page:active {
   }
 }
 
-/* ── The phone sheet's contents (inside the Drawer, whose body pads --sp-5) ── */
-.lx-form--sheet > .lx-group:first-child {
+/* ── The phone sheet (components::drawer, its body pads the form) ─────────── */
+.lx-form--sheet > .lx-group:first-of-type {
   border-block-start: 0;
   padding-block-start: var(--sp-2);
 }
 .lx-sheet-foot {
-  position: sticky;
-  inset-block-end: calc(var(--sp-5) * -1);
   display: flex;
   gap: var(--sp-2);
-  margin: 0 calc(var(--sp-5) * -1) calc(var(--sp-5) * -1);
-  padding: var(--sp-3) var(--sp-5);
-  background: var(--surface);
-  box-shadow: 0 -1px 0 var(--rule);
 }
 .lx-sheet-foot > .lx-show {
   flex: 1;
+}
+/* The count on "Show N items" is the last page's while the next one loads. */
+.lx-show__busy {
+  display: none;
+}
+.lx-show.is-pending .lx-show__busy {
+  display: inline-block;
+}
+.lx-show.is-pending .icon:not(.lx-show__busy) {
+  display: none;
 }
 
 /* ── Wide screens: sidebar + results, the bar over the results column ────── */
@@ -834,59 +840,6 @@ a.lx-page:active {
     padding-inline: var(--sp-2);
     font-size: var(--fs-sm);
   }
-}
-
-/* ── The first-paint skeleton: the explorer's own frame, pulsing ────────────
-   (Only drawn if the route ever streams out of order; same classes and rows as
-   the real thing, so nothing moves when it is replaced.) */
-.lx--skeleton .lx-skel-btn {
-  block-size: 44px;
-  border-radius: var(--r-md);
-}
-.lx--skeleton .lx-skel-btn--filters {
-  inline-size: 7.5rem;
-}
-.lx--skeleton .lx-skel-btn--sort {
-  inline-size: 11rem;
-  margin-inline-start: auto;
-}
-.lx--skeleton .lx-skel-line {
-  inline-size: 8rem;
-  block-size: 1rem;
-}
-.lx--skeleton .lx-skel-title {
-  inline-size: 5rem;
-  block-size: 1.25rem;
-}
-.lx--skeleton .lx-skel-legend {
-  inline-size: 4.5rem;
-  block-size: 0.875rem;
-  margin-block-end: var(--sp-3);
-}
-.lx--skeleton .lx-skel-input {
-  block-size: 44px;
-  border-radius: var(--r-md);
-}
-.lx--skeleton .lx-skel-row {
-  block-size: 1.25rem;
-  margin-block: 0.75rem;
-  border-radius: var(--r-xs);
-}
-@media (min-width: 769px) {
-  .lx--skeleton .lx-bar {
-    justify-self: end;
-  }
-  .lx--skeleton .lx-skel-btn--filters {
-    display: none;
-  }
-}
-
-/* Another page or listing on its way: its skeleton stands in at the grid's size. */
-.lx-results-body.is-jumping > .lx-grid:not(.lx-grid--skel) {
-  display: none;
-}
-.lx-results-body.is-pending.is-jumping {
-  opacity: 1;
 }
 
 /* Nothing to filter or sort (a search with no base results): the state alone. */
