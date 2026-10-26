@@ -173,6 +173,9 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
             return;
         }
         if answer.with_untracked(|a| a.as_ref().is_some_and(|(asked, _)| *asked == q)) {
+            // Back to the question already answered: whatever is in flight is now stale.
+            seq.update_value(|s| *s += 1);
+            loading.set(false);
             return;
         }
         let h = set_timeout_with_handle(
@@ -443,7 +446,7 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
                         aria-controls=format!("{p}-lb")
                         aria-expanded=move || if showing() { "true" } else { "false" }
                         aria-activedescendant=move || active.get().filter(|_| showing()).map(opt_id)
-                        aria-label=move || tr(ui.lang.get(), "Search the shop", "دوّر في المحل")
+                        aria-label=move || tr(ui.lang.get(), "Search products", "دوّر في المنتجات")
                         autocomplete="off"
                         autocapitalize="off"
                         spellcheck="false"

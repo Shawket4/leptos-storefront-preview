@@ -197,8 +197,8 @@ pub fn search_heading(q: &ListingQuery, lang: Lang) -> Heading {
             tr(lang, "Top rated", "الأعلى تقييمًا").to_owned(),
             Some(tr(
                 lang,
-                "What our shoppers rate highest",
-                "اللي الناس مقيّماه أعلى تقييم",
+                "What our shoppers love most",
+                "اللي زباينّا بيحبوه أكتر",
             )),
         ),
         None => (
