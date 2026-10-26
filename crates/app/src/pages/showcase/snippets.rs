@@ -2,105 +2,101 @@
 //! (`include_str!`), between an anchor line and an end line. They can't drift from the code: if an
 //! anchor disappears, the excerpt disappears with it (and a debug build logs which one).
 //!
-//! Server only — the source text never reaches the WASM bundle.
+//! Server only: the source text is in the server binary, never in the browser bundle.
 
 use leptos::prelude::*;
 
 /// A file the showcase quotes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Src {
-    Frontend,
+    // Rust
     Lib,
-    Client,
-    Stores,
-    Request,
-    Tenant,
-    Media,
+    Shell,
+    Stream,
     ApiMod,
-    ApiTypes,
-    Cache,
-    Sim,
-    ServerMain,
-    Home,
     Errors,
-    Islands,
-    Demos,
-    Motion,
-    ShellJs,
-    Net,
-    ApiCart,
-    CartPage,
-    Product,
-    ProductPanel,
+    Sim,
+    Cache,
+    Tenant,
+    Request,
     ProductHead,
-    Gallery,
-    Explorer,
-    Steps,
+    Toast,
+    DomainCart,
+    BuildRs,
+    ClientJs,
+    // TypeScript
+    Main,
+    Router,
+    ClientCache,
+    Net,
+    Store,
+    Toasts,
+    CartTs,
+    Dom,
+    Motion,
+    BuildMjs,
+    ShowcaseTs,
 }
 
 impl Src {
     pub fn path(self) -> &'static str {
         match self {
-            Src::Frontend => "crates/frontend/src/lib.rs",
             Src::Lib => "crates/app/src/lib.rs",
-            Src::Client => "crates/app/src/client.rs",
-            Src::Stores => "crates/app/src/stores.rs",
-            Src::Request => "crates/app/src/request.rs",
-            Src::Tenant => "crates/app/src/tenant.rs",
-            Src::Media => "crates/app/src/media.rs",
+            Src::Shell => "crates/app/src/components/shell.rs",
+            Src::Stream => "crates/app/src/pages/showcase/stream.rs",
             Src::ApiMod => "crates/app/src/api/mod.rs",
-            Src::ApiTypes => "crates/app/src/api/types.rs",
-            Src::Cache => "crates/app/src/server/cache.rs",
-            Src::Sim => "crates/app/src/server/sim.rs",
-            Src::ServerMain => "crates/server/src/main.rs",
-            Src::Home => "crates/app/src/pages/home.rs",
             Src::Errors => "crates/app/src/pages/errors.rs",
-            Src::Islands => "crates/app/src/pages/showcase/islands.rs",
-            Src::Demos => "crates/app/src/pages/showcase/demos.rs",
-            Src::Motion => "crates/app/src/components/motion.rs",
-            Src::ShellJs => "crates/app/src/components/shell.js",
-            Src::Net => "crates/app/src/components/net.rs",
-            Src::ApiCart => "crates/app/src/api/cart.rs",
-            Src::CartPage => "crates/app/src/pages/cart/page.rs",
-            Src::Product => "crates/app/src/pages/product.rs",
-            Src::ProductPanel => "crates/app/src/pages/product/panel.rs",
+            Src::Sim => "crates/app/src/server/sim.rs",
+            Src::Cache => "crates/app/src/server/cache.rs",
+            Src::Tenant => "crates/app/src/tenant.rs",
+            Src::Request => "crates/app/src/request.rs",
             Src::ProductHead => "crates/app/src/pages/product/head.rs",
-            Src::Gallery => "crates/app/src/pages/product/gallery.rs",
-            Src::Explorer => "crates/app/src/pages/category/explorer.rs",
-            Src::Steps => "crates/app/src/pages/checkout/steps.rs",
+            Src::Toast => "crates/app/src/components/toast.rs",
+            Src::DomainCart => "crates/domain/src/cart.rs",
+            Src::BuildRs => "crates/app/build.rs",
+            Src::ClientJs => "crates/app/src/client_js.rs",
+            Src::Main => "client/src/main.ts",
+            Src::Router => "client/src/core/router.ts",
+            Src::ClientCache => "client/src/core/cache.ts",
+            Src::Net => "client/src/core/net.ts",
+            Src::Store => "client/src/core/store.ts",
+            Src::Toasts => "client/src/stores/toasts.ts",
+            Src::CartTs => "client/src/stores/cart.ts",
+            Src::Dom => "client/src/core/dom.ts",
+            Src::Motion => "client/src/core/motion.ts",
+            Src::BuildMjs => "client/build.mjs",
+            Src::ShowcaseTs => "client/src/features/showcase.ts",
         }
     }
 
     #[cfg(feature = "ssr")]
     fn text(self) -> &'static str {
         match self {
-            Src::Frontend => include_str!("../../../../frontend/src/lib.rs"),
             Src::Lib => include_str!("../../lib.rs"),
-            Src::Client => include_str!("../../client.rs"),
-            Src::Stores => include_str!("../../stores.rs"),
-            Src::Request => include_str!("../../request.rs"),
-            Src::Tenant => include_str!("../../tenant.rs"),
-            Src::Media => include_str!("../../media.rs"),
+            Src::Shell => include_str!("../../components/shell.rs"),
+            Src::Stream => include_str!("stream.rs"),
             Src::ApiMod => include_str!("../../api/mod.rs"),
-            Src::ApiTypes => include_str!("../../api/types.rs"),
-            Src::Cache => include_str!("../../server/cache.rs"),
-            Src::Sim => include_str!("../../server/sim.rs"),
-            Src::ServerMain => include_str!("../../../../server/src/main.rs"),
-            Src::Home => include_str!("../home.rs"),
             Src::Errors => include_str!("../errors.rs"),
-            Src::Islands => include_str!("islands.rs"),
-            Src::Demos => include_str!("demos.rs"),
-            Src::Motion => include_str!("../../components/motion.rs"),
-            Src::ShellJs => include_str!("../../../../../client/legacy/shell.js"),
-            Src::Net => include_str!("../../components/net.rs"),
-            Src::ApiCart => include_str!("../../api/cart.rs"),
-            Src::CartPage => include_str!("../cart/page.rs"),
-            Src::Product => include_str!("../product.rs"),
-            Src::ProductPanel => include_str!("../product/panel.rs"),
+            Src::Sim => include_str!("../../server/sim.rs"),
+            Src::Cache => include_str!("../../server/cache.rs"),
+            Src::Tenant => include_str!("../../tenant.rs"),
+            Src::Request => include_str!("../../request.rs"),
             Src::ProductHead => include_str!("../product/head.rs"),
-            Src::Gallery => include_str!("../product/gallery.rs"),
-            Src::Explorer => include_str!("../category/explorer.rs"),
-            Src::Steps => include_str!("../checkout/steps.rs"),
+            Src::Toast => include_str!("../../components/toast.rs"),
+            Src::DomainCart => include_str!("../../../../domain/src/cart.rs"),
+            Src::BuildRs => include_str!("../../../build.rs"),
+            Src::ClientJs => include_str!("../../client_js.rs"),
+            Src::Main => include_str!("../../../../../client/src/main.ts"),
+            Src::Router => include_str!("../../../../../client/src/core/router.ts"),
+            Src::ClientCache => include_str!("../../../../../client/src/core/cache.ts"),
+            Src::Net => include_str!("../../../../../client/src/core/net.ts"),
+            Src::Store => include_str!("../../../../../client/src/core/store.ts"),
+            Src::Toasts => include_str!("../../../../../client/src/stores/toasts.ts"),
+            Src::CartTs => include_str!("../../../../../client/src/stores/cart.ts"),
+            Src::Dom => include_str!("../../../../../client/src/core/dom.ts"),
+            Src::Motion => include_str!("../../../../../client/src/core/motion.ts"),
+            Src::BuildMjs => include_str!("../../../../../client/build.mjs"),
+            Src::ShowcaseTs => include_str!("../../../../../client/src/features/showcase.ts"),
         }
     }
 }
@@ -181,17 +177,14 @@ pub fn excerpt(c: Cut) -> Option<Excerpt> {
     })
 }
 
-/// The hydrate build never renders excerpts (cards are server components).
 #[cfg(not(feature = "ssr"))]
-pub fn excerpt(c: Cut) -> Option<Excerpt> {
-    let _ = (c.src.path(), c.from, c.to, c.max);
+pub fn excerpt(_: Cut) -> Option<Excerpt> {
     None
 }
 
 /// A short, real excerpt in a collapsible block: `path:line` as the summary, scrollable LTR code.
 #[component]
-pub fn Code(cut: Cut, #[prop(optional)] open: bool) -> impl IntoView {
-    let lang = crate::prefs::lang_now();
+pub fn Code(cut: Cut, lang: crate::prefs::Lang, #[prop(optional)] open: bool) -> impl IntoView {
     excerpt(cut).map(|ex| {
         let lines = ex.code.lines().count();
         let label = format!("{}:{}", ex.path, ex.line);
@@ -292,6 +285,20 @@ const KEYWORDS: &[&str] = &[
     "null",
     "typeof",
     "instanceof",
+    "export",
+    "import",
+    "from",
+    "interface",
+    "class",
+    "extends",
+    "private",
+    "readonly",
+    "this",
+    "void",
+    "undefined",
+    "keyof",
+    "declare",
+    "satisfies",
 ];
 
 /// Split Rust-ish source into classified runs (good enough for short excerpts: comments, strings,
@@ -424,8 +431,8 @@ fn tokens(src: &str) -> Vec<(Tok, String)> {
 }
 
 /// The excerpt as escaped HTML with `<span class="hl-…">` runs. Built as one string (set with
-/// `inner_html`) rather than one view per token, so a long excerpt doesn't add hundreds of
-/// islands-router branch markers to the page. The input is this repository's own source.
+/// `inner_html`) rather than one view per token, so a long excerpt stays one text node of markup.
+/// The input is this repository's own source, escaped here.
 fn highlight(src: &str) -> String {
     let mut html = String::with_capacity(src.len() * 2);
     for (t, s) in tokens(src) {

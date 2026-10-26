@@ -72,3 +72,14 @@ export interface SuggestCategory {
   /** The aisle's lucide icon: the `d` of its one `<path>`. */
   icon: string;
 }
+
+// ── Showcase (owner: the showcase agent) ───────────────────────────────────────────────────────
+
+/** `GET /api/cache/stats`, `POST /api/cache/bump`. Rust: `api::types::CacheInfo`. */
+export interface CacheInfo {
+  entries: number;
+  hits: number;
+  misses: number;
+  generation: number;
+  base_latency_ms: number;
+}
