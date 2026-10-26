@@ -71,7 +71,7 @@
   grid-auto-columns: minmax(232px, 1fr);
   gap: 10px;
   overflow-x: auto;
-  padding: 4px;
+  padding-block: 4px;
   scrollbar-width: none;
 }
 .trust__item {
