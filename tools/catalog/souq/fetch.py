@@ -21,7 +21,7 @@ import time
 import urllib.parse
 import urllib.request
 
-UA = "souq-catalogue-builder/1.0 (demo storefront; contact: local)"
+UA = "SouqCatalogueBuilder/1.0 (one-off, low-volume fetch of a few CC-licensed demo images) python-urllib/3.10"
 MAX_BYTES = 25 * 1024 * 1024
 
 
@@ -58,6 +58,10 @@ def main() -> int:
         return 2
     mode, src, out = sys.argv[1], sys.argv[2], sys.argv[3]
     small = "--small" in sys.argv[4:]
+    delay = 0.35
+    for a in sys.argv[4:]:
+        if a.startswith("--delay="):
+            delay = float(a.split("=", 1)[1])
     os.makedirs(out, exist_ok=True)
     jobs: list[tuple[str, str]] = []
     if mode == "mealdb":
@@ -84,7 +88,7 @@ def main() -> int:
         return 2
     bad = 0
     for url, dest in jobs:
-        res = get(url, dest)
+        res = get(url, dest, delay)
         if not (res.startswith("ok") or res == "skip"):
             bad += 1
         print(f"{res:>14}  {os.path.basename(dest)}  <- {url}")

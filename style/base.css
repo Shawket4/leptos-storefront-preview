@@ -7,6 +7,25 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  /* Apple's continuous corners wherever there's a radius (progressive
+     enhancement; plain border-radius elsewhere). True circles opt out below. */
+  corner-shape: squircle;
+}
+/* True circles stay circles: round icon buttons, count badges, radio dots, avatars. */
+.is-round,
+.icon-btn,
+.icon-btn::before,
+.icon-btn__badge,
+.count-badge {
+  corner-shape: round;
+}
+
+/* Text optically centred in controls: on English pages, trim each label's line
+   box to cap height and baseline, so symmetric padding centres it exactly.
+   Arabic pages rely on Cairo AR's Arabic-centred metrics instead (fonts.css):
+   cap trimming would sit Arabic letters low. */
+:root:not([lang="ar"]) .trim {
+  text-box: trim-both cap alphabetic;
 }
 
 html {
@@ -244,6 +263,11 @@ hr {
     opacity: 0;
   }
 }
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -254,6 +278,17 @@ hr {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Press: respond on pointer-down (scale .97 in 100ms), settle back on a spring.
+   Anything tappable can opt in with data-press. */
+[data-press] {
+  transition: scale var(--spring-snappy-dur) var(--spring-snappy);
+  -webkit-tap-highlight-color: transparent;
+}
+[data-press]:active:not(:disabled, [aria-disabled="true"]) {
+  scale: var(--press);
+  transition: scale var(--press-dur) ease-out;
 }
 
 /* A spinner: the lucide loader-circle, turning. The only loop that survives
@@ -285,15 +320,28 @@ hr {
   animation-timing-function: var(--ease-drawer);
 }
 
-/* ── Reduced motion: transitions land at once, loops stop (except spinners) ── */
+/* ── Reduced motion: no travel, no springs, no loops (spinners excepted). Surfaces
+   that arrive (drawers, toasts, popovers) keep a short cross-fade instead of
+   appearing from nowhere — their own CSS swaps the motion for a fade. ── */
 @media (prefers-reduced-motion: reduce) {
-  *,
+  *:not(.drawer__panel, .toast, .prefs__panel),
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0s !important;
     scroll-behavior: auto !important;
+  }
+  .toast,
+  .prefs__panel {
+    animation-name: fade-in !important;
+    animation-duration: var(--dur-base) !important;
+    animation-timing-function: var(--ease-out) !important;
+  }
+  .toast[data-leaving="true"],
+  .prefs[data-closing] > .prefs__panel {
+    animation-name: fade-out !important;
+    animation-duration: var(--dur-fast) !important;
   }
   .spin {
     animation-duration: 0.8s !important;

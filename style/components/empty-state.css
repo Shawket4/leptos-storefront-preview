@@ -1,1 +1,39 @@
-/* empty-state */
+/* Empty and error states (components::empty_state): illustration, title, line,
+   one action. The illustration swaps with the theme. */
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  max-inline-size: 28rem;
+  margin-inline: auto;
+  padding-block: var(--sp-10);
+  text-align: center;
+}
+.empty__figure {
+  inline-size: clamp(9rem, 30vw, 13.75rem);
+  aspect-ratio: 1;
+  margin-block-end: var(--sp-2);
+}
+.empty__art {
+  inline-size: 100%;
+  block-size: 100%;
+}
+.empty__art--dark {
+  display: none;
+}
+:root[data-theme="dark"] .empty__art--light { display: none; }
+:root[data-theme="dark"] .empty__art--dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .empty__art--light { display: none; }
+  :root[data-theme="system"] .empty__art--dark { display: block; }
+}
+.empty__title {
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+}
+.empty__body {
+  color: var(--text-2);
+}
+.empty .btn {
+  margin-block-start: var(--sp-3);
+}

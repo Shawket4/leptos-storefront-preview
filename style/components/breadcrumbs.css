@@ -1,1 +1,36 @@
-/* breadcrumbs */
+/* Breadcrumbs (components::breadcrumbs): small, quiet, one line that scrolls on
+   phones; chevrons mirror in Arabic. */
+.crumbs__list {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+.crumbs__list::-webkit-scrollbar {
+  display: none;
+}
+.crumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.crumbs__link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2rem;
+  color: var(--text-2);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.crumbs__link:hover {
+  color: var(--text);
+}
+.crumbs__current {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+}
+.crumbs__sep {
+  color: var(--text-3);
+}

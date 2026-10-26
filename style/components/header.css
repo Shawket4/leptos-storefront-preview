@@ -1,1 +1,119 @@
-/* header */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Site header (components::header): translucent material chrome, content
+   scrolling under it. Phones: the logo row scrolls away and the search row
+   stays pinned (one sticky element with a negative top). From 768px the
+   search joins the bar and the whole bar is pinned.
+   ───────────────────────────────────────────────────────────────────────────── */
+.site-header {
+  --row1: 3.25rem;
+  position: sticky;
+  z-index: var(--z-header);
+  inset-block-start: calc(var(--row1) * -1);
+  background: var(--material);
+  -webkit-backdrop-filter: var(--material-filter);
+  backdrop-filter: var(--material-filter);
+}
+/* A scroll edge, not a hard divider: a hairline that appears once content
+   actually runs under the header (scroll-driven; always on where unsupported). */
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -1px;
+  block-size: 1px;
+  background: var(--material-edge);
+  pointer-events: none;
+}
+@supports (animation-timeline: scroll()) {
+  .site-header::after {
+    opacity: 0;
+    animation: header-edge linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 3rem;
+  }
+}
+@keyframes header-edge {
+  to {
+    opacity: 1;
+  }
+}
+
+.site-header__bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "logo . actions"
+    "search search search";
+  align-items: center;
+  column-gap: var(--sp-2);
+  row-gap: var(--sp-1);
+  padding-block: 0.375rem 0.625rem;
+}
+.site-header__logo {
+  grid-area: logo;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+  border-radius: var(--r-sm);
+}
+.site-header__search {
+  grid-area: search;
+  min-inline-size: 0;
+}
+.site-header__actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+@media (min-width: 768px) {
+  .site-header {
+    inset-block-start: 0;
+  }
+  .site-header__bar {
+    grid-template-areas: "logo search actions";
+    column-gap: var(--sp-6);
+    min-block-size: var(--header-h);
+    padding-block: 0;
+  }
+  .site-header__search {
+    justify-self: center;
+    inline-size: 100%;
+    max-inline-size: 40rem;
+  }
+}
+
+/* The search slot (pages::search::HeaderSearch). The browse agent owns the box;
+   these rules give a bare form/input the house look until then. */
+.site-header__search form {
+  position: relative;
+  margin: 0;
+}
+.site-header__search input[type="search"] {
+  inline-size: 100%;
+  block-size: 2.75rem;
+  padding-inline: 1rem;
+  border: 0;
+  border-radius: var(--r-md);
+  background: var(--sunk);
+  color: var(--text);
+  font-size: var(--fs-md);
+  outline-offset: 0;
+}
+.site-header__search input[type="search"]::placeholder {
+  color: var(--text-3);
+}
+
+/* The cart slot (pages::cart::CartButton): a bare link looks like a button until
+   the commerce agent's island lands. */
+.site-header__cart > .cart-button {
+  display: inline-flex;
+  align-items: center;
+  block-size: 2.75rem;
+  padding-inline: 0.875rem;
+  border-radius: var(--r-md);
+  font-weight: var(--fw-bold);
+}
+.site-header__cart > .cart-button:hover {
+  background: var(--sunk);
+}

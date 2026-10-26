@@ -90,6 +90,7 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("p/:slug") view=pages::ProductPage ssr=SsrMode::PartiallyBlocked/>
                     <Route path=path!("cart") view=pages::CartPage ssr=SsrMode::InOrder/>
                     <Route path=path!("checkout") view=pages::CheckoutPage ssr=SsrMode::InOrder/>
+                    <Route path=path!("orders") view=pages::OrdersLookupPage ssr=SsrMode::InOrder/>
                     <Route path=path!("orders/:id") view=pages::OrderPage ssr=SsrMode::InOrder/>
                     <Route path=path!("showcase") view=pages::ShowcasePage/>
                     <Route path=path!("ui") view=pages::UiKitPage/>
@@ -104,6 +105,11 @@ pub fn App() -> impl IntoView {
 /// scripting is off, so everyone else never sees it.)
 #[cfg(feature = "ssr")]
 fn home_nojs_fallback(path_and_query: &str) -> Option<impl IntoView + use<>> {
+    // Islands-router fetches parse the HTML with DOMParser (scripting off), which would turn the
+    // <noscript> meta-refresh into a live tag and send JS users to /nojs. Only first loads get it.
+    if use_context::<leptos::hydration::IslandsRouterNavigation>().is_some() {
+        return None;
+    }
     let query = match path_and_query.split_once('?') {
         Some(("/", q)) => format!("?{q}"),
         None if path_and_query == "/" => String::new(),

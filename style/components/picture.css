@@ -36,6 +36,11 @@
 .pic--alpha::before {
   opacity: 0.55;
 }
+/* Once the image is in, its blurred stand-in leaves (it would halo a cut-out). */
+.pic:has(img[data-loaded])::before {
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
 .pic--alpha img {
   object-fit: contain;
 }
@@ -58,5 +63,28 @@
   }
   .pic img:not([data-loaded], [fetchpriority="high"]) {
     opacity: 0;
+  }
+}
+
+/* Dark mode: transparent packshots get a rim light — a hairline of light along
+   their own silhouette — so dark products keep their edges on the dark well. */
+:root[data-theme="dark"] .pic--alpha img {
+  filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.5));
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .pic--alpha img {
+    filter: drop-shadow(0 0 0.5px rgb(255 255 255 / 0.5));
+  }
+}
+
+/* Light themes: many cut-outs keep a faint white haze in their alpha edge; multiply melts it
+   into the well (and darkens nothing visible on a near-white ground). Never in dark mode, where
+   multiply would darken the product itself. */
+:root[data-theme="light"] .pic--alpha img {
+  mix-blend-mode: multiply;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="system"] .pic--alpha img {
+    mix-blend-mode: multiply;
   }
 }
