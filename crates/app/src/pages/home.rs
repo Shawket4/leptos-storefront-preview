@@ -1,7 +1,7 @@
 //! Home page, product-led like the marketplaces people actually use on their phones: a one-line
 //! ribbon of store promises, the category rail, then today's deals, picks and bestsellers — real
 //! products above the fold, no hero banner (owner's call).
-//! Every merchandising rail is its own `<Suspense>` + `<ErrorBoundary>` around its own server
+//! Every merchandising rail is its own `Suspend` + `<ErrorBoundary>` around its own server
 //! function. The page renders in order (one complete document, no JS needed), and a failing rail
 //! (`?fail=deals`) degrades to an inline notice without touching the rest of the page. The deals
 //! countdown is rendered by the server and ticked by `features/browse.ts` (`data-ts="countdown"`).
@@ -44,7 +44,7 @@ fn description(tenant: &str) -> L10n {
 #[component]
 pub fn HomePage() -> impl IntoView {
     let rq = req();
-    // Headers go out with the first chunk, so the caching decision is made before any Suspense.
+    // Headers go out with the first chunk, so the caching decision is made before any data.
     crate::server::cache::public(&[]);
 
     let lang = rq.prefs.lang;
@@ -142,15 +142,13 @@ pub fn HomePage() -> impl IntoView {
 
 #[component]
 fn CategoryRail(lang: Lang) -> impl IntoView {
-    let cats = Resource::new(|| (), |_| api::nav_categories());
     let ar = lang.is_rtl();
     view! {
         <section id="categories" class="home-section home-cats" aria-labelledby="cats-title">
             <SectionHeader title=tr(lang, "Shop by category", "تسوّق حسب القسم") id="cats-title"/>
-            <Suspense fallback=|| ()>
-                <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
-                    {move || Suspend::new(async move {
-                        cats.await.map(|cats| view! {
+            <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
+                    {Suspend::new(async move {
+                        api::nav_categories().await.map(|cats| view! {
                             <ul class="cat-rail">
                                 {cats.into_iter().map(|c| {
                                     let name = c.name.pick(ar).to_owned();
@@ -174,8 +172,7 @@ fn CategoryRail(lang: Lang) -> impl IntoView {
                             </ul>
                         })
                     })}
-                </ErrorBoundary>
-            </Suspense>
+            </ErrorBoundary>
         </section>
     }
 }
@@ -192,7 +189,6 @@ fn RailSection(
     #[prop(optional)] countdown: bool,
     #[prop(optional)] priority: bool,
 ) -> impl IntoView {
-    let data = Resource::new(|| (), move |_| api::home_rail(rail, 12));
     let id = format!("rail-{rail:?}").to_lowercase();
     let labelled_by = id.clone();
     view! {
@@ -207,10 +203,9 @@ fn RailSection(
                 />
                 {countdown.then(|| view! { <DealsCountdown ends_at_ms=next_cairo_midnight_ms() lang num/> })}
             </div>
-            <Suspense fallback=|| ()>
-                <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
-                    {move || Suspend::new(async move {
-                        data.await.map(|cards| {
+            <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
+                    {Suspend::new(async move {
+                        api::home_rail(rail, 12).await.map(|cards| {
                             if cards.is_empty() {
                                 // A real empty state, not a blank strip.
                                 return view! {
@@ -231,8 +226,7 @@ fn RailSection(
                             .into_any()
                         })
                     })}
-                </ErrorBoundary>
-            </Suspense>
+            </ErrorBoundary>
         </section>
     }
 }

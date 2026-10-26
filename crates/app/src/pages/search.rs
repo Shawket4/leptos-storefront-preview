@@ -12,7 +12,7 @@ pub(crate) mod suggest;
 
 pub use instant::{HeaderSearch, SearchBox};
 
-use crate::api::{self, types::ListingQuery};
+use crate::api::types::ListingQuery;
 use crate::pages::category::{ListingResults, listing};
 use crate::request::req;
 use leptos::prelude::*;
@@ -50,7 +50,6 @@ pub fn SearchPage() -> impl IntoView {
     let canonical = rq.absolute(&query.href());
     // Result pages for typed queries are thin and endless: keep them out of the index, follow links.
     let noindex = query.q.is_some();
-    let data = Resource::new(|| (), move |_| api::list_products(query.clone()));
 
     view! {
         <Title text=title/>
@@ -62,7 +61,7 @@ pub fn SearchPage() -> impl IntoView {
             <div class="search-page__box">
                 <HeaderSearch kind=SearchBox::Page/>
             </div>
-            <ListingResults data aisles=crate::pages::category::aisles(None)/>
+            <ListingResults query aisles=crate::pages::category::aisles(None)/>
         </div>
     }
 }
