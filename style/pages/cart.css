@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   Cart — header button, quick add, the drawer's lines and summary, and /cart.
-   Owner: commerce agent. Tokens only; logical properties only. Motion: transform
-   and opacity, spring tokens (with the older duration/easing tokens as fallback
-   until --spring-* land), cross-fades under prefers-reduced-motion.
+   Cart — header button, quick add, the lines and summary the drawer and /cart
+   share (one markup, pages::cart::line), the drawer's content and /cart.
+   Owner: cart agent. Tokens only; logical properties only; transform/opacity
+   motion on the spring tokens; cross-fades under prefers-reduced-motion.
    ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── Header button + badge ─────────────────────────────────────────────────── */
@@ -20,6 +20,10 @@
 .cart-btn__badge.is-pop-b { animation: cart-pop-b var(--spring-bouncy-dur, 400ms) var(--ease-pop); }
 @keyframes cart-pop-a { 0% { scale: 1; } 35% { scale: 1.35; } 100% { scale: 1; } }
 @keyframes cart-pop-b { 0% { scale: 1; } 35% { scale: 1.35; } 100% { scale: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .cart-btn__badge.is-pop-a,
+  .cart-btn__badge.is-pop-b { animation: none; }
+}
 
 /* ── Quick add (the round "+" in a product card's 40px slot) ──────────────── */
 .quick-add {
@@ -50,19 +54,30 @@
   inset: -2px;
   border-radius: inherit;
 }
-.quick-add__btn:hover {
-  background: var(--brand);
-  color: var(--on-brand);
+@media (hover: hover) {
+  .quick-add__btn:hover {
+    background: var(--brand);
+    color: var(--on-brand);
+  }
 }
 .quick-add__btn:active {
   scale: 0.92;
+}
+.quick-add__check {
+  display: none;
 }
 .quick-add__btn[data-state="added"] {
   background: var(--success);
   color: var(--on-ink);
 }
-.quick-add__btn[data-state="busy"] {
-  cursor: progress;
+.quick-add__btn[data-state="added"] .quick-add__plus { display: none; }
+.quick-add__btn[data-state="added"] .quick-add__check {
+  display: block;
+  animation: qa-in var(--spring-bouncy-dur, 400ms) var(--ease-pop);
+}
+@keyframes qa-in { from { scale: 0.4; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .quick-add__btn[data-state="added"] .quick-add__check { animation: none; }
 }
 
 /* ── Lines (drawer and /cart share the markup) ─────────────────────────────── */
@@ -76,7 +91,8 @@
   grid-template-columns: 72px minmax(0, 1fr);
   grid-template-areas:
     "media main"
-    "media side";
+    "media side"
+    "issue issue";
   column-gap: var(--sp-3);
   row-gap: var(--sp-2);
   padding-block: var(--sp-4);
@@ -88,13 +104,17 @@
   grid-area: media;
   align-self: start;
   display: block;
-  --pic-radius: var(--r-lg);
+  aspect-ratio: 1;
   border-radius: var(--r-lg);
   corner-shape: squircle;
   overflow: hidden;
+  background: var(--well);
 }
-.cline__media .pic {
-  aspect-ratio: 1 !important;
+.cline__img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
 }
 .cline__main {
   grid-area: main;
@@ -113,39 +133,35 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.cline__name:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
+@media (hover: hover) {
+  .cline__name:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
 }
-.cline__detail {
+/* A line added elsewhere, before the quote has named it. */
+.cline[data-loading] .cline__name {
+  inline-size: 70%;
+  min-block-size: 1.1em;
+  border-radius: var(--r-xs);
+  background: var(--sunk);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.cline__detail,
+.cline__unit {
   margin: 0;
   color: var(--text-2);
   font-size: var(--fs-sm);
 }
 .cline__unit {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--sp-1);
-  color: var(--text-2);
+  gap: 0 var(--sp-2);
 }
-.cline__addons {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--text-2);
-}
-.cline__addons .icon {
-  flex: none;
+.cline__was {
   color: var(--text-3);
-}
-.cline__breakdown {
-  display: block;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-regular);
-  color: var(--text-3);
-  white-space: nowrap;
 }
 .cline__stock {
   margin: 0;
@@ -160,12 +176,35 @@
   justify-content: space-between;
   gap: var(--sp-3);
 }
+.cline__qty {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+/* The no-JS form's submit; with JS (data-live) every change is instant. */
+[data-live] .cline__update,
+dialog .cline__update {
+  display: none;
+}
 .cline__total {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  margin: 0;
   font-weight: var(--fw-semibold);
   text-align: end;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+/* Its total is for another quantity until the quote catches up. */
+.cline[data-stale] .cline__total {
+  opacity: 0.4;
+}
+.cline__breakdown {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--text-3);
+  white-space: nowrap;
 }
 .cline__remove {
   display: flex;
@@ -189,9 +228,48 @@
   text-underline-offset: 0.2em;
   cursor: pointer;
 }
-.link-btn:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .link-btn:hover { color: var(--text); }
 }
+
+/* A line's problem (stock moved): under the line, with its fix. */
+.line-issue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  corner-shape: squircle;
+  background: var(--danger-wash);
+  color: var(--danger-text, var(--danger));
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.cline__issue {
+  grid-area: issue;
+}
+.cline__issue:has(> [data-slot="issue"][hidden]) {
+  display: none;
+}
+.line-issue > span {
+  flex: 1;
+  min-inline-size: 12ch;
+}
+.line-issue__fix {
+  display: contents;
+}
+.line-issue .link-btn {
+  min-block-size: 32px;
+  margin: 0;
+  color: inherit;
+  text-decoration-color: currentColor;
+}
+.cline[data-issue="out_of_stock"] .cline__media,
+.cline[data-issue="unavailable"] .cline__media {
+  opacity: 0.5;
+}
+
 /* The "Undo" a removed line leaves in its place. */
 .cline--gone {
   display: flex;
@@ -219,7 +297,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.cline__undo .link-btn {
+.cline__undo {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
@@ -234,75 +312,14 @@
 @media (prefers-reduced-motion: reduce) {
   .cline--gone { animation: none; }
 }
-.cline--skeleton .cline__main {
-  gap: var(--sp-2);
-  padding-block-start: var(--sp-1);
-}
-.cline__skel-media {
-  inline-size: 72px;
-  block-size: 72px;
-  border-radius: var(--r-lg);
-}
 
-/* ── Quantity stepper: 44px targets, press on pointer-down ────────────────── */
-.qty {
-  display: inline-flex;
-  align-items: center;
-  block-size: 44px;
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: var(--sunk);
-}
-.qty__btn {
-  display: grid;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  border: 0;
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: transparent;
-  color: var(--text);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition:
-    scale 100ms var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out),
-    opacity var(--dur-fast) var(--ease-out);
-}
-.qty__btn:hover:not(:disabled) {
-  background: var(--sunk-2, var(--line));
-}
-.qty__btn:active:not(:disabled) {
-  scale: 0.9;
-}
-.qty__btn:disabled {
-  color: var(--on-disabled);
-  cursor: default;
-}
-.qty__val {
-  min-inline-size: 2ch;
-  padding-inline: 2px;
-  text-align: center;
-  font-weight: var(--fw-semibold);
-  font-variant-numeric: tabular-nums;
-}
-/* A server form the islands router is posting: the pressed control dims, the rest waits. */
-form[aria-busy="true"] .qty__val,
-form[aria-busy="true"] .is-pending {
-  opacity: 0.45;
-}
-form[aria-busy="true"] {
-  cursor: progress;
-}
-
-/* ── Free-delivery meter: a solid bar that grows continuously ─────────────── */
-.ship {
+/* ── Summary: free-delivery hint, totals, VAT, the way on ─────────────────── */
+.csum {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
-.ship__text {
+.ship {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -311,40 +328,17 @@ form[aria-busy="true"] {
   font-weight: var(--fw-semibold);
   color: var(--text-2);
 }
-.ship__text .icon {
+.ship .icon {
   flex: none;
   color: var(--text);
 }
-.ship[data-done="true"] .ship__text,
-.ship[data-done="true"] .ship__text .icon {
+.ship:not(:has(> span:not([hidden]))) {
+  display: none;
+}
+.ship__done,
+.ship:has(> .ship__done:not([hidden])) .icon {
   color: var(--success-text, var(--success));
 }
-.ship__bar {
-  position: relative;
-  block-size: 6px;
-  border-radius: var(--r-pill);
-  background: var(--sunk);
-  overflow: hidden;
-}
-.ship__fill {
-  position: absolute;
-  inset: 0;
-  background: var(--brand);
-  border-radius: inherit;
-  transform-origin: 0 50%;
-  scale: var(--p, 0) 1;
-  transition:
-    scale var(--spring-gentle-dur, var(--dur-brand)) var(--spring-gentle, var(--ease-out)),
-    background-color var(--dur-base) var(--ease-out);
-}
-[dir="rtl"] .ship__fill {
-  transform-origin: 100% 50%;
-}
-.ship[data-done="true"] .ship__fill {
-  background: var(--success);
-}
-
-/* ── Totals ────────────────────────────────────────────────────────────────── */
 .totals {
   display: flex;
   flex-direction: column;
@@ -357,11 +351,15 @@ form[aria-busy="true"] {
   justify-content: space-between;
   gap: var(--sp-3);
 }
+.totals__row:has(> dd[hidden]) {
+  display: none;
+}
 .totals__row dt {
   color: var(--text-2);
 }
 .totals__row dd {
   margin: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
 .totals__row--save dt,
 .totals__row--save dd {
@@ -376,6 +374,10 @@ form[aria-busy="true"] {
   color: var(--text);
   font-weight: var(--fw-bold);
 }
+.csum .totals__row--total dd {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
 .totals__free {
   font-weight: var(--fw-semibold);
   color: var(--success-text, var(--success));
@@ -385,19 +387,44 @@ form[aria-busy="true"] {
   font-size: var(--fs-xs);
   color: var(--text-3);
 }
-.cart-summary {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
+/* Waiting for the server's numbers: the last ones stay, dimmed; none yet: a pulse. */
+.csum[aria-busy="true"] .totals dd,
+.csum[aria-busy="true"] .totals__vat [data-slot] {
+  opacity: 0.45;
 }
-.cart-summary[aria-busy="true"] .totals dd {
-  opacity: 0.6;
-  transition: opacity var(--dur-fast) var(--ease-out);
+.csum [data-slot]:empty:not([hidden]) {
+  display: inline-block;
+  inline-size: 6ch;
+  block-size: 1em;
+  vertical-align: middle;
+  border-radius: var(--r-xs);
+  background: var(--sunk);
+  animation: pulse 1.4s ease-in-out infinite;
 }
-.cart-summary__actions {
+.csum__err {
+  margin: 0;
+}
+.csum__err span {
+  flex: 1;
+}
+.csum__err .link-btn {
+  min-block-size: 32px;
+  margin: 0;
+  color: inherit;
+}
+.csum__actions {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+}
+.csum__blocked {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--danger-text, var(--danger));
+}
+.csum [data-checkout][aria-disabled="true"] {
+  pointer-events: none;
 }
 .assure {
   list-style: none;
@@ -415,44 +442,7 @@ form[aria-busy="true"] {
   gap: var(--sp-2);
 }
 
-/* ── Empty, error, notices ─────────────────────────────────────────────────── */
-.cart-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-10) var(--sp-6);
-  text-align: center;
-}
-.cart-empty__art {
-  corner-shape: round;
-  display: grid;
-  place-items: center;
-  inline-size: 88px;
-  block-size: 88px;
-  border-radius: var(--r-pill);
-  background: var(--sunk);
-  color: var(--text-2);
-}
-.cart-empty__title {
-  margin: 0;
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
-}
-.cart-empty__body {
-  margin: 0 0 var(--sp-2);
-  max-inline-size: 30ch;
-  color: var(--text-2);
-}
-.cart-note {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-10) var(--sp-6);
-  text-align: center;
-  color: var(--text-2);
-}
+/* ── Notices and the empty cart ────────────────────────────────────────────── */
 .notice {
   display: flex;
   align-items: flex-start;
@@ -471,9 +461,34 @@ form[aria-busy="true"] {
   background: var(--danger-wash);
   color: var(--danger-text, var(--danger));
 }
+.notice--success {
+  background: var(--success-wash);
+  color: var(--success-text, var(--success));
+}
 .notice--info {
   background: var(--info-wash);
   color: var(--info-text, var(--info));
+}
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-6);
+  text-align: center;
+}
+.cart-empty[hidden] {
+  display: none;
+}
+.cart-empty__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+}
+.cart-empty__body {
+  margin: 0 0 var(--sp-2);
+  max-inline-size: 30ch;
+  color: var(--text-2);
 }
 
 /* Illustrations that follow the theme. */
@@ -506,11 +521,28 @@ form[aria-busy="true"] {
   color: var(--text-2);
 }
 
+/* ── The drawer's content (core's drawer, class cart-drawer) ──────────────── */
+.cart-drawer .drawer__foot {
+  display: block;
+  padding-block-end: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+}
+.cart-drawer .cart-empty {
+  padding-block: var(--sp-6);
+}
+.cart-drawer .art {
+  inline-size: 140px;
+  block-size: 140px;
+}
+
 /* ── /cart ─────────────────────────────────────────────────────────────────── */
 .cart-page {
   padding-block: var(--sp-6) var(--section-y);
 }
 .cart-page__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
   margin-block-end: var(--sp-4);
 }
 .cart-page__head h1 {
@@ -520,42 +552,46 @@ form[aria-busy="true"] {
 .cart-page__head h1:focus {
   outline: none;
 }
+.cart-page__count {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
 .cart-layout {
   display: grid;
   gap: var(--sp-4);
   align-items: start;
 }
+.cart-layout[hidden] {
+  display: none;
+}
 .cart-lines {
-  padding: var(--sp-2) var(--sp-4);
+  padding: var(--sp-1) var(--sp-4);
 }
-.cart-lines__count {
-  margin: var(--sp-2) 0 0;
-  font-size: var(--fs-sm);
-  color: var(--text-3);
-}
-.cart-layout > .cart-summary {
+.cart-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
   padding: var(--sp-5);
 }
-.cart-empty--page {
+.cart-page > .cart-empty {
   max-inline-size: 560px;
   margin-inline: auto;
 }
 @media (min-width: 768px) {
-  .cline--page {
+  .cart-page .cline {
     grid-template-columns: 96px minmax(0, 1fr) auto;
-    grid-template-areas: "media main side";
+    grid-template-areas:
+      "media main side"
+      "media issue issue";
     column-gap: var(--sp-5);
     align-items: center;
   }
-  .cline--page .cline__side {
+  .cart-page .cline__side {
     gap: var(--sp-6);
   }
-  .cline--page .cline__total {
+  .cart-page .cline__total {
     min-inline-size: 8.5rem;
-  }
-  .cline__skel-media {
-    inline-size: 96px;
-    block-size: 96px;
   }
   .cart-lines {
     padding-inline: var(--sp-6);
@@ -622,186 +658,4 @@ form[aria-busy="true"] {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* ── The drawer's own layout ───────────────────────────────────────────────── */
-dialog[data-cart] .cart-drawer__scroll {
-  flex: 1;
-  min-block-size: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding-inline: var(--sp-5);
-}
-dialog[data-cart] .cart-summary {
-  padding: var(--sp-4) var(--sp-5) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
-  border-block-start: 1px solid var(--rule);
-  background: var(--surface);
-}
-dialog[data-cart] .cart-empty,
-dialog[data-cart] .cart-note {
-  flex: 1;
-  justify-content: center;
-}
-
-/* ═════════════════════════════════════════════════════════════════════════════
-   TEMPORARY — layout for components::drawer::Drawer as the cart uses it, until
-   style/components/drawer.css has content (it is an empty stub on main today).
-   Scoped to the cart's dialog ([data-cart]); delete this block when the design
-   system styles the drawer. The panel's motion is the component's spring (JS
-   transform); CSS only places things.
-   ═════════════════════════════════════════════════════════════════════════════ */
-dialog.drawer[data-cart] {
-  position: fixed;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-  max-inline-size: none;
-  max-block-size: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  overflow: hidden;
-  color: var(--text);
-}
-dialog.drawer[data-cart]::backdrop {
-  background: transparent;
-}
-dialog.drawer[data-cart] .drawer__scrim {
-  position: absolute;
-  inset: 0;
-  background: var(--scrim);
-  opacity: 0;
-}
-dialog.drawer[data-cart] .drawer__panel {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  display: flex;
-  flex-direction: column;
-  inline-size: min(26.5rem, 92vw);
-  background: var(--surface);
-  border-start-start-radius: var(--r-2xl);
-  border-end-start-radius: var(--r-2xl);
-  corner-shape: squircle;
-  box-shadow: var(--shadow-modal);
-  touch-action: pan-y;
-  will-change: transform;
-}
-dialog.drawer[data-cart] .drawer__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: calc(var(--sp-3) + env(safe-area-inset-top, 0px)) var(--sp-3) var(--sp-2) var(--sp-5);
-}
-dialog.drawer[data-cart] .drawer__title {
-  margin: 0;
-  font-size: var(--fs-xl);
-  font-weight: var(--fw-bold);
-  letter-spacing: var(--tracking-tight, 0);
-}
-dialog.drawer[data-cart] .drawer__body {
-  position: relative;
-  flex: 1;
-  min-block-size: 0;
-  display: flex;
-  flex-direction: column;
-}
-html:has(dialog.drawer[data-cart][open]) {
-  overflow: hidden;
-}
-
-/* ── Line problems: stock moved, a change didn't save ─────────────────────── */
-.line-issue {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: start;
-  gap: var(--sp-1) var(--sp-2);
-  margin-block-start: var(--sp-1);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-md);
-  background: var(--danger-wash);
-  color: var(--danger-text, var(--danger));
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-}
-.line-issue .icon {
-  margin-block-start: 0.2em;
-}
-.line-issue > .link-btn,
-.line-issue > .line-issue__fix {
-  align-self: center;
-}
-.line-issue--offline {
-  background: var(--warning-wash);
-  color: var(--warning-text, var(--warning));
-}
-.line-issue .link-btn,
-.line-issue__fix .link-btn {
-  min-block-size: 32px;
-  margin: 0;
-  padding-inline: var(--sp-2);
-  color: inherit;
-  text-decoration-color: currentColor;
-}
-.line-issue__fix {
-  display: inline-flex;
-  margin-inline-start: auto;
-}
-.cart-summary__blocked {
-  margin: 0;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--danger-text, var(--danger));
-}
-
-/* A line's own problem spans the text and controls columns. */
-.cline__issue {
-  grid-column: 2 / -1;
-}
-.line-issue--note {
-  background: var(--info-wash);
-  color: var(--info-text, var(--info));
-}
-
-/* The empty drawer: art (box reserved), a way back, suggestions. */
-.cart-empty--drawer {
-  padding-block: var(--sp-6) var(--sp-4);
-}
-.cart-empty__artbox {
-  display: grid;
-  place-items: center;
-  inline-size: 140px;
-  block-size: 140px;
-}
-.cart-empty__artbox .art {
-  inline-size: 140px;
-  block-size: 140px;
-}
-.cart-empty__artbox .art--icon {
-  inline-size: 96px;
-  block-size: 96px;
-}
-.drawer-picks {
-  margin-block: var(--sp-4) var(--sp-6);
-  padding-block-start: var(--sp-4);
-  border-block-start: 1px solid var(--rule);
-}
-.drawer-picks__title {
-  margin: 0 0 var(--sp-3);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-bold);
-}
-.mini-line__add {
-  display: contents;
-}
-a.mini-line__name {
-  color: var(--text);
-  text-decoration: none;
-}
-
-/* /cart's stepper: each button is its own form (see page.rs). */
-.qty__form {
-  display: contents;
 }

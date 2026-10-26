@@ -552,7 +552,7 @@ pub fn CheckoutPage() -> impl IntoView {
     view! {
         <Title text=title/>
         <Meta name="robots" content="noindex"/>
-        <div class="container checkout">{body}</div>
+        <div class="container checkout" data-ts="checkout">{body}</div>
     }
 }
 
