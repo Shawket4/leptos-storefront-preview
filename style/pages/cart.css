@@ -199,6 +199,14 @@ dialog .cline__update {
 .cline[data-stale] .cline__total {
   opacity: 0.4;
 }
+/* Money never breaks between its figure and its currency. */
+.cline__price,
+.cline__was,
+.cline__total > [data-slot="total"],
+.csum dd,
+.totals__vat [data-slot] {
+  white-space: nowrap;
+}
 .cline__breakdown {
   display: block;
   font-size: var(--fs-xs);
