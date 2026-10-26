@@ -116,6 +116,7 @@ impl Links {
                 (Some(p), Some(v)) => Some(format!("/p/{p}?v={v}")),
                 _ => None,
             },
+            Href::ProductQuery(q) => self.product.as_ref().map(|p| format!("/p/{p}?{q}")),
         }
     }
 }
@@ -795,30 +796,44 @@ fn cuts_for(id: &str) -> Vec<Cut> {
             cut(Src::Frontend, "pub fn hydrate()", "^}", 6),
         ],
         "ssr-modes" => vec![cut(Src::Lib, "<Routes fallback", "</Routes>", 26)],
-        "streaming" => vec![cut(
-            Src::Home,
-            "let data = Resource::new(|| (), move |_| api::home_rail",
-            "</Suspense>",
-            28,
-        )],
+        "streaming" => vec![
+            cut(
+                Src::Home,
+                "let data = Resource::new(|| (), move |_| api::home_rail",
+                "</Suspense>",
+                28,
+            ),
+            cut(Src::Product, "let data = Resource::new_blocking", "", 1),
+        ],
         "errors" => vec![cut(
             Src::Errors,
             "pub fn SectionError(",
             ") -> impl IntoView",
             10,
         )],
-        "meta" => vec![cut(
-            Src::Home,
-            "<Title text=title.clone()/>",
-            "<Script type_",
-            18,
-        )],
-        "reactivity" => vec![cut(
-            Src::Islands,
-            "// A derived signal",
-            "let total = Memo",
-            8,
-        )],
+        "meta" => vec![
+            cut(
+                Src::Home,
+                "<Title text=title.clone()/>",
+                "<Script type_",
+                18,
+            ),
+            cut(
+                Src::ProductHead,
+                "<Meta property=\"product:price:amount\"",
+                "<Script type_",
+                8,
+            ),
+        ],
+        "reactivity" => vec![
+            cut(
+                Src::ProductPanel,
+                "let sel = RwSignal::new(data.selected);",
+                "let image = Memo",
+                8,
+            ),
+            cut(Src::Islands, "// A derived signal", "let total = Memo", 8),
+        ],
         "shared-state" => vec![
             cut(
                 Src::Client,
@@ -834,45 +849,74 @@ fn cuts_for(id: &str) -> Vec<Cut> {
             "^}",
             8,
         )],
-        "transition" => vec![cut(
-            Src::Islands,
-            "let data = AsyncDerived::new(move || {",
-            "</Transition>",
-            24,
-        )],
+        "transition" => vec![
+            cut(
+                Src::Explorer,
+                "let page = AsyncDerived::new(move || {",
+                "^    });",
+                18,
+            ),
+            cut(Src::Explorer, "^<Transition", "})}", 9),
+        ],
         "sim" => vec![cut(Src::Sim, "pub fn check_fail", "^}", 12)],
         "action-form" => vec![
+            cut(Src::ApiCart, "/// Remove a line.", "^}", 9),
+            cut(
+                Src::CartPage,
+                "<ActionForm action=remove",
+                "</ActionForm>",
+                6,
+            ),
             cut(
                 Src::Islands,
                 "let action = ServerAction::<notes::LeaveNote>::new();",
                 "let pending",
                 16,
             ),
-            cut(Src::Notes, "#[server]", "^}", 10),
         ],
-        "islands-router" => vec![cut(Src::Lib, "<HydrationScripts", "<HydrationScripts", 1)],
+        "islands-router" => vec![
+            cut(Src::Lib, "<HydrationScripts", "<HydrationScripts", 1),
+            cut(
+                Src::CartPage,
+                "<For each=move || lines.clone() key=|l| l.key.clone()",
+                "</For>",
+                3,
+            ),
+            cut(Src::Product, "^<For", "key=|id| *id", 3),
+        ],
         "router" => vec![
             cut(
-                Src::ShowcasePage,
-                "let qm = leptos_router::hooks::use_query_map();",
-                "})",
-                9,
+                Src::Product,
+                "let slug = use_params_map()",
+                "let v = q.get(\"v\")",
+                3,
             ),
             cut(Src::ApiTypes, "pub fn from_query", "\"sort\" =>", 14),
         ],
         "caching" => vec![cut(Src::Cache, "pub fn public(tags", "^}", 24)],
-        "states" => vec![cut(
-            Src::Errors,
-            "pub fn NotFound()",
-            "let back = same_origin_referer",
-            16,
-        )],
-        "router-patches" => vec![cut(
-            Src::ShellJs,
-            "// ── Keep the router's page diff aligned",
-            "return new Proxy",
-            44,
-        )],
+        "states" => vec![
+            cut(
+                Src::Errors,
+                "pub fn NotFound()",
+                "let back = same_origin_referer",
+                16,
+            ),
+            cut(Src::Net, "// Offline: don't spend a try", "^}", 18),
+        ],
+        "router-patches" => vec![
+            cut(
+                Src::ShellJs,
+                "// ── The button that submitted a form",
+                "}, true);",
+                16,
+            ),
+            cut(
+                Src::ShellJs,
+                "const doc = new DOMParser().parseFromString(html",
+                "} catch (_) {}",
+                12,
+            ),
+        ],
         "motion" => vec![
             cut(
                 Src::Motion,
@@ -881,12 +925,11 @@ fn cuts_for(id: &str) -> Vec<Cut> {
                 12,
             ),
             cut(
-                Src::Islands,
-                "let on_up = move |ev: leptos::ev::PointerEvent|",
-                "};",
-                8,
+                Src::Gallery,
+                "// A sample at release: a finger that rested",
+                "Release::Swipe",
+                26,
             ),
-            cut(Src::Islands, "let settle = move |v: f64|", "};", 18),
         ],
         "tenancy" => vec![
             cut(Src::Tenant, "pub fn tenant_from_host", "^}", 8),
@@ -906,14 +949,25 @@ fn cuts_for(id: &str) -> Vec<Cut> {
                 40,
             ),
         ],
-        "view-transitions" => vec![cut(Src::Demos, "fn VtDemo", "^}", 40)],
+        "view-transitions" => vec![
+            cut(
+                Src::ShellJs,
+                "// A product card: name only its image",
+                "media.setAttribute(\"data-vt-named\", \"\");",
+                9,
+            ),
+            cut(
+                Src::Demos,
+                "// Each tile keeps one `view-transition-name`",
+                "}).collect_view()}",
+                13,
+            ),
+        ],
         "images" => vec![cut(Src::Media, "pub fn srcset(&self)", "^    }", 9)],
-        "a11y" => vec![cut(
-            Src::Islands,
-            "<dialog id=\"sc-sheet\"",
-            "</dialog>",
-            30,
-        )],
+        "a11y" => vec![
+            cut(Src::Steps, "pub fn StepFocus()", "^}", 8),
+            cut(Src::Islands, "<dialog id=\"sc-sheet\"", "</dialog>", 30),
+        ],
         _ => vec![],
     }
 }

@@ -2035,27 +2035,35 @@ pub fn PatchProbe() -> impl IntoView {
 
 // ─── States: offline ───────────────────────────────────────────────────────────────────────────
 
-/// The connection as the browser sees it (`navigator.onLine` + `online`/`offline` events), and the
-/// notice a visitor gets when it drops. Turn the network off in your browser to see it for real,
-/// or preview it.
+/// The connection as the browser reports it (`navigator.onLine`), and the shell's real offline
+/// banner (`components::offline::OfflineBanner`, mounted once on every page). The buttons fire the
+/// same `offline`/`online` window events the browser fires, so the banner reacts exactly as it
+/// would; the status line keeps reading the browser's own answer.
 #[island]
 pub fn OfflineDemo() -> impl IntoView {
     let ui = use_ui();
     let online = RwSignal::new(true);
-    let preview = RwSignal::new(false);
     #[cfg(feature = "hydrate")]
     Effect::new(move |_| {
-        online.set(window().navigator().on_line());
-        let up = window_event_listener(leptos::ev::online, move |_| online.set(true));
-        let down = window_event_listener(leptos::ev::offline, move |_| online.set(false));
+        let sync = move || online.set(window().navigator().on_line());
+        sync();
+        let up = window_event_listener(leptos::ev::online, move |_| sync());
+        let down = window_event_listener(leptos::ev::offline, move |_| sync());
         on_cleanup(move || {
             up.remove();
             down.remove();
         });
     });
-    let shown = move || preview.get() || !online.get();
+    let fire = move |kind: &'static str| {
+        #[cfg(feature = "hydrate")]
+        if let Ok(ev) = web_sys::Event::new(kind) {
+            let _ = window().dispatch_event(&ev);
+        }
+        #[cfg(not(feature = "hydrate"))]
+        let _ = kind;
+    };
     view! {
-        <p class="sc-online" data-online=move || if online.get() { "yes" } else { "no" }>
+        <p class="sc-online" data-online=move || if online.get() { "yes" } else { "no" } role="status">
             <span class="sc-online__dot" aria-hidden="true"></span>
             <span>{move || if online.get() {
                 tr(ui.lang.get(), "Your browser says: online.", "المتصفح بيقول: متصل.")
@@ -2063,19 +2071,117 @@ pub fn OfflineDemo() -> impl IntoView {
                 tr(ui.lang.get(), "Your browser says: offline.", "المتصفح بيقول: مش متصل.")
             }}</span>
         </p>
-        <div class="sc-offline" class:is-shown=shown role="status" aria-live="polite">
-            {move || shown().then(|| view! {
-                <Icon name="circle-alert" size=18/>
-                <span>{tr(ui.lang.get(), "You're offline. What's on screen still works; we'll try again when you're back.", "أنت غير متصل بالإنترنت. ما يظهر على الشاشة ما زال يعمل، وسنعيد المحاولة عند عودة الاتصال.")}</span>
-            })}
+        <div class="sc-actions">
+            <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="wifi-off" on:click=move |_| fire("offline")>
+                {move || tr(ui.lang.get(), "Lose the connection", "اقطع النت")}
+            </Button>
+            <Button kind=ButtonKind::Ghost size=ButtonSize::Sm icon="wifi" on:click=move |_| fire("online")>
+                {move || tr(ui.lang.get(), "Get it back", "رجّعه")}
+            </Button>
         </div>
-        <button type="button" class="sc-btnlink" aria-pressed=move || preview.get().to_string()
-            on:click=move |_| preview.update(|p| *p = !*p)>
-            {move || if preview.get() {
-                tr(ui.lang.get(), "Hide the preview", "اخفي المعاينة")
-            } else {
-                tr(ui.lang.get(), "Preview the offline notice", "عاين تنبيه انقطاع النت")
-            }}
-        </button>
+    }
+}
+
+// ─── States: a read that retries ───────────────────────────────────────────────────────────────
+
+#[derive(Clone, Debug, PartialEq)]
+struct Try {
+    n: u32,
+    /// Since the press.
+    at_ms: f64,
+    ok: Option<bool>,
+}
+
+/// `components::net::retry` against a server function that fails its first two tries
+/// (`notes::flaky_read`): each try's start time shows the backoff, 300 ms and then 600 ms on top
+/// of the round trips. Offline, no try is spent: the helper waits for the `online` event.
+#[island]
+pub fn RetryDemo() -> impl IntoView {
+    let ui = use_ui();
+    let tries = RwSignal::new(Vec::<Try>::new());
+    let running = RwSignal::new(false);
+    let outcome = RwSignal::new(None::<bool>);
+    let run = move |_| {
+        if running.get_untracked() {
+            return;
+        }
+        running.set(true);
+        tries.set(Vec::new());
+        outcome.set(None);
+        #[cfg(feature = "hydrate")]
+        leptos::task::spawn_local(async move {
+            let t0 = js::now();
+            let mut n = 0u32;
+            let res = crate::components::net::retry(|| {
+                n += 1;
+                let k = n;
+                tries.update(|v| {
+                    v.push(Try {
+                        n: k,
+                        at_ms: js::now() - t0,
+                        ok: None,
+                    })
+                });
+                async move {
+                    let r = notes::flaky_read(k, 2).await;
+                    let ok = r.is_ok();
+                    tries.update(|v| {
+                        if let Some(t) = v.iter_mut().find(|t| t.n == k) {
+                            t.ok = Some(ok);
+                        }
+                    });
+                    r
+                }
+            })
+            .await;
+            outcome.set(Some(res.is_ok()));
+            running.set(false);
+        });
+    };
+    view! {
+        <div class="sc-retry">
+            <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="rotate-ccw"
+                loading=Signal::derive(move || running.get()) on:click=run>
+                {move || tr(ui.lang.get(), "Read a flaky endpoint", "اقرا من endpoint مش مستقر")}
+            </Button>
+            <ol class="sc-retry__log" aria-live="polite">
+                {move || {
+                    let l = ui.lang.get();
+                    let num = ui.numerals.get();
+                    tries.get().into_iter().map(|t| {
+                        let state = match t.ok {
+                            None => "wait",
+                            Some(true) => "ok",
+                            Some(false) => "fail",
+                        };
+                        let label = match (l, t.ok) {
+                            (_, None) => "…",
+                            (Lang::En, Some(true)) => "200 OK",
+                            (Lang::Ar, Some(true)) => "200 تمام",
+                            (Lang::En, Some(false)) => "failed",
+                            (Lang::Ar, Some(false)) => "فشلت",
+                        };
+                        view! {
+                            <li class="sc-retry__try" data-state=state>
+                                <span class="sc-retry__n">{match l {
+                                    Lang::En => format!("Try {}", format::count(t.n, num)),
+                                    Lang::Ar => format!("محاولة {}", format::count(t.n, num)),
+                                }}</span>
+                                <span class="sc-retry__at mono">{format!("+{}", ms(t.at_ms, num))}</span>
+                                <span class="sc-retry__res">{label}</span>
+                            </li>
+                        }
+                    }).collect_view()
+                }}
+            </ol>
+            <p class="sc-note" role="status">{move || {
+                let l = ui.lang.get();
+                match outcome.get() {
+                    Some(true) => tr(l, "Got it on the third try — the visitor only saw a short wait.", "جت من المحاولة التالتة — والزائر شاف انتظار قصير وبس."),
+                    Some(false) => tr(l, "Four tries failed: now the section shows its error and a Retry.", "أربع محاولات فشلوا: دلوقتي القسم بيعرض الخطأ و«إعادة المحاولة»."),
+                    None => tr(l, "This endpoint fails its first two tries on purpose.", "الـ endpoint ده بيفشل في أول محاولتين بالقصد."),
+                }
+            }}</p>
+        </div>
     }
 }

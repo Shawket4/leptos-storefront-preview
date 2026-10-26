@@ -2397,25 +2397,54 @@ a.sc-mini__name:hover {
 .sc-online[data-online="no"] .sc-online__dot {
   background: var(--danger);
 }
-.sc-offline {
-  display: none;
-  align-items: flex-start;
-  gap: var(--sp-2);
-  padding: var(--sp-3);
-  border-radius: var(--r-md);
-  background: var(--ink);
-  color: var(--on-ink);
-  font-size: var(--fs-sm);
-  line-height: var(--lh-snug);
+/* A StateView / ComingSoon inside a tile: the tile is already the frame. */
+.sc-state .state {
+  padding-block: var(--sp-2);
 }
-.sc-offline.is-shown {
-  display: flex;
+.sc-retry {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+}
+.sc-retry__log {
+  display: grid;
+  gap: 4px;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-retry__log:empty {
+  display: none;
+}
+.sc-retry__try {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 32px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--sunk);
+  font-size: var(--fs-sm);
   animation: fade-in var(--dur-base) var(--ease-out);
 }
-.sc-offline .icon {
-  flex: none;
-  color: var(--warning-on-ink);
-  margin-block-start: 2px;
+.sc-retry__n {
+  font-weight: var(--fw-semibold);
+}
+.sc-retry__at {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.sc-retry__res {
+  font-weight: var(--fw-bold);
+  color: var(--text-3);
+}
+.sc-retry__try[data-state="ok"] .sc-retry__res {
+  color: var(--success-text);
+}
+.sc-retry__try[data-state="fail"] .sc-retry__res {
+  color: var(--danger-text);
 }
 .sc-callout {
   display: grid;
@@ -2469,7 +2498,10 @@ a.sc-mini__name:hover {
   .sc-vt__tile,
   .sc-sheet,
   .sc-card__why,
-  .sc-code {
+  .sc-code,
+  .sc-state,
+  .sc-callout,
+  .sc-retry__try {
     corner-shape: squircle;
   }
 }

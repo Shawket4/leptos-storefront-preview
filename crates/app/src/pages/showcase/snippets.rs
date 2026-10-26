@@ -24,11 +24,18 @@ pub enum Src {
     Home,
     Errors,
     Islands,
-    Notes,
     Demos,
-    ShowcasePage,
     Motion,
     ShellJs,
+    Net,
+    ApiCart,
+    CartPage,
+    Product,
+    ProductPanel,
+    ProductHead,
+    Gallery,
+    Explorer,
+    Steps,
 }
 
 impl Src {
@@ -49,11 +56,18 @@ impl Src {
             Src::Home => "crates/app/src/pages/home.rs",
             Src::Errors => "crates/app/src/pages/errors.rs",
             Src::Islands => "crates/app/src/pages/showcase/islands.rs",
-            Src::Notes => "crates/app/src/pages/showcase/notes.rs",
             Src::Demos => "crates/app/src/pages/showcase/demos.rs",
-            Src::ShowcasePage => "crates/app/src/pages/showcase.rs",
             Src::Motion => "crates/app/src/components/motion.rs",
             Src::ShellJs => "crates/app/src/components/shell.js",
+            Src::Net => "crates/app/src/components/net.rs",
+            Src::ApiCart => "crates/app/src/api/cart.rs",
+            Src::CartPage => "crates/app/src/pages/cart/page.rs",
+            Src::Product => "crates/app/src/pages/product.rs",
+            Src::ProductPanel => "crates/app/src/pages/product/panel.rs",
+            Src::ProductHead => "crates/app/src/pages/product/head.rs",
+            Src::Gallery => "crates/app/src/pages/product/gallery.rs",
+            Src::Explorer => "crates/app/src/pages/category/explorer.rs",
+            Src::Steps => "crates/app/src/pages/checkout/steps.rs",
         }
     }
 
@@ -75,18 +89,26 @@ impl Src {
             Src::Home => include_str!("../home.rs"),
             Src::Errors => include_str!("../errors.rs"),
             Src::Islands => include_str!("islands.rs"),
-            Src::Notes => include_str!("notes.rs"),
             Src::Demos => include_str!("demos.rs"),
-            Src::ShowcasePage => include_str!("../showcase.rs"),
             Src::Motion => include_str!("../../components/motion.rs"),
             Src::ShellJs => include_str!("../../components/shell.js"),
+            Src::Net => include_str!("../../components/net.rs"),
+            Src::ApiCart => include_str!("../../api/cart.rs"),
+            Src::CartPage => include_str!("../cart/page.rs"),
+            Src::Product => include_str!("../product.rs"),
+            Src::ProductPanel => include_str!("../product/panel.rs"),
+            Src::ProductHead => include_str!("../product/head.rs"),
+            Src::Gallery => include_str!("../product/gallery.rs"),
+            Src::Explorer => include_str!("../category/explorer.rs"),
+            Src::Steps => include_str!("../checkout/steps.rs"),
         }
     }
 }
 
 /// Where to cut: from the first line containing `from` to the first later line containing `to`
-/// (inclusive), at most `max` lines. A `to` starting with `^` must match a whole line exactly
-/// (`"^}"` = the closing brace of a top-level item).
+/// (inclusive), at most `max` lines. A `from` starting with `^` must equal a whole line once
+/// trimmed (`"^<For"` skips doc comments that mention `<For>`); a `to` starting with `^` must
+/// match a whole line exactly (`"^}"` = the closing brace of a top-level item).
 #[derive(Clone, Copy, Debug)]
 pub struct Cut {
     pub src: Src,
@@ -109,7 +131,11 @@ pub struct Excerpt {
 #[cfg(feature = "ssr")]
 pub fn excerpt(c: Cut) -> Option<Excerpt> {
     let lines: Vec<&str> = c.src.text().lines().collect();
-    let Some(start) = lines.iter().position(|l| l.contains(c.from)) else {
+    let starts = |l: &&str| match c.from.strip_prefix('^') {
+        Some(exact) => l.trim() == exact,
+        None => l.contains(c.from),
+    };
+    let Some(start) = lines.iter().position(starts) else {
         tracing::warn!(
             "showcase excerpt: '{}' not found in {}",
             c.from,
