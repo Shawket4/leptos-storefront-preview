@@ -99,6 +99,8 @@ pub fn CartPage() -> impl IntoView {
         });
     let (lines, priced) = crate::server::cart::priced_for_request();
     let api = crate::api::cart::quote(&lines, &priced, lang, num);
+    // The browser code starts from the very quote this page was rendered from.
+    let quote_json = serde_json::to_string(&api).unwrap_or_default().replace('<', "\\u003c");
     let rows: Vec<LineData> = lines
         .iter()
         .map(|cl| match priced.view.lines.iter().find(|l| l.key == cl.key()) {
@@ -127,6 +129,7 @@ pub fn CartPage() -> impl IntoView {
         <Title text=title/>
         <Meta name="robots" content="noindex"/>
         <div class="container cart-page" data-ts="cart-page">
+            <script type="application/json" data-ts-json="" inner_html=quote_json></script>
             <header class="cart-page__head">
                 <h1 class="t-h1" id="cart-title" tabindex="-1">{strings::get("cart.title", lang)}</h1>
                 <p class="cart-page__count" data-slot="count" hidden=empty>{count}</p>
