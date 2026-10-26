@@ -1,7 +1,7 @@
 //! Everything the server learns from the incoming request before rendering: which tenant, which
 //! origin to build absolute URLs from, and the visitor's display preferences.
 
-use crate::prefs::{Lang, Numerals, Prefs, Theme};
+use crate::prefs::Prefs;
 use crate::tenant::{Tenant, TenantVia};
 use leptos::prelude::*;
 
@@ -47,7 +47,7 @@ pub use server::init;
 #[cfg(feature = "ssr")]
 mod server {
     use super::*;
-    use crate::prefs::{COOKIE_LANG, COOKIE_NUMERALS, COOKIE_THEME, Ui};
+    use crate::prefs::{COOKIE_LANG, COOKIE_NUMERALS, COOKIE_THEME, Lang, Numerals, Theme, Ui};
     use crate::server::AppState;
     use crate::tenant::{COOKIE_TENANT, DEFAULT_TENANT, TENANT_IDS, tenant_from_host};
     use http::request::Parts;

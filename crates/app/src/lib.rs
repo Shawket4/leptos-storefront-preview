@@ -1,5 +1,9 @@
 #![recursion_limit = "512"]
 
+pub mod brand;
+pub mod components;
+pub mod format;
+pub mod media;
 pub mod pages;
 pub mod prefs;
 pub mod request;
@@ -12,7 +16,9 @@ pub mod server;
 pub mod client;
 
 use leptos::prelude::*;
-use leptos_meta::{MetaTags, Title, provide_meta_context};
+use leptos_meta::provide_meta_context;
+#[cfg(feature = "ssr")]
+use leptos_meta::MetaTags;
 use leptos_router::{
     components::{Route, Router, Routes},
     path,
@@ -25,10 +31,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
     let rq = request::init();
     let p = rq.prefs;
     let t = &rq.tenant;
-    let brand_css = format!(
-        ":root{{--accent-light:{};--accent-dark:{};--on-accent:{}}}",
-        t.accent, t.accent_dark, t.on_accent
-    );
+    let brand_css = brand::tenant_css(&t.accent, &t.accent_dark);
     view! {
         <!DOCTYPE html>
         <html
@@ -59,13 +62,20 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 pub fn App() -> impl IntoView {
     provide_meta_context();
     view! {
-        <Title formatter=|t: String| t/>
         <Router>
-            <main id="main">
+            <components::shell::AppShell>
                 <Routes fallback=|| view! { <pages::NotFound/> }>
                     <Route path=path!("") view=pages::HomePage/>
+                    <Route path=path!("c/:slug") view=pages::CategoryPage/>
+                    <Route path=path!("p/:slug") view=pages::ProductPage/>
+                    <Route path=path!("search") view=pages::SearchPage/>
+                    <Route path=path!("cart") view=pages::CartPage/>
+                    <Route path=path!("checkout") view=pages::CheckoutPage/>
+                    <Route path=path!("orders/:id") view=pages::OrderPage/>
+                    <Route path=path!("showcase") view=pages::ShowcasePage/>
+                    <Route path=path!("ui") view=pages::UiKitPage/>
                 </Routes>
-            </main>
+            </components::shell::AppShell>
         </Router>
     }
 }
