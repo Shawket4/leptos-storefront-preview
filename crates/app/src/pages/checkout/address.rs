@@ -15,10 +15,19 @@ use leptos::prelude::*;
 use leptos::server_fn::ServerFn;
 
 #[component]
-pub fn AddressForm(initial: AddressInput, errors: Vec<FieldError>, form_error: Option<String>) -> impl IntoView {
+pub fn AddressForm(
+    initial: AddressInput,
+    errors: Vec<FieldError>,
+    form_error: Option<String>,
+) -> impl IntoView {
     let ui = use_ui();
     let (lang, num) = (ui.lang.get_untracked(), ui.numerals.get_untracked());
-    let err = |f: Field| errors.iter().find(|e| e.field == f).map(|e| e.message(lang, num));
+    let err = |f: Field| {
+        errors
+            .iter()
+            .find(|e| e.field == f)
+            .map(|e| e.message(lang, num))
+    };
     let t = move |en: &'static str, ar: &'static str| tr(lang, en, ar);
     let text = |field: Field, label: (&'static str, &'static str), opts: TextOpts| {
         view! { <TextField field value=field.value(&initial).to_owned() error=err(field) label opts lang/> }
@@ -122,7 +131,11 @@ pub fn AddressForm(initial: AddressInput, errors: Vec<FieldError>, form_error: O
 
 /// `12/200` in the visitor's numerals.
 fn count_text(used: u32, num: Numerals) -> String {
-    format!("{}/{}", format::count(used, num), format::count(NOTES_MAX as u32, num))
+    format!(
+        "{}/{}",
+        format::count(used, num),
+        format::count(NOTES_MAX as u32, num)
+    )
 }
 
 #[derive(Clone, Copy, Default)]
@@ -163,7 +176,11 @@ fn TextField(
 ) -> impl IntoView {
     let id = field.id();
     let hint_id = format!("{id}-hint");
-    let described = if opts.hint.is_some() { format!("{hint_id} {}", field.error_id()) } else { field.error_id() };
+    let described = if opts.hint.is_some() {
+        format!("{hint_id} {}", field.error_id())
+    } else {
+        field.error_id()
+    };
     let invalid = error.is_some();
     view! {
         <div class={if opts.wide { "field field--wide" } else { "field" }}>
@@ -184,5 +201,7 @@ fn TextField(
 
 /// A `<textarea>`'s initial value as raw content.
 fn escape_text(s: &str) -> String {
-    s.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
 }

@@ -81,7 +81,8 @@ mod imp {
                         variant: l.variant.0,
                         qty: l.qty,
                         name: l.name.pick(ar).to_owned(),
-                        variant_label: Some(l.variant_label.pick(ar).to_owned()).filter(|s| !s.is_empty()),
+                        variant_label: Some(l.variant_label.pick(ar).to_owned())
+                            .filter(|s| !s.is_empty()),
                         addons: l.addons.iter().map(|a| a.pick(ar).to_owned()).collect(),
                         href: format!("/p/{}", l.slug),
                         img: (!l.img.is_missing()).then(|| l.img.src_near(192)),
@@ -113,8 +114,9 @@ mod imp {
             savings: (v.savings.0 > 0).then(|| m(v.savings)),
             delivery: m(v.delivery_fee),
             delivery_free: v.delivery_fee.0 == 0,
-            free_delivery_hint: (left > 0 && v.subtotal.0 > 0)
-                .then(|| strings::get("cart.free_hint", lang).replace("{amount}", &m(Piastres(left)))),
+            free_delivery_hint: (left > 0 && v.subtotal.0 > 0).then(|| {
+                strings::get("cart.free_hint", lang).replace("{amount}", &m(Piastres(left)))
+            }),
             total: m(v.total),
             vat_included: m(v.tax_included),
             can_checkout: !lines.is_empty() && !p.blocked(),

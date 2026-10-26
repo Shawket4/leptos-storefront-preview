@@ -437,7 +437,9 @@ fn MiniLine(l: crate::api::types::CartLineView, lang: Lang, num: Numerals) -> im
     }
     detail.extend(l.addons.iter().map(|a| a.pick(ar).to_owned()));
     let stock = crate::server::cart::issue(&l).map(|i| match i {
-        crate::server::cart::Issue::OutOfStock => crate::strings::get("cart.issue.out_of_stock", lang).to_owned(),
+        crate::server::cart::Issue::OutOfStock => {
+            crate::strings::get("cart.issue.out_of_stock", lang).to_owned()
+        }
         crate::server::cart::Issue::Capped(n) => {
             crate::pages::cart::tx("cart.issue.capped", lang, &[("n", &format::count(n, num))])
         }

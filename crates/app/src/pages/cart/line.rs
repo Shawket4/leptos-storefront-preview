@@ -40,7 +40,11 @@ pub struct LineData {
 }
 
 pub fn percent(n: u32, num: Numerals) -> String {
-    let sign = if num == Numerals::Arab { '\u{066A}' } else { '%' };
+    let sign = if num == Numerals::Arab {
+        '\u{066A}'
+    } else {
+        '%'
+    };
     format!("{}{sign}", format::count(n, num))
 }
 
@@ -56,9 +60,11 @@ impl LineData {
         }
         detail.extend(l.addons.iter().map(|a| a.pick(ar).to_owned()));
         let (issue_code, issue, fix) = match crate::server::cart::issue(l) {
-            Some(crate::server::cart::Issue::OutOfStock) => {
-                (Some("out_of_stock"), Some(strings::get("cart.issue.out_of_stock", lang).to_owned()), None)
-            }
+            Some(crate::server::cart::Issue::OutOfStock) => (
+                Some("out_of_stock"),
+                Some(strings::get("cart.issue.out_of_stock", lang).to_owned()),
+                None,
+            ),
             Some(crate::server::cart::Issue::Capped(c)) => (
                 Some("capped"),
                 Some(tx("cart.issue.capped", lang, &[("n", &n(c))])),
@@ -77,8 +83,15 @@ impl LineData {
             unit: Some(m(l.unit_price)),
             was: l.compare_at.map(m),
             total: Some(m(l.line_total)),
-            breakdown: (l.qty > 1).then(|| tx("cart.breakdown", lang, &[("qty", &n(l.qty)), ("unit", &m(l.unit_price))])),
-            low: (issue_code.is_none() && l.max_qty <= 5).then(|| tx("cart.low_stock", lang, &[("n", &n(l.max_qty))])),
+            breakdown: (l.qty > 1).then(|| {
+                tx(
+                    "cart.breakdown",
+                    lang,
+                    &[("qty", &n(l.qty)), ("unit", &m(l.unit_price))],
+                )
+            }),
+            low: (issue_code.is_none() && l.max_qty <= 5)
+                .then(|| tx("cart.low_stock", lang, &[("n", &n(l.max_qty))])),
             issue_code,
             issue,
             fix,
@@ -103,9 +116,17 @@ impl LineData {
 #[component]
 pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
     let template = d.key.is_empty();
-    let rm_label = if template { String::new() } else { tx("cart.remove_item", lang, &[("name", &d.name)]) };
+    let rm_label = if template {
+        String::new()
+    } else {
+        tx("cart.remove_item", lang, &[("name", &d.name)])
+    };
     let qty_label = (!template).then(|| tx("cart.qty_of", lang, &[("name", &d.name)]));
-    let (fix_label, fix_qty) = d.fix.clone().map(|(l, q)| (Some(l), q)).unwrap_or((None, 0));
+    let (fix_label, fix_qty) = d
+        .fix
+        .clone()
+        .map(|(l, q)| (Some(l), q))
+        .unwrap_or((None, 0));
     let key = d.key.clone();
     view! {
         <li class="cline" data-key=d.key.clone() data-issue=d.issue_code.unwrap_or("")>
@@ -187,10 +208,18 @@ pub struct SummaryData {
 
 /// Free-delivery hint, totals, VAT and the way on. One markup for the drawer's footer and /cart.
 #[component]
-pub fn CartSummary(d: SummaryData, lang: Lang, num: Numerals, #[prop(optional)] in_drawer: bool) -> impl IntoView {
+pub fn CartSummary(
+    d: SummaryData,
+    lang: Lang,
+    num: Numerals,
+    #[prop(optional)] in_drawer: bool,
+) -> impl IntoView {
     let g = |k: &str| strings::get(k, lang);
     let vat = tx("cart.vat", lang, &[("pct", &percent(14, num))]);
-    let (vat_a, vat_b) = vat.split_once("{vat}").map(|(a, b)| (a.to_owned(), b.to_owned())).unwrap_or((vat.clone(), String::new()));
+    let (vat_a, vat_b) = vat
+        .split_once("{vat}")
+        .map(|(a, b)| (a.to_owned(), b.to_owned()))
+        .unwrap_or((vat.clone(), String::new()));
     let done = !d.empty && d.hint.is_none();
     let blocked = !d.empty && !d.can_checkout;
     view! {

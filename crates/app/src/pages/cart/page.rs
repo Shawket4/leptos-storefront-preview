@@ -40,7 +40,11 @@ pub fn art(name: &str) -> Art {
 
 /// An illustration that follows the theme (both files are lazy, the hidden one never loads).
 #[component]
-pub fn ArtImage(art: Art, #[prop(optional)] fallback_icon: Option<&'static str>, lang: Lang) -> impl IntoView {
+pub fn ArtImage(
+    art: Art,
+    #[prop(optional)] fallback_icon: Option<&'static str>,
+    lang: Lang,
+) -> impl IntoView {
     let _ = lang;
     match (art.light, art.dark) {
         (Some(light), dark) => Either::Left(view! {
@@ -61,7 +65,14 @@ pub fn ArtImage(art: Art, #[prop(optional)] fallback_icon: Option<&'static str>,
 
 /// "Prices include 14% VAT (EGP 12.00)." in the visitor's numerals.
 pub fn vat_note(vat: Piastres, lang: Lang, num: Numerals) -> String {
-    tx("cart.vat", lang, &[("pct", &percent(14, num)), ("vat", &format::money(vat, lang, num))])
+    tx(
+        "cart.vat",
+        lang,
+        &[
+            ("pct", &percent(14, num)),
+            ("vat", &format::money(vat, lang, num)),
+        ],
+    )
 }
 
 /// Quick-addable products (one variant, nothing required, in stock), not already in the cart.
@@ -73,9 +84,11 @@ fn picks(exclude: &[domain::ProductId], n: usize) -> Vec<CardData> {
         .into_iter()
         .chain(catalog.rail(Rail::Featured, 24))
         .filter(|c| c.in_stock && c.single_variant && !exclude.contains(&c.id))
-        .filter(|c| !seen.contains(&c.id) && {
-            seen.push(c.id);
-            true
+        .filter(|c| {
+            !seen.contains(&c.id) && {
+                seen.push(c.id);
+                true
+            }
         })
         .take(n)
         .collect()
@@ -89,24 +102,32 @@ pub fn CartPage() -> impl IntoView {
     let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
     let q = use_query_map();
     let added = q.with_untracked(|q| q.get("added")).is_some();
-    let err = q
-        .with_untracked(|q| q.get("cart_err"))
-        .filter(|c| {
-            matches!(
-                c.as_str(),
-                "out_of_stock" | "max_qty" | "full" | "addon_required" | "bad_addon" | "unknown_product" | "bad_request"
-            )
-        });
+    let err = q.with_untracked(|q| q.get("cart_err")).filter(|c| {
+        matches!(
+            c.as_str(),
+            "out_of_stock"
+                | "max_qty"
+                | "full"
+                | "addon_required"
+                | "bad_addon"
+                | "unknown_product"
+                | "bad_request"
+        )
+    });
     let (lines, priced) = crate::server::cart::priced_for_request();
     let api = crate::api::cart::quote(&lines, &priced, lang, num);
     // The browser code starts from the very quote this page was rendered from.
-    let quote_json = serde_json::to_string(&api).unwrap_or_default().replace('<', "\\u003c");
+    let quote_json = serde_json::to_string(&api)
+        .unwrap_or_default()
+        .replace('<', "\\u003c");
     let rows: Vec<LineData> = lines
         .iter()
-        .map(|cl| match priced.view.lines.iter().find(|l| l.key == cl.key()) {
-            Some(l) => LineData::from_view(l, lang, num),
-            None => LineData::unavailable(cl, lang),
-        })
+        .map(
+            |cl| match priced.view.lines.iter().find(|l| l.key == cl.key()) {
+                Some(l) => LineData::from_view(l, lang, num),
+                None => LineData::unavailable(cl, lang),
+            },
+        )
         .collect();
     let empty = rows.is_empty();
     let summary = SummaryData {
@@ -122,7 +143,11 @@ pub fn CartPage() -> impl IntoView {
     };
     let in_cart: Vec<_> = priced.view.lines.iter().map(|l| l.product).collect();
     let picks = picks(&in_cart, 4);
-    let title = format!("{} · {}", strings::get("cart.title", lang), rq.tenant.name.pick(lang.is_rtl()));
+    let title = format!(
+        "{} · {}",
+        strings::get("cart.title", lang),
+        rq.tenant.name.pick(lang.is_rtl())
+    );
     let count = (!empty).then(|| format::items(api.count, lang, num));
 
     view! {

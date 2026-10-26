@@ -421,7 +421,10 @@ pub async fn checkout_place(total: Option<i64>) -> Result<(), CheckoutError> {
     );
     // Empty the cart: clear the cookie (the browser code re-reads it after the navigation).
     if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
-        res.append_header(http::header::SET_COOKIE, crate::server::cart::set_cookie(&[]));
+        res.append_header(
+            http::header::SET_COOKIE,
+            crate::server::cart::set_cookie(&[]),
+        );
     }
     draft::remember_order(
         &order.id,

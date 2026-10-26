@@ -87,15 +87,23 @@ pub fn track_json(o: &Order, lang: Lang, num: Numerals) -> TrackJson {
     let cur = o.status.step_index().unwrap_or(0);
     let eta = match o.status {
         Status::Delivered => {
-            let when = o.status_times_ms.iter().find(|(s, _)| *s == Status::Delivered).map(|(_, ms)| at(*ms)).unwrap_or_default();
+            let when = o
+                .status_times_ms
+                .iter()
+                .find(|(s, _)| *s == Status::Delivered)
+                .map(|(_, ms)| at(*ms))
+                .unwrap_or_default();
             match lang {
                 Lang::En => format!("Delivered at {when}. Enjoy!"),
                 Lang::Ar => format!("اتوصّل الساعة {when}. بالهنا والشفا!"),
             }
         }
-        Status::Cancelled | Status::Rejected => {
-            tr(lang, "If you paid, the amount will be refunded.", "لو كنت دفعت، المبلغ هيرجعلك.").to_owned()
-        }
+        Status::Cancelled | Status::Rejected => tr(
+            lang,
+            "If you paid, the amount will be refunded.",
+            "لو كنت دفعت، المبلغ هيرجعلك.",
+        )
+        .to_owned(),
         _ if express => {
             let eta = at(o.created_at_ms + o.estimated_minutes as i64 * 60_000);
             match lang {
@@ -132,7 +140,10 @@ pub fn track_json(o: &Order, lang: Lang, num: Numerals) -> TrackJson {
             } else {
                 None
             };
-            TrackStep { state: state.to_owned(), time }
+            TrackStep {
+                state: state.to_owned(),
+                time,
+            }
         })
         .collect();
     TrackJson {
@@ -141,7 +152,11 @@ pub fn track_json(o: &Order, lang: Lang, num: Numerals) -> TrackJson {
         headline: o.status.headline().pick(ar).to_owned(),
         eta,
         steps,
-        progress: if cancelled { 0.0 } else { cur as f32 / (Status::STEPS.len() - 1) as f32 },
+        progress: if cancelled {
+            0.0
+        } else {
+            cur as f32 / (Status::STEPS.len() - 1) as f32
+        },
         cancelled,
         done: terminal,
         next_in_ms: next.map(|(_, ms)| (ms - now).max(0)),

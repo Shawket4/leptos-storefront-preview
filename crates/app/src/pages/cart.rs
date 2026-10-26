@@ -11,7 +11,7 @@ mod page;
 mod parts;
 
 pub use drawer::CartDrawer;
-pub use line::{LineData, LineRow, SummaryData, CartSummary};
+pub use line::{CartSummary, LineData, LineRow, SummaryData};
 pub use page::{Art, ArtImage, CartPage, Totals, art, vat_note};
 pub use parts::{CartButton, QuickAdd};
 

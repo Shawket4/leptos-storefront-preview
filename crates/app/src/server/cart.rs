@@ -82,7 +82,11 @@ pub fn set_cookie(lines: &[CartLine]) -> HeaderValue {
     let c = if value.is_empty() {
         format!("{}=; Path=/; Max-Age=0; SameSite=Lax", dc::COOKIE)
     } else {
-        format!("{}={}; Path=/; Max-Age={MAX_AGE}; SameSite=Lax", dc::COOKIE, uri_component(&value))
+        format!(
+            "{}={}; Path=/; Max-Age={MAX_AGE}; SameSite=Lax",
+            dc::COOKIE,
+            uri_component(&value)
+        )
     };
     HeaderValue::from_str(&c).expect("cookie header")
 }
@@ -122,7 +126,12 @@ pub fn issue(l: &CartLineView) -> Option<Issue> {
     }
 }
 
-pub fn price(lines: &[CartLine], tenant: &Tenant, catalog: &TenantCatalog, media: &Media) -> Priced {
+pub fn price(
+    lines: &[CartLine],
+    tenant: &Tenant,
+    catalog: &TenantCatalog,
+    media: &Media,
+) -> Priced {
     let mut out = Vec::new();
     let mut missing = Vec::new();
     let mut subtotal = Piastres::ZERO;
@@ -150,7 +159,10 @@ pub fn price(lines: &[CartLine], tenant: &Tenant, catalog: &TenantCatalog, media
             .filter(|o| l.addons.contains(&o.id))
             .map(|o| o.name.clone())
             .collect();
-        let img_key = v.image.and_then(|i| p.images.get(i)).or_else(|| p.images.first());
+        let img_key = v
+            .image
+            .and_then(|i| p.images.get(i))
+            .or_else(|| p.images.first());
         out.push(CartLineView {
             key: l.key(),
             product: p.id,
@@ -159,7 +171,9 @@ pub fn price(lines: &[CartLine], tenant: &Tenant, catalog: &TenantCatalog, media
             name: p.name.clone(),
             variant_label: TenantCatalog::variant_label(p, v),
             addons,
-            img: img_key.map(|k| media.img(k)).unwrap_or_else(|| crate::media::Img::missing("")),
+            img: img_key
+                .map(|k| media.img(k))
+                .unwrap_or_else(|| crate::media::Img::missing("")),
             qty: l.qty,
             max_qty: v.stock.min(dc::MAX_QTY),
             unit_price: unit,
@@ -229,7 +243,11 @@ impl FormError {
 /// Picked add-ons against the product's Madar-style modifier groups.
 pub fn check_addons(p: &domain::Product, addons: &[String]) -> Result<(), FormError> {
     for a in addons {
-        if !p.modifier_groups.iter().any(|g| g.options.iter().any(|o| &o.id == a)) {
+        if !p
+            .modifier_groups
+            .iter()
+            .any(|g| g.options.iter().any(|o| &o.id == a))
+        {
             return Err(FormError::BadAddon);
         }
     }
@@ -260,7 +278,9 @@ pub fn add(
     qty: u32,
     mut addons: Vec<String>,
 ) -> Result<u32, FormError> {
-    let (p, v) = catalog.variant(product, variant).ok_or(FormError::UnknownProduct)?;
+    let (p, v) = catalog
+        .variant(product, variant)
+        .ok_or(FormError::UnknownProduct)?;
     if v.stock == 0 {
         return Err(FormError::OutOfStock);
     }
@@ -268,7 +288,12 @@ pub fn add(
     addons.dedup();
     check_addons(p, &addons)?;
     let cap = v.stock.min(dc::MAX_QTY);
-    let line = CartLine { product, variant, qty: 0, addons };
+    let line = CartLine {
+        product,
+        variant,
+        qty: 0,
+        addons,
+    };
     let key = line.key();
     if let Some(l) = lines.iter_mut().find(|l| l.key() == key) {
         if l.qty >= cap {
@@ -289,13 +314,20 @@ pub fn add(
 
 /// Set a line's quantity (0 removes it), at most `MAX_QTY`. Stock is the quote's to report.
 pub fn set(lines: &mut Vec<CartLine>, key: &str, qty: u32) -> Result<(), FormError> {
-    let at = lines.iter().position(|l| l.key() == key).ok_or(FormError::BadRequest)?;
+    let at = lines
+        .iter()
+        .position(|l| l.key() == key)
+        .ok_or(FormError::BadRequest)?;
     if qty == 0 {
         lines.remove(at);
         return Ok(());
     }
     lines[at].qty = qty.min(dc::MAX_QTY);
-    if qty > dc::MAX_QTY { Err(FormError::MaxQty) } else { Ok(()) }
+    if qty > dc::MAX_QTY {
+        Err(FormError::MaxQty)
+    } else {
+        Ok(())
+    }
 }
 
 pub fn remove(lines: &mut Vec<CartLine>, key: &str) {
@@ -353,15 +385,24 @@ pub mod forms {
     /// The tenant, resolved like `request::init` (host, then the `tenant` cookie).
     fn tenant_id(headers: &HeaderMap) -> &'static str {
         use crate::tenant::{COOKIE_TENANT, DEFAULT_TENANT, TENANT_IDS, tenant_from_host};
-        let host = headers.get(header::HOST).and_then(|v| v.to_str().ok()).unwrap_or_default();
+        let host = headers
+            .get(header::HOST)
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or_default();
         tenant_from_host(host)
-            .or_else(|| cookie(headers, COOKIE_TENANT).and_then(|c| TENANT_IDS.iter().copied().find(|id| *id == c)))
+            .or_else(|| {
+                cookie(headers, COOKIE_TENANT)
+                    .and_then(|c| TENANT_IDS.iter().copied().find(|id| *id == c))
+            })
             .unwrap_or(DEFAULT_TENANT)
     }
 
     /// Same rule as the server's `safe_next`: a path on this site, never `//host` or `\`.
     fn same_site(p: &str) -> bool {
-        p.starts_with('/') && !p.starts_with("//") && !p.contains('\\') && !p.chars().any(char::is_control)
+        p.starts_with('/')
+            && !p.starts_with("//")
+            && !p.contains('\\')
+            && !p.chars().any(char::is_control)
     }
 
     /// Where the form goes back to: `next`, else the Referer's path (same host), else `/cart`.
@@ -369,11 +410,17 @@ pub mod forms {
         if let Some(n) = next.filter(|n| same_site(n)) {
             return n.to_owned();
         }
-        let host = headers.get(header::HOST).and_then(|v| v.to_str().ok()).unwrap_or_default();
+        let host = headers
+            .get(header::HOST)
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or_default();
         headers
             .get(header::REFERER)
             .and_then(|v| v.to_str().ok())
-            .and_then(|r| r.strip_prefix("http://").or_else(|| r.strip_prefix("https://")))
+            .and_then(|r| {
+                r.strip_prefix("http://")
+                    .or_else(|| r.strip_prefix("https://"))
+            })
             .and_then(|r| {
                 let (h, path) = r.split_once('/').unwrap_or((r, ""));
                 (h == host).then(|| format!("/{path}"))
@@ -392,7 +439,9 @@ pub mod forms {
         let (path, query) = base.split_once('?').unwrap_or((base, ""));
         let mut q: Vec<String> = query
             .split('&')
-            .filter(|kv| !kv.is_empty() && !matches!(kv.split('=').next(), Some("added" | "cart_err")))
+            .filter(|kv| {
+                !kv.is_empty() && !matches!(kv.split('=').next(), Some("added" | "cart_err"))
+            })
             .map(str::to_owned)
             .collect();
         if let Some((k, v)) = param {
@@ -413,7 +462,10 @@ pub mod forms {
                     c.to_string()
                 } else {
                     let mut b = [0u8; 4];
-                    c.encode_utf8(&mut b).bytes().map(|x| format!("%{x:02X}")).collect()
+                    c.encode_utf8(&mut b)
+                        .bytes()
+                        .map(|x| format!("%{x:02X}"))
+                        .collect()
                 }
             })
             .collect()
@@ -435,12 +487,20 @@ pub mod forms {
     }
 
     /// Answer a form: the cookie rewritten on success, the outcome in the query.
-    fn answer(headers: &HeaderMap, f: &Form, lines: &[CartLine], r: Result<Option<u32>, FormError>) -> Response {
+    fn answer(
+        headers: &HeaderMap,
+        f: &Form,
+        lines: &[CartLine],
+        r: Result<Option<u32>, FormError>,
+    ) -> Response {
         let back = back(headers, f.get("next"));
         match r {
             Ok(added) => {
                 let n = added.map(|n| n.to_string());
-                see_other(with_param(&back, n.as_deref().map(|n| ("added", n))), Some(set_cookie(lines)))
+                see_other(
+                    with_param(&back, n.as_deref().map(|n| ("added", n))),
+                    Some(set_cookie(lines)),
+                )
             }
             Err(e) => see_other(with_param(&back, Some(("cart_err", e.code()))), None),
         }
@@ -457,7 +517,15 @@ pub mod forms {
             if qty == 0 {
                 return Err(FormError::BadRequest);
             }
-            super::add(&mut lines, &catalog, ProductId(product), VariantId(variant), qty, f.all("addon")).map(Some)
+            super::add(
+                &mut lines,
+                &catalog,
+                ProductId(product),
+                VariantId(variant),
+                qty,
+                f.all("addon"),
+            )
+            .map(Some)
         })();
         answer(&headers, &f, &lines, r)
     }
@@ -492,10 +560,18 @@ pub mod forms {
 
         #[test]
         fn params_replace_and_keep_fragments() {
-            assert_eq!(with_param("/c/x?sort=p&added=1#top", Some(("added", "2"))), "/c/x?sort=p&added=2#top");
+            assert_eq!(
+                with_param("/c/x?sort=p&added=1#top", Some(("added", "2"))),
+                "/c/x?sort=p&added=2#top"
+            );
             assert_eq!(with_param("/cart?cart_err=full", None), "/cart");
-            assert_eq!(with_param("/search?q=قهوة", Some(("cart_err", "full"))), "/search?q=%D9%82%D9%87%D9%88%D8%A9&cart_err=full");
-            assert!(!same_site("//evil.example/") && !same_site("https://x/") && same_site("/p/a?b=c"));
+            assert_eq!(
+                with_param("/search?q=قهوة", Some(("cart_err", "full"))),
+                "/search?q=%D9%82%D9%87%D9%88%D8%A9&cart_err=full"
+            );
+            assert!(
+                !same_site("//evil.example/") && !same_site("https://x/") && same_site("/p/a?b=c")
+            );
         }
     }
 }
@@ -508,7 +584,14 @@ mod tests {
     fn cookie_round_trip() {
         let lines = dc::parse("2307:1:2|2501:3:1:as-is+pro-install");
         let v = set_cookie(&lines);
-        let enc = v.to_str().unwrap().split(';').next().unwrap().trim_start_matches("cart=").to_owned();
+        let enc = v
+            .to_str()
+            .unwrap()
+            .split(';')
+            .next()
+            .unwrap()
+            .trim_start_matches("cart=")
+            .to_owned();
         assert_eq!(enc, "2307%3A1%3A2%7C2501%3A3%3A1%3Aas-is%2Bpro-install");
         assert_eq!(dc::parse(&percent_decode(&enc)), lines);
     }

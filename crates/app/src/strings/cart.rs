@@ -9,7 +9,11 @@ use super::{Entry, s};
 pub const ALL: &[Entry] = &[
     // Add to cart
     s("cart.added", "Added to your cart.", "اتضاف لسلتك."),
-    s("cart.added_item", "Added to your cart: {name}", "اتضاف لسلتك: {name}"),
+    s(
+        "cart.added_item",
+        "Added to your cart: {name}",
+        "اتضاف لسلتك: {name}",
+    ),
     s("cart.view", "View cart", "شوف السلة"),
     // No-JS form errors (`?cart_err=<code>`), also the client's toasts for the same cases
     s(
@@ -61,13 +65,21 @@ pub const ALL: &[Entry] = &[
         "Sold out since you added it. Remove it to check out.",
         "نفدت الكمية بعد إضافته. احذفه لإتمام الطلب.",
     ),
-    s("cart.issue.capped", "Only {n} left now.", "المتوفر الآن {n} فقط."),
+    s(
+        "cart.issue.capped",
+        "Only {n} left now.",
+        "المتوفر الآن {n} فقط.",
+    ),
     s(
         "cart.issue.unavailable",
         "This item isn't sold any more. Remove it to check out.",
         "هذا المنتج لم يعد متاحًا. احذفه لإتمام الطلب.",
     ),
-    s("cart.unavailable_name", "An item that's no longer sold", "منتج لم يعد متاحًا"),
+    s(
+        "cart.unavailable_name",
+        "An item that's no longer sold",
+        "منتج لم يعد متاحًا",
+    ),
     s("cart.fix", "Change to {n}", "خليها {n}"),
     s("cart.removed", "Removed {name}", "شيلنا {name}"),
     s("cart.undo", "Undo", "رجّعه"),
@@ -76,8 +88,16 @@ pub const ALL: &[Entry] = &[
     s("cart.delivery", "Delivery", "التوصيل"),
     s("cart.free", "Free", "مجاني"),
     s("cart.total", "Total", "الإجمالي"),
-    s("cart.vat", "Prices include {pct} VAT ({vat}).", "الأسعار شاملة ضريبة القيمة المضافة {pct} ({vat})."),
-    s("cart.free_hint", "Add {amount} more for free delivery.", "ضيف بـ {amount} كمان والتوصيل يبقى مجاني."),
+    s(
+        "cart.vat",
+        "Prices include {pct} VAT ({vat}).",
+        "الأسعار شاملة ضريبة القيمة المضافة {pct} ({vat}).",
+    ),
+    s(
+        "cart.free_hint",
+        "Add {amount} more for free delivery.",
+        "ضيف بـ {amount} كمان والتوصيل يبقى مجاني.",
+    ),
     s("cart.free_done", "Delivery is on us.", "التوصيل علينا."),
     s("cart.checkout", "Checkout", "كمّل الطلب"),
     s(
@@ -85,7 +105,11 @@ pub const ALL: &[Entry] = &[
         "Fix the items marked above to check out.",
         "عدّل المنتجات المحددة فوق علشان تكمّل الطلب.",
     ),
-    s("cart.quote_failed", "We couldn't update the totals.", "تعذّر تحديث الإجمالي."),
+    s(
+        "cart.quote_failed",
+        "We couldn't update the totals.",
+        "تعذّر تحديث الإجمالي.",
+    ),
     s(
         "cart.quote_offline",
         "You're offline. The totals will update when you're back.",
@@ -93,7 +117,11 @@ pub const ALL: &[Entry] = &[
     ),
     s("cart.retry", "Try again", "حاول تاني"),
     s("cart.empty_title", "Your cart is empty", "سلتك فاضية"),
-    s("cart.empty_body", "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا."),
+    s(
+        "cart.empty_body",
+        "Add something you like — it'll wait for you here.",
+        "ضيف اللي يعجبك، وهيستناك هنا.",
+    ),
     s("cart.start", "Start shopping", "ابدأ التسوق"),
     s("cart.continue", "Continue shopping", "كمّل تسوق"),
     s("cart.add_item", "Add to cart: {name}", "أضف للسلة: {name}"),
