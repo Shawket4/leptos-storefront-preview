@@ -26,7 +26,7 @@
   margin: 0;
   justify-self: start;
   padding: 3px 12px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r-sm);
   background: var(--brand-wash);
   color: var(--brand-text, var(--brand));
   font-size: .8125rem;
@@ -145,8 +145,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 3px 12px;
-  border-radius: var(--r-pill);
+  padding: 3px 10px;
+  border-radius: var(--r-sm);
   background: var(--brand-wash);
   color: var(--brand-text, var(--brand));
   font-size: .8125rem;

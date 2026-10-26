@@ -126,35 +126,56 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   (arrows, chevrons, "back") get the `.flip-rtl` class. Figures stay LTR (`format` already isolates
   them). Don't mirror logos, product photos or media controls.
 
-## Design rules — the storefront's own look (owner, 2026-10-26: *not* Madar's tokens, no gradients)
+## Design rules (owner decisions, 2026-10-26 — supersede everything earlier)
 
-- **Not Madar's look.** Madar provided the domain model, money format and quality bar; the visual
-  language is the storefront's own: warm **linen/sand neutrals** (page `#F6F4EF`, surface `#FFFFFF`,
-  warm ink `#1A1814`, stone greys; dark mode warm charcoal `#121110` / `#1C1B19`), the tenant accent
-  (`var(--brand)`) as the single primary per screen.
-- **Light by default** (owner): the page renders `data-theme="light"` unless the visitor picked
-  Dark or System in the theme control — even on a dark-mode phone. Dark mode must still be complete
-  and polished for those who choose it.
-- **No gradients.** None in backgrounds, buttons, scrims or skeletons (a *very* faint one is tolerated
-  only where it is functionally needed, e.g. a rail's edge fade). Text never sits on a photo behind a
-  dark scrim — put copy on solid surfaces (split layouts, solid chips/cards overlapping an image).
-  Skeletons **pulse** (opacity), they don't shimmer.
-- **Surfaces:** softer and rounder than Madar: radii `--r-sm 8 · --r-md 12 (controls) · --r-lg 16 ·
-  --r-xl 20 (cards) · --r-2xl 28 (sheets, hero) · --r-pill`. Cards are `--surface` on the linen
-  `--page` with a very subtle `--shadow-sm` and **no hairline border** by default (hairlines only to
-  separate content inside a surface); hover lifts to `--shadow-md`.
-- **Type:** **Cairo** (variable, Arabic + Latin) for all UI text — confident weights (600–800) for
-  headings, tight Latin tracking, no tracking in Arabic; **IBM Plex Mono** with tabular figures for
-  prices, quantities, order codes.
-- Motion: tokens `--dur-fast 160ms`, `--dur-base 220ms`, `--dur-slow 320ms`, `--dur-brand 500ms`,
-  `--ease-out cubic-bezier(.22,1,.36,1)`, `--ease-drawer cubic-bezier(.32,.72,0,1)`,
-  `--ease-expo cubic-bezier(.16,1,.3,1)`, `--ease-pop cubic-bezier(.34,1.56,.64,1)`. Animate
-  transform/opacity only. Press feedback scale .97. Everything respects `prefers-reduced-motion`.
-- **No layout shift**: every image box has its aspect ratio reserved; every skeleton has the exact
-  dimensions of what replaces it; fonts use `font-display: swap` with metric-compatible fallbacks.
-- Mobile-first, flawless at 360 px; 44 px minimum tap targets; visible `:focus-visible` rings;
-  semantic HTML; `aria-*` on custom controls; AA contrast.
-- Icons: lucide geometry (24 grid, 2px stroke, round caps/joins) via `components::icons`.
+Read **`.claude/skills/apple-design/SKILL.md`** (Emil Kowalski's *apple-design* skill: Apple's
+WWDC design principles translated for the web) and apply it to every component and interaction.
+
+- **One global palette for every shop — "Porcelain" + graphite.** Colours are platform-wide; there
+  are no per-tenant colour tokens (tenants differ by logo, name, language, catalogue). Not Madar's
+  look.
+  - Light (the **default**, even on dark-mode phones): `--page #FAFAF9` · `--surface #FFFFFF` ·
+    `--surface-2 #FFFFFF` · `--sunk #F1F1F0` · `--well #F4F4F3` · `--text #111111` ·
+    `--text-2 #52525B` · `--text-3 #71717A` · `--line rgb(17 17 17/.08)` ·
+    `--line-strong rgb(17 17 17/.16)` · `--rule #E4E4E7` · `--ink #111111` · `--on-ink #FAFAF9`.
+  - Dark (opt-in via the theme control: Dark, or System on a dark device): `--page #0B0B0C` ·
+    `--surface #18181B` · `--surface-2 #1F1F23` · `--sunk #232326` · `--well #2C2C30` ·
+    `--text #F4F4F5` · `--text-2 #B4B4BB` · `--text-3 #8E8E96` · `--line rgb(244 244 245/.10)` ·
+    `--rule #27272A` · `--ink #F4F4F5` · `--on-ink #0B0B0C`.
+  - Accent = **graphite**, a plain global token in `tokens.css` (no per-tenant colour tokens — owner:
+    over-engineering): `--brand #111111` / `--on-brand #FFFFFF` (dark: `#F4F4F5` / `#111111`), so
+    primary buttons are near-black in light mode and near-white in dark. `--brand-wash` = `color-mix(in oklab, var(--brand) 8%, var(--surface))`.
+    Colour in the UI comes from product photography and the status colours only:
+    success `#15803D`/wash `#E8F5EC` (dark `#4ADE80`) · warning `#B45309`/`#FDF3E7` (`#FBBF24`) ·
+    danger `#DC2626`/`#FDECEC` (`#F87171`) · info `#2563EB`/`#EAF1FE` (`#60A5FA`). Sale prices and
+    discount badges use danger red.
+- **No gradients** (backgrounds, buttons, scrims, skeletons). Text never on a photo scrim. Skeletons
+  pulse. Translucent *material* is fine (Apple chrome: `backdrop-filter: blur(20px) saturate(180%)` on
+  a semi-transparent solid) — with a `prefers-reduced-transparency` solid fallback.
+- **Corners: Apple continuous corners (squircles), much less round.** Use `corner-shape: squircle`
+  (progressive enhancement; plain `border-radius` elsewhere) with: `--r-xs 6` (badges) · `--r-sm 8`
+  (chips, tags) · `--r-md 12` (buttons 44–48px, inputs) · `--r-lg 16` (small cards, wells) ·
+  `--r-xl 20` (cards) · `--r-2xl 26` (sheets, hero, large media). **No pills** except true
+  circles (round icon buttons, count badges).
+- **Text must be optically centred in controls.** Cairo's vertical metrics are lopsided, so Latin
+  text sits high. Fix it at the font level (`ascent-override`/`descent-override` on the Cairo
+  `@font-face`, measured) and use `text-box: trim-both cap alphabetic` on buttons/chips/badges.
+  Verify Latin and Arabic in 32px chips and 44–48px buttons with screenshots.
+- **Type** — Cairo for all UI text, IBM Plex Mono (tabular) for prices/quantities/codes. Tracking is
+  size-specific (display `-0.02…-0.03em`, body ~0, small text slightly positive; none in Arabic);
+  leading tight on large text, looser on body (Arabic looser still). Spacing in rem on a 4/8px grid.
+- **Motion (from the skill)** — respond on **pointer-down** (`:active` scale .97, 100ms ease-out);
+  springs instead of fixed-duration curves: CSS tokens `--spring-default` (damping 1, response .35s,
+  510ms), `--spring-snappy` (1, .25s, 370ms), `--spring-gentle` (1, .5s, 730ms), `--spring-bouncy`
+  (0.8, .3s, 400ms — only after a flick/throw), each with a `-dur`; gesture-driven UI (drawers, bottom
+  sheets, gallery swipe) uses the Rust spring animator in `components::motion` (interruptible: starts
+  from the live on-screen value, hands off release velocity, projects momentum with Apple's
+  `(v/1000)·d/(1−d)`, rubber-bands at edges). Enter and exit along the same path; anchor popovers to
+  their trigger. `prefers-reduced-motion` → short cross-fades.
+- **Surfaces**: cards are `--surface` on `--page` with a very subtle `--shadow-sm`, no hairline
+  border by default (dark mode: a 1px `rgb(255 255 255/.06)` edge instead); hover → `--shadow-md`.
+- **No layout shift**, mobile-first (flawless at 360px), 44px targets, visible `:focus-visible`,
+  semantic HTML, `aria-*`, AA contrast. Icons: lucide geometry via `components::icons`.
 
 ## Caching (lead's helpers, in `crate::server::cache` — ssr only)
 

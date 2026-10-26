@@ -1,7 +1,6 @@
 #![recursion_limit = "512"]
 
 pub mod api;
-pub mod brand;
 pub mod components;
 pub mod format;
 pub mod media;
@@ -34,7 +33,6 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
     let rq = request::init();
     let p = rq.prefs;
     let t = &rq.tenant;
-    let brand_css = brand::tenant_css(&t.accent, &t.accent_dark);
     // Native controls/scrollbars follow the chosen theme; only "system" lets the device decide.
     let color_scheme = match p.theme {
         prefs::Theme::Light => "light",
@@ -54,7 +52,6 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
                 <meta name="color-scheme" content=color_scheme/>
-                <style id="tenant-brand" inner_html=brand_css></style>
                 {home_nojs_fallback(&rq.path_and_query)}
                 <link rel="stylesheet" id="leptos" href="/pkg/storefront.css"/>
                 <AutoReload options=options.clone()/>

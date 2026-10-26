@@ -1,21 +1,21 @@
 /* Disposable: interim tokens + placeholder component styles until the design system lands. */
 :root {
   color-scheme: light;
-  --page: #F6F4EF; --surface: #FFFFFF; --sunk: #EFECE6; --well: #F2EFE9;
-  --text: #1A1814; --text-2: #5B554C; --text-3: #8A8377;
-  --line: rgb(26 24 20 / .08); --brand: var(--brand-l); --on-brand: var(--on-brand-l);
-  --brand-wash: color-mix(in oklab, var(--brand) 12%, var(--surface));
+  --page: #FAFAF9; --surface: #FFFFFF; --sunk: #F1F1F0; --well: #F4F4F3;
+  --text: #111111; --text-2: #52525B; --text-3: #71717A;
+  --line: rgb(17 17 17 / .08); --brand: #111111; --on-brand: #FFFFFF;
+  --brand-wash: color-mix(in oklab, var(--brand) 8%, var(--surface));
   --font-sans: Cairo, ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
-  --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 28px; --r-pill: 999px;
-  --shadow-sm: 0 1px 2px rgb(26 24 20 / .05), 0 1px 1px rgb(26 24 20 / .03);
-  --shadow-md: 0 6px 18px -8px rgb(26 24 20 / .16);
+  --r-xs: 6px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 20px; --r-2xl: 26px; --r-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(17 17 17 / .05), 0 1px 1px rgb(17 17 17 / .03);
+  --shadow-md: 0 6px 18px -8px rgb(17 17 17 / .16);
   --gutter: clamp(1rem, .4rem + 2.6vw, 2.5rem); --container: 1320px;
   --ease-out: cubic-bezier(.22,1,.36,1); --dur-base: 220ms; --dur-slow: 320ms;
 }
-:root[data-theme="dark"] { color-scheme: dark; --page: #121110; --surface: #1C1B19; --sunk: #2A2825; --well: #34312D; --text: #F2EEE7; --text-2: #BFB8AC; --text-3: #8B8479; --line: rgb(242 238 231 / .10); --brand: var(--brand-d); --on-brand: var(--on-brand-d); --shadow-sm: 0 0 0 1px rgb(255 255 255 / .06); --shadow-md: 0 0 0 1px rgb(255 255 255 / .1); }
+:root[data-theme="dark"] { color-scheme: dark; --page: #0B0B0C; --surface: #18181B; --sunk: #232326; --well: #2C2C30; --text: #F4F4F5; --text-2: #B4B4BB; --text-3: #8E8E96; --line: rgb(244 244 245 / .10); --brand: #F4F4F5; --on-brand: #111111; --shadow-sm: 0 0 0 1px rgb(255 255 255 / .06); --shadow-md: 0 0 0 1px rgb(255 255 255 / .1); }
 @media (prefers-color-scheme: dark) {
-  :root[data-theme="system"] { color-scheme: dark; --page: #121110; --surface: #1C1B19; --sunk: #2A2825; --well: #34312D; --text: #F2EEE7; --text-2: #BFB8AC; --text-3: #8B8479; --line: rgb(242 238 231 / .10); --brand: var(--brand-d); --on-brand: var(--on-brand-d); --shadow-sm: 0 0 0 1px rgb(255 255 255 / .06); --shadow-md: 0 0 0 1px rgb(255 255 255 / .1); }
+  :root[data-theme="system"] { color-scheme: dark; --page: #0B0B0C; --surface: #18181B; --sunk: #232326; --well: #2C2C30; --text: #F4F4F5; --text-2: #B4B4BB; --text-3: #8E8E96; --line: rgb(244 244 245 / .10); --brand: #F4F4F5; --on-brand: #111111; --shadow-sm: 0 0 0 1px rgb(255 255 255 / .06); --shadow-md: 0 0 0 1px rgb(255 255 255 / .1); }
 }
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--page); color: var(--text); font: 16px/1.55 var(--font-sans); -webkit-font-smoothing: antialiased; }
@@ -27,7 +27,7 @@ img { max-inline-size: 100%; display: block; }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 48px; padding-inline: 20px; border-radius: var(--r-md); font-weight: 700; border: 1px solid transparent; }
 .btn--primary { background: var(--brand); color: var(--on-brand); }
-.btn--outline { background: transparent; color: var(--text); border-color: rgb(26 24 20 / .18); }
+.btn--outline { background: transparent; color: var(--text); border-color: rgb(17 17 17 / .18); }
 .icon { display: inline-block; flex: none; }
 .section-header { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-block-end: 14px; }
 .section-header__title { margin: 0; font-size: 1.375rem; font-weight: 800; letter-spacing: -.015em; line-height: 1.25; }
@@ -49,3 +49,8 @@ img { max-inline-size: 100%; display: block; }
 .pcard--skeleton .pcard__well { background: var(--sunk); }
 @keyframes pulse { 50% { opacity: .55; } }
 @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+/* Apple-style continuous corners where supported. */
+@supports (corner-shape: squircle) { .btn, .pcard, .pcard__well, .trust__item, .promo, .hero__card, .hero__media, .countdown, .hero__kicker, .widget-error { corner-shape: squircle; } }
+.btn { border-radius: var(--r-md); }
+.btn:active { transform: scale(.97); transition: transform 100ms ease-out; }

@@ -2,8 +2,8 @@
 //!
 //! Mirrors Madar's per-shop subdomains: the tenant is the first label of the hostname
 //! (`MadarDashboard/src/features/public-shell/use-brand.ts::hostSlug`, `MadarRust/src/tenant_shell.rs`).
-//! It is resolved on the server before rendering, so the accent colour, logo and default language
-//! are in the very first byte of HTML (no theme flash).
+//! It is resolved on the server before rendering, so the logo, name and default language are in
+//! the very first byte of HTML (no flash).
 //!
 //! Dev/phone hosts that can't carry a subdomain (a bare tailnet IP, a MagicDNS name) fall back to a
 //! `tenant` cookie and then to the default tenant. Production would only ever use the Host.
@@ -15,7 +15,8 @@ use serde::{Deserialize, Serialize};
 pub const COOKIE_TENANT: &str = "tenant";
 
 /// Static configuration of one tenant (in production: a row in `organizations`, see Madar's
-/// `PublicBrand { name, slug, logo_url, accent_color, background_color, foreground_color }`).
+/// `PublicBrand { name, slug, logo_url, … }`). Only what really differs per shop: name, tagline,
+/// default language, logo, catalogue and delivery terms. Colours are platform-wide.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Tenant {
     /// Stable id, also the subdomain label and the cache-tag prefix (`t{id}`).
@@ -23,13 +24,8 @@ pub struct Tenant {
     pub name: L10n,
     pub tagline: L10n,
     pub default_lang: Lang,
-    /// Accent for light surfaces (AA on white for text and filled buttons).
-    pub accent: String,
-    /// Accent for dark surfaces (AA on the dark background).
-    pub accent_dark: String,
-    /// Text colour on a filled accent button.
-    pub on_accent: String,
-    /// Logo asset key under /media (see data/media).
+    /// Logo asset key under /media (see data/media). Colours are global (style/tokens.css), not
+    /// per tenant — owner's call.
     pub logo: String,
     /// Order reference prefix (`NIL-48213`), like Madar's branch `code` in `delivery_ref`.
     pub order_prefix: String,
