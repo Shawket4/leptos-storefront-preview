@@ -396,10 +396,12 @@ register("cart-page", (el) => {
     history.replaceState(history.state, "", url.pathname + url.search + url.hash);
   }
   // A quantity changed with the stepper before this chunk arrived: that's what the shopper meant.
+  // (Only a changed one: a field still showing what the server rendered says nothing new.)
   for (const li of $$<HTMLElement>("li[data-key]", list)) {
     const key = li.dataset.key ?? "";
     const line = cart.get().lines.find((l) => lineKey(l) === key);
-    const typed = $("[data-ts~=stepper]", li) ? stepperValue($("[data-ts~=stepper]", li)!) : 0;
+    const input = $<HTMLInputElement>("[data-ts~=stepper] input", li);
+    const typed = input && input.value !== input.defaultValue ? stepperValue(input) : 0;
     if (line && typed > 0 && typed !== line.qty) setQty(key, typed);
   }
   const unsub = cart.subscribe(() => view.paint());

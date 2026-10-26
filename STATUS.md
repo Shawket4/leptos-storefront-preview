@@ -31,7 +31,7 @@
 | JS heaviest page (product + every extra, the line editor included) | 29.9 KB | 26.9 KB | 30 KB |
 | CSS | 29.7 KB | 25.3 KB | 35 KB |
 
-The heaviest page is now within about 0.1 KB of its budget: the next feature on every page needs
+The heaviest page is now about 50 bytes under its budget: the next feature on every page needs
 room made first.
 
 ## Open, for a later round (not started)

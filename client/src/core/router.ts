@@ -49,6 +49,8 @@ interface Page {
   url: string;
   /** Cache-Control private/no-store: never kept in the page cache. */
   personal: boolean;
+  /** The cookies it was asked with: a personal page (the cart) is stale once they change. */
+  cookie: string;
 }
 
 class NotHtml extends Error {
@@ -70,6 +72,7 @@ const pageKey = (href: string) => key("page", document.documentElement.dataset.t
 const featuresIn = (html: string) => new Set(Array.from(html.matchAll(/data-ts="([^"]+)"/g), (m) => m[1]!.split(/\s+/)).flat());
 
 async function fetchPage(url: string, init?: RequestInit): Promise<Page> {
+  const cookie = document.cookie;
   const res = await request(url, {
     timeoutMs: 12_000,
     retries: 0,
@@ -84,7 +87,7 @@ async function fetchPage(url: string, init?: RequestInit): Promise<Page> {
   } catch {
     throw new NetError(isOnline() ? "http" : "offline");
   }
-  return { html, url: res.url || url, personal: /private|no-store/.test(res.headers.get("cache-control") ?? "") };
+  return { html, url: res.url || url, personal: /private|no-store/.test(res.headers.get("cache-control") ?? ""), cookie };
 }
 
 // A personal page warmed by a prefetch is handed to the navigation that wanted it, once.
@@ -95,12 +98,14 @@ async function loadGet(href: string, opts: { fresh?: boolean; onUpdate?: (p: Pag
   const k = pageKey(href);
   const held = warmPersonal.get(k);
   warmPersonal.delete(k);
-  if (held && !opts.fresh && Date.now() - held.at < 10_000) return held.page;
+  // A personal page warmed (or still being fetched) before the cookies changed shows the old cart.
+  const current = (p: Page) => !p.personal || p.cookie === document.cookie;
+  if (held && !opts.fresh && Date.now() - held.at < 10_000 && current(held.page)) return held.page;
   if (opts.fresh) invalidate(k);
   try {
     const page = await cached(k, PAGE_CACHE, () => fetchPage(href), (p) => (p.personal ? invalidate(k) : opts.onUpdate?.(p)));
     if (page.personal) invalidate(k);
-    return page;
+    return current(page) ? page : await fetchPage(href);
   } catch (e) {
     // Offline or failing: an expired copy beats an error page.
     const old = e instanceof NetError ? peek<Page>(k) : undefined;
