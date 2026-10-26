@@ -1,1 +1,305 @@
-/* errors page — owned by that page's agent (see AGENTS.md). Tokens only: style/tokens.css. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Error views (crate::pages::errors): the 404 page, the full-page 500 view, and the
+   per-section fallback every page uses. Tokens only; logical properties only.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 404 / 500 page ──────────────────────────────────────────────────────── */
+.err-page {
+  display: grid;
+  gap: var(--sp-6);
+  align-items: center;
+  padding-block: clamp(var(--sp-8), 1rem + 5vw, var(--sp-20)) var(--sp-8);
+}
+@media (min-width: 840px) {
+  .err-page {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--sp-12);
+  }
+}
+.err-art {
+  justify-self: center;
+  inline-size: min(100%, 22rem);
+}
+.err-art img {
+  inline-size: 100%;
+  block-size: auto;
+}
+/* No illustration yet: the status code, set large, in the same box. */
+.err-art--glyph {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--r-2xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.err-art--glyph span {
+  font-size: clamp(4.5rem, 3rem + 7vw, 8rem);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.04em;
+  color: var(--text-3);
+}
+.err-page__copy {
+  display: grid;
+  gap: var(--sp-4);
+  max-inline-size: 36rem;
+}
+.err-page__code {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--text-3);
+}
+.err-page__title {
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  font-weight: var(--fw-heavy);
+  line-height: 1.06;
+  letter-spacing: var(--tracking-display);
+}
+:root[lang="ar"] .err-page__title {
+  line-height: 1.35;
+}
+.err-page__body {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-body);
+  color: var(--text-2);
+}
+
+/* Search: one field with the button inside its row. */
+.err-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 4px;
+  padding-inline-start: 44px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong);
+}
+.err-search:focus-within {
+  box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--line-strong), 0 0 0 3px var(--focus);
+}
+.err-search__icon {
+  position: absolute;
+  inset-inline-start: 14px;
+  display: inline-grid;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.err-search__input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  border: 0;
+  background: transparent;
+  font-size: var(--fs-md);
+  outline: none;
+}
+.err-search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+.err-search__go {
+  min-block-size: 44px;
+  padding-inline: var(--sp-5);
+  border-radius: 10px;
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  text-box: trim-both cap alphabetic;
+  transition: background-color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
+}
+.err-search__go:hover {
+  background: var(--brand-hover);
+}
+.err-search__go:active {
+  scale: var(--press);
+}
+.err-page__home {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 44px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--brand-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 30%, transparent);
+  text-underline-offset: 0.22em;
+}
+.err-page__home:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Popular categories */
+.err-cats {
+  padding-block: 0 var(--sp-16);
+}
+.err-cats__title {
+  margin-block-end: var(--sp-4);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-heavy);
+}
+.err-cats__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(10.5rem, 100%), 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.err-cat {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-block-size: 52px;
+  padding-inline: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  transition: box-shadow var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
+}
+.err-cat .icon {
+  flex: none;
+  color: var(--text-2);
+}
+.err-cat:hover {
+  box-shadow: var(--shadow-md);
+}
+.err-cat:active {
+  scale: var(--press);
+}
+
+/* 500 actions */
+.err-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.err-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 48px;
+  padding-inline: var(--sp-5);
+  border-radius: var(--r-md);
+  background: var(--sunk);
+  color: var(--text);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  text-box: trim-both cap alphabetic;
+  transition: background-color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
+}
+.err-btn:hover {
+  background: var(--sunk-2);
+}
+.err-btn:active {
+  scale: var(--press);
+}
+.err-btn--primary {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.err-btn--primary:hover {
+  background: var(--brand-hover);
+}
+.err-page__detail,
+.section-error__detail {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.err-page__detail summary,
+.section-error__detail summary {
+  cursor: pointer;
+  font-weight: var(--fw-semibold);
+}
+.err-page__detail code,
+.section-error__detail code {
+  display: block;
+  margin-block-start: var(--sp-1);
+  padding: var(--sp-2);
+  border-radius: var(--r-sm);
+  background: var(--sunk);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+/* ── One failed section (SectionError) ───────────────────────────────────── */
+.section-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--warning-wash);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--warning) 35%, transparent);
+  color: var(--text);
+}
+.section-error__icon {
+  display: inline-grid;
+  flex: none;
+  color: var(--warning-text);
+  margin-block-start: 1px;
+}
+.section-error__text {
+  flex: 1 1 14rem;
+  min-inline-size: 0;
+  display: grid;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+.section-error__text strong {
+  font-weight: var(--fw-bold);
+}
+.section-error__text span {
+  color: var(--text-2);
+}
+.section-error__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-1) var(--sp-3);
+}
+.section-error__retry,
+.section-error__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 40px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--warning-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-underline-offset: 0.22em;
+}
+.section-error__retry:hover,
+.section-error__clear:hover {
+  text-decoration-color: currentColor;
+}
+.section-error__clear {
+  color: var(--text-2);
+  font-weight: var(--fw-semibold);
+}
+.section-error--compact {
+  align-items: center;
+  padding: var(--sp-3);
+}
+.section-error--compact .section-error__text span {
+  display: none;
+}
+
+@supports (corner-shape: squircle) {
+  .err-art--glyph,
+  .err-cat,
+  .section-error {
+    corner-shape: squircle;
+  }
+}
