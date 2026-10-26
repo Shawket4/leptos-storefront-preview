@@ -41,9 +41,13 @@ codegen-units = 1
 panic = "abort"
 strip = true
 
+# Maximum optimisation, as MadarRust: fat LTO, one codegen unit, stripped. (Not panic=abort: a
+# panic in one request must not take the server down — tokio contains it to that task.) The CI
+# image also targets the VPS's CPU (Dockerfile TARGET_CPU).
 [profile.release]
-codegen-units = 4
-lto = "thin"
+lto = "fat"
+codegen-units = 1
+strip = true
 
 # Faster dev builds of the heavy proc-macro + reactive crates.
 [profile.dev.package."*"]

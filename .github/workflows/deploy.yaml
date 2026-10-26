@@ -49,6 +49,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The release binary is linked with fat LTO and one codegen unit (MadarRust's profile); the
+      # link can outgrow a private repo's smaller runner. Swap on the runner's scratch disk gives it
+      # room without changing how the binary is optimised — MadarRust's step, as is.
+      - name: Add swap for the fat-LTO link
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /usr/share/swift /usr/local/share/powershell /usr/local/share/chromium \
+            /usr/local/share/boost /opt/microsoft /opt/hostedtoolcache
+          docker image prune -af > /dev/null
+          df -h / /mnt
+          free -h
+          sudo swapoff -a || true
+          free_gb=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+          swap_gb=$(( free_gb - 16 ))   # keep 16G for the image build when /mnt shares /
+          [ "$swap_gb" -gt 28 ] && swap_gb=28
+          [ "$swap_gb" -ge 4 ] || { echo "::error::only ${free_gb}G free for swap"; exit 1; }
+          sudo fallocate -l "${swap_gb}G" /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+
       - uses: docker/setup-buildx-action@v3
 
       - name: Docker metadata
@@ -61,8 +83,6 @@ jobs:
             type=semver,pattern={{version}}
             type=sha,format=long
 
-      # The release build is thin-LTO with 4 codegen units, well inside a standard runner's memory
-      # (MadarRust's swap step exists for its fat-LTO link; not needed here).
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -70,6 +90,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # The VPS is an AMD EPYC with AVX-512 (as MadarRust's build-arg).
+          build-args: |
+            TARGET_CPU=x86-64-v4
           # BuildKit secret for the private madar-shared dependency (the Dockerfile mounts it per
           # RUN; nothing is written to a layer).
           secrets: |
