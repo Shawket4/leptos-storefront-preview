@@ -1,25 +1,33 @@
-# Status — 2026-10-26 (live)
+# Status — 2026-10-26, 15:40 (live)
 
-## Done (me)
-- Scaffold builds and runs: Leptos 0.8.22 islands + islands-router, Axum, tenant by Host header.
-  Reachable over Tailscale: http://nile.100-123-21-13.sslip.io:3000 · http://souq.100-123-21-13.sslip.io:3000
-- Madar mined (3 read-only agents, finished): domain types, design tokens, tenancy/API shapes.
-- Contracts: domain types (copied from Madar with origins), money/number/date formatting (Madar's
-  exact shape + Arabic-Indic option), tenant colour AA logic (port of Madar's brand-color.ts),
-  responsive-image model, route table + page stubs, data schema + validator, WebP media pipeline,
-  agent rules (AGENTS.md).
+- **Live build of `main`:** http://nile.100-123-21-13.sslip.io:3000 · http://souq.100-123-21-13.sslip.io:3000
+  (Tailscale on; `LIVE.md` has the agents' ports).
+- **Repo:** https://github.com/Shawket4/leptos-storefront-preview (private), `main` pushed.
 
-## Agents running now
-| Agent | Downloaded so far | Next |
+## On main
+- **Stage 2 architecture:** Leptos SSR (every route in order, works without JS) plus a TypeScript
+  client with no framework and no WASM. Features load on demand as content-hashed chunks.
+- **The cart is computed in the browser:** the cookie plus a priced snapshot per line, in piastres.
+  Editing makes no request; checkout re-prices on the server with madar-shared v0.12.0.
+- **Design system:** shared components only; `tools/ui-lint.mjs` is clean across the repo.
+- **Deploy pipeline:** Dockerfile, `.github/workflows/deploy.yaml`, compose, `deploy/SETUP.md`, and
+  the VPS brief (`deploy/vps-agent-prompt.md`). **Waiting on the secrets.** No tag until the owner
+  says they're set.
+
+## In progress
+| Who | Doing |
+|---|---|
+| core | `lazyOnIntent` / `ensure` in `core/mount.ts` (first); then Totals, ItemRow, KeyValueList, StepIndicator, Timeline, LiveStatus |
+| design system | Notice, LinkChips, FilterChips, Menu, Pager, FacetGroup, ChoiceChips, ChoiceList, EmptyState suggestion; form gaps (lengths, grouped/required Select, always-present error slot) |
+| cart | the cart drawer and /cart renderer out of the first load |
+| browse | instant search out of the first load (on intent, then idle) |
+| showcase | waiting for the component list: /ui specimens, fault toggles on link chips |
+| lead | Docker image test build; README (Stage 2 sizes, verdict) |
+
+## Sizes (gzip, `node tools/size-budget.mjs`)
+| | Now | Budget |
 |---|---|---|
-| Nile catalogue + images | all 194 DummyJSON products (JSON) + 425 product photos (1000 px transparent WebP, 27 MB) into `data/media/_src/nile/` | map to ~190 Egyptian-market products (AR/EN, EGP), convert to WebP ladders, pick 3 hero photos from Openverse (CC licences) |
-| Souq catalogue + images | 93 TheMealDB ingredient packshots (700 px transparent PNG, 4.2 MB) + metadata into `data/media/_src/souq/` | more items + DummyJSON groceries, ~190 Egyptian grocery products, hero photos from Openverse |
-| Brand art | (designing — no files yet) | Nile + Souq logos, favicons, OG images, empty-state illustrations: SVG → checked → WebP |
-
-Sources are placeholders (DummyJSON demo assets, TheMealDB, Openverse CC images) to be replaced by
-real tenant photography in prod; every image records source + licence + credit.
-
-## Next
-- Design-system agent (tokens, fonts, components, header/footer, UI kit) — starting now.
-- Me: server data layer (catalogue loading, moka cache, Cache-Tag headers, carts, orders, pricing via madar-catalog).
-- Then page agents in parallel: listing + search, product page, cart/checkout/orders, showcase.
+| JS first load (every page) | 18.5 KB | 15 KB; cart + search on demand should bring it to about 14.3 KB |
+| JS heaviest page (product + every extra) | 28.8 KB | 30 KB |
+| CSS | 29.8 KB | 35 KB |
+| Strings per page (`#app-strings`) | 1.4 KB, was 2.1 KB | — |
