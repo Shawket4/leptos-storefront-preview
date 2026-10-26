@@ -257,9 +257,10 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
         move || action.version().get(),
         move |_, _, _| match action.value().get_untracked() {
             Some(Ok(view)) => {
+                // Confirmed by the toast and the badge's pop; the drawer opens only from the cart
+                // button (owner's call: adding mustn't take the page over).
                 cart.apply(view);
                 cart.pulse.update(|p| *p += 1);
-                cart.open.set(true);
                 error.set(None);
                 phase.set(Phase::Added);
                 let name = d.with_value(|d| text(&d.name, ui.lang.get_untracked()));
