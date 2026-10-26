@@ -1,3 +1,54 @@
-/* Interim stylesheet on main until the design system lands (agent/design replaces this file). */
-@import "shim.css";
-@import "pages/home.css";
+/* ─────────────────────────────────────────────────────────────────────────────
+   Storefront styles, bundled by cargo-leptos with Lightning CSS (style-bundle).
+   Order matters: fonts → tokens → base → layout → components → pages.
+   Design system (fonts, tokens, base, layout, components/*): design agent.
+   style/pages/<page>.css: that page's agent. Tokens only — no raw hex.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import "./fonts.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./layout.css";
+
+/* Primitives */
+@import "./components/icon.css";
+@import "./components/button.css";
+@import "./components/price.css";
+@import "./components/rating.css";
+@import "./components/badge.css";
+@import "./components/status-pill.css";
+@import "./components/picture.css";
+@import "./components/skeleton.css";
+@import "./components/form.css";
+@import "./components/stepper.css";
+@import "./components/segmented.css";
+@import "./components/breadcrumbs.css";
+@import "./components/empty-state.css";
+
+/* Composites */
+@import "./components/product-card.css";
+@import "./components/section.css";
+
+/* The frame */
+@import "./components/shell.css";
+@import "./components/header.css";
+@import "./components/cat-nav.css";
+@import "./components/prefs.css";
+@import "./components/footer.css";
+@import "./components/bottom-nav.css";
+
+/* Overlays */
+@import "./components/drawer.css";
+@import "./components/toast.css";
+
+/* Pages (one file per page agent) */
+@import "./pages/home.css";
+@import "./pages/category.css";
+@import "./pages/search.css";
+@import "./pages/product.css";
+@import "./pages/cart.css";
+@import "./pages/checkout.css";
+@import "./pages/order.css";
+@import "./pages/showcase.css";
+@import "./pages/errors.css";
+@import "./pages/ui-kit.css";

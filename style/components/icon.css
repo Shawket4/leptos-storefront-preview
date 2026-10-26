@@ -1,0 +1,7 @@
+/* Icons (components::icons): lucide geometry, sized by their width/height
+   attributes; CSS may override with inline-size/block-size. */
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}

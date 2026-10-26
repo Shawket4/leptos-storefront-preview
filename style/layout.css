@@ -1,0 +1,106 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Layout: the page frame, the container, and a few composition primitives.
+   Logical properties only — the same rules lay out English and Arabic.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* The frame around every route (components::shell). `clip`, not `hidden`, so
+   the sticky header keeps sticking while nothing can widen the page sideways. */
+.app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+  overflow-x: clip;
+  isolation: isolate;
+}
+.app > main {
+  position: relative;
+  z-index: var(--z-raised);
+  flex: 1;
+}
+
+/* Content column: max 1320px of content, the gutter outside it. */
+.container {
+  inline-size: 100%;
+  max-inline-size: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+.container--narrow {
+  max-inline-size: calc(760px + var(--gutter) * 2);
+}
+.container--mid {
+  max-inline-size: calc(1080px + var(--gutter) * 2);
+}
+
+/* Pull a child out to the viewport edge on phones (rails, full-bleed banners). */
+.bleed {
+  margin-inline: calc(var(--gutter) * -1);
+}
+
+/* Vertical rhythm between page sections. */
+.section {
+  padding-block: var(--section-y);
+}
+.section + .section {
+  padding-block-start: 0;
+}
+
+/* ── Composition primitives ─────────────────────────────────────────────── */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-gap, var(--sp-4));
+}
+.stack-xs { --stack-gap: var(--sp-1); }
+.stack-sm { --stack-gap: var(--sp-2); }
+.stack-md { --stack-gap: var(--sp-4); }
+.stack-lg { --stack-gap: var(--sp-6); }
+.stack-xl { --stack-gap: var(--sp-10); }
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cluster-gap, var(--sp-2));
+}
+
+/* Two ends of a row (title ↔ action). */
+.split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+/* Responsive grids. `.grid-auto` fills columns of at least --min wide. */
+.grid {
+  display: grid;
+  gap: var(--grid-gap, var(--sp-4));
+}
+.grid-auto {
+  display: grid;
+  gap: var(--grid-gap, var(--sp-4));
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--min, 240px), 100%), 1fr));
+}
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 600px) {
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 960px) {
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* A white card on the linen ground: radius 20, a faint shadow, no hairline
+   (in dark mode --shadow-sm is a 1px edge instead). */
+.card {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+}
+.card-pad {
+  padding: clamp(var(--sp-4), 0.6rem + 1.4vw, var(--sp-6));
+}

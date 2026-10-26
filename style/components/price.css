@@ -1,0 +1,125 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Price (components::price): ink, Plex Mono tabular figures, smaller piastres,
+   the label in Cairo. DOM order is fixed (from, sign, label, figure); `order`
+   lays it out per direction:  EN  From −EGP 1,299.00   AR  من 1,299.00− ج.م
+   ───────────────────────────────────────────────────────────────────────────── */
+.price {
+  --price-fs: 1.0625rem;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--sp-2);
+  row-gap: 0;
+  min-inline-size: 0;
+  font-size: var(--price-fs);
+  line-height: 1.25;
+  color: var(--text);
+}
+.price--sm { --price-fs: 0.9375rem; }
+.price--md { --price-fs: 1.0625rem; }
+.price--lg { --price-fs: 1.25rem; }
+.price--xl { --price-fs: clamp(1.625rem, 1.3rem + 1.2vw, 2rem); }
+
+.price__now {
+  display: inline-flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
+/* On cards a sale reads in two lines: the price, then what it was and the saving. */
+:is(.price--sm, .price--md).price--deal .price__now {
+  flex-basis: 100%;
+}
+.price__fig {
+  display: inline-flex;
+  align-items: baseline;
+  direction: ltr;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.02em;
+}
+.price__dec {
+  font-size: 0.72em;
+  font-weight: var(--fw-medium);
+  color: var(--text-2);
+  letter-spacing: 0;
+}
+.price__cur {
+  order: -1;
+  margin-inline-end: 0.3em;
+  font-family: var(--font-sans);
+  font-size: 0.68em;
+  font-weight: var(--fw-bold);
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+.price__sign {
+  order: -2;
+  font-family: var(--font-mono);
+  font-weight: var(--fw-semibold);
+}
+.price__sign:empty {
+  display: none;
+}
+.price__from {
+  order: -3;
+  margin-inline-end: 0.35em;
+  font-family: var(--font-sans);
+  font-size: 0.72em;
+  font-weight: var(--fw-semibold);
+  color: var(--text-2);
+}
+[dir="rtl"] .price__fig { order: 1; }
+[dir="rtl"] .price__sign { order: 2; }
+[dir="rtl"] .price__cur {
+  order: 3;
+  margin-inline: 0.3em 0;
+  font-size: 0.74em;
+  letter-spacing: 0;
+}
+[dir="rtl"] .price__from { order: 0; }
+
+.price__was {
+  direction: ltr;
+  font-family: var(--font-mono);
+  font-size: 0.76em;
+  font-weight: var(--fw-regular);
+  color: var(--text-2);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, var(--text-2) 70%, transparent);
+  white-space: nowrap;
+}
+.price__off {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  block-size: 20px;
+  padding-inline: 7px;
+  border-radius: var(--r-pill);
+  background: var(--danger-wash);
+  color: var(--danger-text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+.price--xl .price__off {
+  block-size: 24px;
+  padding-inline: 10px;
+  font-size: var(--fs-sm);
+}
+.price--xl .price__cur {
+  font-size: 0.56em;
+}
+
+/* Narrow cards (2-up phones, rails): the struck price drops its piastres and the
+   badge tightens, so a sale still fits two lines. The spoken text is unchanged. */
+@container price-slot (max-width: 168px) {
+  .price__was-dec {
+    display: none;
+  }
+  .price__off {
+    padding-inline: 6px;
+    font-size: 0.6875rem;
+  }
+}

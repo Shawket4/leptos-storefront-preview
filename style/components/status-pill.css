@@ -1,0 +1,27 @@
+/* Status pills (components::status_pill): icon + label, 24px, pill, 12px bold on
+   the tone's wash. Tone classes are shared: .tone-neutral … .tone-info. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  block-size: 24px;
+  padding-inline: 9px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+.pill .icon {
+  inline-size: 14px;
+  block-size: 14px;
+}
+:root[lang="ar"] .pill {
+  font-size: 0.78rem;
+}
+.tone-neutral { background: var(--sunk); color: var(--text-2); }
+.tone-brand { background: var(--brand-wash); color: var(--brand-text); }
+.tone-success { background: var(--success-wash); color: var(--success-text); }
+.tone-warning { background: var(--warning-wash); color: var(--warning-text); }
+.tone-danger { background: var(--danger-wash); color: var(--danger-text); }
+.tone-info { background: var(--info-wash); color: var(--info-text); }
