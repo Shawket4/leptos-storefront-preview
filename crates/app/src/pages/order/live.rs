@@ -279,7 +279,7 @@ mod poll {
             std::time::Duration::from_millis(500),
         );
         handle.set_value(h.ok());
-        if !w.navigator().on_line() {
+        if !crate::components::net::is_online() {
             p.net.set(Net::Offline);
             return;
         }
@@ -340,7 +340,7 @@ mod poll {
                 Ok(None) => {}
                 // Keep the last good status; back off and say so.
                 Err(_) => {
-                    if !window().navigator().on_line() {
+                    if !crate::components::net::is_online() {
                         p.net.set(Net::Offline);
                         return;
                     }

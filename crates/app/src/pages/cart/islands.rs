@@ -3,15 +3,16 @@
 //! through the op queue (`store`) for an instant, sequenced, roll-back-able update.
 
 use super::math::{self, Op};
-use super::page::{Art, ArtImage};
 use super::store::{CartOps, IssueKind, OpResult, Removed, use_ops};
 use crate::api::cart::{CartAdd, CartRemove, CartSetQty};
 use crate::api::types::CartLineView;
 use crate::components::drawer::Drawer;
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
+use crate::components::net::is_online;
 use crate::components::price::{PriceLive, PriceSize};
 use crate::components::skeleton::Skeleton;
+use crate::components::states::{StateTone, StateView};
 use crate::components::toast::ToastKind;
 use crate::format;
 use crate::prefs::{Lang, tr, use_ui};
@@ -257,12 +258,21 @@ fn DrawerContent() -> impl IntoView {
     move || match body.get() {
         Body::Loading => EitherOf4::A(view! { <DrawerSkeleton/> }),
         Body::Failed => EitherOf4::B(view! {
-            <div class="cart-note" role="alert">
-                <Icon name="triangle-alert" size=24/>
-                <p>{move || tr(ui.lang.get(), "We couldn't load your cart.", "تعذّر تحميل السلة.")}</p>
-                <button type="button" class="btn btn--secondary btn--md" data-press="" on:click=move |_| ops.revalidate()>
-                    {move || tr(ui.lang.get(), "Try again", "جرّب تاني")}
-                </button>
+            <div class="cart-drawer__scroll" role="alert">
+                <StateView
+                    tone={if is_online() { StateTone::Error } else { StateTone::Offline }}
+                    compact=true
+                    title=move || if is_online() {
+                        tr(ui.lang.get(), "We couldn't load your cart", "تعذّر تحميل السلة")
+                    } else {
+                        tr(ui.lang.get(), "You're offline", "أنت غير متصل بالإنترنت")
+                    }
+                    body=move || tr(ui.lang.get(), "Your items are safe. Try again in a moment.", "منتجاتك محفوظة. حاول مرة أخرى بعد قليل.")
+                >
+                    <button type="button" class="btn btn--primary btn--md" data-press="" on:click=move |_| ops.revalidate()>
+                        {move || tr(ui.lang.get(), "Try again", "جرّب تاني")}
+                    </button>
+                </StateView>
             </div>
         }),
         Body::Empty => EitherOf4::C(view! { <DrawerEmpty/> }),
@@ -290,26 +300,13 @@ fn DrawerEmpty() -> impl IntoView {
     };
     view! {
         <div class="cart-drawer__scroll">
-            <div class="cart-empty cart-empty--drawer">
-                // The art's box is reserved before it arrives, so nothing moves when it does.
-                <span class="cart-empty__artbox">
-                    {move || {
-                        let sg = ops.suggestions.get();
-                        let lang = ui.lang.get();
-                        match sg.and_then(|s| s.art_light.map(|l| (l, s.art_dark))) {
-                            Some((light, dark)) => Either::Left(view! { <ArtImage art=Art { light: Some(light), dark } lang/> }),
-                            None => Either::Right(view! { <span class="art art--icon"><Icon name="shopping-bag" size=36/></span> }),
-                        }
-                    }}
-                </span>
-                <h3 class="cart-empty__title">{move || tr(ui.lang.get(), "Your cart is empty", "سلتك فاضية")}</h3>
-                <p class="cart-empty__body">
-                    {move || tr(ui.lang.get(), "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")}
-                </p>
+            <StateView tone=StateTone::Empty art="empty-cart" compact=true
+                title=move || tr(ui.lang.get(), "Your cart is empty", "سلتك فاضية")
+                body=move || tr(ui.lang.get(), "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")>
                 <a class="btn btn--primary btn--md" href="/" data-press="" on:click=move |_| close_drawer()>
                     {move || tr(ui.lang.get(), "Start shopping", "ابدأ التسوق")}
                 </a>
-            </div>
+            </StateView>
             {move || {
                 let picks = picks();
                 (!picks.is_empty()).then(|| view! {

@@ -11,10 +11,10 @@
 
 mod live;
 
-use crate::components::button::{Button, ButtonKind};
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
+use crate::components::states::{SectionError, StateTone, StateView};
 use crate::format;
 use crate::media::Img;
 use crate::pages::cart::{ArtImage, art};
@@ -156,7 +156,9 @@ pub fn OrderPage() -> impl IntoView {
         <Meta name="robots" content="noindex"/>
         <div class="container order-page">
             <Suspense fallback=move || view! { <OrderSkeleton/> }>
-                <ErrorBoundary fallback=move |_| view! { <OrderLoadError lang/> }>
+                <ErrorBoundary fallback=move |errors| view! {
+                    <SectionError errors what=tr(lang, "this order", "الطلب").to_owned()/>
+                }>
                     {
                         let tenant = tenant.clone();
                         move || {
@@ -194,26 +196,13 @@ fn OrderNotFound(id: String, example: String, lang: Lang) -> impl IntoView {
     };
     view! {
         <div class="order-missing">
-            <div class="cart-empty order-missing__head">
-                <ArtImage art=art("not-found") fallback_icon="package" lang/>
-                <h1 class="cart-empty__title">{tr(lang, "We couldn't find that order", "مش لاقيين الطلب ده")}</h1>
-                <p class="cart-empty__body">{body}</p>
-            </div>
+            <StateView tone=StateTone::NotFound page=true
+                title=tr(lang, "We couldn't find that order", "مش لاقيين الطلب ده")
+                body=body/>
             <crate::pages::orders_lookup::LookupForm value=String::new() error=None example lang/>
             <p class="order-page__more">
                 <a class="link" href="/">{tr(lang, "Back to the shop", "ارجع للمتجر")}</a>
             </p>
-        </div>
-    }
-}
-
-#[component]
-fn OrderLoadError(lang: Lang) -> impl IntoView {
-    view! {
-        <div class="cart-note" role="alert">
-            <Icon name="triangle-alert" size=24/>
-            <p>{tr(lang, "We couldn't load this order just now. Your order is safe.", "تعذّر تحميل الطلب الآن، وطلبك محفوظ.")}</p>
-            <Button href="" kind=ButtonKind::Secondary>{tr(lang, "Try again", "جرّب تاني")}</Button>
         </div>
     }
 }

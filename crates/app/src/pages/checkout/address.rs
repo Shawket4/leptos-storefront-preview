@@ -193,7 +193,7 @@ pub fn AddressForm(
     let on_submit = move |ev: leptos::ev::SubmitEvent| {
         // No network: keep everything as typed, say so, and offer the retry.
         #[cfg(feature = "hydrate")]
-        if !window().navigator().on_line() {
+        if !crate::components::net::is_online() {
             ev.prevent_default();
             general.set(Some(tr(ui.lang.get_untracked(), "You're offline. Your details are still here — try again when you're back online.", "أنت غير متصل بالإنترنت. بياناتك محفوظة هنا — حاول مرة أخرى عند عودة الاتصال.").to_owned()));
             focus_soon("#co-address .notice");

@@ -330,7 +330,7 @@ impl CartOps {
     /// line itself, with a Retry. An undo that failed puts its "Undo" row back.
     fn note_failure(self, op: Op, code: &str) {
         #[cfg(feature = "hydrate")]
-        let offline = code == "network" || !window().navigator().on_line();
+        let offline = code == "network" || !crate::components::net::is_online();
         #[cfg(not(feature = "hydrate"))]
         let offline = code == "network";
         let key = op.key();
@@ -631,7 +631,7 @@ mod client {
             }
             // Offline: don't let the post vanish into a dead fetch. Keep everything as it is and
             // say so where the shopper is looking.
-            if !window().navigator().on_line() {
+            if !crate::components::net::is_online() {
                 ev.prevent_default();
                 show_net_notice(&form, ops);
                 return;

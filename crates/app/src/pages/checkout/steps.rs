@@ -8,9 +8,10 @@ use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
+use crate::components::states::{StateTone, StateView};
 use crate::components::status_pill::{StatusPill, Tone};
 use crate::format;
-use crate::pages::cart::{ArtImage, Totals, art};
+use crate::pages::cart::Totals;
 use crate::prefs::{Lang, Numerals, tr};
 use domain::{L10n, PaymentMethod, Piastres};
 use leptos::either::Either;
@@ -505,11 +506,12 @@ pub fn Summary(cart: CartView, extra_fee: Piastres, lang: Lang, num: Numerals) -
 #[component]
 pub fn CheckoutEmpty(lang: Lang) -> impl IntoView {
     view! {
-        <div class="cart-empty cart-empty--page card co-empty">
-            <ArtImage art=art("empty-cart") lang/>
-            <h1 class="cart-empty__title">{tr(lang, "Nothing to check out yet", "مفيش حاجة لسه نكمّل بيها")}</h1>
-            <p class="cart-empty__body">{tr(lang, "Your cart is empty. Add something you like, then come back here.", "سلتك فاضية. ضيف اللي يعجبك وارجع هنا.")}</p>
-            <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{tr(lang, "Start shopping", "ابدأ التسوق")}</Button>
+        <div class="card co-empty">
+            <StateView tone=StateTone::Empty art="empty-cart" page=true
+                title=tr(lang, "Nothing to check out yet", "مفيش حاجة لسه نكمّل بيها")
+                body=tr(lang, "Your cart is empty. Add something you like, then come back here.", "سلتك فاضية. ضيف اللي يعجبك وارجع هنا.")>
+                <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{tr(lang, "Start shopping", "ابدأ التسوق")}</Button>
+            </StateView>
         </div>
     }
 }

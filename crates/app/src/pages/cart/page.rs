@@ -18,6 +18,7 @@ use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
 use crate::components::product_card::CardData;
 use crate::components::skeleton::Skeleton;
+use crate::components::states::{SectionError, StateTone, StateView};
 use crate::format;
 use crate::media::Img;
 use crate::prefs::{Lang, Numerals, tr};
@@ -93,11 +94,9 @@ fn url_error(lang: Lang) -> Option<String> {
     Some(copy::message(&copy::code(&e), lang))
 }
 
-/// What an empty cart offers instead: the illustration and a few things to start with.
+/// What an empty cart offers: a few things to start with.
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Suggestions {
-    pub art_light: Option<Img>,
-    pub art_dark: Option<Img>,
     pub picks: Vec<CardData>,
 }
 
@@ -133,10 +132,7 @@ pub async fn cart_suggestions() -> Result<Suggestions, ServerFnError> {
             .await
             .unwrap_or_default(),
     );
-    let a = art("empty-cart");
     Ok(Suggestions {
-        art_light: a.light,
-        art_dark: a.dark,
         picks: pick_quick_adds(pool, &[], 3),
     })
 }
@@ -187,7 +183,9 @@ pub fn CartPage() -> impl IntoView {
                 </p>
             })}
             <Suspense fallback=move || view! { <CartPageSkeleton/> }>
-                <ErrorBoundary fallback=move |_| view! { <CartLoadError lang/> }>
+                <ErrorBoundary fallback=move |errors| view! {
+                    <SectionError errors what=tr(lang, "your cart", "السلة").to_owned() retry_href="/cart"/>
+                }>
                     {move || Suspend::new(async move {
                         let v = cart.await?;
                         let picks = picks.await.unwrap_or_default();
@@ -195,17 +193,6 @@ pub fn CartPage() -> impl IntoView {
                     })}
                 </ErrorBoundary>
             </Suspense>
-        </div>
-    }
-}
-
-#[component]
-fn CartLoadError(lang: Lang) -> impl IntoView {
-    view! {
-        <div class="cart-note" role="alert">
-            <Icon name="triangle-alert" size=24/>
-            <p>{tr(lang, "We couldn't load your cart. Your items are safe.", "تعذّر تحميل السلة، ومنتجاتك محفوظة.")}</p>
-            <Button href="/cart" kind=ButtonKind::Secondary>{tr(lang, "Try again", "جرّب تاني")}</Button>
         </div>
     }
 }
@@ -251,11 +238,12 @@ fn CartBody(
     let count = v.count;
     let body = if empty {
         Either::Left(view! {
-            <div class="cart-empty cart-empty--page card">
-                <ArtImage art=art("empty-cart") lang/>
-                <h2 class="cart-empty__title">{tr(lang, "Your cart is empty", "سلتك فاضية")}</h2>
-                <p class="cart-empty__body">{tr(lang, "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")}</p>
-                <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{tr(lang, "Start shopping", "ابدأ التسوق")}</Button>
+            <div class="card cart-empty--page">
+                <StateView tone=StateTone::Empty art="empty-cart"
+                    title=tr(lang, "Your cart is empty", "سلتك فاضية")
+                    body=tr(lang, "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")>
+                    <Button href="/" kind=ButtonKind::Primary size=ButtonSize::Lg>{tr(lang, "Start shopping", "ابدأ التسوق")}</Button>
+                </StateView>
             </div>
         })
     } else {
