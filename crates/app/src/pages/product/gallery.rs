@@ -613,6 +613,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
     // Hover zoom-to-cursor (fine pointers only): position in % of the slide.
     let hover = RwSignal::new(None::<(f64, f64)>);
     let fine = StoredValue::new(false);
+    let broken_watched = StoredValue::new(false);
     let rtl = move || ui.lang.get_untracked().is_rtl();
 
     // Hydrated: take over from the native strip at the photo the visitor is on.
@@ -629,6 +630,10 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
         };
         main.st.update_value(|s| s.index = at.min(n - 1));
         main.measure(rtl());
+        if !broken_watched.get_value() {
+            broken_watched.set_value(true);
+            watch_broken(&section);
+        }
         let _ = section.class_list().add_1("is-js");
         vp.set_scroll_left(0);
         main.active.set(main.index());
@@ -654,6 +659,12 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
         viewer.measure(rtl());
     });
     on_cleanup(move || resize.remove());
+    let online = window_event_listener(leptos::ev::online, move |_| {
+        if let Some(section) = root.get_untracked() {
+            retry_broken(&section);
+        }
+    });
+    on_cleanup(move || online.remove());
     // A variant whose photo differs (written by the purchase panel).
     let wanted = Memo::new(move |_| {
         store
@@ -1001,6 +1012,10 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                         hover.get().filter(|_| main.active.get() == i).map(|(x, y)| format!("--zx:{x:.1}%;--zy:{y:.1}%"))
                     }
                 >
+                    <span class="pg__fallback" aria-hidden="true">
+                        <Icon name="image" size=28/>
+                        <span>{move || tr(ui.lang.get(), "Photo unavailable", "الصورة غير متاحة")}</span>
+                    </span>
                     {if i == start {
                         // The card → page morph lands on the photo the page opens with.
                         view! { <Picture img=img sizes=STAGE_SIZES priority=true vt_name=format!("p{pid}") lang=lang/> }.into_any()
@@ -1030,6 +1045,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                         }
                     >
                         <Picture img=img sizes=THUMB_SIZES lang=lang/>
+                        <span class="pg__fallback pg__fallback--sm" aria-hidden="true"><Icon name="image" size=16/></span>
                     </a>
                 }
             })
@@ -1054,6 +1070,10 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
             let missing = img.is_missing();
             view! {
                 <div class="pv__slide" data-i=i>
+                    <span class="pg__fallback" aria-hidden="true">
+                        <Icon name="image" size=32/>
+                        <span>{move || tr(ui.lang.get(), "Photo unavailable", "الصورة غير متاحة")}</span>
+                    </span>
                     <div class="pv__zoom">
                         {(!missing).then(|| view! {
                             <img
@@ -1178,6 +1198,62 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                 </p>
             </dialog>
         </section>
+    }
+}
+
+/// Photos that fail (offline, a dead link) become a quiet placeholder in their slot instead of
+/// the browser's broken-image icon. Covers images that already failed before hydration.
+fn watch_broken(root: &web_sys::Element) {
+    use wasm_bindgen::{JsCast, closure::Closure};
+    fn mark(img: &web_sys::Element) {
+        if let Ok(Some(slot)) = img.closest(".pg__slide, .pg__thumb, .pv__slide") {
+            let _ = slot.class_list().add_1("is-broken");
+        }
+    }
+    let Ok(imgs) = root.query_selector_all("img") else {
+        return;
+    };
+    for i in 0..imgs.length() {
+        let Some(img) = imgs
+            .item(i)
+            .and_then(|n| n.dyn_into::<web_sys::Element>().ok())
+        else {
+            continue;
+        };
+        let prop = |k: &str| js_sys::Reflect::get(&img, &k.into()).ok();
+        let complete = prop("complete").and_then(|v| v.as_bool()).unwrap_or(false);
+        let width = prop("naturalWidth").and_then(|v| v.as_f64()).unwrap_or(1.0);
+        if complete && width == 0.0 {
+            mark(&img);
+        }
+        let el = img.clone();
+        let cb = Closure::<dyn FnMut(web_sys::Event)>::new(move |_| mark(&el));
+        let _ = img.add_event_listener_with_callback("error", cb.as_ref().unchecked_ref());
+        cb.forget();
+    }
+}
+
+/// Back online: try the failed photos again (re-setting the attributes reloads them).
+fn retry_broken(root: &web_sys::Element) {
+    use wasm_bindgen::JsCast;
+    let Ok(slots) = root.query_selector_all(".is-broken") else {
+        return;
+    };
+    for i in 0..slots.length() {
+        let Some(slot) = slots
+            .item(i)
+            .and_then(|n| n.dyn_into::<web_sys::Element>().ok())
+        else {
+            continue;
+        };
+        let _ = slot.class_list().remove_1("is-broken");
+        if let Ok(Some(img)) = slot.query_selector("img") {
+            for attr in ["srcset", "src"] {
+                if let Some(v) = img.get_attribute(attr) {
+                    let _ = img.set_attribute(attr, &v);
+                }
+            }
+        }
     }
 }
 

@@ -331,12 +331,32 @@ pub fn error_text(code: &str, lang: Lang) -> &'static str {
             "This product is no longer available.",
             "هذا المنتج لم يعد متاحًا.",
         ),
+        "offline" => tr(
+            lang,
+            "You're offline. Check your connection, then try again.",
+            "لا يوجد اتصال بالإنترنت. تحقّق من الاتصال ثم أعد المحاولة.",
+        ),
+        "back_online" => tr(lang, "You're back online.", "عاد الاتصال بالإنترنت."),
+        "network" => tr(
+            lang,
+            "We couldn't reach the store. Check your connection and try again.",
+            "تعذّر الوصول إلى المتجر. تحقّق من الاتصال وأعد المحاولة.",
+        ),
         _ => tr(
             lang,
             "We couldn't add this to your cart. Please try again.",
             "تعذّرت إضافة المنتج إلى السلة. يُرجى المحاولة مرة أخرى.",
         ),
     }
+}
+
+/// Whether trying the same add again can help (not for stock or add-on problems: those need a
+/// different choice, and the message says which).
+pub fn retryable(code: &str) -> bool {
+    !matches!(
+        code,
+        "out_of_stock" | "addon_required" | "bad_addon" | "unknown_product"
+    )
 }
 
 /// The code inside a `ServerFnError` (`ServerFnError::new("out_of_stock")` → `"out_of_stock"`).

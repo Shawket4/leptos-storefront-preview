@@ -17,55 +17,20 @@
   }
 }
 
-/* ── Breadcrumbs (local until components::breadcrumbs lands) ─────────────── */
+/* ── Breadcrumbs (components::breadcrumbs) ───────────────────────────────── */
 .pdp-crumbs {
-  min-block-size: 44px;
+  padding-block: var(--sp-2);
 }
-.crumbs__list {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: var(--sp-1);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-sm);
-  color: var(--text-2);
-}
-.crumbs__item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  min-inline-size: 0;
-}
-.crumbs__link {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
-  padding-inline: var(--sp-1);
-  color: var(--text-2);
-  text-decoration: none;
-  border-radius: var(--r-xs);
-}
-.crumbs__link:hover {
-  color: var(--text);
-}
-.crumbs__here {
-  color: var(--text-3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-inline-size: 40ch;
-}
-.crumbs__sep {
-  color: var(--text-3);
+/* category.css styles `.crumbs` unscoped (a "/" between items, on top of the chevrons). */
+.pdp-crumbs .crumbs li + li::before {
+  content: none;
 }
 /* Phones: the product name is the H1 right below; the trail stops at its shelf. */
 @media (max-width: 767.98px) {
-  .crumbs__item--here {
+  .pdp-crumbs .crumbs__item:last-child {
     display: none;
   }
-  .crumbs__item:nth-last-child(2) .crumbs__sep {
+  .pdp-crumbs .crumbs__item:nth-last-child(2) .crumbs__sep {
     display: none;
   }
 }
@@ -174,6 +139,28 @@
     mix-blend-mode: multiply;
   }
 }
+/* A photo that failed (offline, a dead link): a quiet placeholder in its slot, never the
+   browser's broken-image icon. Shown by the island (it marks the slot); retried online. */
+.pg__fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: none;
+  place-items: center;
+  align-content: center;
+  gap: var(--sp-2);
+  background: var(--well);
+  color: var(--text-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  text-align: center;
+}
+.is-broken > .pg__fallback {
+  display: grid;
+}
+.is-broken img {
+  visibility: hidden;
+}
 /* With JS the island moves the strip itself (springs, 1:1 tracking). */
 .pg.is-js .pg__viewport {
   overflow: hidden;
@@ -191,7 +178,7 @@
 /* Hover zoom-to-cursor (fine pointers). */
 .pg__slide .pic img {
   transform-origin: var(--zx, 50%) var(--zy, 50%);
-  transition: scale var(--dur-base) var(--ease-out);
+  transition: scale var(--spring-snappy-dur) var(--spring-snappy);
 }
 .pg__slide.is-zoom .pic img {
   scale: 2;
@@ -281,7 +268,7 @@
   border-radius: 50%;
   corner-shape: round;
   background: var(--line-strong);
-  transition: background-color var(--dur-fast) var(--ease-out), scale var(--dur-base) var(--ease-out);
+  transition: background-color var(--dur-fast) var(--ease-out), scale var(--spring-snappy-dur) var(--spring-snappy);
 }
 .pg__dot.is-on {
   background: var(--text);
@@ -414,6 +401,7 @@ html.pv-open {
   will-change: transform;
 }
 .pv__slide {
+  position: relative;
   flex: 0 0 100%;
   display: grid;
   place-items: center;
@@ -638,7 +626,7 @@ html.pv-open {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: box-shadow var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+  transition: box-shadow var(--dur-fast) var(--ease-out), scale var(--press-dur) ease-out, background-color var(--dur-fast) var(--ease-out);
 }
 .pp-chip:hover {
   box-shadow: inset 0 0 0 1px var(--text-3);
@@ -673,7 +661,7 @@ html.pv-open {
   corner-shape: round;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: scale 100ms var(--ease-out);
+  transition: scale var(--press-dur) ease-out;
 }
 .pp-swatch__dot {
   inline-size: 32px;
@@ -872,56 +860,10 @@ html.pv-open {
   align-items: stretch;
   gap: var(--sp-3);
 }
-.pp-qty {
-  display: inline-flex;
+.pp-buy .stepper {
   flex: none;
-  align-items: center;
+  block-size: 52px;
   padding: 4px;
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: var(--sunk);
-}
-.pp-qty__btn {
-  display: grid;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  border-radius: 10px;
-  corner-shape: squircle;
-  color: var(--text);
-  transition: background-color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
-}
-.pp-qty__btn:hover:not(:disabled) {
-  background: var(--surface);
-}
-.pp-qty__btn:active:not(:disabled) {
-  scale: 0.94;
-}
-.pp-qty__btn:disabled {
-  color: var(--on-disabled);
-}
-.pp-qty__input {
-  inline-size: 2.75rem;
-  block-size: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  font-size: var(--fs-md);
-  font-weight: var(--fw-semibold);
-  text-align: center;
-  appearance: textfield;
-  -moz-appearance: textfield;
-}
-.pp-qty__input::-webkit-inner-spin-button,
-.pp-qty__input::-webkit-outer-spin-button {
-  appearance: none;
-  margin: 0;
-}
-.pp-qty__input:focus-visible {
-  outline: none;
-  border-radius: var(--r-sm);
-  box-shadow: inset 0 0 0 2px var(--focus);
 }
 .pp-add {
   flex: 1;
@@ -985,6 +927,27 @@ html.pv-open {
   background: var(--success-wash);
   color: var(--success-text);
 }
+.pp-msg--info {
+  background: var(--info-wash);
+  color: var(--info-text);
+}
+.pp-msg__text {
+  flex: 1;
+  min-inline-size: 12rem;
+}
+.pp-msg__action {
+  min-block-size: 36px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  transition: scale var(--press-dur) ease-out;
+}
+.pp-msg__action:active {
+  scale: var(--press);
+}
 .pp-msg__link {
   margin-inline-start: auto;
   color: inherit;
@@ -1010,7 +973,7 @@ html.pv-open {
   translate: 0 calc(100% + 12px);
   pointer-events: none;
   transition:
-    translate var(--dur-slow) var(--ease-drawer),
+    translate var(--spring-default-dur) var(--spring-default),
     opacity var(--dur-fast) var(--ease-out);
 }
 .pp-bar.is-shown {
@@ -1044,7 +1007,7 @@ html.pv-open {
 @media (max-width: 959.98px) {
   :root:has(.pp-bar.is-shown) .toaster {
     translate: 0 calc(-1 * (var(--pp-bar-h, 68px) + var(--sp-2)));
-    transition: translate var(--dur-slow) var(--ease-drawer);
+    transition: translate var(--spring-default-dur) var(--spring-default);
   }
 }
 @media (prefers-reduced-transparency: reduce) {
@@ -1177,14 +1140,24 @@ html.pv-open {
 .pdp-related {
   margin-block-start: var(--section-y);
 }
-/* Without JS the streamed rail can't land; the "More in …" link stays. */
+
+/* ── Rails, errors and not-found ──────────────────────────────────────────── */
+/* Without JS a streamed rail can't land; its section link stays. */
 @media (scripting: none) {
-  .pdp-related__sk {
+  .pdp-rail-sk {
     display: none;
   }
 }
-
-/* ── Errors and not-found ─────────────────────────────────────────────────── */
+.pdp-rail-empty {
+  margin: 0;
+  color: var(--text-2);
+}
+.pdp-rail-empty a {
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .pdp-error {
   display: flex;
   flex-wrap: wrap;
@@ -1193,9 +1166,13 @@ html.pv-open {
   padding: var(--sp-4) var(--sp-5);
   background: var(--surface);
   border-radius: var(--r-lg);
-  corner-shape: squircle;
   box-shadow: var(--shadow-sm);
   color: var(--text-2);
+}
+.pdp-error__icon {
+  display: grid;
+  place-items: center;
+  color: var(--warning-text);
 }
 .pdp-error__text {
   flex: 1;
@@ -1205,78 +1182,22 @@ html.pv-open {
 .pdp-error__text strong {
   color: var(--text);
 }
-.pdp-error__retry {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
-  color: var(--text);
-  font-weight: var(--fw-bold);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.pdp-fail,
-.pdp-404 {
+.pdp-state {
   display: grid;
   justify-items: center;
-  gap: var(--sp-3);
-  max-inline-size: 34rem;
+  gap: var(--sp-4);
+  max-inline-size: 36rem;
   margin-inline: auto;
-  padding-block: var(--sp-16);
+  padding-block: var(--sp-10) var(--sp-8);
   text-align: center;
 }
-.pdp-art {
-  display: block;
-  inline-size: 168px;
-  block-size: 168px;
-  margin-block-end: var(--sp-2);
-}
-.pdp-art__img {
-  inline-size: 100%;
-  block-size: 100%;
-}
-.pdp-art__img--dark {
-  display: none;
-}
-:root[data-theme="dark"] .pdp-art__img--light {
-  display: none;
-}
-:root[data-theme="dark"] .pdp-art__img--dark {
-  display: block;
-}
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="system"] .pdp-art__img--light {
-    display: none;
-  }
-  :root[data-theme="system"] .pdp-art__img--dark {
-    display: block;
-  }
-}
-.pdp-fail__title,
-.pdp-404__title {
-  margin: 0;
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-heavy);
-  line-height: var(--lh-tight);
-  letter-spacing: var(--tracking-tight);
-  text-wrap: balance;
-}
-.pdp-fail__body,
-.pdp-404__body {
-  margin: 0;
-  color: var(--text-2);
-  text-wrap: pretty;
-}
-.pdp-404__code {
-  margin: 0;
-  color: var(--text-3);
-  font-size: var(--fs-sm);
-  letter-spacing: 0.2em;
+.pdp-404 {
+  padding-block-end: var(--section-y);
 }
 .pdp-404__search {
   display: flex;
   gap: var(--sp-2);
   inline-size: 100%;
-  margin-block-start: var(--sp-3);
 }
 .pdp-404__input {
   flex: 1;
@@ -1285,7 +1206,6 @@ html.pv-open {
   padding-inline: var(--sp-4);
   border: 0;
   border-radius: var(--r-md);
-  corner-shape: squircle;
   background: var(--surface);
   box-shadow: inset 0 0 0 1px var(--line-strong);
   color: var(--text);
@@ -1295,14 +1215,6 @@ html.pv-open {
 .pdp-404__input:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 2px var(--text), 0 0 0 4px var(--focus);
-}
-.pdp-404__home {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
-  color: var(--text-2);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 /* ── Reduced motion: no slides or springs, short fades only ──────────────── */

@@ -31,12 +31,12 @@ mod head;
 mod model;
 mod panel;
 mod parts;
-mod shim;
 
 pub use model::{GalleryData, PanelData};
 pub use panel::AddToCart;
 
 use crate::api;
+use crate::components::breadcrumbs::Breadcrumbs;
 use crate::request::req;
 use domain::VariantId;
 use head::{HeadData, NotFoundHead, ProductHead};
@@ -46,7 +46,6 @@ use leptos_router::hooks::{use_params_map, use_query_map};
 use model::{Notice, text};
 use parts::{NotFound, ProductBody, ProductError, Related};
 use serde::{Deserialize, Serialize};
-use shim::{Breadcrumbs, Crumb};
 
 #[component]
 pub fn ProductPage() -> impl IntoView {
@@ -81,7 +80,7 @@ pub fn ProductPage() -> impl IntoView {
         let tenant = text(&rq.tenant.name, lang);
         return Either::Left(view! {
             <NotFoundHead lang=lang tenant=tenant/>
-            <NotFound slug=slug lang=lang/>
+            <NotFound slug=slug lang=lang numerals=num/>
         });
     };
 
@@ -110,18 +109,15 @@ pub fn ProductPage() -> impl IntoView {
     let id = p.id.0;
     let head = HeadData::build(&pv, &rq, start);
     let crumbs = vec![
-        Crumb {
-            label: crate::prefs::tr(lang, "Home", "الرئيسية").to_owned(),
-            href: Some("/".into()),
-        },
-        Crumb {
-            label: text(&pv.category.name, lang),
-            href: (!pv.category.slug.is_empty()).then(|| format!("/c/{}", pv.category.slug)),
-        },
-        Crumb {
-            label: text(&p.name, lang),
-            href: None,
-        },
+        (
+            crate::prefs::tr(lang, "Home", "الرئيسية").to_owned(),
+            Some("/".to_owned()),
+        ),
+        (
+            text(&pv.category.name, lang),
+            (!pv.category.slug.is_empty()).then(|| format!("/c/{}", pv.category.slug)),
+        ),
+        (text(&p.name, lang), None),
     ];
     let category = pv.category.clone();
     let data = Resource::new_blocking(move || slug.clone(), api::product_detail);
@@ -139,7 +135,7 @@ pub fn ProductPage() -> impl IntoView {
                     <div class="pdp" data-product=id>
                         <div class="container">
                             <div class="pdp-crumbs">
-                                <Breadcrumbs items=crumbs lang=lang/>
+                                <Breadcrumbs items=crumbs/>
                             </div>
                             <Suspense fallback=move || view! {
                                 <ProductBody pv=fallback_pv.clone() selected=selected start=start notice=fallback_notice.clone() live=false/>

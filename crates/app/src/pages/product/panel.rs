@@ -20,6 +20,7 @@ use crate::api::types::CartView;
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::components::price::{PriceLive, PriceSize};
+use crate::components::stepper::Stepper;
 use crate::components::toast::{self, ToastKind};
 use crate::format;
 use crate::prefs::{Lang, tr, use_ui};
@@ -269,6 +270,25 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
         cb.forget();
     });
 
+    // Retry = press the real button again: same validation, offline check and optimistic bump.
+    let retry = move || {
+        use wasm_bindgen::JsCast;
+        error.set(None);
+        if let Some(row) = buy_row.get_untracked()
+            && let Ok(Some(btn)) = row.query_selector(".pp-add")
+            && let Ok(btn) = btn.dyn_into::<web_sys::HtmlElement>()
+        {
+            btn.click();
+        }
+    };
+    // Back online: an "offline" error is stale; let the visitor try again.
+    let online = window_event_listener(leptos::ev::online, move |_| {
+        if error.get_untracked().as_deref() == Some("offline") {
+            error.set(Some("back_online".into()));
+        }
+    });
+    on_cleanup(move || online.remove());
+
     let select = move |v: u32| {
         if v != sel.get_untracked() {
             error.set(None);
@@ -285,6 +305,12 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
             return;
         }
         added_notice.set(None);
+        // Offline: say so now instead of sending a request that can only fail.
+        if !window().navigator().on_line() {
+            ev.prevent_default();
+            error.set(Some("offline".into()));
+            return;
+        }
         if any_bad() {
             ev.prevent_default();
             tried.set(true);
@@ -394,6 +420,7 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                 .cloned()
                 .map(|val| {
                     let vid = val.id.clone();
+                    let rid = StoredValue::new(val.id.clone());
                     let st = Memo::new(move |_| d.with_value(|d| model::avail(&d.variants, &variant.get(), ai, &vid)));
                     let label = val.label.clone();
                     let label2 = val.label.clone();
@@ -424,7 +451,18 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                             aria-disabled=move || (!st.get().enabled()).then_some("true")
                             aria-describedby=move || (!st.get().enabled()).then(|| note_id.clone())
                             aria-label=move || swatch.then(|| text(&label2, ui.lang.get()))
-                            title=move || swatch.then(|| text(&label3, ui.lang.get()))
+                            // A value that can't be picked says why on hover too (the note below says it
+                            // for everyone; the swatch's colour name otherwise).
+                            title=move || {
+                                let l = ui.lang.get();
+                                if st.get().enabled() {
+                                    swatch.then(|| text(&label3, l))
+                                } else {
+                                    Some(rid.with_value(|id| {
+                                        d.with_value(|d| model::reason(&d.axes, &d.variants, &variant.get(), ai, id, l))
+                                    }))
+                                }
+                            }
                             tabindex=move || js.get().then(|| if st.get() == Avail::Selected { "0" } else { "-1" })
                             class:is-on=move || st.get() == Avail::Selected
                             class:is-off=move || !st.get().enabled()
@@ -639,44 +677,24 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                     {has_axes.then(|| view! { <div class="pp-axes">{axes}</div> })}
                     {has_groups.then(|| view! { <div class="pp-groups" node_ref=groups_ref>{groups}</div> })}
                     <div class="pp-buy" node_ref=buy_row>
-                        <div class="pp-qty" role="group" aria-label=qty_label>
-                            <button
-                                type="button"
-                                class="pp-qty__btn"
-                                aria-label=move || tr(ui.lang.get(), "Decrease quantity", "قلّل الكمية")
-                                disabled=move || { qty.get() <= 1 || stock_n.get() == 0 }
-                                on:click=move |_| qty.update(|q| *q = q.saturating_sub(1).max(1))
-                                data-press=""
-                            >
-                                <Icon name="minus" size=18/>
-                            </button>
-                            <input
-                                class="pp-qty__input mono"
-                                type="number"
-                                name="qty"
-                                inputmode="numeric"
-                                min="1"
-                                max=move || max_qty.get().to_string()
-                                value="1"
-                                prop:value=move || qty.get().to_string()
-                                aria-label=qty_label
-                                disabled=move || stock_n.get() == 0
-                                on:change=move |ev| {
-                                    let v = event_target_value(&ev).trim().parse::<u32>().unwrap_or(1);
-                                    qty.set(v.clamp(1, max_qty.get_untracked()));
-                                }
-                            />
-                            <button
-                                type="button"
-                                class="pp-qty__btn"
-                                aria-label=move || tr(ui.lang.get(), "Increase quantity", "زوّد الكمية")
-                                disabled=move || { qty.get() >= max_qty.get() || stock_n.get() == 0 }
-                                on:click=move |_| qty.update(|q| *q = (*q + 1).min(max_qty.get_untracked()))
-                                data-press=""
-                            >
-                                <Icon name="plus" size=18/>
-                            </button>
-                        </div>
+                        // The design-system stepper drives the signal; the hidden field carries it in the
+                        // form (without JS the quantity is 1 — it can be changed in the cart).
+                        <input type="hidden" name="qty" value="1" prop:value=move || qty.get().to_string()/>
+                        // `max` follows the variant's stock (the stepper takes it as a plain number).
+                        {move || {
+                            let max = max_qty.get();
+                            view! {
+                                <Stepper
+                                    value=qty
+                                    on_change=Callback::new(move |v: u32| qty.set(v.clamp(1, max)))
+                                    min=1
+                                    max=max
+                                    label=Signal::derive(move || qty_label().to_owned())
+                                    disabled=Signal::derive(move || stock_n.get() == 0)
+                                    class="pp-qty"
+                                />
+                            }
+                        }}
                         <Button
                             kind=ButtonKind::Primary
                             size=ButtonSize::Lg
@@ -705,9 +723,23 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                         autofocus=has_notice
                     >
                         {move || error.get().map(|code| view! {
-                            <p class="pp-msg pp-msg--error" role="alert">
-                                <Icon name="circle-alert" size=16/>
-                                <span>{model::error_text(&code, ui.lang.get())}</span>
+                            <p
+                                class="pp-msg"
+                                class:pp-msg--error={code != "back_online"}
+                                class:pp-msg--info={code == "back_online"}
+                                role="alert"
+                            >
+                                {if code == "back_online" {
+                                    view! { <Icon name="info" size=16/> }.into_any()
+                                } else {
+                                    view! { <Icon name="circle-alert" size=16/> }.into_any()
+                                }}
+                                <span class="pp-msg__text">{model::error_text(&code, ui.lang.get())}</span>
+                                {model::retryable(&code).then(|| view! {
+                                    <button type="button" class="pp-msg__action" on:click=move |_| retry()>
+                                        {move || tr(ui.lang.get(), "Try again", "حاول مرة أخرى")}
+                                    </button>
+                                })}
                             </p>
                         })}
                         {move || added_notice.get().map(|n| {
