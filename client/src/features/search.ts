@@ -1,5 +1,6 @@
-// The header's instant search (`data-ts="search-box"`; the header is on every page, so this loads
-// with the page). The server renders the box and the row templates; this file asks
+// The instant search (`data-ts="search-box"`: the header's box, on every page, and the one on
+// /search). Loaded on the box's first use, not with the page (main.ts): until then the box is a
+// plain GET form to /search. The server renders the box and the row templates; this file asks
 // GET /api/search/suggest when the shopper pauses and fills the rows with the answer.
 
 import { register } from "../core/mount";
@@ -309,9 +310,19 @@ register("search-box", (root) => {
     }),
   ];
 
+  // From now on the phone trigger opens the overlay: the router shouldn't follow or warm /search
+  // for it (before this loaded, it was the router's link to /search — the fallback).
+  trigger?.setAttribute("data-router", "off");
+
+  // This module loads on the box's first use (main.ts), so the shopper may already be typing:
+  // adopt the field as it is (value, caret and focus are the DOM's own, untouched) and ask, after
+  // the usual pause (they may still be typing: one question, not one per chunk of keystrokes).
+  if (document.activeElement === input && input.value) changed();
+
   return () => {
     clearTimeout(timer);
     seq++;
+    trigger?.removeAttribute("data-router");
     closeOverlay(false);
     for (const off of offs) off();
   };

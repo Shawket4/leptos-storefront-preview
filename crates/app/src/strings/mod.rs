@@ -50,11 +50,26 @@ pub fn get(key: &str, lang: Lang) -> &'static str {
     }
 }
 
-/// `#app-strings`: every string in `lang`, as a JSON object safe inside `<script>`.
-pub fn client_json(lang: Lang) -> String {
-    let map: std::collections::BTreeMap<&str, &str> =
-        all().map(|e| (e.key, if lang.is_rtl() { e.ar } else { e.en })).collect();
-    serde_json::to_string(&map).unwrap_or_else(|_| "{}".into()).replace('<', "\\u003c")
+/// `#app-strings`: the strings in `lang` that the browser code on `path` can use, as a JSON object
+/// safe inside `<script>`. Pages are `no-cache`, so this is sent with every page view: the
+/// showcase's strings (a third of the catalogue) go only to the pages that run its code, /showcase
+/// and /ui. The router copies each page's `#app-strings` over on navigation, so a visit there by
+/// the router brings them along.
+pub fn client_json(lang: Lang, path: &str) -> String {
+    let path = path.split(['?', '#']).next().unwrap_or_default();
+    let showcase = ["/showcase", "/ui"].iter().any(|p| {
+        path == *p
+            || path
+                .strip_prefix(p)
+                .is_some_and(|rest| rest.starts_with('/'))
+    });
+    let map: std::collections::BTreeMap<&str, &str> = all()
+        .filter(|e| showcase || !e.key.starts_with("showcase."))
+        .map(|e| (e.key, if lang.is_rtl() { e.ar } else { e.en }))
+        .collect();
+    serde_json::to_string(&map)
+        .unwrap_or_else(|_| "{}".into())
+        .replace('<', "\\u003c")
 }
 
 /// Duplicate keys are a bug (one would silently win): checked at startup in debug builds.

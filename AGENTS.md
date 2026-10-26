@@ -110,7 +110,7 @@ mounts the new regions.
 |---|---|
 | `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()`, `digits(n)` (counts and clocks in the visitor's numerals — never money) |
 | `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)` (clone a template), `patch(root, values)` (update `[data-slot]`s in place, focus kept), `prefersReducedMotion()` |
-| `core/mount.ts` | `register(feature, el => cleanup?)`; `mountAll(root)`, `unmountAll(root)` (router) |
+| `core/mount.ts` | `register(feature, el => cleanup?)`; `mountAll(root)`, `unmountAll(root)` (router); `lazy(names, loader)` (a chunk loaded the first time a page has one of `names`; `"sc-*"` prefixes); `lazyOnIntent(names, loader, {now?(el), idle?, triggers?})` (on every page but loaded when the visitor reaches for it: pointer over / touch starts the import, focus / press / key loads it; as soon as it's in, every waiting element mounts and the listeners go; events are never cancelled — a press on a link still follows it; `now(el)` loads at once, `idle` imports once the page has settled, `triggers` is a selector for other intent targets anywhere); `ensure(name)` → loads and mounts it now (resolves when mounted); `preload(names, {intent?})` |
 | `core/store.ts` | `createStore(initial)` → `get/set/update/subscribe` — only `stores/*` create stores |
 | `core/net.ts` | `request`, `getJSON<T>(url, opts)`, `NetError` (`offline/timeout/http/parse/aborted`), `isOnline`, `onOnline` |
 | `core/cache.ts` | `cached(key, {ttl, swr}, fetcher, onUpdate?)`, `key(...parts)`, `peek`, `invalidate`, `noteGeneration` |

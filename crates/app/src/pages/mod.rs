@@ -3,6 +3,7 @@
 pub mod cart;
 pub mod category;
 pub mod checkout;
+pub mod core_scratch;
 pub mod errors;
 pub mod home;
 pub mod order;

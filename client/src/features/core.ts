@@ -4,7 +4,7 @@
 // server-rendered in the shell (components::shell, components::offline) and looked up when needed,
 // so a full-frame swap (a language change) never leaves a listener on a removed element.
 
-import { lazy, register } from "../core/mount";
+import { lazy, lazyOnIntent, register } from "../core/mount";
 import { mountStepper } from "../core/stepper";
 import "../core/drawer"; // the drawer triggers and API, from the start
 import { $, $$, on, prefersReducedMotion } from "../core/dom";
@@ -18,6 +18,14 @@ register("stepper", mountStepper);
 lazy(["drawer"], () => import("../core/drawer-panel"));
 lazy(["rail"], () => import("../core/rail"));
 lazy(["seg-toggle"], () => import("../core/segmented-toggle"));
+// Dev only: dummy on-intent features for /core-scratch (dropped from release builds).
+if (__DEV__) {
+  lazyOnIntent(["scratch-intent"], () => import("../core/scratch-intent"), {
+    triggers: "[data-scratch-trigger]",
+    now: (el) => el.hasAttribute("data-now"),
+  });
+  if (location.pathname === "/core-scratch") lazyOnIntent(["scratch-idle"], () => import("../core/scratch-idle"), { idle: true });
+}
 // Pull to refresh: touch devices only, once the page has settled.
 if (matchMedia("(pointer: coarse)").matches) {
   const later = (fn: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 1200));

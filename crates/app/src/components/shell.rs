@@ -180,6 +180,6 @@ fn AppData(rq: RequestCtx) -> impl IntoView {
         .replace('<', "\\u003c");
     view! {
         <script type="application/json" id="app-config" inner_html=config></script>
-        <script type="application/json" id="app-strings" inner_html=crate::strings::client_json(rq.prefs.lang)></script>
+        <script type="application/json" id="app-strings" inner_html=crate::strings::client_json(rq.prefs.lang, &rq.path_and_query)></script>
     }
 }
