@@ -51,6 +51,7 @@
 }
 .kit__row {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-3);
 }
 @media (min-width: 768px) {
@@ -70,6 +71,12 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-3);
+  min-inline-size: 0;
+}
+/* A specimen that sizes itself to its container (pager, scrolling chips): the full row. */
+.kit__wide {
+  flex: 1 1 100%;
+  min-inline-size: 0;
 }
 
 /* Colour */
@@ -379,4 +386,21 @@
 }
 .kit__netbtns:not(:has(button:not([hidden]))) {
   display: none;
+}
+
+/* Layout helpers for the second-round specimens (the components bring their own styles). */
+.kit__stack {
+  display: grid;
+  gap: var(--sp-3);
+  min-inline-size: 0;
+}
+.kit__cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: var(--sp-6);
+  align-items: start;
+}
+/* An open menu's popover needs room below its trigger inside the specimen. */
+.kit__menu-room {
+  min-block-size: 16rem;
 }

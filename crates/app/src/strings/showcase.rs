@@ -54,6 +54,10 @@ pub const ALL: &[Entry] = &[
     s("showcase.wire_sent", "{size}, compressed by the server", "{size}، مضغوط من السيرفر"),
     s("showcase.wire_cached", "{size}, from the browser cache", "{size}، من كاش المتصفح"),
     s("showcase.of_budget", "{p}% of the budget", "{p}٪ من الميزانية"),
+    // /ui: a notice revealed by the browser, the error line filled by a check.
+    s("showcase.notice_title", "Saved for later", "اتحفظ لبعدين"),
+    s("showcase.notice_body", "Find it under Saved, on any device.", "هتلاقيه في المحفوظات، من أي جهاز."),
+    s("showcase.check_error", "Enter the street and the building number.", "اكتب اسم الشارع ورقم العمارة."),
     // /ui skeletons.
     s("showcase.cls", "Layout shift while loading: {n}", "تحرّك الصفحة وقت التحميل: {n}"),
 ];
