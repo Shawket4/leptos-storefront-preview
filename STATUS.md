@@ -1,4 +1,4 @@
-# Status — 2026-10-26, 15:40 (live)
+# Status — 2026-10-26, 15:54 (live)
 
 - **Live build of `main`:** http://nile.100-123-21-13.sslip.io:3000 · http://souq.100-123-21-13.sslip.io:3000
   (Tailscale on; `LIVE.md` has the agents' ports).
@@ -17,17 +17,18 @@
 ## In progress
 | Who | Doing |
 |---|---|
-| core | `lazyOnIntent` / `ensure` in `core/mount.ts` (first); then Totals, ItemRow, KeyValueList, StepIndicator, Timeline, LiveStatus |
-| design system | Notice, LinkChips, FilterChips, Menu, Pager, FacetGroup, ChoiceChips, ChoiceList, EmptyState suggestion; form gaps (lengths, grouped/required Select, always-present error slot) |
-| cart | the cart drawer and /cart renderer out of the first load |
-| browse | instant search out of the first load (on intent, then idle) |
-| showcase | waiting for the component list: /ui specimens, fault toggles on link chips |
-| lead | Docker image test build; README (Stage 2 sizes, verdict) |
+| cart | adopting Notice, Totals, ItemRow, KeyValueList, StepIndicator, Timeline, LiveStatus and the form gaps; deleting its page CSS |
+| browse | adopting LinkChips, FilterChips, Menu, Pager, FacetGroup, ChoiceChips, ChoiceList, EmptyState suggestion, Notice; deleting its page CSS |
+| showcase | /ui specimens for the 15 new components; fault toggles on link chips |
+| core | the Arabic font off English pages (−31 KB per first visit), scratch route out of release, `form::Radio`, no compression for fonts |
+| lead | final release image build and per-page measurement once adoption lands; README sizes and verdict |
 
 ## Sizes (gzip, `node tools/size-budget.mjs`)
 | | Now | Budget |
 |---|---|---|
-| JS first load (every page) | 18.5 KB | 15 KB; cart + search on demand should bring it to about 14.3 KB |
-| JS heaviest page (product + every extra) | 28.8 KB | 30 KB |
-| CSS | 29.8 KB | 35 KB |
+| JS first load (every page; 2 files) | 12.1 KB (10.9 KB brotli) | 15 KB |
+| JS heaviest page (product + every extra) | 27.4 KB | 30 KB |
+| CSS | 33.4 KB: the new components landed; drops as pages adopt them | 35 KB |
 | Strings per page (`#app-strings`) | 1.4 KB, was 2.1 KB | — |
+
+Server render time (release image): 2.1–6.3 ms median per page, compression included.
