@@ -126,6 +126,53 @@ Rules: features register in their own `features/<area>.ts`; they touch the DOM o
 element they're mounted on (plus the page singletons: header badge, drawer, toaster); they subscribe
 to stores and clean up in the returned function; strings via `t()`; no `innerHTML` with data.
 
+## The design system — use it, extend it, never re-type it
+
+**Before you write any UI, look here and at `/ui`** (the live kit: every component in every state).
+The rules (owner's, 2026-10-26), checked by `node tools/ui-lint.mjs` — it must report 0 before a merge:
+
+1. **Use the component.** Need `data-*`, `aria-*`, `name`, `value`, `form`…? Pass them with `attr:`
+   on the component — `<Button href="/" attr:data-drawer-close="">` — never by re-typing its markup.
+2. **Never hand-write a component's markup or classes** in a page (`btn`, `icon-btn`, `badge`,
+   `price`, `field`, `input`, `radio-card`, `skeleton`, `pcard`, `crumbs`, `drawer`, `stepper`…).
+3. **A component can't do what you need? It gets extended — by its owner (core).** Ask the lead with
+   the API you need; code against it meanwhile. No local variants, no copies "for now".
+4. **Generic or repeated UI is a shared component.** A pattern that shows up in two places, or is
+   generic by nature (a notice/inline alert, a list row, a chip, a key–value list, a totals block,
+   a step indicator, a quantity summary…), lives in `crates/app/src/components/` (owner: core) with
+   a specimen on `/ui` (owner: showcase). Propose it to the lead: name, props, where it's used.
+5. **Behaviour too.** One module per behaviour in `client/src/core/` (drawer, stepper, motion, …);
+   features compose them. Two features needing the same behaviour = a core module.
+6. **Tokens only** (`style/tokens.css`): colours `var(--…)`, radii `var(--r-*)` (the squircle
+   scale; `0`/`50%` allowed), easing `var(--ease-*)`/`var(--spring-*)`, durations `--dur-*`,
+   spacing `--sp-*`. No gradients, no raw hex/rgb, no raw radii, no raw easing.
+
+| Component (`crate::components::…`) | Use it for | Props (`?` optional) |
+|---|---|---|
+| `button::Button` | every button and button-styled link | `kind?` (`Primary`/`Secondary`/`Ghost`/`Outline`/`Danger`), `size?`, `href?`, `button_type?`, `disabled?`, `loading?`, `full_width?`, `icon?`, `icon_end?`, `class?`, children |
+| `button::IconButton` | round icon-only buttons (36 px, 44 px target) | `icon`, `label` (aria), `href?`, `kind?`, `button_type?`, `disabled?`, `class?` |
+| `badge::Badge`, `status_pill::StatusPill` | product badges (new/deal/express/low/oos); order and state pills | `kind`, `lang`, `numerals` · `tone?`, `label`, `icon?` |
+| `price::Price` | every price (server-formatted, sale + was) | `amount`, `compare_at?`, `size?`, `from?`, `no_badge?`, `lang`, `numerals` |
+| `rating::Rating` | stars + count | `value`, `count`, `lang`, `numerals`, `compact?` |
+| `image::Picture` | every image (ratio reserved, LQIP, WebP ladder) | `img`, `sizes`, `priority?`, `aspect?`, `vt_name?`, `lang` |
+| `product_card::{ProductCard, ProductGrid, ProductCardSkeleton, ProductGridSkeleton}` | products in grids and rails | `card`, `lang`, `numerals` · `count?` |
+| `layout::{Container, Section, SectionHeader, Rail}` | page column, section rhythm, a section's title row (+ "See all"), sideways rails | `title`, `subtitle?`, `href?`, `link_label?` · `label?` |
+| `breadcrumbs::Breadcrumbs` | trails | `items` |
+| `segmented::Segmented` | segmented choices | `items`, `label`, `full?` |
+| `form::{Field, TextInput, TextArea, Select, RadioCard, Checkbox}` | every form control (label + control + hint + error) | `id`, `name`, `label`, `hint?`, `error?`, `value?`, `required?`… |
+| `stepper::Stepper` | every quantity | `name`, `value`, `min`, `max`, `label`, `removable?`, `disabled?` |
+| `drawer::Drawer` | every drawer and bottom sheet | `id`, `side?`, `title`, `footer?`, children |
+| `states::{StateView, ComingSoon}`, `empty_state::EmptyState` | empty, error, offline, 404, not-yet-built states | `tone?`, `title`, `body`, `kicker?`, children |
+| `skeleton::{Skeleton, SkeletonLines, SkeletonText, SkeletonMedia, SkeletonField, SkeletonRail}` | every loading placeholder (same box as the real thing) | sizes / `lines` / `aspect` |
+| `toast::Toaster` | (shell) — toasts come from `stores/toasts.ts` | — |
+| `assets::{TenantLogo, MadarBadge}`, `header::{SiteHeader, CatNav}`, `footer::SiteFooter`, `bottom_nav::BottomNav`, `prefs_controls::PrefsControls`, `offline::OfflineBanner`, `shell::AppShell` | the shell (core) | — |
+
+**Loading features on demand.** `main.ts` loads the always-present behaviour (core, the cart badge,
+drawer and quick add, the header search) with the page; a feature only some pages have (product,
+checkout, listing, showcase) is a separate chunk loaded the first time its `data-ts` name appears
+(`lazy([...names], () => import("./features/x"))` in `main.ts`). esbuild puts shared code in shared
+chunks, so nothing loads twice. Keep a feature's `data-ts` names in its own file.
+
 ## The cart (contract)
 
 - The browser owns the cart. It lives in the **`cart` cookie** (not HttpOnly):
