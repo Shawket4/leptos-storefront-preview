@@ -1,7 +1,8 @@
 //! `HeaderSearch`: the instant-search box (in the site header, and at the top of `/search`).
 //!
 //! Without JS it is a plain `GET /search?q=` form. With JS (`data-ts="search-box"`,
-//! `features/browse.ts`) it is an ARIA combobox: typing asks `GET /api/search/suggest?q=`
+//! `features/search.ts`, loaded when the box is first used or the browser is idle) it is an ARIA
+//! combobox: typing asks `GET /api/search/suggest?q=`
 //! (`suggest::search_suggest`) after a short pause and fills the listbox from the templates below
 //! — markup and labels stay here, the browser only puts the server's data in. Keyboard: ↑/↓ move
 //! through the options, Enter opens the active one or searches, Escape closes, then clears.
@@ -47,9 +48,9 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
     view! {
         <div class=cls data-ts="search-box">
             {header.then(|| view! {
-                // The no-JS way to the search page; with JS it opens the overlay, so the router neither
-                // takes nor prefetches it.
-                <a class="hs-trigger" href="/search" aria-haspopup="dialog" data-router="off">
+                // With the search code loaded it opens the overlay; until then (no JS, or a first tap
+                // before the idle load finished) it is a link to /search, which the router takes.
+                <a class="hs-trigger" href="/search" aria-haspopup="dialog">
                     <Icon name="search" size=20/>
                     <span class="hs-trigger__text" class:is-filled=!empty>
                         {if empty { placeholder.to_owned() } else { initial.clone() }}

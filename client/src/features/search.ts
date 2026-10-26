@@ -1,5 +1,6 @@
-// The header's instant search (`data-ts="search-box"`; the header is on every page, so this loads
-// with the page). The server renders the box and the row templates; this file asks
+// The instant search (`data-ts="search-box"`: the header's box, on every page, and the one on
+// /search). Loaded on the box's first use, not with the page (main.ts): until then the box is a
+// plain GET form to /search. The server renders the box and the row templates; this file asks
 // GET /api/search/suggest when the shopper pauses and fills the rows with the answer.
 
 import { register } from "../core/mount";
@@ -159,7 +160,8 @@ register("search-box", (root) => {
       });
   };
 
-  const changed = () => {
+  /** The field changed (`now`: ask without the typing pause — the shopper already paused). */
+  const changed = (now = false) => {
     const q = text();
     clearTimeout(timer);
     if (clearBtn) clearBtn.hidden = !input.value;
@@ -191,7 +193,8 @@ register("search-box", (root) => {
     }
     setOpen(true);
     if (!shown) view("loading");
-    timer = window.setTimeout(() => ask(q), SUGGEST_DEBOUNCE_MS);
+    if (now) ask(q);
+    else timer = window.setTimeout(() => ask(q), SUGGEST_DEBOUNCE_MS);
   };
 
   // ── The phone overlay: the same form, full screen, in the top layer ──
@@ -255,7 +258,7 @@ register("search-box", (root) => {
   };
 
   const offs = [
-    on(input, "input", "*", changed),
+    on(input, "input", "*", () => changed()),
     on(input, "keydown", "*", onKey),
     on(input, "focus", "*", () => {
       if (shown && shown.q === text()) setOpen(true);
@@ -308,6 +311,10 @@ register("search-box", (root) => {
       if (failed === "offline" && askable(q)) ask(q);
     }),
   ];
+
+  // This module loads on the box's first use (main.ts), so the shopper may already be typing:
+  // adopt the field as it is (value, caret and focus are the DOM's own, untouched) and answer now.
+  if (document.activeElement === input && input.value) changed(true);
 
   return () => {
     clearTimeout(timer);
