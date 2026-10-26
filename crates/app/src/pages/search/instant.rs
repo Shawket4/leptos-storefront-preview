@@ -24,7 +24,7 @@ use crate::components::{
 use crate::format;
 use crate::pages::category::listing::quoted;
 use crate::prefs::{Lang, tr, use_ui};
-use leptos::either::{Either, EitherOf3};
+use leptos::either::{Either, EitherOf4};
 use leptos::{ev, html, prelude::*};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
@@ -41,12 +41,31 @@ pub enum SearchBox {
     Page,
 }
 
+/// Why a question went unanswered.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Failure {
+    /// The device is offline: say so, and ask again when it is back.
+    Offline,
+    Server,
+}
+
 /// One row of the listbox, in keyboard order.
 #[derive(Clone, Debug, PartialEq)]
 enum Opt {
-    Category { href: String, cat: NavCategory },
-    Product { href: String, hit: SearchHit },
-    All { href: String, total: u32 },
+    /// Ask the same question again (after a failure).
+    Retry,
+    Category {
+        href: String,
+        cat: NavCategory,
+    },
+    Product {
+        href: String,
+        hit: SearchHit,
+    },
+    All {
+        href: String,
+        total: u32,
+    },
 }
 
 /// The `q` of the current URL, when it is a search page (so the box shows what was searched).
@@ -87,7 +106,7 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
     let overlay = RwSignal::new(false);
     let active = RwSignal::new(None::<usize>);
     // The last answer and the question it answers.
-    let answer = RwSignal::new(None::<(String, Result<SearchResults, ()>)>);
+    let answer = RwSignal::new(None::<(String, Result<SearchResults, Failure>)>);
     let loading = RwSignal::new(false);
     let seq = StoredValue::new(0u64);
     let timer = StoredValue::new(None::<TimeoutHandle>);
@@ -98,8 +117,10 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
 
     let options = Memo::new(move |_| {
         answer.with(|a| {
-            let Some((asked, Ok(r))) = a else {
-                return Vec::new();
+            let (asked, r) = match a {
+                Some((asked, Ok(r))) => (asked, r),
+                Some((_, Err(_))) => return vec![Opt::Retry],
+                None => return Vec::new(),
             };
             let mut out = Vec::new();
             for c in &r.categories {
@@ -153,9 +174,16 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
             if seq.get_value() != me.unwrap_or_default() {
                 return;
             }
+            let res = res.map_err(|_| {
+                if window().navigator().on_line() {
+                    Failure::Server
+                } else {
+                    Failure::Offline
+                }
+            });
             loading.set(false);
             active.set(None);
-            answer.set(Some((q, res.map_err(|_| ()))));
+            answer.set(Some((q, res)));
         });
     };
     let cancel_timer = move || {
@@ -187,6 +215,35 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
         );
         timer.set_value(h.ok());
     };
+
+    // Ask the last question again (the retry row, or the connection coming back).
+    let retry = move || {
+        let q = text.get_untracked().trim().to_owned();
+        if askable(&q) {
+            cancel_timer();
+            ask(q);
+        }
+    };
+    Effect::new(move |done: Option<bool>| {
+        if done.is_some() {
+            return true;
+        }
+        let r = root.get_untracked();
+        let handle = StoredValue::new(None::<WindowListenerHandle>);
+        let h = window_event_listener(ev::online, move |_| {
+            if !r.as_ref().is_some_and(|r| r.is_connected()) {
+                if let Some(h) = handle.try_update_value(Option::take).flatten() {
+                    h.remove();
+                }
+                return;
+            }
+            if answer.with_untracked(|a| matches!(a, Some((_, Err(Failure::Offline))))) {
+                retry();
+            }
+        });
+        handle.set_value(Some(h));
+        true
+    });
 
     let close_list = move || {
         open.set(false);
@@ -363,8 +420,10 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
                 .filter(|o| matches!(o, Opt::Product { .. }))
                 .count()
         }) as u32;
-        if !showing() || loading.get() {
+        if !showing() {
             String::new()
+        } else if loading.get() {
+            tr(lang, "Searching…", "بندوّر…").to_owned()
         } else {
             match lang {
                 Lang::En => format!(
@@ -386,12 +445,27 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
         let num = ui.numerals.get();
         answer.with(|a| match a {
             None => skeleton_rows().into_any(),
-            Some((_, Err(()))) => view! {
-                <div class="hs-note" role="alert">
-                    <p>{tr(lang, "Search isn't available right now. Try again in a moment.", "البحث غير متاح الآن. حاول مرة أخرى بعد قليل.")}</p>
-                </div>
+            Some((asked, Err(failure))) => {
+                let (title, body) = match failure {
+                    Failure::Offline => (
+                        tr(lang, "You're offline.", "لا يوجد اتصال بالإنترنت."),
+                        tr(lang, "We'll search as soon as you're back online.", "سيتم البحث فور عودة الاتصال."),
+                    ),
+                    Failure::Server => (
+                        tr(lang, "Search isn't available right now.", "البحث غير متاح الآن."),
+                        tr(lang, "Please try again in a moment.", "حاول مرة أخرى بعد قليل."),
+                    ),
+                };
+                let asked = asked.clone();
+                view! {
+                    <div class="hs-note" role="alert">
+                        <p class="hs-note__title">{title}</p>
+                        <p>{body}</p>
+                    </div>
+                    {options.with(|opts| listbox(p, opts, &asked, lang, num, active, opt_id, retry))}
+                }
+                .into_any()
             }
-            .into_any(),
             Some((asked, Ok(r))) if r.hits.is_empty() && r.categories.is_empty() => view! {
                 <div class="hs-note">
                     <p class="hs-note__title">{format!("{} {}", tr(lang, "No matches for", "مفيش نتائج لـ"), quoted(asked, lang))}</p>
@@ -401,7 +475,7 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
             .into_any(),
             Some((asked, Ok(_))) => {
                 let asked = asked.clone();
-                options.with(|opts| listbox(p, opts, &asked, lang, num, active, opt_id))
+                options.with(|opts| listbox(p, opts, &asked, lang, num, active, opt_id, retry))
             }
         })
     };
@@ -500,7 +574,7 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
                         let picked = ev
                             .target()
                             .and_then(|t| t.dyn_into::<web_sys::Element>().ok())
-                            .and_then(|el| el.closest("[role=option]").ok().flatten())
+                            .and_then(|el| el.closest("[role=option]:not([data-keep])").ok().flatten())
                             .is_some();
                         if picked {
                             close_list();
@@ -527,6 +601,7 @@ fn listbox(
     num: crate::prefs::Numerals,
     active: RwSignal<Option<usize>>,
     opt_id: impl Fn(usize) -> String + Copy + 'static,
+    retry: impl Fn() + Copy + 'static,
 ) -> AnyView {
     let ar = lang.is_rtl();
     let row = move |i: usize, o: &Opt| {
@@ -537,7 +612,22 @@ fn listbox(
             }
         };
         match o {
-            Opt::Category { href, cat } => EitherOf3::A(view! {
+            Opt::Retry => EitherOf4::A(view! {
+                <div
+                    role="option"
+                    id=opt_id(i)
+                    class="hs-opt hs-opt--retry"
+                    data-keep=""
+                    tabindex="-1"
+                    aria-selected=move || if selected() { "true" } else { "false" }
+                    on:mousemove=hover
+                    on:click=move |_| retry()
+                >
+                    <span class="hs-opt__ic" aria-hidden="true"><Icon name="rotate-ccw" size=18/></span>
+                    <span class="hs-opt__main">{tr(lang, "Try again", "حاول مرة أخرى")}</span>
+                </div>
+            }),
+            Opt::Category { href, cat } => EitherOf4::B(view! {
                 <a
                     role="option"
                     id=opt_id(i)
@@ -564,7 +654,7 @@ fn listbox(
                     hit.name_en.clone()
                 };
                 let img = hit.card.img.clone();
-                EitherOf3::B(view! {
+                EitherOf4::C(view! {
                     <a
                         role="option"
                         id=opt_id(i)
@@ -589,7 +679,7 @@ fn listbox(
                     </a>
                 })
             }
-            Opt::All { href, total } => EitherOf3::C(view! {
+            Opt::All { href, total } => EitherOf4::D(view! {
                 <a
                     role="option"
                     id=opt_id(i)
@@ -626,7 +716,7 @@ fn listbox(
     let all: Vec<_> = opts
         .iter()
         .enumerate()
-        .filter(|(_, o)| matches!(o, Opt::All { .. }))
+        .filter(|(_, o)| matches!(o, Opt::All { .. } | Opt::Retry))
         .map(|(i, o)| row(i, o))
         .collect();
     let group = move |label: &'static str, rows: Vec<_>| {

@@ -7,10 +7,14 @@
 //! `ListingQuery { category: None, q }`; the island names itself from the query.
 
 mod instant;
+pub(crate) mod suggest;
 
 pub use instant::{HeaderSearch, SearchBox};
 
-use crate::api::{self, types::ListingQuery};
+use crate::api::{
+    self,
+    types::{ListingQuery, PER_PAGE},
+};
 use crate::pages::category::{ListingResults, listing};
 use crate::request::req;
 use leptos::prelude::*;
@@ -62,7 +66,7 @@ pub fn SearchPage() -> impl IntoView {
             <div class="search-page__box">
                 <HeaderSearch kind=SearchBox::Page/>
             </div>
-            <ListingResults data site lang/>
+            <ListingResults data site lang aisles=crate::pages::category::aisles(None) expected=PER_PAGE/>
         </div>
     }
 }
