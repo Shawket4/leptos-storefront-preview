@@ -215,7 +215,12 @@ pub fn snapshot(
     let opts: Vec<&domain::ModifierOption> = l
         .addons
         .iter()
-        .filter_map(|a| p.modifier_groups.iter().flat_map(|g| g.options.iter()).find(|o| &o.id == a))
+        .filter_map(|a| {
+            p.modifier_groups
+                .iter()
+                .flat_map(|g| g.options.iter())
+                .find(|o| &o.id == a)
+        })
         .collect();
     if opts.len() != l.addons.len() {
         return None;

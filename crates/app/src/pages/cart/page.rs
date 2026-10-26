@@ -10,10 +10,10 @@ use super::tx;
 use crate::api::types::{CartView, Rail};
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
-use crate::components::states::{StateTone, StateView};
 use crate::components::image::Picture;
 use crate::components::price::{Price, PriceSize};
 use crate::components::product_card::CardData;
+use crate::components::states::{StateTone, StateView};
 use crate::format;
 use crate::media::Img;
 use crate::prefs::{Lang, Numerals, tr};
@@ -201,13 +201,18 @@ pub fn CartPage() -> impl IntoView {
 }
 
 /// `{key: snapshot}` for the browser code (`<script type="application/json">`, `<` escaped).
-pub fn snapshots_json(lines: &[domain::cart::CartLine], snaps: &[Option<crate::api::cart::Snapshot>]) -> String {
+pub fn snapshots_json(
+    lines: &[domain::cart::CartLine],
+    snaps: &[Option<crate::api::cart::Snapshot>],
+) -> String {
     let map: std::collections::BTreeMap<String, &crate::api::cart::Snapshot> = lines
         .iter()
         .zip(snaps)
         .filter_map(|(l, s)| s.as_ref().map(|s| (l.key(), s)))
         .collect();
-    serde_json::to_string(&map).unwrap_or_else(|_| "{}".into()).replace('<', "\\u003c")
+    serde_json::to_string(&map)
+        .unwrap_or_else(|_| "{}".into())
+        .replace('<', "\\u003c")
 }
 
 /// Shown by the browser code when the server's prices differ from what the cart showed.
