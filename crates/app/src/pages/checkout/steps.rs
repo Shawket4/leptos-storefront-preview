@@ -78,6 +78,19 @@ fn StepError(message: Option<String>) -> impl IntoView {
     })
 }
 
+/// Revealed by the client when a step can't reach the server (offline, or no answer in time):
+/// the shopper's choice stays as it is and this button sends it again.
+#[component]
+fn NetNotice(lang: Lang) -> impl IntoView {
+    view! {
+        <div class="notice notice--error notice--net" data-net-notice="" hidden="" role="alert" tabindex="-1">
+            <Icon name="triangle-alert" size=20/>
+            <span>{tr(lang, "We couldn't reach the shop. Your choices are still here — check your connection and try again.", "تعذّر الاتصال بالمتجر. اختياراتك محفوظة — تأكد من الاتصال وحاول مرة أخرى.")}</span>
+            <button type="submit" class="link-btn">{tr(lang, "Try again", "حاول تاني")}</button>
+        </div>
+    }
+}
+
 #[component]
 fn StepHeading(text: &'static str, #[prop(optional)] sub: Option<&'static str>) -> impl IntoView {
     view! {
@@ -154,6 +167,7 @@ pub fn SlotStep(
                     }
                 </For>
             </fieldset>
+            <NetNotice lang/>
             <div class="co-actions">
                 <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right" attr:data-focus-id="co-next">
                     {tr(lang, "Continue to payment", "كمّل للدفع")}
@@ -258,6 +272,7 @@ pub fn PaymentStep(
                     </div>
                 }).collect_view()}
             </div>
+            <NetNotice lang/>
             <div class="co-actions">
                 <Button button_type="submit" kind=ButtonKind::Primary size=ButtonSize::Lg icon_end="arrow-right" attr:data-focus-id="co-next">
                     {tr(lang, "Review your order", "راجع طلبك")}
@@ -405,6 +420,7 @@ pub fn ReviewStep(
             </div>
             <form class="co-place" method="post" action=CheckoutPlace::url() data-pending-ui="" aria-busy="false">
                 <input type="hidden" name="total" value=total.0.to_string()/>
+                <NetNotice lang/>
                 {if blocked {
                     Either::Left(view! {
                         <Button button_type="button" kind=ButtonKind::Primary size=ButtonSize::Lg full_width=true disabled=true>

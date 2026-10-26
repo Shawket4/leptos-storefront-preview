@@ -831,3 +831,20 @@ a.co-step__link:hover {
   font-weight: var(--fw-semibold);
   color: var(--danger-text, var(--danger));
 }
+
+/* Notices with an action (Try again): the action sits at the end of the line. */
+.notice .link-btn {
+  margin-inline-start: auto;
+  min-block-size: 36px;
+  padding-inline: var(--sp-2);
+  color: inherit;
+  text-decoration-color: currentColor;
+  white-space: nowrap;
+}
+.notice--net {
+  flex-wrap: wrap;
+  margin-block: var(--sp-4) 0;
+}
+.notice--net[hidden] {
+  display: none;
+}

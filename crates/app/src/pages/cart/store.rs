@@ -629,6 +629,14 @@ mod client {
             if !form.has_attribute("data-pending-ui") {
                 return;
             }
+            // Offline: don't let the post vanish into a dead fetch. Keep everything as it is and
+            // say so where the shopper is looking.
+            if !window().navigator().on_line() {
+                ev.prevent_default();
+                show_net_notice(&form, ops);
+                return;
+            }
+            hide_net_notice(&form);
             let _ = form.set_attribute("aria-busy", "true");
             let submitter = ev
                 .dyn_ref::<web_sys::SubmitEvent>()
@@ -642,7 +650,7 @@ mod client {
             let keep_y = form
                 .has_attribute("data-keep-scroll")
                 .then(|| window().scroll_y().unwrap_or(0.0));
-            restore_focus_after_patch(focus_id, keep_y, form);
+            restore_focus_after_patch(focus_id, keep_y, form, ops);
         });
 
         // 4. Islands hydrated from now on arrived by navigation.
@@ -655,10 +663,41 @@ mod client {
     /// Wait for the router to patch the page, then (if focus fell to <body>) focus, in order: an
     /// element the server marked `data-autofocus` (an error message), the control that was pressed
     /// (same `data-focus-id`), or the list's `data-focus-fallback` (when that control is gone).
+    /// Reveal the form's own "couldn't reach the shop" notice (server-rendered, `hidden`, with a
+    /// real submit button to try again); forms without one get a toast.
+    fn show_net_notice(form: &web_sys::HtmlFormElement, ops: CartOps) {
+        match form.query_selector("[data-net-notice]").ok().flatten() {
+            Some(n) => {
+                let _ = n.remove_attribute("hidden");
+                if let Some(el) = n.dyn_ref::<web_sys::HtmlElement>() {
+                    let _ = el.focus();
+                }
+            }
+            None => {
+                let lang = ops.ui.lang.get_untracked();
+                ops.toasts.show(
+                    crate::prefs::tr(
+                        lang,
+                        "You're offline. Nothing was sent — try again when you're back online.",
+                        "أنت غير متصل بالإنترنت. لم يُرسل شيء — حاول مرة أخرى عند عودة الاتصال.",
+                    ),
+                    crate::components::toast::ToastKind::Error,
+                );
+            }
+        }
+    }
+
+    fn hide_net_notice(form: &web_sys::HtmlFormElement) {
+        if let Some(n) = form.query_selector("[data-net-notice]").ok().flatten() {
+            let _ = n.set_attribute("hidden", "");
+        }
+    }
+
     fn restore_focus_after_patch(
         focus_id: Option<String>,
         keep_y: Option<f64>,
         form: web_sys::HtmlFormElement,
+        ops: CartOps,
     ) {
         let Some(body) = document().body() else {
             return;
@@ -732,6 +771,7 @@ mod client {
                 if form.is_connected() && form.get_attribute("aria-busy").as_deref() == Some("true")
                 {
                     let _ = form.set_attribute("aria-busy", "false");
+                    show_net_notice(&form, ops);
                     if let Ok(list) = form.query_selector_all(".is-pending") {
                         for i in 0..list.length() {
                             if let Some(el) = list

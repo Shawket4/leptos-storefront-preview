@@ -140,6 +140,11 @@ pub fn AddressForm(
                 form.submitted.set(true);
                 focus_first();
             }
+            // The request never got an answer we could use: the details stay, the retry is one tap.
+            CheckoutError::Server(_) => {
+                general.set(Some(tr(lang, "We couldn't reach the shop. Your details are still here — please try again.", "تعذّر الاتصال بالمتجر. بياناتك محفوظة هنا — يرجى المحاولة مرة أخرى.").to_owned()));
+                focus_soon("#co-address .notice");
+            }
             other => {
                 general.set(Some(other.message(lang)));
                 focus_soon("#co-address .notice");
@@ -186,6 +191,14 @@ pub fn AddressForm(
     };
     // Runs before `<ActionForm>`'s own submit handler (capture phase on an ancestor).
     let on_submit = move |ev: leptos::ev::SubmitEvent| {
+        // No network: keep everything as typed, say so, and offer the retry.
+        #[cfg(feature = "hydrate")]
+        if !window().navigator().on_line() {
+            ev.prevent_default();
+            general.set(Some(tr(ui.lang.get_untracked(), "You're offline. Your details are still here — try again when you're back online.", "أنت غير متصل بالإنترنت. بياناتك محفوظة هنا — حاول مرة أخرى عند عودة الاتصال.").to_owned()));
+            focus_soon("#co-address .notice");
+            return;
+        }
         let Ok(raw) = CheckoutAddress::from_event(&ev) else {
             return;
         };
@@ -220,9 +233,13 @@ pub fn AddressForm(
                 <p class="co-step-sub">{t("We deliver across Cairo, Giza and Alexandria.", "بنوصّل في القاهرة والجيزة والإسكندرية.")}</p>
             </div>
             {move || general.get().map(|m| view! {
-                <p class="notice notice--error" role="alert" tabindex="-1"><Icon name="circle-alert" size=20/><span>{m}</span></p>
+                <div class="notice notice--error" role="alert" tabindex="-1">
+                    <Icon name="circle-alert" size=20/>
+                    <span>{m}</span>
+                    <button type="submit" form="co-address-form" class="link-btn">{t("Try again", "حاول تاني")}</button>
+                </div>
             })}
-            <ActionForm action=save attr:class="co-form co-fields" attr:novalidate="">
+            <ActionForm action=save attr:id="co-address-form" attr:class="co-form co-fields" attr:novalidate="">
                 <TextField form field=Field::Name label=("Full name", "الاسم بالكامل")
                     hint=("The person receiving the order", "اسم اللي هيستلم الطلب")
                     autocomplete="name" autofocus={first_error == Some(Field::Name)}/>
