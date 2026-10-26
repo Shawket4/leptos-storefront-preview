@@ -63,22 +63,6 @@
 .quick-add__btn:active {
   scale: 0.92;
 }
-.quick-add__check {
-  display: none;
-}
-.quick-add__btn[data-state="added"] {
-  background: var(--success);
-  color: var(--on-ink);
-}
-.quick-add__btn[data-state="added"] .quick-add__plus { display: none; }
-.quick-add__btn[data-state="added"] .quick-add__check {
-  display: block;
-  animation: qa-in var(--spring-bouncy-dur, 400ms) var(--ease-pop);
-}
-@keyframes qa-in { from { scale: 0.4; opacity: 0; } }
-@media (prefers-reduced-motion: reduce) {
-  .quick-add__btn[data-state="added"] .quick-add__check { animation: none; }
-}
 
 /* ── Lines (drawer and /cart share the markup) ─────────────────────────────── */
 .clines {
@@ -146,7 +130,7 @@
   min-block-size: 1.1em;
   border-radius: var(--r-xs);
   background: var(--sunk);
-  animation: pulse 1.4s ease-in-out infinite;
+  animation: pulse 1.6s var(--ease-in-out) infinite;
 }
 .cline__detail,
 .cline__unit {
@@ -182,10 +166,12 @@
   align-items: center;
   gap: var(--sp-2);
 }
-/* The no-JS form's submit; with JS (data-live) every change is instant. */
-[data-live] .cline__update,
-dialog .cline__update {
-  display: none;
+/* The no-JS form's submit. With scripting on every change is instant, so it never shows — a media
+   query, not a class the browser code sets, so it holds before the code runs and after a swap. */
+@media (scripting: enabled) {
+  .cline__update {
+    display: none;
+  }
 }
 .cline__total {
   display: flex;
@@ -195,10 +181,6 @@ dialog .cline__update {
   font-weight: var(--fw-semibold);
   text-align: end;
   transition: opacity var(--dur-fast) var(--ease-out);
-}
-/* Its total is for another quantity until the quote catches up. */
-.cline[data-stale] .cline__total {
-  opacity: 0.4;
 }
 /* Money never breaks between its figure and its currency. */
 .cline__price,
@@ -279,48 +261,6 @@ dialog .cline__update {
   opacity: 0.5;
 }
 
-/* The "Undo" a removed line leaves in its place. */
-.cline--gone {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  min-block-size: 56px;
-  margin-block: var(--sp-2);
-  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
-  border-radius: var(--r-lg);
-  corner-shape: squircle;
-  background: var(--sunk);
-  animation: gone-in var(--dur-base) var(--ease-out);
-}
-.cline--gone + .cline,
-.cline + .cline--gone {
-  border-block-start: 0;
-}
-.cline__gone-text {
-  margin: 0;
-  min-inline-size: 0;
-  font-size: var(--fs-sm);
-  color: var(--text-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.cline__undo {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  margin: 0;
-  color: var(--text);
-  text-decoration: none;
-  font-weight: var(--fw-bold);
-}
-@keyframes gone-in {
-  from { opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .cline--gone { animation: none; }
-}
 
 /* ── Summary: free-delivery hint, totals, VAT, the way on ─────────────────── */
 .csum {
@@ -408,7 +348,7 @@ dialog .cline__update {
   vertical-align: middle;
   border-radius: var(--r-xs);
   background: var(--sunk);
-  animation: pulse 1.4s ease-in-out infinite;
+  animation: pulse 1.6s var(--ease-in-out) infinite;
 }
 .csum__err {
   margin: 0;

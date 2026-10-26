@@ -451,6 +451,9 @@ pub struct Ctx {
     pub cart: CartView,
     /// A line can't be sent as it is: the review step says so and can't be placed.
     pub blocked: bool,
+    /// The lines' snapshots now (JSON): the browser code compares them with what its cart showed
+    /// and says so when a price moved (`features/checkout.ts`).
+    pub snapshots_json: String,
     pub step: Step,
     /// Which steps are complete.
     pub done: [bool; 4],
@@ -473,6 +476,17 @@ fn load(asked: Step) -> Option<Ctx> {
     }
     let d = v.key.as_deref().map(draft::get).unwrap_or_default();
     let slots = imp::slots(&v.tenant);
+    let snapshots_json = {
+        let lang = crate::request::init().prefs.lang;
+        let st = crate::server::state();
+        let catalog = st.catalog(&v.tenant.id);
+        let snaps: Vec<_> = v
+            .lines
+            .iter()
+            .map(|l| crate::server::cart::snapshot(l, &catalog, st.media(), lang))
+            .collect();
+        crate::pages::cart::snapshots_json(&v.lines, &snaps)
+    };
     let slot_ok = d
         .slot
         .as_ref()
@@ -509,6 +523,7 @@ fn load(asked: Step) -> Option<Ctx> {
     Some(Ctx {
         cart: v.cart,
         blocked: v.blocked,
+        snapshots_json,
         step,
         done,
         address: d.address,
@@ -614,6 +629,8 @@ fn CheckoutBody(
             <h1 class="t-h2 co-title">{tr(lang, "Checkout", "إتمام الطلب")}</h1>
         </header>
         <steps::Stepper step done=ctx.done lang num/>
+        <script type="application/json" data-cart-snapshots="" inner_html=ctx.snapshots_json.clone()></script>
+        <crate::pages::cart::PriceChanged lang/>
         <div class={if step == Step::Review { "co-layout co-layout--single" } else { "co-layout" }}>
             <section class=format!("co-main card co-main--{}", ctx.dir) aria-labelledby="co-step-title">
                 {panel}

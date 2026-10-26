@@ -142,6 +142,12 @@ fn AppData(rq: RequestCtx) -> impl IntoView {
         max_lines: usize,
         max_qty: u32,
         cookie: &'static str,
+        /// The tenant's delivery fee and free-delivery threshold, piastres (the client computes
+        /// the cart: `features/cart.ts`).
+        delivery_fee: i64,
+        free_delivery_over: i64,
+        /// The money label in this language (`EGP` / `ج.م`), for `core/money.ts`.
+        currency: &'static str,
     }
     #[derive(serde::Serialize)]
     struct Config<'a> {
@@ -164,6 +170,9 @@ fn AppData(rq: RequestCtx) -> impl IntoView {
             max_lines: domain::cart::MAX_LINES,
             max_qty: domain::cart::MAX_QTY,
             cookie: domain::cart::COOKIE,
+            delivery_fee: rq.tenant.delivery_fee.0,
+            free_delivery_over: rq.tenant.free_delivery_over.0,
+            currency: crate::format::currency_label(rq.prefs.lang),
         },
     };
     let config = serde_json::to_string(&config)

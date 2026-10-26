@@ -156,7 +156,10 @@ pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
                     <input type="hidden" name="key" value=key.clone() data-attr-value="key"/>
                     <input type="hidden" name="next" value=next/>
                     <Stepper name="qty" value=d.qty.max(1) min=1 max=d.max.max(1) removable=true label=qty_label/>
-                    <button type="submit" class="link-btn cline__update">{strings::get("cart.update", lang)}</button>
+                    // No-JS only: with scripting on, every change is instant (cart.css hides it).
+                    <Button button_type="submit" kind=ButtonKind::Secondary size=ButtonSize::Sm class="cline__update">
+                        {strings::get("cart.update", lang)}
+                    </Button>
                 </form>
                 <p class="cline__total">
                     <span class="mono" data-slot="total">{d.total.clone()}</span>
@@ -177,22 +180,6 @@ pub fn LineRow(d: LineData, lang: Lang, next: &'static str) -> impl IntoView {
     }
 }
 
-/// The "Removed … · Undo" row a removed line leaves for a few seconds (client only).
-#[component]
-pub fn GoneTemplate(lang: Lang) -> impl IntoView {
-    view! {
-        <template id="tpl-cart-gone">
-            <li class="cline cline--gone">
-                <p class="cline__gone-text" data-slot="text"></p>
-                <button type="button" class="link-btn cline__undo" data-undo="">
-                    <Icon name="rotate-ccw" size=16/>
-                    <span>{strings::get("cart.undo", lang)}</span>
-                </button>
-            </li>
-        </template>
-    }
-}
-
 /// The cart's totals, formatted. `None` renders the empty slots the client fills.
 #[derive(Clone, Debug, Default)]
 pub struct SummaryData {
@@ -202,7 +189,6 @@ pub struct SummaryData {
     pub delivery_free: bool,
     pub hint: Option<String>,
     pub total: String,
-    pub vat: String,
     pub can_checkout: bool,
     pub empty: bool,
 }
@@ -216,11 +202,8 @@ pub fn CartSummary(
     #[prop(optional)] in_drawer: bool,
 ) -> impl IntoView {
     let g = move |k: &str| strings::get(k, lang);
-    let vat = tx("cart.vat", lang, &[("pct", &percent(14, num))]);
-    let (vat_a, vat_b) = vat
-        .split_once("{vat}")
-        .map(|(a, b)| (a.to_owned(), b.to_owned()))
-        .unwrap_or((vat.clone(), String::new()));
+    // "VAT included" as text: the exact figure is checkout's (the cart is computed in the browser).
+    let vat = tx("cart.vat_included", lang, &[("pct", &percent(14, num))]);
     let done = !d.empty && d.hint.is_none();
     let blocked = !d.empty && !d.can_checkout;
     view! {
@@ -251,7 +234,7 @@ pub fn CartSummary(
                     <dd class="mono" data-slot="total">{d.total.clone()}</dd>
                 </div>
             </dl>
-            <p class="totals__vat">{vat_a}<span data-slot="vat">{d.vat.clone()}</span>{vat_b}</p>
+            <p class="totals__vat">{vat}</p>
             <div class="notice notice--error csum__err" data-quote-error="" role="alert" hidden="">
                 <Icon name="circle-alert" size=20/>
                 <span data-slot="qerr">{g("cart.quote_failed")}</span>

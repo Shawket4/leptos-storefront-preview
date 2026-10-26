@@ -4,7 +4,7 @@
 //! store at once and from the server's quote when it lands. It also carries the line templates
 //! the drawer and /cart share.
 
-use super::line::{CartSummary, GoneTemplate, LineData, LineRow, SummaryData};
+use super::line::{CartSummary, LineData, LineRow, SummaryData};
 use crate::components::button::{Button, ButtonKind};
 use crate::components::drawer::{Drawer, DrawerSide};
 use crate::components::states::{StateTone, StateView};
@@ -35,6 +35,5 @@ pub fn CartDrawer() -> impl IntoView {
         <template id="tpl-cart-line">
             <LineRow d=LineData { max: domain::cart::MAX_QTY, qty: 1, ..Default::default() } lang next=super::line::CART_PATH/>
         </template>
-        <GoneTemplate lang/>
     }
 }
