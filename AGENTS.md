@@ -214,7 +214,7 @@ chunks, so nothing loads twice. Keep a feature's `data-ts` names in its own file
   them and nothing is sent). `application/x-www-form-urlencoded` POSTs, plain HTML field names:
   | Endpoint | Fields |
   |---|---|
-  | `POST /cart/add` | `product`, `variant`, `qty` (default 1), `addon` (repeated, one per chosen add-on), `next` |
+  | `POST /cart/add` | `product`, `variant`, `qty` (default 1), add-ons: `addon` (repeated, one per chosen add-on; checkboxes) and/or `addon.<group>` (a single-choice group's radios: one name per group, so groups don't uncheck each other), `next` |
   | `POST /cart/set` | `key` (a line key, `product:variant[:addons]`), `qty` (0 removes), `next` |
   | `POST /cart/remove` | `key`, `next` |
 
