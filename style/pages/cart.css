@@ -800,3 +800,8 @@ a.mini-line__name {
   color: var(--text);
   text-decoration: none;
 }
+
+/* /cart's stepper: each button is its own form (see page.rs). */
+.qty__form {
+  display: contents;
+}

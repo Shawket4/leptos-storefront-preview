@@ -321,17 +321,26 @@ fn PageLine(
         };
         (msg, fix)
     });
+    // Each stepper button is its own form with the target quantity in a hidden field: the
+    // islands router posts `new FormData(form)` without the pressed button, so a button's own
+    // name/value would be lost with JS on (it works without JS, where the browser adds it).
+    let inc_id = format!("{key}:inc");
     let inc = if q >= line.max_qty {
         Either::Left(view! {
-            <button type="button" class="qty__btn" disabled="" data-focus-id=format!("{key}:inc") aria-label=inc_label.clone()>
+            <button type="button" class="qty__btn" disabled="" data-focus-id=inc_id.clone() aria-label=inc_label.clone()>
                 <Icon name="plus" size=18/>
             </button>
         })
     } else {
+        let k = key.clone();
         Either::Right(view! {
-            <button type="submit" name="qty" value=(q + 1).to_string() class="qty__btn" data-focus-id=format!("{key}:inc") aria-label=inc_label.clone()>
-                <Icon name="plus" size=18/>
-            </button>
+            <ActionForm action=set_qty attr:class="qty__form" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
+                <input type="hidden" name="key" value=k/>
+                <input type="hidden" name="qty" value=(q + 1).to_string()/>
+                <button type="submit" class="qty__btn" data-focus-id=inc_id.clone() aria-label=inc_label.clone()>
+                    <Icon name="plus" size=18/>
+                </button>
+            </ActionForm>
         })
     };
     let (key_qty, key_rm) = (key.clone(), key.clone());
@@ -357,7 +366,8 @@ fn PageLine(
                         {fix.map(|(k, n)| view! {
                             <ActionForm action=set_qty attr:class="line-issue__fix" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
                                 <input type="hidden" name="key" value=k/>
-                                <button type="submit" name="qty" value=n.to_string() class="link-btn">
+                                <input type="hidden" name="qty" value=n.to_string()/>
+                                <button type="submit" class="link-btn">
                                     {match lang {
                                         Lang::En => format!("Change to {}", format::count(n, num)),
                                         Lang::Ar => format!("خليها {}", format::count(n, num)),
@@ -375,15 +385,17 @@ fn PageLine(
                 </ActionForm>
             </div>
             <div class="cline__side">
-                <ActionForm action=set_qty attr:class="qty" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
-                    <input type="hidden" name="key" value=key_qty/>
-                    <button type="submit" name="qty" value=q.saturating_sub(1).to_string() class="qty__btn"
-                        data-focus-id=dec_id aria-label=dec_label>
-                        <Icon name=if q <= 1 { "trash-2" } else { "minus" } size=18/>
-                    </button>
+                <div class="qty">
+                    <ActionForm action=set_qty attr:class="qty__form" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
+                        <input type="hidden" name="key" value=key_qty/>
+                        <input type="hidden" name="qty" value=q.saturating_sub(1).to_string()/>
+                        <button type="submit" class="qty__btn" data-focus-id=dec_id aria-label=dec_label>
+                            <Icon name=if q <= 1 { "trash-2" } else { "minus" } size=18/>
+                        </button>
+                    </ActionForm>
                     <output class="qty__val mono">{format::count(q, num)}</output>
                     {inc}
-                </ActionForm>
+                </div>
                 <span class="cline__total">
                     <Price amount=line.line_total size=PriceSize::Sm no_badge=true lang numerals=num/>
                     {breakdown.map(|b| view! { <span class="cline__breakdown">{b}</span> })}
