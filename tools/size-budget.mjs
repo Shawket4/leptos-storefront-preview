@@ -49,7 +49,11 @@ const closure = (start) => {
   return seen;
 };
 const initial = closure(entry);
-const lazyChunks = edges.filter((e) => e.from === entry && e.kind === "dynamic").map((e) => e.to);
+// On-demand chunks: main.ts's lazy features (dynamic imports of the entry, in its lazy() order),
+// then any other dynamic import of the initial set (core's: the drawer panel, rails, toggles, PTR).
+const fromEntry = edges.filter((e) => e.from === entry && e.kind === "dynamic").map((e) => e.to);
+const fromShared = [...new Set(edges.filter((e) => e.from !== entry && initial.has(e.from) && e.kind === "dynamic").map((e) => e.to))].filter((f) => !fromEntry.includes(f));
+const lazyChunks = [...fromEntry, ...fromShared];
 // Name each on-demand chunk by the feature module it holds (dev build's paths aren't in release:
 // main.ts's lazy() list order matches the entry's dynamic imports).
 const mainTs = fs.readFileSync(path.join(root, "client/src/main.ts"), "utf8");
@@ -69,7 +73,7 @@ for (const f of [...initial].sort((a, b) => (a === entry ? -1 : b === entry ? 1 
 lazyChunks.forEach((chunk, i) => {
   const extra = [...closure(chunk)].filter((f) => !initial.has(f));
   const m = sum(extra.map((f) => size.get(f)));
-  row(`JS + ${lazyNames[i] ?? chunk} (on demand)`, m, `${extra.length} file${extra.length === 1 ? "" : "s"}; page total ${(((init.gzip + m.gzip) / KB)).toFixed(1)} KB gzip`);
+  row(`JS + ${lazyNames[i] ?? "core: " + chunk} (on demand)`, m, `${extra.length} file${extra.length === 1 ? "" : "s"}; page total ${(((init.gzip + m.gzip) / KB)).toFixed(1)} KB gzip`);
 });
 const all = sum(files.map((f) => size.get(f)));
 const allOk = all.gzip <= BUDGET.js;

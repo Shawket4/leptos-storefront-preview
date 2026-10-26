@@ -4,20 +4,25 @@
 // server-rendered in the shell (components::shell, components::offline) and looked up when needed,
 // so a full-frame swap (a language change) never leaves a listener on a removed element.
 
-import { register } from "../core/mount";
-import { mountDrawer } from "../core/drawer";
+import { lazy, register } from "../core/mount";
 import { mountStepper } from "../core/stepper";
-import { mountSegToggle } from "../core/segmented";
+import "../core/drawer"; // the drawer triggers and API, from the start
 import { $, $$, on, prefersReducedMotion } from "../core/dom";
 import { t } from "../core/page";
 import { isOnline, onOnline } from "../core/net";
 import { navFailure, refresh, routing, type NavFailure } from "../core/router";
-import { SPRING, SpringValue, rubberband } from "../core/motion";
 import { toast } from "../stores/toasts";
 
-register("drawer", mountDrawer);
 register("stepper", mountStepper);
-register("seg-toggle", mountSegToggle);
+// On demand: each loads the first time a page has one (the panel springs, rails, toggles).
+lazy(["drawer"], () => import("../core/drawer-panel"));
+lazy(["rail"], () => import("../core/rail"));
+lazy(["seg-toggle"], () => import("../core/segmented-toggle"));
+// Pull to refresh: touch devices only, once the page has settled.
+if (matchMedia("(pointer: coarse)").matches) {
+  const later = (fn: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 1200));
+  later(() => void import("../core/ptr"));
+}
 
 // ── Navigation progress ──────────────────────────────────────────────────────────────────────
 // A thin bar at the top, only when a navigation takes longer than 150 ms; it completes when the
@@ -207,36 +212,6 @@ document.addEventListener(
   true,
 );
 
-// ── Rails (components::layout::Rail): prev/next buttons and their end states ────────────────
-function railState(r: HTMLElement | null): void {
-  const track = r && $(".rail__track", r);
-  if (!r || !track) return;
-  const max = track.scrollWidth - track.clientWidth, x = Math.abs(track.scrollLeft);
-  r.dataset.at = max <= 2 ? "none" : x <= 2 ? "start" : x >= max - 2 ? "end" : "mid";
-}
-register("rail", (r) => {
-  const track = $(".rail__track", r);
-  if (!track) return;
-  let frame = 0;
-  const onScroll = () => {
-    if (!frame) frame = requestAnimationFrame(() => ((frame = 0), railState(r)));
-  };
-  const offStep = on(r, "click", "[data-rail-step]", (_e, b) => {
-    const dir = getComputedStyle(track).direction === "rtl" ? -1 : 1;
-    track.scrollBy({ left: Number(b.dataset.railStep) * track.clientWidth * 0.85 * dir, behavior: prefersReducedMotion() ? "auto" : "smooth" });
-  });
-  const ro = new ResizeObserver(() => railState(r));
-  ro.observe(track);
-  track.addEventListener("scroll", onScroll, { passive: true });
-  railState(r);
-  return () => {
-    offStep();
-    ro.disconnect();
-    cancelAnimationFrame(frame);
-    track.removeEventListener("scroll", onScroll);
-  };
-});
-
 // ── Category strip (components::header::CatNav): the current chip in view ────────────────────
 // Moves the strip sideways only (never the page), at once: on a deep link, and after back/forward.
 register("cat-nav", (nav) => {
@@ -246,82 +221,3 @@ register("cat-nav", (nav) => {
   const delta = c.left < l.left + pad ? c.left - l.left - pad : c.right > l.right - pad ? c.right - l.right + pad : 0;
   if (delta) list.scrollBy({ left: delta, behavior: "instant" });
 });
-
-// ── Pull to refresh ──────────────────────────────────────────────────────────────────────────
-// Touch only, from the very top of the page: a small disc follows the finger down (resisting more
-// the further it goes), its arrow turns when letting go would refresh, it spins while the page is
-// fetched again in place (`refresh()`), then springs back up. The browser's own pull-to-refresh is
-// off (overscroll-behavior-y: contain), so there is only ever one.
-const PTR_TRIGGER = 64; // px of disc travel that refreshes
-const PTR_REST = 52; // where the disc waits while the page reloads
-function pullToRefresh(): void {
-  if (!matchMedia("(pointer: coarse)").matches) return;
-  let start: { x: number; y: number } | null = null;
-  let pulling = false;
-  let busy = false;
-  const el = () => $(".ptr");
-  const disc = new SpringValue(0, (y) => {
-    const r = el();
-    if (!r) return;
-    const p = Math.min(1, y / PTR_TRIGGER);
-    r.style.transform = `translate3d(0,${y.toFixed(1)}px,0)`;
-    r.style.opacity = String(Math.min(1, y / 24));
-    r.style.setProperty("--ptr-turn", `${(p * 180).toFixed(0)}deg`);
-    r.toggleAttribute("data-armed", y >= PTR_TRIGGER);
-  });
-  const blocked = (t: EventTarget | null) =>
-    t instanceof Element && !!t.closest("dialog[open], .rail__track, input, textarea, select, [data-ptr=off]");
-  addEventListener(
-    "touchstart",
-    (e) => {
-      if (busy || e.touches.length !== 1 || scrollY > 0 || blocked(e.target)) return;
-      start = { x: e.touches[0]!.clientX, y: e.touches[0]!.clientY };
-      pulling = false;
-    },
-    { passive: true },
-  );
-  addEventListener(
-    "touchmove",
-    (e) => {
-      if (!start || busy) return;
-      const dy = e.touches[0]!.clientY - start.y, dx = e.touches[0]!.clientX - start.x;
-      if (!pulling) {
-        if (Math.abs(dy) < 8 && Math.abs(dx) < 8) return;
-        if (dy <= 0 || Math.abs(dx) > Math.abs(dy) || scrollY > 0) {
-          start = null; // a scroll or a sideways swipe: not ours
-          return;
-        }
-        pulling = true;
-        el()?.setAttribute("data-state", "pull");
-      }
-      disc.jump(Math.max(0, rubberband(dy, innerHeight * 0.6, 0.55)));
-    },
-    { passive: true },
-  );
-  const release = () => {
-    if (!start) return;
-    start = null;
-    if (!pulling) return;
-    pulling = false;
-    const r = el();
-    if (disc.value < PTR_TRIGGER) {
-      disc.to(0, { spring: SPRING.snappy, onRest: () => r?.removeAttribute("data-state") });
-      return;
-    }
-    busy = true;
-    r?.setAttribute("data-state", "refreshing");
-    disc.to(PTR_REST, { spring: SPRING.default });
-    const t0 = performance.now();
-    void refresh().finally(() => {
-      // Let the spinner be seen (a cached-fast reload would only flash it).
-      window.setTimeout(() => {
-        busy = false;
-        el()?.setAttribute("data-state", "done");
-        disc.to(0, { spring: SPRING.snappy, onRest: () => el()?.removeAttribute("data-state") });
-      }, Math.max(0, 450 - (performance.now() - t0)));
-    });
-  };
-  addEventListener("touchend", release, { passive: true });
-  addEventListener("touchcancel", release, { passive: true });
-}
-pullToRefresh();
