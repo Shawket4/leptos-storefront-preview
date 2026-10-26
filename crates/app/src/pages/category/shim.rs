@@ -64,8 +64,9 @@ pub enum DrawerSide {
 }
 
 /// Contract: `drawer::{Drawer(open, side?, title, children), DrawerSide}`. A minimal modal sheet:
-/// scrim, title, close button, Escape, focus moved in on open; the real one adds the spring,
-/// drag-to-dismiss and a focus trap.
+/// a `<dialog>` shown with `showModal()`, so it sits in the top layer (above the header and the
+/// tab bar), the page goes inert, focus is trapped and Escape closes it. The real one adds the
+/// spring, drag-to-dismiss and focus return.
 #[component]
 pub fn Drawer(
     open: RwSignal<bool>,
@@ -78,47 +79,56 @@ pub fn Drawer(
         DrawerSide::Bottom => "bottom",
     };
     let close_label = tr_signal("Close", "إغلاق");
-    let panel = NodeRef::<leptos::html::Div>::new();
+    let dialog = NodeRef::<leptos::html::Dialog>::new();
     Effect::new(move |_| {
         let is_open = open.get();
+        let Some(d) = dialog.get() else { return };
         if let Some(root) = document().document_element() {
             let _ = root.class_list().toggle_with_force("drawer-lock", is_open);
         }
-        if is_open && let Some(p) = panel.get() {
-            let _ = p.focus();
+        if is_open && !d.open() {
+            let _ = d.show_modal();
+        } else if !is_open && d.open() {
+            d.close();
         }
     });
     view! {
-        <Show when=move || open.get()>
-            <div class="shim-drawer" data-side=side>
-                <div class="shim-drawer__scrim" on:click=move |_| open.set(false)></div>
-                <div
-                    class="shim-drawer__panel"
-                    role="dialog"
-                    aria-modal="true"
-                    aria-label=move || title.get()
-                    tabindex="-1"
-                    node_ref=panel
-                    on:keydown=move |ev| {
-                        if ev.key() == "Escape" {
-                            open.set(false);
-                        }
-                    }
-                >
-                    <div class="shim-drawer__head">
-                        <h2 class="shim-drawer__title">{move || title.get()}</h2>
-                        <button
-                            type="button"
-                            class="shim-drawer__close"
-                            aria-label=move || close_label.get()
-                            on:click=move |_| open.set(false)
-                        >
-                            <Icon name="x"/>
-                        </button>
-                    </div>
-                    {children()}
+        <dialog
+            class="shim-drawer"
+            data-side=side
+            aria-label=move || title.get()
+            node_ref=dialog
+            // Escape (or the browser) closed it: keep the signal in step.
+            on:close=move |_| open.set(false)
+            // A click on the backdrop lands on the <dialog> itself.
+            on:click=move |ev| {
+                let on_backdrop = ev
+                    .target()
+                    .zip(dialog.get_untracked())
+                    .is_some_and(|(t, d)| {
+                        let t: &wasm_bindgen::JsValue = t.as_ref();
+                        let d: &wasm_bindgen::JsValue = d.as_ref();
+                        t == d
+                    });
+                if on_backdrop {
+                    open.set(false);
+                }
+            }
+        >
+            <div class="shim-drawer__panel">
+                <div class="shim-drawer__head">
+                    <h2 class="shim-drawer__title">{move || title.get()}</h2>
+                    <button
+                        type="button"
+                        class="shim-drawer__close"
+                        aria-label=move || close_label.get()
+                        on:click=move |_| open.set(false)
+                    >
+                        <Icon name="x"/>
+                    </button>
                 </div>
+                {children()}
             </div>
-        </Show>
+        </dialog>
     }
 }

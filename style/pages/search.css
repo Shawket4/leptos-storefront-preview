@@ -98,12 +98,15 @@
 .hs.is-loading .hs-glass {
   visibility: hidden;
 }
-.hs-input {
+/* `input.hs-input` matches the header's interim rules for a bare search input
+   (header.css) in specificity, and wins by coming later. */
+.hs input.hs-input {
   flex: 1;
   min-inline-size: 0;
   block-size: 100%;
   padding: 0;
   border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--text);
   font-family: var(--font-sans);
@@ -150,33 +153,6 @@
 .hs-back {
   display: none;
 }
-/* The header box submits with Enter; its button is an icon. */
-.hs-submit {
-  display: grid;
-  flex: none;
-  place-items: center;
-  inline-size: 44px;
-  block-size: 44px;
-  padding: 0;
-  border: 0;
-  border-start-end-radius: var(--r-md);
-  border-end-end-radius: var(--r-md);
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-}
-.hs-submit:hover {
-  color: var(--text);
-}
-.hs-submit__label {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* ── The suggestions popover, anchored to the field ──────────────────────── */
 .hs-panel {
   position: absolute;
@@ -354,41 +330,53 @@
   inline-size: 35%;
 }
 
-/* ── Phones: the overlay ─────────────────────────────────────────────────── */
+/* ── Phones: the overlay ─────────────────────────────────────────────────────
+   While open, the form is a manual popover: in the top layer, above every
+   stacking context and positioned against the viewport (the header's material
+   would otherwise contain a fixed child). These rules undo the UA popover box. */
 :root.hs-lock {
   overflow: hidden;
 }
-@media (max-width: 600px) {
-  .hs-form.is-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-drawer);
-    display: flex;
-    flex-direction: column;
-    padding: max(var(--sp-3), env(safe-area-inset-top, 0px)) var(--sp-3) 0;
-    background: var(--page);
-    animation: hs-in var(--dur-base) var(--ease-out);
-  }
-  .hs-form.is-overlay .hs-field {
-    flex: none;
-  }
-  .hs-form.is-overlay .hs-back {
-    display: grid;
-  }
-  .hs-form.is-overlay .hs-lead {
-    display: none;
-  }
-  .hs-form.is-overlay .hs-panel {
-    position: static;
-    flex: 1;
-    max-block-size: none;
-    margin-block-start: var(--sp-2);
-    padding: 0 0 calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    animation: none;
-  }
+.hs-form.is-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
+  margin: 0;
+  padding: max(var(--sp-3), env(safe-area-inset-top, 0px)) var(--sp-3) 0;
+  border: 0;
+  overflow: hidden;
+  background: var(--page);
+  color: var(--text);
+  animation: hs-in var(--dur-base) var(--ease-out);
+}
+.hs-form.is-overlay::backdrop {
+  background: transparent;
+}
+.hs-form.is-overlay .hs-field {
+  flex: none;
+}
+.hs-form.is-overlay .hs-back {
+  display: grid;
+}
+.hs-form.is-overlay .hs-lead {
+  display: none;
+}
+.hs-form.is-overlay .hs-panel {
+  position: static;
+  flex: 1;
+  max-block-size: none;
+  margin-block-start: var(--sp-2);
+  padding: 0 0 calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
 }
 @keyframes hs-in {
   from {
@@ -413,34 +401,29 @@
 .hs--page .hs-lead {
   inline-size: 3rem;
 }
-.hs--page .hs-input {
+.hs--page input.hs-input {
   font-size: var(--fs-lg);
 }
 .hs--page .hs-submit {
-  inline-size: auto;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
   block-size: 40px;
   margin-inline-end: var(--sp-1);
   padding-inline: var(--sp-4);
-  gap: var(--sp-2);
-  grid-auto-flow: column;
+  border: 0;
   border-radius: var(--r-sm);
+  corner-shape: squircle;
   background: var(--brand);
   color: var(--on-brand);
   font-weight: var(--fw-bold);
+  cursor: pointer;
   transition: scale 100ms var(--ease-out);
 }
 .hs--page .hs-submit:active {
   scale: var(--press);
 }
-.hs--page .hs-submit .icon {
-  display: none;
-}
-.hs--page .hs-submit__label {
-  position: static;
-  inline-size: auto;
-  block-size: auto;
-  overflow: visible;
-  clip-path: none;
+.hs-submit__label {
   text-box: trim-both cap alphabetic;
 }
 

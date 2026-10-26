@@ -114,9 +114,9 @@
   gap: var(--sp-2);
   margin-inline: calc(var(--gutter) * -1);
   padding: var(--sp-2) var(--gutter);
-  background: color-mix(in oklab, var(--page) 82%, transparent);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--material);
+  backdrop-filter: var(--material-filter);
+  -webkit-backdrop-filter: var(--material-filter);
 }
 @media (prefers-reduced-transparency: reduce) {
   .lx-bar {
@@ -949,40 +949,48 @@ a.lx-page:active {
 :root.drawer-lock {
   overflow: hidden;
 }
+/* The sheet is the <dialog> itself (top layer); its panel fills it, so a click
+   that lands on the dialog element is a click on the backdrop. */
 .shim-drawer {
   position: fixed;
-  inset: 0;
-  z-index: var(--z-drawer);
-}
-.shim-drawer__scrim {
-  position: absolute;
-  inset: 0;
-  background: var(--scrim);
-  animation: fade-in var(--dur-base) var(--ease-out);
-}
-.shim-drawer__panel {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  display: flex;
-  flex-direction: column;
+  inset: auto 0 0;
+  inline-size: 100%;
+  max-inline-size: none;
   max-block-size: 88dvh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  margin: 0;
+  padding: 0;
+  border: 0;
   border-start-start-radius: var(--r-2xl);
   border-start-end-radius: var(--r-2xl);
   corner-shape: squircle;
   background: var(--surface);
+  color: var(--text);
   box-shadow: var(--shadow-modal);
-  outline: none;
-  animation: lx-sheet-in var(--dur-slow) var(--ease-drawer);
+  overflow: hidden;
 }
-.shim-drawer[data-side="end"] .shim-drawer__panel {
-  inset-block: 0;
-  inset-inline: auto 0;
+.shim-drawer[open] {
+  display: flex;
+  flex-direction: column;
+  animation: lx-sheet-in var(--spring-default-dur, var(--dur-slow)) var(--spring-default, var(--ease-drawer));
+}
+.shim-drawer::backdrop {
+  background: var(--scrim);
+  animation: fade-in var(--dur-base) var(--ease-out);
+}
+.shim-drawer[data-side="end"] {
+  inset: 0 0 0 auto;
   inline-size: min(26rem, 100%);
   max-block-size: none;
+  block-size: 100dvh;
   border-radius: 0;
+}
+.shim-drawer__panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 @keyframes lx-sheet-in {
   from {
@@ -1032,7 +1040,7 @@ a.lx-page:active {
   color: var(--text);
 }
 @media (prefers-reduced-motion: reduce) {
-  .shim-drawer__panel {
+  .shim-drawer[open] {
     animation: fade-in var(--dur-base) var(--ease-out);
   }
 }

@@ -198,6 +198,10 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
         }
     };
     let close_overlay = move |restore_focus: bool| {
+        if let Some(f) = form.get_untracked() {
+            let _ = f.hide_popover();
+            let _ = f.set_popover(None);
+        }
         overlay.set(false);
         close_list();
         lock(false);
@@ -210,10 +214,15 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
             return;
         }
         ev.prevent_default();
-        // Show the field and focus it inside this tap: iOS only raises the keyboard for a focus()
-        // made while handling the gesture (the reactive class below follows a tick later).
+        // The same form becomes a full-screen sheet in the top layer: above every stacking
+        // context, and positioned against the viewport even though the header's material
+        // (`backdrop-filter`) would otherwise contain a `position: fixed` child. It is shown and
+        // focused inside this tap: iOS only raises the keyboard for a focus() made while handling
+        // the gesture (the reactive class below follows a tick later).
         if let Some(f) = form.get_untracked() {
             let _ = f.class_list().add_1("is-overlay");
+            let _ = f.set_popover(Some("manual"));
+            let _ = f.show_popover();
         }
         overlay.set(true);
         lock(true);
@@ -473,10 +482,13 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
                     >
                         <Icon name="x" size=18/>
                     </button>
-                    <button type="submit" class="hs-submit">
-                        <Icon name="search" size=18/>
-                        <span class="hs-submit__label">{move || tr(ui.lang.get(), "Search", "دوّر")}</span>
-                    </button>
+                    {(!header).then(|| view! {
+                        // The page's box names its action; the header's submits with Enter (the
+                        // phone keyboard shows "Search") and stays one quiet field.
+                        <button type="submit" class="hs-submit">
+                            <span class="hs-submit__label">{move || tr(ui.lang.get(), "Search", "دوّر")}</span>
+                        </button>
+                    })}
                 </div>
                 <div
                     class="hs-panel"
