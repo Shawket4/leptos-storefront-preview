@@ -1,0 +1,7 @@
+# Souq only: words that are synonyms in this shop but mean something else at Nile.
+# Same format as synonyms.txt.
+
+# The fruit (at Nile, Apple is the brand).
+apples, apple, تفاح
+# The chocolate bar (at Nile, سنيكرز is sneakers).
+snickers, سنيكرز

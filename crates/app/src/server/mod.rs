@@ -128,7 +128,7 @@ fn data_fingerprint() -> u128 {
             acc = acc.wrapping_add(t ^ (m.len() as u128) << 64);
         }
     };
-    for dir in [data_dir().join("catalog")] {
+    for dir in [data_dir().join("catalog"), data_dir().join("search")] {
         if let Ok(rd) = std::fs::read_dir(&dir) {
             rd.flatten().for_each(|e| add(&e.path()));
         }
@@ -137,6 +137,14 @@ fn data_fingerprint() -> u128 {
         rd.flatten().for_each(|e| add(&e.path().join("manifest.json")));
     }
     acc
+}
+
+/// The search synonym table for a shop: the shared `data/search/synonyms.txt` plus the shop's own
+/// `synonyms.<shop>.txt` (words that are synonyms in one shop only). Missing files are empty.
+fn load_synonyms(tenant: &str) -> search::Synonyms {
+    let dir = data_dir().join("search");
+    let read = |name: String| std::fs::read_to_string(dir.join(name)).unwrap_or_default();
+    search::Synonyms::parse(&format!("{}\n{}", read("synonyms.txt".into()), read(format!("synonyms.{tenant}.txt"))))
 }
 
 fn load_catalogs(tenants: &[Tenant], media: &Media) -> HashMap<String, Arc<TenantCatalog>> {
@@ -160,7 +168,9 @@ fn load_catalogs(tenants: &[Tenant], media: &Media) -> HashMap<String, Arc<Tenan
                 catalog.categories.len(),
                 catalog.products.len()
             );
-            catalogs.insert(t.id.clone(), Arc::new(TenantCatalog::new(catalog, media)));
+            let synonyms = load_synonyms(&t.id);
+            tracing::info!("tenant {}: {} synonym groups", t.id, synonyms.len());
+            catalogs.insert(t.id.clone(), Arc::new(TenantCatalog::new(catalog, media, synonyms)));
         }
     }
     catalogs
