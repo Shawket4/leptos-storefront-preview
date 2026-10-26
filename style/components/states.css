@@ -1,0 +1,114 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   States (components::states, components::empty_state): illustration or tone
+   glyph, kicker, title, a line, actions, an optional reference. Centred, calm,
+   never a dead end.
+   ───────────────────────────────────────────────────────────────────────────── */
+.state {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-4);
+  max-inline-size: 32rem;
+  margin-inline: auto;
+  padding-block: var(--sp-10);
+  text-align: center;
+}
+.state--page {
+  padding-block: clamp(var(--sp-10), 6vw, var(--sp-20));
+}
+.state--compact {
+  gap: var(--sp-3);
+  padding-block: var(--sp-6);
+}
+.state__figure {
+  inline-size: clamp(9rem, 32vw, 15rem);
+  aspect-ratio: 1;
+}
+.state--compact .state__figure {
+  inline-size: 7.5rem;
+}
+.state__art {
+  inline-size: 100%;
+  block-size: 100%;
+}
+.state__art--dark {
+  display: none;
+}
+:root[data-theme="dark"] .state__art--light { display: none; }
+:root[data-theme="dark"] .state__art--dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] .state__art--light { display: none; }
+  :root[data-theme="system"] .state__art--dark { display: block; }
+}
+/* A tone's glyph when it has no illustration (offline): a soft disc. */
+.state__glyph {
+  display: grid;
+  place-items: center;
+  inline-size: 6rem;
+  block-size: 6rem;
+  margin-block: var(--sp-4);
+  border-radius: 50%;
+  corner-shape: round;
+  background: var(--sunk);
+  color: var(--text);
+}
+.state--compact .state__glyph {
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+  margin-block: var(--sp-2);
+}
+.state--error .state__glyph { background: var(--danger-wash); color: var(--danger-text); }
+.state--offline .state__glyph { background: var(--warning-wash); color: var(--warning-text); }
+.state--soon .state__glyph { background: var(--info-wash); color: var(--info-text); }
+.state__copy {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-2);
+}
+.state__kicker {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+:root[lang="ar"] .state__kicker {
+  font-size: 0.8125rem;
+  text-transform: none;
+}
+.state__title {
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+  font-weight: var(--fw-heavy);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+}
+.state--page .state__title {
+  font-size: var(--fs-3xl);
+}
+.state--compact .state__title {
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+}
+.state__body {
+  max-inline-size: 27rem;
+  color: var(--text-2);
+}
+.state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-block-start: var(--sp-2);
+}
+.state__footnote {
+  font-size: var(--fs-xs);
+  color: var(--text-3);
+}
+.state-page {
+  display: grid;
+  justify-items: center;
+}
+.state__detail {
+  max-inline-size: 32rem;
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
