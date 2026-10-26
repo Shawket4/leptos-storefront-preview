@@ -100,9 +100,13 @@ pub(crate) struct Sample {
     pub product: u32,
     pub variant: u32,
     pub name: String,
+    /// For display only (formatted by the server).
     pub price: String,
     pub img: String,
     pub href: String,
+    /// The cart line's priced snapshot (`api::cart::Snapshot` as JSON, built by
+    /// `server::cart::snapshot` like a card's quick add): the browser prices the line from it.
+    pub snapshot: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -159,6 +163,14 @@ fn build_ctx(q: Query) -> Ctx {
         }
         let page = cat.listing(&ListingQuery { category: Some(c.slug.clone()), page: 1, ..Default::default() });
         if let Some(card) = page.items.into_iter().find(|c| c.in_stock && c.single_variant && !c.img.is_missing()) {
+            let line = domain::cart::CartLine {
+                product: card.id,
+                variant: card.default_variant,
+                qty: 1,
+                addons: vec![],
+            };
+            let snapshot = crate::server::cart::snapshot(&line, &cat, st.media(), lang)
+                .and_then(|s| serde_json::to_string(&s).ok());
             rows.push(Sample {
                 product: card.id.0,
                 variant: card.default_variant.0,
@@ -166,6 +178,7 @@ fn build_ctx(q: Query) -> Ctx {
                 price: crate::format::money(card.price, lang, num),
                 img: card.img.src_near(160),
                 href: format!("/p/{}", card.slug),
+                snapshot,
             });
         }
     }
