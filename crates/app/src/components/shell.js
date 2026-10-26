@@ -291,7 +291,14 @@
   }
   for (const m of ["pushState", "replaceState"]) {
     const orig = H[m];
-    H[m] = function () { const r = orig.apply(this, arguments); if (!svt && pending) after(); return r; };
+    H[m] = function (state, title, url) {
+      // server_fn redirects end in a bare "?" (/cart?): commit the clean address.
+      const r = arguments.length > 2 && url != null
+        ? orig.call(this, state, title, String(url).replace(/\?(?=#|$)/, ""))
+        : orig.apply(this, arguments);
+      if (!svt && pending) after();
+      return r;
+    };
   }
   const nav = performance.getEntriesByType("navigation")[0];
   if (nav && (nav.type === "reload" || nav.type === "back_forward")) w.scrollTo(0, saved());

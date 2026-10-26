@@ -16,7 +16,8 @@ use crate::request::RequestCtx;
 use leptos::prelude::*;
 
 /// Progressive enhancement for the whole frame (see shell.js; cargo-leptos only rebuilds on .rs
-/// edits, so touch this comment after changing it: prefetch, progress, failures, live prefs next, /ui previews).
+/// edits, so touch this comment after changing it: prefetch, progress, failures, prefs next,
+/// previews, submitter, scroll, bare ?).
 const SHELL_JS: &str = include_str!("shell.js");
 
 /// The tenant's categories for the header strip and the footer, in display order.
