@@ -1,1 +1,88 @@
-/* toast */
+/* Toasts (components::toast): the page turned over (ink on Porcelain, Porcelain
+   on ink), rising on a spring and leaving the way they came. Above the tab bar
+   on phones; at the inline end from 960px. */
+.toaster {
+  position: fixed;
+  z-index: var(--z-toast);
+  inset-inline: 0;
+  inset-block-end: calc(var(--bottom-nav-h) + var(--sp-4));
+  display: grid;
+  justify-items: center;
+  padding-inline: var(--gutter);
+  pointer-events: none;
+}
+@media (min-width: 960px) {
+  .toaster {
+    inset-inline: auto var(--gutter);
+    justify-items: end;
+    padding-inline: 0;
+  }
+}
+.toaster__list {
+  display: grid;
+  gap: var(--sp-2);
+  justify-items: inherit;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-block-size: 3rem;
+  max-inline-size: min(26rem, calc(100vw - var(--gutter) * 2));
+  padding: 0.5rem 0.375rem 0.5rem 0.875rem;
+  border-radius: var(--r-lg);
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: var(--shadow-float);
+  font-size: 0.9375rem;
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-snug);
+  pointer-events: auto;
+  animation: toast-in var(--spring-default-dur) var(--spring-default) both;
+}
+[dir="rtl"] .toast {
+  padding: 0.5rem 0.875rem 0.5rem 0.375rem;
+}
+.toast[data-leaving="true"] {
+  animation: toast-out 180ms var(--ease-in) both;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.96);
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.97);
+  }
+}
+.toast__icon {
+  flex: none;
+}
+.toast[data-kind="success"] .toast__icon { color: var(--success-on-ink); }
+.toast[data-kind="error"] .toast__icon { color: var(--danger-on-ink); }
+.toast[data-kind="info"] .toast__icon { color: var(--info-on-ink); }
+.toast__msg {
+  flex: 1;
+  min-inline-size: 0;
+}
+.toast__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 50%;
+  corner-shape: round;
+  color: var(--on-ink-2);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.toast__close:hover {
+  background: color-mix(in oklab, var(--on-ink) 12%, transparent);
+  color: var(--on-ink);
+}

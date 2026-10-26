@@ -18,7 +18,7 @@
   box-shadow: var(--shadow-sm);
   transition:
     box-shadow var(--dur-base) var(--ease-out),
-    scale var(--dur-fast) var(--ease-out);
+    scale var(--spring-snappy-dur) var(--spring-snappy);
 }
 :root[lang="ar"] .pcard {
   --name-lh: 1.55;
@@ -36,8 +36,10 @@
     scale: 1.035;
   }
 }
+/* Pressing the card (not its quick-add button) dips it on pointer-down. */
 .pcard:has(.pcard__link:active) {
   scale: var(--press);
+  transition: scale var(--press-dur) ease-out;
 }
 /* Keyboard focus rings the whole card, not just the title. */
 .pcard:has(.pcard__link:focus-visible) {
@@ -62,7 +64,7 @@
 .pcard__media img {
   transition:
     opacity var(--dur-slow) var(--ease-out),
-    scale var(--dur-slow) var(--ease-out);
+    scale var(--spring-gentle-dur) var(--spring-gentle);
 }
 .pcard__badges {
   position: absolute;

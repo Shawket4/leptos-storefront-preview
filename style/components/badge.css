@@ -1,23 +1,30 @@
-/* Merchandising badges (components::badge): solid chips, so they hold on any
-   photo. 24px, pill, 12px bold, a 14px icon. */
+/* Merchandising badges (components::badge): small solid labels (they sit on
+   photos), 6px squircle corners, 12px bold trimmed to cap height. */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  block-size: 24px;
-  padding-inline: 8px;
-  border-radius: var(--r-pill);
+  gap: 0.25rem;
+  block-size: 1.5rem;
+  padding: 0 0.5rem;
+  border-radius: var(--r-xs);
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
-  line-height: 1;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-small);
   white-space: nowrap;
   background: var(--surface);
   color: var(--text);
   box-shadow: var(--shadow-sm);
 }
+:root:not([lang="ar"]) .badge__label {
+  text-box: trim-both cap alphabetic;
+}
+:root[lang="ar"] .badge {
+  font-size: 0.78rem;
+}
 .badge .icon {
-  inline-size: 14px;
-  block-size: 14px;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
 }
 .badge--deal { background: var(--danger-wash); color: var(--danger-text); }
 .badge--new { background: var(--info-wash); color: var(--info-text); }

@@ -7,43 +7,89 @@
    Arabic glyphs and vice versa. Where subsets overlap (ZWNJ/ZWJ, a few dashes)
    the face defined LAST is tried first, so the Arabic face comes last.
 
-   font-display: swap, with metric-matched local fallbacks (size-adjust and
-   ascent/descent overrides measured from these files with fontkit), so the swap
-   moves nothing:
-     Cairo, Latin  vs Arial/Helvetica:  size-adjust 95.12%,  ascent 136.99%, descent 60.03%
-     Cairo, Arabic vs Noto Sans Arabic: size-adjust 101.99%, ascent 127.76%, descent 55.99%
-     Plex Mono     vs Courier New:      size-adjust 100%,    ascent 102.52%, descent 27.50%
+   Optical centring. Cairo's own metrics (ascent 1.303, descent 0.571, cap 0.70)
+   are overridden per page language so text sits mid-line in every control, with
+   ascent + descent kept at 1.874 so no line box changes size. Measured at 2×
+   DPR in 24/32/44/48px controls (ink-mass offset from the centre, px):
+     "Cairo"    (English pages) 128.7% / 58.7%: caps exactly mid-line;
+                Latin labels within ±0.5px.
+     "Cairo AR" (Arabic pages)  123.3% / 64.1%: the Arabic letter bodies' ink is
+                centred (was 1–2px low with the native metrics).
+   Same files, so a language switch re-uses the cached fonts.
+
+   font-display: swap, with metric-matched local fallbacks (size-adjust measured
+   with fontkit: Latin vs Arial 95.12%, Arabic vs Noto Sans Arabic 101.99%, Mono
+   vs Courier New 100%; ascent/descent = the overrides above / size-adjust).
    ───────────────────────────────────────────────────────────────────────────── */
 
-/* ── Cairo · Latin ── */
+/* ── Cairo · English pages ── */
 @font-face {
   font-family: "Cairo";
   font-style: normal;
   font-weight: 200 1000;
   font-display: swap;
-  src: url("/fonts/cairo-latin-wght-normal.woff2") format("woff2-variations"),
-       url("/fonts/cairo-latin-wght-normal.woff2") format("woff2");
+  src: url("/fonts/cairo-latin-wght-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  ascent-override: 128.7%;
+  descent-override: 58.7%;
+  line-gap-override: 0%;
 }
-/* ── Cairo · Latin Extended (names like Nestlé are in Latin; this is for rarer letters) ── */
 @font-face {
   font-family: "Cairo";
   font-style: normal;
   font-weight: 200 1000;
   font-display: swap;
-  src: url("/fonts/cairo-latin-ext-wght-normal.woff2") format("woff2-variations"),
-       url("/fonts/cairo-latin-ext-wght-normal.woff2") format("woff2");
+  src: url("/fonts/cairo-latin-ext-wght-normal.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  ascent-override: 128.7%;
+  descent-override: 58.7%;
+  line-gap-override: 0%;
 }
-/* ── Cairo · Arabic ── */
 @font-face {
   font-family: "Cairo";
   font-style: normal;
   font-weight: 200 1000;
   font-display: swap;
-  src: url("/fonts/cairo-arabic-wght-normal.woff2") format("woff2-variations"),
-       url("/fonts/cairo-arabic-wght-normal.woff2") format("woff2");
+  src: url("/fonts/cairo-arabic-wght-normal.woff2") format("woff2");
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+  ascent-override: 128.7%;
+  descent-override: 58.7%;
+  line-gap-override: 0%;
+}
+
+/* ── Cairo · Arabic pages (same files, Arabic-centred metrics) ── */
+@font-face {
+  font-family: "Cairo AR";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("/fonts/cairo-latin-wght-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  ascent-override: 123.3%;
+  descent-override: 64.1%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Cairo AR";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("/fonts/cairo-latin-ext-wght-normal.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  ascent-override: 123.3%;
+  descent-override: 64.1%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Cairo AR";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("/fonts/cairo-arabic-wght-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+  ascent-override: 123.3%;
+  descent-override: 64.1%;
+  line-gap-override: 0%;
 }
 
 /* ── IBM Plex Mono · Latin (figures). No Arabic-Indic digits: those fall through
@@ -78,8 +124,8 @@
   font-family: "Cairo Fallback";
   src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Helvetica Neue"), local("Liberation Sans"), local("Roboto");
   size-adjust: 95.12%;
-  ascent-override: 136.99%;
-  descent-override: 60.03%;
+  ascent-override: 135.30%;
+  descent-override: 61.71%;
   line-gap-override: 0%;
   unicode-range: U+0000-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
@@ -87,8 +133,26 @@
   font-family: "Cairo Fallback";
   src: local("Noto Sans Arabic Regular"), local("NotoSansArabic-Regular"), local("Noto Sans Arabic UI Regular"), local("Geeza Pro"), local("GeezaPro"), local("Segoe UI"), local("Tahoma"), local("Arial");
   size-adjust: 101.99%;
-  ascent-override: 127.76%;
-  descent-override: 55.99%;
+  ascent-override: 126.19%;
+  descent-override: 57.55%;
+  line-gap-override: 0%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+@font-face {
+  font-family: "Cairo AR Fallback";
+  src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Helvetica Neue"), local("Liberation Sans"), local("Roboto");
+  size-adjust: 95.12%;
+  ascent-override: 129.63%;
+  descent-override: 67.39%;
+  line-gap-override: 0%;
+  unicode-range: U+0000-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1EFF, U+2000-206F, U+20A0-20C0, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Cairo AR Fallback";
+  src: local("Noto Sans Arabic Regular"), local("NotoSansArabic-Regular"), local("Noto Sans Arabic UI Regular"), local("Geeza Pro"), local("GeezaPro"), local("Segoe UI"), local("Tahoma"), local("Arial");
+  size-adjust: 101.99%;
+  ascent-override: 120.89%;
+  descent-override: 62.85%;
   line-gap-override: 0%;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
 }
