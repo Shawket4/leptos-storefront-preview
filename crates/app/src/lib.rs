@@ -52,7 +52,6 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <meta charset="utf-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
                 <meta name="color-scheme" content=color_scheme/>
-                {home_nojs_fallback(&rq.path_and_query)}
                 // The two faces the first screen needs, per language (Arabic pages set Arabic words).
                 {match p.lang {
                     prefs::Lang::Ar => view! {
@@ -109,23 +108,4 @@ pub fn App() -> impl IntoView {
             </components::shell::AppShell>
         </Router>
     }
-}
-
-/// Out-of-order streamed sections only appear with JS. On the home page, visitors without JS are
-/// sent to `/nojs`, the same page streamed in order. (A `<noscript>` in `<head>` only runs when
-/// scripting is off, so everyone else never sees it.)
-#[cfg(feature = "ssr")]
-fn home_nojs_fallback(path_and_query: &str) -> Option<impl IntoView + use<>> {
-    // Islands-router fetches parse the HTML with DOMParser (scripting off), which would turn the
-    // <noscript> meta-refresh into a live tag and send JS users to /nojs. Only first loads get it.
-    if use_context::<leptos::hydration::IslandsRouterNavigation>().is_some() {
-        return None;
-    }
-    let query = match path_and_query.split_once('?') {
-        Some(("/", q)) => format!("?{q}"),
-        None if path_and_query == "/" => String::new(),
-        _ => return None,
-    };
-    let content = format!("0; url=/nojs{query}");
-    Some(view! { <noscript><meta http-equiv="refresh" content=content/></noscript> })
 }

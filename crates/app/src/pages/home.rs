@@ -209,6 +209,7 @@ pub fn HomePage() -> impl IntoView {
         <Meta name="twitter:card" content="summary_large_image"/>
         <Script type_="application/ld+json">{website_ld}</Script>
 
+        <NoJsNote lang/>
         <p class="ribbon">{ribbon}</p>
         {hero.map(|p| view! { <PromoPanel panel=p lang hero=true/> })}
         {(!duo.is_empty()).then(|| view! {
@@ -278,6 +279,29 @@ fn PromoPanel(panel: Panel, lang: Lang, #[prop(optional)] hero: bool) -> impl In
             </a>
         </section>
     }
+}
+
+/// Out-of-order streamed sections need JS to be put in place (each arrives as a <template> plus a
+/// script). Visitors without JS get a link to `/nojs`, the same page streamed in order. Not a meta
+/// refresh: the islands router parses pages with DOMParser (scripting off), where <noscript> markup
+/// is live — a refresh there would fire for JS users too. Also never sent on router fetches.
+#[component]
+fn NoJsNote(lang: Lang) -> impl IntoView {
+    #[cfg(feature = "ssr")]
+    let show = use_context::<leptos::hydration::IslandsRouterNavigation>().is_none()
+        && !req().path_and_query.starts_with("/nojs");
+    #[cfg(not(feature = "ssr"))]
+    let show = false;
+    show.then(|| {
+        view! {
+            <noscript>
+                <p class="nojs-note">
+                    {tr(lang, "JavaScript is off, so some sections can't load here. ", "الجافاسكريبت مقفول، فبعض الأقسام مش هتظهر هنا. ")}
+                    <a href="/nojs">{tr(lang, "Open the version that works without it", "افتح النسخة اللي بتشتغل من غيره")}</a>
+                </p>
+            </noscript>
+        }
+    })
 }
 
 #[component]
