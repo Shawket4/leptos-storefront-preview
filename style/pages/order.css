@@ -284,3 +284,125 @@
   .live__dot,
   .timeline__step.is-current .timeline__dot::after { animation: none; }
 }
+
+/* ── /orders: find an order ────────────────────────────────────────────────── */
+.orders-lookup {
+  padding-block: var(--sp-8) var(--section-y);
+}
+.orders-lookup__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-5);
+}
+.orders-lookup__head h1 {
+  margin: 0;
+}
+.orders-lookup__icon {
+  display: grid;
+  place-items: center;
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--sunk);
+  color: var(--text);
+}
+.orders-lookup__sub {
+  margin: 0;
+  color: var(--text-2);
+}
+.lookup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+}
+.lookup__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.lookup__input {
+  font-size: var(--fs-lg);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.lookup__input::placeholder {
+  text-transform: none;
+}
+@media (min-width: 480px) {
+  .lookup__row {
+    flex-direction: row;
+  }
+  .lookup__input {
+    flex: 1;
+    min-block-size: 52px;
+  }
+}
+
+.recent {
+  margin-block-start: var(--sp-8);
+}
+.recent h2 {
+  margin: 0 0 var(--sp-3);
+}
+.recent__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.recent__item {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "top total"
+    "meta total";
+  gap: var(--sp-1) var(--sp-4);
+  padding: var(--sp-4);
+  padding-inline-end: var(--sp-10);
+  color: var(--text);
+  text-decoration: none;
+  transition: box-shadow var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
+}
+.recent__item:hover {
+  box-shadow: var(--shadow-md);
+}
+.recent__item:active {
+  scale: 0.99;
+}
+.recent__top {
+  grid-area: top;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+}
+.recent__id {
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.02em;
+}
+.recent__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--text-3);
+}
+.recent__total {
+  grid-area: total;
+  align-self: center;
+}
+.recent__chev {
+  position: absolute;
+  inset-inline-end: var(--sp-4);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  color: var(--text-3);
+}

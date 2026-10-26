@@ -68,3 +68,12 @@ pub fn remember_order(id: &str, meta: PlacedMeta) {
 pub fn order_meta(id: &str) -> Option<PlacedMeta> {
     PLACED.get(&id.to_ascii_uppercase())
 }
+
+/// Orders placed from this cart cookie (newest last as stored; callers sort by time).
+pub fn orders_of(owner: &str) -> Vec<String> {
+    PLACED
+        .iter()
+        .filter(|(_, m)| m.owner == owner)
+        .map(|(id, _)| (*id).clone())
+        .collect()
+}
