@@ -23,6 +23,8 @@ COPY client/package.json client/package-lock.json client/
 RUN npm ci --prefix client
 
 COPY . .
+# Content-hashed CSS + hash.txt (Cargo.toml keeps hash-files off for `cargo leptos watch`).
+ENV LEPTOS_HASH_FILES=true
 RUN --mount=type=secret,id=madar_shared_token \
     set -e; \
     if [ -s /run/secrets/madar_shared_token ]; then \
