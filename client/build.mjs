@@ -12,6 +12,7 @@
 //   preload chunk-AAAA.js          (a static import of the entry: fetched with it)
 //   file app-XXXX.js 12345         (every output: name, bytes)
 //   import app-XXXX.js chunk-AAAA.js static|dynamic
+//   source chunk-BBBB.js features/product.ts   (the module a dynamic import loads; for the size report)
 //
 // Release: minified, no source maps. Dev: readable, inline source maps.
 import { build } from "esbuild";
@@ -51,6 +52,7 @@ let main = null;
 for (const [file, out] of Object.entries(result.metafile.outputs)) {
   if (out.entryPoint && path.resolve(out.entryPoint) === entry) main = base(file);
   lines.push(`file ${base(file)} ${out.bytes}`);
+  if (out.entryPoint) lines.push(`source ${base(file)} ${path.relative(path.dirname(entry), path.resolve(out.entryPoint))}`);
   for (const i of out.imports) {
     if (i.external) continue;
     lines.push(`import ${base(file)} ${base(i.path)} ${i.kind === "dynamic-import" ? "dynamic" : "static"}`);
