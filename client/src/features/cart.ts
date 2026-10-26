@@ -371,7 +371,8 @@ class CartView {
       if (repaint) {
         const focused = g.el.contains(document.activeElement);
         this.paintLines();
-        if (focused) this.p.root.focus();
+        // The Undo had focus: hand it to the drawer's panel (or /cart's heading), never <body>.
+        if (focused) $<HTMLElement>(".drawer__panel, #cart-title", this.p.root)?.focus();
       }
     }
   }
@@ -452,6 +453,8 @@ register("cart-drawer", (el) => {
     view.ask();
   });
   const off = view.listen();
+  // Brought back open by a router swap: core reopened it before this content was mounted.
+  if (dialog instanceof HTMLDialogElement && dialog.open) onOpen();
   return () => {
     unsub();
     off();
