@@ -37,17 +37,21 @@ async fn main() {
         ));
 
     let app = Router::new()
-        // The browser code, content-hashed: cache it forever.
+        // The browser code (entry, on-demand and shared chunks), content-hashed: cache it forever.
         .route(
-            app::client_js::APP_JS_PATH,
-            get(|| async {
-                (
-                    [
-                        (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
-                        (header::CACHE_CONTROL, "public, max-age=31536000, immutable"),
-                    ],
-                    app::client_js::APP_JS,
-                )
+            "/js/{file}",
+            get(|Path(file): Path<String>| async move {
+                match app::client_js::file(&file) {
+                    Some(bytes) => (
+                        [
+                            (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                            (header::CACHE_CONTROL, "public, max-age=31536000, immutable"),
+                        ],
+                        bytes,
+                    )
+                        .into_response(),
+                    None => StatusCode::NOT_FOUND.into_response(),
+                }
             }),
         )
         // Liveness for the deploy pipeline: 200 once AppState has loaded (it has by the time the

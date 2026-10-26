@@ -3,18 +3,24 @@
 // same happens for the new regions (the router calls `mountAll` on what it swapped in).
 
 import { readPage } from "./core/page";
-import { mountAll } from "./core/mount";
+import { lazy, mountAll } from "./core/mount";
 import { onNavigate, startRouter } from "./core/router";
 import { syncFromCookie } from "./stores/cart";
 import { mountToaster } from "./stores/toasts";
 
 // Features register their `data-ts` names on import. One file per area, one owner per file.
+// With the page, on every page: core (drawer, stepper, offline, nav feedback…), the cart (badge,
+// drawer, quick add) and the header search.
 import "./features/core";
 import "./features/cart";
-import "./features/checkout";
-import "./features/browse";
-import "./features/product";
-import "./features/showcase";
+import "./features/search";
+// On demand: a separate chunk, loaded the first time a page has one of its `data-ts` names
+// (shared code lands in shared chunks, so nothing loads twice).
+lazy(["listing"], () => import("./features/listing"));
+lazy(["countdown"], () => import("./features/home"));
+lazy(["variant-picker", "gallery"], () => import("./features/product"));
+lazy(["checkout-form", "checkout", "order-track"], () => import("./features/checkout"));
+lazy(["sc-*", "kit-*"], () => import("./features/showcase"));
 
 readPage();
 syncFromCookie();
