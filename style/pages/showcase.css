@@ -118,41 +118,6 @@
   cursor: default;
 }
 
-/* A segmented control made of links (aria-current marks the chosen one). */
-.sc-seg {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  padding: 2px;
-  border-radius: var(--r-md);
-  background: var(--sunk);
-}
-.sc-seg__opt {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: 40px;
-  padding-inline: var(--sp-3);
-  border-radius: var(--r-sm);
-  color: var(--text-2);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  white-space: nowrap;
-  text-box: trim-both cap alphabetic;
-  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), scale 100ms var(--ease-out);
-}
-.sc-seg__opt:hover {
-  color: var(--text);
-}
-.sc-seg__opt:active {
-  scale: var(--press);
-}
-.sc-seg__opt[aria-current="true"] {
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: var(--shadow-sm);
-}
-
 .sc-row {
   display: flex;
   flex-wrap: wrap;
@@ -1083,7 +1048,7 @@ a.sc-mini__name:hover {
   margin-block-start: 2px;
   color: var(--info-text);
 }
-.sc-callout .sc-seg {
+.sc-callout .seg {
   justify-self: start;
 }
 
@@ -1274,6 +1239,10 @@ a.sc-mini__name:hover {
 }
 
 /* Spring lab. */
+.sc-spring__presets {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
 .sc-spring__track {
   position: relative;
   overflow: clip;

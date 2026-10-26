@@ -6,6 +6,7 @@ use super::{Ctx, Sample, nums};
 use crate::api::{self, types::Rail};
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
+use crate::components::segmented::{SegItem, Segmented, SegmentedToggle};
 use crate::format;
 use crate::pages::errors::SectionError;
 use crate::prefs::{Lang, Numerals, tr};
@@ -56,22 +57,19 @@ pub(super) fn LatencyLinks(
     #[prop(optional)]
     router_off: bool,
 ) -> impl IntoView {
-    let router = router_off.then_some("off");
-    view! {
-        <span class="sc-seg" role="group" aria-label=tr(lang, "Simulated latency", "التأخير التجريبي")>
-            {[0u64, 350, 1200].into_iter().map(|v| {
-                let label = if v == 0 {
-                    tr(lang, "Off", "مقفول").to_owned()
-                } else {
-                    format!("{} ms", format::int(v as i64, num))
-                };
-                let href = format!("/__sim?ms={v}&next={next}");
-                view! {
-                    <a class="sc-seg__opt" href=href data-router=router aria-current=if v == current { "true" } else { "false" }>{label}</a>
-                }
-            }).collect_view()}
-        </span>
-    }
+    let items: Vec<SegItem> = [0u64, 350, 1200]
+        .into_iter()
+        .map(|v| {
+            let label = if v == 0 {
+                tr(lang, "Off", "مقفول").to_owned()
+            } else {
+                format!("{} ms", format::int(v as i64, num))
+            };
+            let item = SegItem::new(label, format!("/__sim?ms={v}&next={next}"), v == current);
+            if router_off { item.attr("data-router", "off") } else { item }
+        })
+        .collect();
+    view! { <Segmented items label=tr(lang, "Simulated latency", "التأخير التجريبي")/> }
 }
 
 /// A key/value row; with `out`, its value is a `[data-slot]` a TS feature updates (`patch()`).
@@ -639,11 +637,11 @@ fn SpringsDemo(cx: Arc<Ctx>) -> impl IntoView {
                 <button type="button" class="sc-spring__puck" data-puck="" aria-label=tr(lang, "Drag or throw me", "اسحبني أو ارميني")></button>
             </div>
             <p class="sc-row sc-row--wrap" data-needs-js="" hidden>
-                <span class="sc-seg" role="group" aria-label=tr(lang, "Spring", "السبرينج")>
-                    {presets.into_iter().map(|(p, on)| view! {
-                        <button type="button" class="sc-seg__opt mono" data-spring=p aria-pressed=if on { "true" } else { "false" }>{format!("SPRING.{p}")}</button>
-                    }).collect_view()}
-                </span>
+                <SegmentedToggle
+                    items=presets.into_iter().map(|(p, on)| SegItem::toggle(format!("SPRING.{p}"), p, on)).collect()
+                    label=tr(lang, "Spring", "السبرينج")
+                    class="sc-spring__presets"
+                />
                 <button type="button" class="sc-link" data-act="interrupt">{tr(lang, "Send it, then reverse mid-way", "ابعته وارجّعه في النص")}</button>
             </p>
             <dl class="sc-kvs sc-kvs--grid">
