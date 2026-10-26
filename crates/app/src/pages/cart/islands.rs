@@ -770,8 +770,8 @@ fn DrawerSummary() -> impl IntoView {
                     let (lang, num) = (ui.lang.get(), ui.numerals.get());
                     let amount = format::money(vat.get(), lang, num);
                     match lang {
-                        Lang::En => format!("Prices include 14% VAT ({amount})."),
-                        Lang::Ar => format!("الأسعار شاملة ضريبة القيمة المضافة {}٪ ({amount}).", format::count(14, num)),
+                        Lang::En => format!("Prices include {} VAT ({amount}).", math::percent(14, num)),
+                        Lang::Ar => format!("الأسعار شاملة ضريبة القيمة المضافة {} ({amount}).", math::percent(14, num)),
                     }
                 }}
             </p>

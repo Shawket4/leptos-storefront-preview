@@ -444,12 +444,13 @@ pub fn Totals(
     let total = v.total + extra_fee;
     let vat = match lang {
         Lang::En => format!(
-            "Prices include 14% VAT ({}).",
+            "Prices include {} VAT ({}).",
+            super::math::percent(14, num),
             format::money(v.tax_included, lang, num)
         ),
         Lang::Ar => format!(
-            "الأسعار شاملة ضريبة القيمة المضافة {}٪ ({}).",
-            format::count(14, num),
+            "الأسعار شاملة ضريبة القيمة المضافة {} ({}).",
+            super::math::percent(14, num),
             format::money(v.tax_included, lang, num)
         ),
     };

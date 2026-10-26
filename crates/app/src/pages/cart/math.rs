@@ -229,3 +229,14 @@ pub fn stock_message(
         }
     }
 }
+
+/// "14%" in the visitor's digits: Arabic-Indic digits take the Arabic percent sign (٪), Western
+/// digits the Western one, so a sentence never mixes the two systems.
+pub fn percent(n: u32, num: crate::prefs::Numerals) -> String {
+    let sign = if num == crate::prefs::Numerals::Arab {
+        '\u{066A}'
+    } else {
+        '%'
+    };
+    format!("{}{sign}", crate::format::count(n, num))
+}

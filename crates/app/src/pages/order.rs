@@ -302,12 +302,13 @@ fn OrderView(d: OrderPageData, just_placed: bool, lang: Lang, num: Numerals) -> 
     let count: u32 = o.lines.iter().map(|l| l.quantity).sum();
     let vat = match lang {
         Lang::En => format!(
-            "Prices include 14% VAT ({}).",
+            "Prices include {} VAT ({}).",
+            crate::pages::cart::math::percent(14, num),
             format::money(o.tax_included, lang, num)
         ),
         Lang::Ar => format!(
-            "الأسعار شاملة ضريبة القيمة المضافة {}٪ ({}).",
-            format::count(14, num),
+            "الأسعار شاملة ضريبة القيمة المضافة {} ({}).",
+            crate::pages::cart::math::percent(14, num),
             format::money(o.tax_included, lang, num)
         ),
     };
