@@ -865,6 +865,12 @@ html.pv-open {
   block-size: 52px;
   padding: 4px;
 }
+/* Without JS the stepper can't step: the form posts one, the cart can change it. */
+@media (scripting: none) {
+  .pp-buy .stepper {
+    display: none;
+  }
+}
 .pp-add {
   flex: 1;
   min-inline-size: 0;
@@ -1158,30 +1164,6 @@ html.pv-open {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.pdp-error {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sp-3);
-  padding: var(--sp-4) var(--sp-5);
-  background: var(--surface);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
-  color: var(--text-2);
-}
-.pdp-error__icon {
-  display: grid;
-  place-items: center;
-  color: var(--warning-text);
-}
-.pdp-error__text {
-  flex: 1;
-  margin: 0;
-  min-inline-size: 12rem;
-}
-.pdp-error__text strong {
-  color: var(--text);
-}
 .pdp-state {
   display: grid;
   justify-items: center;
@@ -1197,7 +1179,7 @@ html.pv-open {
 .pdp-404__search {
   display: flex;
   gap: var(--sp-2);
-  inline-size: 100%;
+  inline-size: min(30rem, 100%);
 }
 .pdp-404__input {
   flex: 1;

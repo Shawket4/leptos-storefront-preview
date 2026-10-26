@@ -8,12 +8,12 @@ use super::panel::{PanelBody, PurchasePanel};
 use crate::api;
 use crate::api::types::{ListingQuery, NavCategory, ProductView};
 use crate::components::badge::{Badge, BadgeKind};
-use crate::components::button::{Button, ButtonKind, ButtonSize};
-use crate::components::empty_state::EmptyState;
+use crate::components::button::{Button, ButtonKind};
 use crate::components::icons::Icon;
 use crate::components::layout::{Rail, SectionHeader};
 use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton};
 use crate::components::rating::Rating;
+use crate::components::states::{SectionError, StateTone, StateView};
 use crate::format;
 use crate::prefs::{Lang, Numerals, tr};
 use crate::request::req;
@@ -248,7 +248,14 @@ pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -
     view! {
         <section class="pdp-related" aria-labelledby=hid_ref>
             <SectionHeader title=title.clone() id=hid href=href.clone() link_label=more/>
-            <CardRail data=data label=title empty_href=href lang=lang numerals=numerals/>
+            <CardRail
+                data=data
+                label=title
+                what=tr(lang, "Similar products", "المنتجات المشابهة").to_owned()
+                empty_href=href
+                lang=lang
+                numerals=numerals
+            />
         </section>
     }
 }
@@ -259,6 +266,8 @@ pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -
 pub fn CardRail(
     data: Resource<Result<Vec<CardData>, ServerFnError>>,
     label: String,
+    /// The rail's name for its error ("Similar products didn't load").
+    what: String,
     /// Where "browse instead" points when the rail comes back empty.
     empty_href: String,
     lang: Lang,
@@ -266,7 +275,7 @@ pub fn CardRail(
 ) -> impl IntoView {
     view! {
         <Suspense fallback=move || view! { <RailSkeleton/> }>
-            <ErrorBoundary fallback=move |_| view! { <SectionError lang=lang/> }>
+            <ErrorBoundary fallback=move |errors| view! { <SectionError errors=errors what=what.clone()/> }>
                 {move || {
                     let (label, empty_href) = (label.clone(), empty_href.clone());
                     Suspend::new(async move {
@@ -307,40 +316,26 @@ fn RailSkeleton() -> impl IntoView {
     }
 }
 
-/// A section's data failed: say so, offer a retry, keep the rest of the page.
-#[component]
-pub fn SectionError(lang: Lang) -> impl IntoView {
-    view! {
-        <div class="pdp-error" role="status">
-            <span class="pdp-error__icon"><Icon name="triangle-alert" size=20/></span>
-            <p class="pdp-error__text">
-                <strong>{tr(lang, "This section didn't load.", "القسم ده ما اتحمّلش.")}</strong>
-                " "
-                {tr(lang, "Everything else on the page works.", "باقي الصفحة شغالة عادي.")}
-            </p>
-            <Button kind=ButtonKind::Secondary size=ButtonSize::Sm href=retry_href() icon="rotate-ccw">
-                {tr(lang, "Try again", "جرّب تاني")}
-            </Button>
-        </div>
-    }
-}
-
 /// The product itself didn't load (backend down, `?fail=product`).
 #[component]
 pub fn ProductError(lang: Lang) -> impl IntoView {
     view! {
         <div class="pdp-state" role="alert">
-            <EmptyState
-                art="error"
+            <StateView
+                tone=StateTone::Error
                 title=tr(lang, "We couldn't load this product", "تعذّر تحميل هذا المنتج")
                 body=tr(
                     lang,
                     "Something went wrong on our side. Your cart is safe — please try again.",
                     "حدث خطأ من جهتنا. سلتك محفوظة، يُرجى المحاولة مرة أخرى.",
                 )
-                action=(retry_href(), tr(lang, "Try again", "جرّب تاني").to_owned())
                 page=true
-            />
+            >
+                <Button kind=ButtonKind::Primary href=retry_href() icon="rotate-ccw">
+                    {tr(lang, "Try again", "إعادة المحاولة")}
+                </Button>
+                <Button kind=ButtonKind::Secondary href="/".to_owned()>{tr(lang, "Back to the shop", "العودة للمتجر")}</Button>
+            </StateView>
         </div>
     }
 }
@@ -371,8 +366,9 @@ pub fn NotFound(slug: String, lang: Lang, numerals: Numerals) -> impl IntoView {
     view! {
         <div class="container pdp-404">
             <div class="pdp-state">
-                <EmptyState
-                    art="not-found"
+                <StateView
+                    tone=StateTone::NotFound
+                    kicker=tr(lang, "Error 404", "خطأ 404")
                     title=tr(lang, "We couldn't find this product", "مش لاقيين المنتج ده")
                     body=tr(
                         lang,
@@ -380,16 +376,24 @@ pub fn NotFound(slug: String, lang: Lang, numerals: Numerals) -> impl IntoView {
                         "ممكن اللينك قديم، أو المنتج مبقاش عندنا. جرّب تدوّر عليه:",
                     )
                     page=true
-                />
-                <form class="pdp-404__search" action="/search" method="get" role="search">
-                    <label class="sr-only" for="pdp-404-q">{tr(lang, "Search products", "دوّر على منتج")}</label>
-                    <input class="pdp-404__input" id="pdp-404-q" type="search" name="q" value=guess autocomplete="off"/>
-                    <Button kind=ButtonKind::Primary button_type="submit" icon="search">{tr(lang, "Search", "دوّر")}</Button>
-                </form>
+                >
+                    <form class="pdp-404__search" action="/search" method="get" role="search">
+                        <label class="sr-only" for="pdp-404-q">{tr(lang, "Search products", "دوّر على منتج")}</label>
+                        <input class="pdp-404__input" id="pdp-404-q" type="search" name="q" value=guess autocomplete="off"/>
+                        <Button kind=ButtonKind::Primary button_type="submit" icon="search">{tr(lang, "Search", "دوّر")}</Button>
+                    </form>
+                </StateView>
             </div>
             <section class="pdp-related" aria-labelledby="pdp-404-popular">
                 <SectionHeader title=title.clone() id="pdp-404-popular" href="/search?sort=rating"/>
-                <CardRail data=popular label=title empty_href="/".to_owned() lang=lang numerals=numerals/>
+                <CardRail
+                    data=popular
+                    label=title
+                    what=tr(lang, "Popular products", "المنتجات الأكثر طلبًا").to_owned()
+                    empty_href="/".to_owned()
+                    lang=lang
+                    numerals=numerals
+                />
             </section>
         </div>
     }

@@ -306,7 +306,7 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
         }
         added_notice.set(None);
         // Offline: say so now instead of sending a request that can only fail.
-        if !window().navigator().on_line() {
+        if !crate::components::net::is_online() {
             ev.prevent_default();
             error.set(Some("offline".into()));
             return;
