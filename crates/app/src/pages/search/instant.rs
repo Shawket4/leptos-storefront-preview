@@ -47,7 +47,9 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
     view! {
         <div class=cls data-ts="search-box">
             {header.then(|| view! {
-                <a class="hs-trigger" href="/search" aria-haspopup="dialog">
+                // The no-JS way to the search page; with JS it opens the overlay, so the router neither
+                // takes nor prefetches it.
+                <a class="hs-trigger" href="/search" aria-haspopup="dialog" data-router="off">
                     <Icon name="search" size=20/>
                     <span class="hs-trigger__text" class:is-filled=!empty>
                         {if empty { placeholder.to_owned() } else { initial.clone() }}
