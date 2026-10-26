@@ -202,6 +202,45 @@ pub fn price(
     Priced { view, missing }
 }
 
+/// What the browser keeps for a line (`api::cart::Snapshot`), from the catalogue now. `None` if
+/// the product, variant or one of its add-ons is gone.
+pub fn snapshot(
+    l: &CartLine,
+    catalog: &TenantCatalog,
+    media: &Media,
+    lang: crate::prefs::Lang,
+) -> Option<crate::api::cart::Snapshot> {
+    let (p, v) = catalog.variant(l.product, l.variant)?;
+    let ar = lang.is_rtl();
+    let opts: Vec<&domain::ModifierOption> = l
+        .addons
+        .iter()
+        .filter_map(|a| p.modifier_groups.iter().flat_map(|g| g.options.iter()).find(|o| &o.id == a))
+        .collect();
+    if opts.len() != l.addons.len() {
+        return None;
+    }
+    let img = v
+        .image
+        .and_then(|i| p.images.get(i))
+        .or_else(|| p.images.first())
+        .map(|k| media.img(k))
+        .filter(|i| !i.is_missing())
+        .map(|i| i.src_near(192));
+    let variant = TenantCatalog::variant_label(p, v).pick(ar).to_owned();
+    Some(crate::api::cart::Snapshot {
+        name: p.name.pick(ar).to_owned(),
+        img,
+        href: format!("/p/{}", p.slug),
+        variant: (!variant.is_empty()).then_some(variant),
+        addons: opts.iter().map(|o| o.name.pick(ar).to_owned()).collect(),
+        unit: v.price.0,
+        compare_at: v.compare_at.filter(|c| *c > v.price).map(|c| c.0),
+        addon_prices: opts.iter().map(|o| o.price.0).collect(),
+        max_qty: v.stock.min(dc::MAX_QTY),
+    })
+}
+
 /// This request's cart, priced (tenant from the request).
 pub fn priced_for_request() -> (Vec<CartLine>, Priced) {
     let rq = crate::request::init();

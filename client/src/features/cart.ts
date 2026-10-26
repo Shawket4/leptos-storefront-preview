@@ -1,20 +1,40 @@
 // The cart's browser code: the one "add to cart" (`addAndConfirm`), the header badge, quick add,
-// the drawer's content and the /cart page. State lives in stores/cart.ts (the `cart` cookie):
-// every change is local and instant; the server is asked only for what the client doesn't have —
-// prices, stock and totals (`quote()`), about 300 ms after the last change.
+// the drawer's content and the /cart page.
+//
+// The client computes the cart (owner, 2026-10-26): every line keeps a snapshot — its display
+// data and prices in piastres, from the card or product page it was added from — so line totals,
+// subtotal, savings, delivery and total are worked out here, and adding, removing and changing a
+// quantity send **no request**. The server is asked only for lines with no snapshot (added
+// without JS, storage cleared: `quote()` once), and checkout re-prices everything on the server.
 //
 // One renderer (`CartView`) draws the lines and the summary of the drawer *and* of /cart, from the
-// server's templates (`#tpl-cart-line`, `#tpl-cart-gone`): the store's lines in order, each filled
-// from the latest quote — or, until it lands, from the card the item was added from (snapshot).
+// server's template (`#tpl-cart-line`).
 
-import type { CartQuote, CartQuoteLine } from "../api/types";
 import { $, $$, fill, patch } from "../core/dom";
 import { openDrawer } from "../core/drawer";
+import { money } from "../core/money";
 import { mountAll, register, unmountAll } from "../core/mount";
 import { NetError, onOnline } from "../core/net";
+import { onNavigate } from "../core/router";
 import { cfg, digits, t } from "../core/page";
 import { setStepper, stepperValue } from "../core/stepper";
-import { add, cart, lineKey, quote, remove, setQty, snapshot, type CartLine, type CartResult, type LineSnapshot } from "../stores/cart";
+import {
+  add,
+  adoptSnapshots,
+  cart,
+  isPriced,
+  lineKey,
+  quote,
+  remove,
+  saveSnapshot,
+  setQty,
+  snapshot,
+  unitWithAddons,
+  type CartLine,
+  type CartResult,
+  type LineSnapshot,
+  type PricedSnapshot,
+} from "../stores/cart";
 import { toast } from "../stores/toasts";
 
 /** The cart drawer's id (the shell renders it once, `pages::cart::CartDrawer`). */
@@ -39,7 +59,7 @@ export const onCartPages = (): boolean => /^\/(cart|checkout)(\/|$)/.test(locati
 /**
  * The one "add to cart": puts the item in the cart (instantly, no request) and says so — a toast
  * with "View cart" (opens the drawer) and the badge's pop (it pops on every increase). Quick add
- * and the product page both call this.
+ * and the product page both call this; `snapshot` is what the line shows and is priced with.
  */
 export function addAndConfirm(item: AddItem, snapshot: LineSnapshot): CartResult {
   const r = add(item, snapshot);
@@ -76,105 +96,105 @@ register("cart-badge", (el) => {
     ev.preventDefault();
     openDrawer(DRAWER_ID);
   };
+  // Where it opens the drawer, the router mustn't warm /cart on pointer-down (a wasted request).
+  const route = () => (onCartPages() ? el.removeAttribute("data-router") : el.setAttribute("data-router", "off"));
+  route();
+  const offNav = onNavigate(route);
   el.addEventListener("click", onClick);
   return () => {
     unsub();
+    offNav();
     el.removeEventListener("click", onClick);
   };
 });
 
 // ── Quick add (the "+" on product cards) ──────────────────────────────────────────────────────
-// A real form without JS (POST /cart/add, 303 back with ?added=); with JS nothing is sent.
-const ADDED_MS = 1600;
-
+// A real form without JS (POST /cart/add, 303 back with ?added=); with JS nothing is sent. The
+// card carries the line's snapshot (`data-snapshot`, from the catalogue). The confirmation is the
+// toast and the badge's pop; the button stays a "+".
 register("quick-add", (form) => {
-  const btn = $<HTMLButtonElement>("button", form);
-  let timer = 0;
   const onSubmit = (ev: Event) => {
     ev.preventDefault();
-    const d = form.dataset;
-    const snap: LineSnapshot = { name: d.name ?? "" };
-    if (d.img) snap.img = d.img;
-    if (d.price) snap.price = d.price;
-    if (d.href) snap.href = d.href;
-    const r = addAndConfirm({ product: Number(d.product), variant: Number(d.variant) }, snap);
-    if (!btn || !r.ok) return;
-    btn.dataset.state = "added";
-    clearTimeout(timer);
-    timer = window.setTimeout(() => (btn.dataset.state = "idle"), ADDED_MS);
+    let snap: LineSnapshot = { name: "" };
+    try {
+      snap = JSON.parse(form.dataset.snapshot ?? "{}") as LineSnapshot;
+    } catch {
+      /* no snapshot: the drawer asks the server for it */
+    }
+    addAndConfirm({ product: Number(form.dataset.product), variant: Number(form.dataset.variant) }, snap);
   };
   form.addEventListener("submit", onSubmit);
-  return () => {
-    clearTimeout(timer);
-    form.removeEventListener("submit", onSubmit);
-  };
+  return () => form.removeEventListener("submit", onSubmit);
 });
 
-// ── The one cart renderer: lines + summary, for the drawer and for /cart ────────────────────────
+// ── The cart, computed ────────────────────────────────────────────────────────────────────────
 
-interface Parts {
-  /** Where events are listened for (the dialog, or the page). */
-  root: HTMLElement;
-  list: HTMLElement;
-  summary: HTMLElement | null;
-  /** Shown instead of the lines when the cart is empty. */
-  empty: HTMLElement | null;
-  /** Hidden when the cart is empty (/cart's layout, the drawer's footer). */
-  full: HTMLElement | null;
-  /** "3 items" (/cart's heading). */
-  count: HTMLElement | null;
-}
+type Issue = "out_of_stock" | "capped" | "unavailable" | null;
 
-interface Gone {
-  el: HTMLElement;
-  at: number;
-  undo: () => void;
-  timer: number;
-}
+const issueOf = (l: CartLine, s: PricedSnapshot): Issue => (s.maxQty <= 0 ? "out_of_stock" : l.qty > s.maxQty ? "capped" : null);
 
-const GONE_MS = 6000;
-
-/** The quote is for exactly these lines and quantities. */
-const sameCart = (q: CartQuote, lines: CartLine[]): boolean =>
-  q.lines.length === lines.length && q.lines.every((ql, i) => ql.key === lineKey(lines[i]!) && ql.qty === lines[i]!.qty);
-
-/** What a line shows: the quote's data, else the snapshot from the card it was added from. */
-function lineValues(l: CartLine, key: string, ql: CartQuoteLine | undefined) {
-  const snap = snapshot(key);
-  const gone = ql?.issue === "unavailable";
-  const name = (gone ? snap?.name : ql?.name || snap?.name) || (gone ? t("cart.unavailable_name") : "");
-  const unit = gone ? null : ql?.unit_price || snap?.price || null;
-  return {
+/** What a line shows, all computed from its snapshot (`null` hides a slot). */
+function lineValues(l: CartLine, key: string, s: LineSnapshot | undefined, gone: boolean) {
+  const name = s?.name || (gone ? t("cart.unavailable_name") : "");
+  const base = {
     key,
     name,
-    href: ql?.href || snap?.href || null,
-    img: ql?.img || snap?.img || null,
+    href: s?.href ?? null,
+    img: s?.img ?? null,
     rm_label: t("cart.remove_item", { name }),
-    detail: ql ? [ql.variant_label, ...ql.addons].filter(Boolean).join(" · ") || null : null,
-    unit,
-    was: ql?.compare_at ?? null,
-    total: (!gone && ql?.line_total) || null,
-    breakdown: l.qty > 1 && unit ? t("cart.breakdown", { qty: digits(l.qty), unit }) : null,
-    low: ql && !ql.issue && ql.max_qty <= 5 ? t("cart.low_stock", { n: digits(ql.max_qty) }) : null,
-    issue: ql?.issue
-      ? ql.issue === "capped"
-        ? t("cart.issue.capped", { n: digits(ql.max_qty) })
-        : t(`cart.issue.${ql.issue}`)
-      : null,
-    fix: ql?.issue === "capped" ? t("cart.fix", { n: digits(ql.max_qty) }) : null,
+    detail: [s?.variant, ...(s?.addons ?? [])].filter(Boolean).join(" · ") || null,
+  };
+  if (!isPriced(s) || gone) {
+    const issue = gone ? t("cart.issue.unavailable") : null;
+    return { ...base, unit: null, was: null, total: null, breakdown: null, low: null, issue, fix: null };
+  }
+  const unit = unitWithAddons(s);
+  const extra = unit - s.unit;
+  const issue = issueOf(l, s);
+  return {
+    ...base,
+    unit: money(unit),
+    was: s.compareAt && s.compareAt > s.unit ? money(s.compareAt + extra) : null,
+    total: money(unit * l.qty),
+    breakdown: l.qty > 1 ? t("cart.breakdown", { qty: digits(l.qty), unit: money(unit) }) : null,
+    low: !issue && s.maxQty <= 5 ? t("cart.low_stock", { n: digits(s.maxQty) }) : null,
+    issue:
+      issue === "capped" ? t("cart.issue.capped", { n: digits(s.maxQty) }) : issue ? t("cart.issue.out_of_stock") : null,
+    fix: issue === "capped" ? t("cart.fix", { n: digits(s.maxQty) }) : null,
   };
 }
 
 type Values = ReturnType<typeof lineValues>;
 
-function paintLine(el: HTMLElement, l: CartLine, ql: CartQuoteLine | undefined, v: Values): void {
+/** The cart's totals from its snapshots (piastres), and whether every line could be priced. */
+function totals(lines: CartLine[], gone: Set<string>) {
+  let subtotal = 0;
+  let savings = 0;
+  let priced = true;
+  let blocked = false;
+  for (const l of lines) {
+    const k = lineKey(l);
+    const s = snapshot(k);
+    if (gone.has(k)) blocked = true;
+    if (!isPriced(s) || gone.has(k)) {
+      priced = priced && gone.has(k);
+      continue;
+    }
+    subtotal += unitWithAddons(s) * l.qty;
+    if (s.compareAt && s.compareAt > s.unit) savings += (s.compareAt - s.unit) * l.qty;
+    if (issueOf(l, s)) blocked = true;
+  }
+  const { deliveryFee, freeDeliveryOver } = cfg().cart;
+  const delivery = subtotal === 0 || subtotal >= freeDeliveryOver ? 0 : deliveryFee;
+  return { subtotal, savings, delivery, total: subtotal + delivery, priced, blocked, left: freeDeliveryOver - subtotal };
+}
+
+function paintLine(el: HTMLElement, l: CartLine, s: LineSnapshot | undefined, v: Values, gone: boolean): void {
   patch(el, v);
   if (v.href) for (const a of $$<HTMLAnchorElement>("a.cline__media, a.cline__name", el)) a.setAttribute("href", v.href);
   const img = $<HTMLImageElement>(".cline__img", el);
   if (img && v.img && img.getAttribute("src") !== v.img) img.src = v.img;
-  el.dataset.issue = ql?.issue ?? "";
-  // Its total is for another quantity (or not in yet): dimmed until the quote catches up.
-  el.toggleAttribute("data-stale", !ql || ql.qty !== l.qty);
+  el.dataset.issue = gone ? "unavailable" : isPriced(s) ? (issueOf(l, s) ?? "") : "";
   el.toggleAttribute("data-loading", !v.name);
   $(".cline__remove button", el)?.setAttribute("aria-label", v.rm_label);
   const stepper = $("[data-ts~=stepper]", el);
@@ -183,10 +203,10 @@ function paintLine(el: HTMLElement, l: CartLine, ql: CartQuoteLine | undefined, 
     stepper.setAttribute("aria-label", label);
     $("input", stepper)?.setAttribute("aria-label", label);
   }
-  const max = ql ? Math.max(l.qty, ql.max_qty) : cfg().cart.maxQty;
+  const max = isPriced(s) ? Math.max(l.qty, s.maxQty) : cfg().cart.maxQty;
   if (stepper) setStepper(stepper, { value: l.qty, min: 1, max });
   const fixQty = $<HTMLInputElement>("[data-fix-qty]", el);
-  if (fixQty && ql) fixQty.value = String(ql.max_qty);
+  if (fixQty && isPriced(s)) fixQty.value = String(s.maxQty);
 }
 
 /** Put `want` in `list`, in order, moving only what's out of place; drop the rest. */
@@ -207,15 +227,27 @@ function reconcile(list: HTMLElement, want: HTMLElement[]): void {
   }
 }
 
+interface Parts {
+  /** Where events are listened for (the dialog, or the page). */
+  root: HTMLElement;
+  list: HTMLElement;
+  summary: HTMLElement | null;
+  /** Shown instead of the lines when the cart is empty. */
+  empty: HTMLElement | null;
+  /** Hidden when the cart is empty (/cart's layout; the drawer hides its footer itself). */
+  full: HTMLElement | null;
+  /** "3 items" (/cart's heading). */
+  count: HTMLElement | null;
+}
+
+/** The one renderer: the store's lines from #tpl-cart-line, and the summary, all computed. */
 class CartView {
-  quote: CartQuote | null = null;
-  /** A quote is being waited for: totals are dimmed. */
-  private pending = false;
+  /** Lines the server says it no longer sells (from a quote). */
+  private gone = new Set<string>();
+  /** Keys a quote was already asked for (a missing snapshot is asked for once). */
+  private asked = new Set<string>();
   private error: "offline" | "failed" | null = null;
-  private timer = 0;
   private seq = 0;
-  private aborts = 0;
-  private gone = new Map<string, Gone>();
   private els = new Map<string, HTMLElement>();
 
   constructor(private p: Parts) {
@@ -223,64 +255,18 @@ class CartView {
     for (const li of $$<HTMLElement>(":scope > li[data-key]", p.list)) if (li.dataset.key) this.els.set(li.dataset.key, li);
   }
 
-  /** Ask for the server's numbers `delay` ms from now (the last change wins); dim meanwhile. */
-  ask(delay = 300): void {
-    clearTimeout(this.timer);
-    this.pending = true;
-    this.paintSummary();
-    this.timer = window.setTimeout(() => void this.fetch(), delay);
-  }
-
-  private async fetch(): Promise<void> {
-    const seq = ++this.seq;
-    if (!cart.get().lines.length) {
-      this.pending = false;
-      this.paint();
-      return;
-    }
-    try {
-      const q = await quote((fresh) => seq === this.seq && this.accept(fresh));
-      if (seq === this.seq) this.accept(q);
-    } catch (e) {
-      if (seq !== this.seq) return;
-      // The server priced a different cart (another tab changed it): the store has re-read the
-      // cookie, so ask again — a few times at most.
-      if (e instanceof NetError && e.code === "aborted" && ++this.aborts < 3) return this.ask(300);
-      this.error = e instanceof NetError && e.code === "offline" ? "offline" : "failed";
-      this.paintSummary();
-    }
-  }
-
-  private accept(q: CartQuote): void {
-    this.quote = q;
-    this.error = null;
-    this.aborts = 0;
-    const current = sameCart(q, cart.get().lines);
-    this.pending = !current;
-    this.paint();
-    if (!current) this.ask(300);
-  }
-
-  /** Retry a failed quote (the button, or the connection coming back). */
-  retry(): void {
-    if (this.error) this.ask(0);
-  }
-
   paint(): void {
-    this.paintLines();
-    this.paintSummary();
-  }
-
-  private paintLines(): void {
     const lines = cart.get().lines;
-    const byKey = new Map((this.quote?.lines ?? []).map((l) => [l.key, l] as const));
     const want: HTMLElement[] = [];
     const keys = new Set<string>();
+    const missing: string[] = [];
     for (const l of lines) {
       const key = lineKey(l);
       keys.add(key);
-      const ql = byKey.get(key);
-      const v = lineValues(l, key, ql);
+      const s = snapshot(key);
+      const gone = this.gone.has(key);
+      if (!isPriced(s) && !gone) missing.push(key);
+      const v = lineValues(l, key, s, gone);
       let el = this.els.get(key);
       if (!el) {
         el = fill("cart-line", v).firstElementChild as HTMLElement;
@@ -288,48 +274,41 @@ class CartView {
         mountAll(el);
         this.els.set(key, el);
       }
-      paintLine(el, l, ql, v);
+      paintLine(el, l, s, v, gone);
       want.push(el);
     }
     for (const key of [...this.els.keys()]) if (!keys.has(key)) this.els.delete(key);
-    // A removed line leaves its "Undo" where it was, until it's undone or times out.
-    for (const [key, g] of [...this.gone].sort((a, b) => a[1].at - b[1].at)) {
-      if (keys.has(key)) this.forget(key);
-      else want.splice(Math.min(g.at, want.length), 0, g.el);
-    }
     reconcile(this.p.list, want);
-    const empty = !want.length;
+    const empty = !lines.length;
     this.p.list.hidden = empty;
     if (this.p.empty) this.p.empty.hidden = !empty;
-    if (this.p.full) this.p.full.hidden = empty && !this.p.full.contains(this.p.list);
+    if (this.p.full) this.p.full.hidden = empty;
     if (this.p.count) {
-      const n = cart.get().count;
-      this.p.count.hidden = !n;
-      this.p.count.textContent = items(n);
+      this.p.count.hidden = empty;
+      this.p.count.textContent = items(cart.get().count);
     }
+    this.paintSummary(lines);
+    // Lines with nothing to show or price them by: ask the server, once.
+    if (missing.some((k) => !this.asked.has(k))) void this.fill(missing);
   }
 
-  private paintSummary(): void {
+  private paintSummary(lines: CartLine[]): void {
     const s = this.p.summary;
     if (!s) return;
-    const lines = cart.get().lines;
-    const q = this.quote;
-    const current = !!q && sameCart(q, lines);
-    if (q) {
-      patch(s, {
-        subtotal: q.subtotal,
-        savings: q.savings,
-        total: q.total,
-        vat: q.vat_included,
-        delivery: q.delivery_free ? null : q.delivery,
-        free: q.delivery_free ? t("cart.free") : null,
-        hint: q.free_delivery_hint,
-        ship_done: q.free_delivery_hint || !q.lines.length ? null : t("cart.free_done"),
-        blocked: current && !q.can_checkout ? t("cart.blocked") : null,
-      });
-    }
-    s.setAttribute("aria-busy", String(!current || this.pending));
-    $("[data-checkout]", s)?.setAttribute("aria-disabled", String(current && !q.can_checkout));
+    const c = totals(lines, this.gone);
+    patch(s, {
+      subtotal: money(c.subtotal),
+      savings: c.savings > 0 ? money(c.savings) : null,
+      total: money(c.total),
+      delivery: c.delivery ? money(c.delivery) : null,
+      free: c.delivery ? null : t("cart.free"),
+      hint: c.subtotal > 0 && c.left > 0 ? t("cart.free_hint", { amount: money(c.left) }) : null,
+      ship_done: c.subtotal > 0 && c.left <= 0 ? t("cart.free_done") : null,
+      blocked: c.blocked ? t("cart.blocked") : null,
+    });
+    // Still waiting for a missing line's prices: the totals are partial, dimmed.
+    s.setAttribute("aria-busy", String(!c.priced));
+    $("[data-checkout]", s)?.setAttribute("aria-disabled", String(c.blocked || !c.priced));
     const err = $("[data-quote-error]", s);
     if (err) {
       err.hidden = !this.error;
@@ -339,41 +318,48 @@ class CartView {
     if (!this.p.full) (s.closest<HTMLElement>(".drawer__foot") ?? s).hidden = !lines.length;
   }
 
-  /** Remove a line now; an "Undo" takes its place (and the focus, if it was there). */
-  removeLine(key: string): void {
-    const at = cart.get().lines.findIndex((l) => lineKey(l) === key);
-    if (at < 0) return;
-    const el = this.els.get(key);
-    const hadFocus = !!el && el.contains(document.activeElement);
-    const name = (el && $("[data-slot=name]", el)?.textContent) || snapshot(key)?.name || "";
-    const row = fill("cart-gone", { text: t("cart.removed", { name }) }).firstElementChild as HTMLElement;
-    row.dataset.gone = key;
-    this.forget(key);
-    const g: Gone = { el: row, at, undo: () => {}, timer: window.setTimeout(() => this.forget(key, true), GONE_MS) };
-    this.gone.set(key, g);
-    g.undo = remove(key); // the store changes → paint
-    if (hadFocus) $<HTMLElement>("[data-undo]", row)?.focus();
-  }
-
-  private undo(key: string): void {
-    const g = this.gone.get(key);
-    if (!g) return;
-    g.undo(); // the line is back → paint drops the row
-    $<HTMLElement>("[data-step='1'], input", this.els.get(key) ?? document.body)?.focus();
-  }
-
-  /** Drop a removed line's "Undo" (timed out, undone, or the drawer closed). */
-  forget(key?: string, repaint = false): void {
-    for (const [k, g] of [...this.gone]) {
-      if (key !== undefined && k !== key) continue;
-      clearTimeout(g.timer);
-      this.gone.delete(k);
-      if (repaint) {
-        const focused = g.el.contains(document.activeElement);
-        this.paintLines();
-        if (focused) this.p.root.focus();
+  /** Get snapshots for lines that have none (added without JS, storage cleared): one quote. */
+  private async fill(keys: string[]): Promise<void> {
+    for (const k of keys) this.asked.add(k);
+    const seq = ++this.seq;
+    try {
+      const q = await quote();
+      if (seq !== this.seq) return;
+      this.error = null;
+      for (const l of q.lines) {
+        if (l.snapshot) saveSnapshot(l.key, l.snapshot);
+        else if (l.issue === "unavailable") this.gone.add(l.key);
+      }
+    } catch (e) {
+      if (seq !== this.seq) return;
+      // The cart changed under the request: ask again for what's still missing.
+      if (e instanceof NetError && e.code === "aborted") for (const k of keys) this.asked.delete(k);
+      else {
+        this.error = e instanceof NetError && e.code === "offline" ? "offline" : "failed";
+        for (const k of keys) this.asked.delete(k);
+        this.paintSummary(cart.get().lines);
+        return;
       }
     }
+    this.paint();
+  }
+
+  /** Retry filling missing lines (the button, or the connection coming back). */
+  retry(): void {
+    if (!this.error) return;
+    this.error = null;
+    this.paint();
+  }
+
+  /** Remove a line now; the toast offers Undo (it puts the line back where it was). */
+  removeLine(key: string): void {
+    const el = this.els.get(key);
+    const hadFocus = !!el && el.contains(document.activeElement);
+    const name = snapshot(key)?.name || (el && $("[data-slot=name]", el)?.textContent) || "";
+    const undo = remove(key); // the store changes → paint: line, totals, cookie, badge at once
+    toast(name ? t("cart.removed", { name }) : t("cart.removed_one"), "info", { label: t("cart.undo"), run: undo });
+    // The focused control went with the line: hand focus to the panel (or /cart's heading).
+    if (hadFocus) $<HTMLElement>(".drawer__panel, #cart-title", this.p.root)?.focus();
   }
 
   /** The controls inside a line or the summary. Returns an unsubscribe. */
@@ -398,8 +384,6 @@ class CartView {
     };
     const onClick = (ev: MouseEvent) => {
       const el = ev.target instanceof Element ? ev.target : null;
-      const undo = el?.closest<HTMLElement>("[data-undo]");
-      if (undo) return this.undo(undo.closest<HTMLElement>("[data-gone]")?.dataset.gone ?? "");
       if (el?.closest("[data-quote-retry]")) return this.retry();
       if (el?.closest("[data-checkout][aria-disabled=true]")) ev.preventDefault();
     };
@@ -408,9 +392,7 @@ class CartView {
     r.addEventListener("click", onClick);
     const offOnline = onOnline(() => this.retry());
     return () => {
-      clearTimeout(this.timer);
       this.seq++;
-      this.forget();
       offOnline();
       r.removeEventListener("change", onChange);
       r.removeEventListener("submit", onSubmit);
@@ -436,22 +418,14 @@ register("cart-drawer", (el) => {
   const onOpen = () => {
     open = true;
     view.paint();
-    view.ask(0);
   };
-  const onClose = () => {
-    open = false;
-    view.forget(); // undos don't outlive the drawer
-  };
+  const onClose = () => (open = false);
   dialog.addEventListener("drawer:open", onOpen);
   dialog.addEventListener("drawer:close", onClose);
-  let first = true;
-  const unsub = cart.subscribe(() => {
-    if (first) return void (first = false);
-    if (!open) return;
-    view.paint();
-    view.ask();
-  });
+  const unsub = cart.subscribe(() => open && view.paint());
   const off = view.listen();
+  // Brought back open by a router swap: core reopened it before this content was mounted.
+  if (dialog instanceof HTMLDialogElement && dialog.open) onOpen();
   return () => {
     unsub();
     off();
@@ -461,11 +435,18 @@ register("cart-drawer", (el) => {
 });
 
 // ── /cart ─────────────────────────────────────────────────────────────────────────────────────
-// The server rendered the lines and the quote they came from (`data-ts-json`); from here every
-// change goes to the store and the page is re-rendered by the same renderer as the drawer.
+// The server rendered the lines and sent their snapshots (`data-ts-json`): they become the cart's
+// (a price that moved since the drawer showed it is said plainly); from here every change goes to
+// the store and the page is re-rendered by the same renderer as the drawer.
 register("cart-page", (el) => {
   const list = $("[data-cart-lines]", el);
   if (!list) return;
+  try {
+    const server = JSON.parse($("script[data-ts-json]", el)?.textContent ?? "{}") as Record<string, PricedSnapshot>;
+    if (adoptSnapshots(server)) $("[data-price-changed]", el)?.removeAttribute("hidden");
+  } catch {
+    /* nothing to adopt */
+  }
   const view = new CartView({
     root: el,
     list,
@@ -474,12 +455,6 @@ register("cart-page", (el) => {
     full: $("[data-cart-full]", el),
     count: $("[data-slot=count]", el),
   });
-  try {
-    view.quote = JSON.parse($("script[data-ts-json]", el)?.textContent ?? "null") as CartQuote | null;
-  } catch {
-    view.quote = null;
-  }
-  el.dataset.live = ""; // the no-JS "Update" buttons go (cart.css)
   // A no-JS form's outcome was shown by the server; don't show it again on reload or back.
   const url = new URL(location.href);
   if (url.searchParams.has("added") || url.searchParams.has("cart_err")) {
@@ -487,10 +462,7 @@ register("cart-page", (el) => {
     url.searchParams.delete("cart_err");
     history.replaceState(history.state, "", url.pathname + url.search + url.hash);
   }
-  const unsub = cart.subscribe(() => {
-    view.paint();
-    if (!view.quote || !sameCart(view.quote, cart.get().lines)) view.ask();
-  });
+  const unsub = cart.subscribe(() => view.paint());
   const off = view.listen();
   return () => {
     unsub();

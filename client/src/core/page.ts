@@ -8,7 +8,8 @@ export interface AppConfig {
   /** Endpoints the client calls when it needs data (never for state changes). */
   api: { cartQuote: string; searchSuggest: string; orderTrack: string };
   /** Cart limits the server enforces too. */
-  cart: { maxLines: number; maxQty: number; cookie: string };
+  /** Cart limits the server enforces too, the delivery rule (piastres) and the money label. */
+  cart: { maxLines: number; maxQty: number; cookie: string; deliveryFee: number; freeDeliveryOver: number; currency: string };
 }
 
 function readJson<T>(id: string): T | null {

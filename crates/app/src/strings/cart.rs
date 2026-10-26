@@ -82,6 +82,7 @@ pub const ALL: &[Entry] = &[
     ),
     s("cart.fix", "Change to {n}", "خليها {n}"),
     s("cart.removed", "Removed {name}", "شيلنا {name}"),
+    s("cart.removed_one", "Removed from your cart", "شيلناه من السلة"),
     s("cart.undo", "Undo", "رجّعه"),
     s("cart.subtotal", "Subtotal", "المجموع"),
     s("cart.savings", "You save", "وفّرت"),
@@ -92,6 +93,12 @@ pub const ALL: &[Entry] = &[
         "cart.vat",
         "Prices include {pct} VAT ({vat}).",
         "الأسعار شاملة ضريبة القيمة المضافة {pct} ({vat}).",
+    ),
+    s("cart.vat_included", "Prices include {pct} VAT.", "الأسعار شاملة ضريبة القيمة المضافة {pct}."),
+    s(
+        "cart.price_changed",
+        "Some prices changed since you added them. The prices shown now are today's.",
+        "تغيّرت أسعار بعض المنتجات منذ إضافتها. الأسعار المعروضة الآن هي الأسعار الحالية.",
     ),
     s(
         "cart.free_hint",

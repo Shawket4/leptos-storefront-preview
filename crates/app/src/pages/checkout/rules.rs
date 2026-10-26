@@ -1,7 +1,7 @@
-//! Checkout validation, written once in plain Rust and compiled twice: into the server functions
-//! (the authority — a request that skips the browser still meets these rules) and into the address
-//! island (instant feedback on blur and submit, in the visitor's language). Same functions, same
-//! messages, no JSON schema or JavaScript twin to drift.
+//! Checkout validation, in plain Rust: the server functions run it (the authority — a request that
+//! skips the browser still meets these rules) and the address step renders its messages next to
+//! the fields. The browser code only pre-checks the form's HTML5 constraints (`required`,
+//! `minlength`, `maxlength`) so the common slips are caught before the round-trip.
 
 use crate::format;
 use crate::prefs::{Lang, Numerals};
@@ -360,7 +360,7 @@ pub fn pretty_phone(normalized: &str) -> String {
     }
 }
 
-/// Validate one field (the island calls this on blur; `validate` calls it for each field).
+/// Validate one field (`validate` calls it for each field).
 pub fn check(field: Field, a: &AddressInput) -> Option<Problem> {
     let raw = field.value(a);
     let v = raw.trim();

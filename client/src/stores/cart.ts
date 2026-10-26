@@ -27,13 +27,34 @@ export interface CartState {
   count: number;
 }
 
-/** What the drawer shows for a line before the server's quote arrives (from the card clicked). */
+/**
+ * What the cart keeps for a line, from the card or product page it was added from: enough to show
+ * and price it without asking the server (the client computes the cart). Prices in piastres.
+ * Rust: `api::cart::Snapshot` (the server sends the same shape: /cart, checkout, the quote).
+ */
 export interface LineSnapshot {
   name: string;
   img?: string;
-  price?: string;
   href?: string;
+  /** The variant's label, e.g. "256 GB". */
+  variant?: string;
+  /** Add-on names, in the same order as `addonPrices`. */
+  addons?: string[];
+  /** The variant's unit price, without add-ons. */
+  unit?: number;
+  /** The variant's "was" price (only when higher than `unit`). */
+  compareAt?: number;
+  addonPrices?: number[];
+  /** The most that can be ordered (stock when it was added, at most the cart's limit). */
+  maxQty?: number;
+  /** @deprecated A formatted price, from before the client computed the cart: ignored (pass `unit`). */
+  price?: string;
 }
+
+/** A snapshot the cart can be computed from (older or partial ones are filled by `quote()`). */
+export type PricedSnapshot = LineSnapshot & { unit: number; maxQty: number };
+export const isPriced = (s: LineSnapshot | undefined): s is PricedSnapshot =>
+  !!s && typeof s.unit === "number" && typeof s.maxQty === "number";
 
 export const lineKey = (l: Pick<CartLine, "product" | "variant" | "addons">): string =>
   [l.product, l.variant, ...(l.addons.length ? [[...l.addons].sort().join("+")] : [])].join(":");
@@ -136,9 +157,10 @@ export function clear(): void {
   commit([]);
 }
 
-// ── Snapshots: instant drawer lines, from the card or page the item was added from ──────────────
+// ── Snapshots: each line's display data and prices, kept with the cart (per tenant and language) ─
 const SNAP = "cart:snap:";
-function saveSnapshot(k: string, s: LineSnapshot): void {
+/** Keep (or replace) a line's snapshot. */
+export function saveSnapshot(k: string, s: LineSnapshot): void {
   try {
     localStorage.setItem(SNAP + cfg().tenant + ":" + cfg().lang + ":" + k, JSON.stringify(s));
   } catch {
@@ -152,6 +174,23 @@ export function snapshot(k: string): LineSnapshot | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** A line's unit price with its add-ons (piastres). */
+export const unitWithAddons = (s: PricedSnapshot): number => s.unit + (s.addonPrices ?? []).reduce((a, b) => a + b, 0);
+
+/**
+ * Adopt the server's snapshots (a page that rendered the cart: /cart, checkout). Returns true when
+ * a line's price differs from what this cart had been showing, so the page can say so.
+ */
+export function adoptSnapshots(server: Record<string, PricedSnapshot>): boolean {
+  let moved = false;
+  for (const [k, s] of Object.entries(server)) {
+    const mine = snapshot(k);
+    if (isPriced(mine) && unitWithAddons(mine) !== unitWithAddons(s)) moved = true;
+    saveSnapshot(k, s);
+  }
+  return moved;
 }
 
 // ── Server data: prices, stock and totals for exactly this cart (cached per cart contents) ─────

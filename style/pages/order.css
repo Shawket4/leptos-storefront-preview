@@ -439,15 +439,6 @@
 .net-state .icon {
   flex: none;
 }
-.spin-slow {
-  animation: spin-slow 1.6s linear infinite;
-}
-@keyframes spin-slow {
-  to { rotate: -360deg; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .spin-slow { animation: none; }
-}
 .order-live__foot .link-btn {
   min-block-size: 36px;
   margin: 0;

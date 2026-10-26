@@ -9,7 +9,7 @@
 //! messages, focus on the first server error, a pending state and a double-submit guard.
 //!
 //! How that meets server_fn's own redirect for form posts (verified in the 0.8.22 source): a post
-//! that `Accept`s `text/html` (a browser without JS, or the islands router) makes server_fn set
+//! that `Accept`s `text/html` (a browser without JS, or the client router) makes server_fn set
 //! `Location: <Referer>` itself — with `?__path=…&__err=…` appended on error — and *then*
 //! `leptos_axum` applies the `ResponseOptions`, whose `Location` replaces it (`HeaderMap::extend`
 //! replaces). So:
@@ -184,7 +184,7 @@ mod imp {
     use crate::server::{cart, sim, state};
     use domain::cart::CartLine;
 
-    /// A browser form post (no JS) or an islands-router post — both ask for HTML.
+    /// A browser form post (no JS) or a client-router post — both ask for HTML.
     pub fn accepts_html() -> bool {
         use_context::<http::request::Parts>()
             .and_then(|p| {
@@ -272,8 +272,8 @@ mod imp {
     }
 }
 
-/// Step 1: the delivery address. Validated with `rules::validate` — the same function the
-/// address island runs on blur and submit.
+/// Step 1: the delivery address, validated with `rules::validate` (the browser code only
+/// pre-checks the form's HTML5 constraints).
 #[server]
 pub async fn checkout_address(
     name: String,
@@ -451,6 +451,9 @@ pub struct Ctx {
     pub cart: CartView,
     /// A line can't be sent as it is: the review step says so and can't be placed.
     pub blocked: bool,
+    /// The lines' snapshots now (JSON): the browser code compares them with what its cart showed
+    /// and says so when a price moved (`features/checkout.ts`).
+    pub snapshots_json: String,
     pub step: Step,
     /// Which steps are complete.
     pub done: [bool; 4],
@@ -473,6 +476,17 @@ fn load(asked: Step) -> Option<Ctx> {
     }
     let d = v.key.as_deref().map(draft::get).unwrap_or_default();
     let slots = imp::slots(&v.tenant);
+    let snapshots_json = {
+        let lang = crate::request::init().prefs.lang;
+        let st = crate::server::state();
+        let catalog = st.catalog(&v.tenant.id);
+        let snaps: Vec<_> = v
+            .lines
+            .iter()
+            .map(|l| crate::server::cart::snapshot(l, &catalog, st.media(), lang))
+            .collect();
+        crate::pages::cart::snapshots_json(&v.lines, &snaps)
+    };
     let slot_ok = d
         .slot
         .as_ref()
@@ -509,6 +523,7 @@ fn load(asked: Step) -> Option<Ctx> {
     Some(Ctx {
         cart: v.cart,
         blocked: v.blocked,
+        snapshots_json,
         step,
         done,
         address: d.address,
@@ -585,7 +600,7 @@ fn CheckoutBody(
         .filter(|e| !matches!(e, CheckoutError::Invalid(_)))
         .map(|e| e.message(lang));
     // One branch per step (and a separate one for an address re-render with server errors), so
-    // the islands router replaces the step wholesale instead of patching one into another.
+    // a step change replaces the step wholesale.
     let panel = match step {
         Step::Address if field_errors.is_empty() => EitherOf5::A(view! {
             <AddressForm initial=ctx.attempt.clone().or(ctx.address.clone()).unwrap_or_default() errors=vec![] form_error=step_error.clone()/>
@@ -614,6 +629,8 @@ fn CheckoutBody(
             <h1 class="t-h2 co-title">{tr(lang, "Checkout", "إتمام الطلب")}</h1>
         </header>
         <steps::Stepper step done=ctx.done lang num/>
+        <script type="application/json" data-cart-snapshots="" inner_html=ctx.snapshots_json.clone()></script>
+        <crate::pages::cart::PriceChanged lang/>
         <div class={if step == Step::Review { "co-layout co-layout--single" } else { "co-layout" }}>
             <section class=format!("co-main card co-main--{}", ctx.dir) aria-labelledby="co-step-title">
                 {panel}

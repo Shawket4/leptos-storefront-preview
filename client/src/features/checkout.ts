@@ -15,6 +15,7 @@ import { register } from "../core/mount";
 import { NetError, getJSON, isOnline, onOnline } from "../core/net";
 import { cfg, digits, t } from "../core/page";
 import { routing } from "../core/router";
+import { adoptSnapshots, type PricedSnapshot } from "../stores/cart";
 
 type Control = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
@@ -106,6 +107,15 @@ register("checkout-form", (form) => {
 
 // ── Every step: focus the server's first error, pending state, one submit at a time ──────────
 register("checkout", (root) => {
+  // The server re-priced the cart from the cookie: if a price moved since the cart showed it (the
+  // cart is computed in the browser from its snapshots), say so — and keep the new prices.
+  try {
+    const server = JSON.parse($("script[data-cart-snapshots]", root)?.textContent ?? "{}") as Record<string, PricedSnapshot>;
+    if (adoptSnapshots(server)) $("[data-price-changed]", root)?.removeAttribute("hidden");
+  } catch {
+    /* nothing to compare */
+  }
+
   // What the server sent back: the first field it flagged, else the step's message.
   const first = $<HTMLElement>('[aria-invalid="true"]', root) ?? $<HTMLElement>(".notice[data-autofocus]", root);
   first?.focus();

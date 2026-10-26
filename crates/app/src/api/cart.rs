@@ -1,9 +1,9 @@
-//! The cart's one data endpoint: `GET /api/cart/quote` — the server's pricing of the cart in the
-//! request's `cart` cookie (prices, stock caps, totals), money formatted in the visitor's numerals.
-//! The browser asks for it only when it needs those numbers (the drawer, /cart after a change);
-//! adding, removing and changing quantities never call the server (`client/src/stores/cart.ts`).
+//! The cart's data for the browser. The browser computes the cart itself from each line's
+//! [`Snapshot`] (taken from the card or product page it was added from); it calls
+//! `GET /api/cart/quote` only for lines that have none (added without JS, storage cleared) —
+//! each quote line carries the snapshot to keep.
 //!
-//! Shape: `CartQuote` in `client/src/api/types.ts`.
+//! Shapes: `CartQuote` in `client/src/api/types.ts`, `LineSnapshot` in `client/src/stores/cart.ts`.
 
 use leptos::prelude::*;
 use leptos::server_fn::codec::GetUrl;
@@ -24,6 +24,32 @@ pub struct CartQuote {
     pub can_checkout: bool,
 }
 
+/// What the browser keeps for a cart line — `LineSnapshot` in `client/src/stores/cart.ts` — to
+/// show and price it without asking: display data and prices in piastres.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Snapshot {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub img: Option<String>,
+    pub href: String,
+    /// The variant's label, e.g. "256 GB".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub variant: Option<String>,
+    /// Add-on names, in the line's add-on order (same order as `addon_prices`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub addons: Vec<String>,
+    /// The variant's unit price, without add-ons.
+    pub unit: i64,
+    /// The variant's "was" price (only when higher than `unit`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub compare_at: Option<i64>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub addon_prices: Vec<i64>,
+    /// The most that can be ordered now (stock, at most the cart's limit).
+    pub max_qty: u32,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct CartQuoteLine {
     /// Same as the client's `lineKey` (`domain::cart::CartLine::key`).
@@ -42,6 +68,8 @@ pub struct CartQuoteLine {
     /// Most the shopper can have now (stock); 0 = unavailable.
     pub max_qty: u32,
     pub issue: Option<LineIssue>,
+    /// What the browser keeps for this line (`None`: unavailable).
+    pub snapshot: Option<Snapshot>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -66,13 +94,15 @@ mod imp {
     use domain::cart::CartLine;
 
     /// The quote for `lines` (cookie order; lines the catalogue lost come back `unavailable`).
-    pub fn quote(lines: &[CartLine], p: &Priced, lang: Lang, num: Numerals) -> CartQuote {
+    /// `snaps` are the lines' snapshots (`server::cart::snapshot`), in the same order.
+    pub fn quote(lines: &[CartLine], snaps: &[Option<Snapshot>], p: &Priced, lang: Lang, num: Numerals) -> CartQuote {
         let m = |x: Piastres| format::money(x, lang, num);
         let ar = lang.is_rtl();
         let v = &p.view;
         let out = lines
             .iter()
-            .map(|cl| {
+            .zip(snaps.iter().cloned().chain(std::iter::repeat(None)))
+            .map(|(cl, snapshot)| {
                 let key = cl.key();
                 match v.lines.iter().find(|l| l.key == key) {
                     Some(l) => CartQuoteLine {
@@ -94,6 +124,7 @@ mod imp {
                             Issue::OutOfStock => LineIssue::OutOfStock,
                             Issue::Capped(_) => LineIssue::Capped,
                         }),
+                        snapshot,
                     },
                     None => CartQuoteLine {
                         key,
@@ -136,6 +167,8 @@ pub async fn get_quote() -> Result<CartQuote, ServerFnError> {
     sim::delay(sim::Widget::Cart).await;
     let st = crate::server::state();
     let tenant = st.tenant(&rq.tenant.id).clone();
-    let priced = cart::price(&lines, &tenant, &st.catalog(&tenant.id), st.media());
-    Ok(quote(&lines, &priced, rq.prefs.lang, rq.prefs.numerals))
+    let catalog = st.catalog(&tenant.id);
+    let priced = cart::price(&lines, &tenant, &catalog, st.media());
+    let snaps: Vec<_> = lines.iter().map(|l| cart::snapshot(l, &catalog, st.media(), rq.prefs.lang)).collect();
+    Ok(quote(&lines, &snaps, &priced, rq.prefs.lang, rq.prefs.numerals))
 }
