@@ -144,3 +144,61 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
 - Anything personalised (cart, checkout, orders): `cache::private()` → `Cache-Control: private,
   no-store`. Never render cart contents into a public page; personal bits are islands fed by
   cookies or server functions.
+
+## Data layer (lead) — use it, don't re-implement it
+
+Server functions (call them from a `Resource` in a server component, or from an island):
+
+| Function | Returns |
+|---|---|
+| `api::nav_categories()` | `Vec<NavCategory>` (display order, counts, optional image) |
+| `api::home_rail(rail: Rail, limit)` | `Vec<CardData>` — `Rail::{Featured, Deals, New, Bestsellers, Express}` |
+| `api::list_products(query: ListingQuery)` | `ListingPage` (items, total, page/pages, `Facets` from the unfiltered set) |
+| `api::product_detail(slug)` | `Option<ProductView>` (product incl. options/variants/modifier groups/specs, resolved `images: Vec<Img>`, brand, category) |
+| `api::related_products(id, limit)` | `Vec<CardData>` |
+| `api::search_products(q, limit)` | `SearchResults` (hits with `name_en`/`name_ar` highlight `Seg`s, matching categories) |
+| `api::cart::{cart_get, cart_add(product, variant, qty, addons), cart_set_qty(key, qty), cart_remove(key)}` | `CartView` (lines priced by `madar-catalog`, savings, delivery fee, VAT included via `madar-money`) |
+
+Types live in `api::types`. `ListingQuery::from_query(category, qs)` / `.to_query()` / `.href()`
+are the single source of truth for listing URLs (server and islands). Errors are
+`ServerFnError::new("<code>")` (codes listed at the top of `api/cart.rs`).
+
+Server-only (`#[cfg(feature = "ssr")]`): `server::state()`, `server::current_catalog()`
+(synchronous, in-memory — use it to compute cache tags before streaming starts),
+`server::cache::{public, private, tag_product, tag_category}`, `server::sim::{delay, check_fail,
+Widget}` (every read already waits its simulated latency; `?fail=<widget>` on the page URL makes it
+fail — use that to demo error boundaries), `state().orders()` (`place`, `get`, `next_step_at`) and
+`server::orders::slots(&tenant, now_ms)`, `server::cart::{view, cookies}`,
+`TenantCatalog::variant_label`.
+
+Global client stores (`crate::stores`): `use_cart()` → `CartStore { count, view, open, pulse }`
+— **the one cart signal**: the header badge reads `count`, every cart mutation calls
+`store.apply(view)` with the server's response; optimistic UIs adjust `count`/`view` first and
+reconcile on response. `prefs::use_ui()` → `Ui { lang, numerals, theme }`.
+
+## Design-system contract (being built on `agent/design`; lands on main soon)
+
+CSS tokens (`style/tokens.css`): `--page --surface --surface-2 --sunk --well --text --text-2
+--text-3 --line --line-strong --rule --brand --on-brand --brand-wash --brand-text --ink --on-ink
+--success(-wash) --warning(-wash) --danger(-wash) --info(-wash) --focus`; `--font-sans --font-mono
+--fs-xs/sm/md/lg/xl/2xl/3xl/display --lh-tight --lh-body`; `--sp-1 … --sp-16` (4px steps: 1,2,3,4,
+5,6,8,10,12,16); `--r-sm/md/lg/xl/2xl/pill`; `--dur-fast/base/slow/brand --ease-out/in/in-out/
+expo/drawer/pop`; `--shadow-sm/md/float/modal`; `--gutter --container --header-h`;
+`--z-header/drawer/toast`.
+
+Components (`crate::components::…`), APIs fixed:
+`icons::Icon(name, size?, class?, label?)` · `button::{Button, IconButton, ButtonKind, ButtonSize}`
+· `price::{Price(amount, compare_at?, size?, from?, lang, numerals), PriceLive(amount: Signal,
+compare_at: Signal, size?)}` · `rating::Rating(value, count, lang, numerals, compact?)` ·
+`badge::{Badge, BadgeKind}` · `status_pill::{StatusPill, Tone}` · `image::Picture(img, sizes,
+priority?, class?, vt_name?, lang)` · `skeleton::{Skeleton, SkeletonText}` ·
+`product_card::{CardData, ProductCard(card, lang, numerals, priority?), ProductCardSkeleton,
+ProductGrid, ProductGridSkeleton}` · `layout::{Container, Section, SectionHeader, Rail}` ·
+`drawer::{Drawer(open, side?, title, children), DrawerSide}` · `toast::{show, ToastKind, Toaster}`
+· `form::{Field, TextInput, TextArea, Select, RadioCard, Checkbox}` · `stepper::Stepper(value,
+on_change, min, max, label)` · `empty_state::EmptyState(art, title, body, action?)` ·
+`breadcrumbs::Breadcrumbs(items)` · `segmented::Segmented`.
+
+Until it lands, page agents may put **minimal placeholders with the same names and props** in a
+local `shim` submodule of their page (e.g. `pages/product/shim.rs`), and swap to the real ones when
+the lead says the design system is on main (`git merge main` in your worktree, then delete the shim).
