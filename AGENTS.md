@@ -82,7 +82,7 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   submits are intercepted, the new page's HTML is fetched with an `Islands-Router: true` header and
   *diffed into the current DOM* inside `document.startViewTransition`. Existing islands are **not**
   diffed (their client state survives navigation); new islands are hydrated. Consequences:
-  - Plain links and forms are the navigation API. Everything works with JS disabled.
+  - Plain links and forms are the navigation API, so navigation works with JS disabled.
   - An island that renders text must make it reactive to `use_ui().lang` (use
     `prefs::tr_signal` / `move || tr(ui.lang.get(), …)`), because the language toggle swaps the
     server HTML around it but not inside it.
@@ -93,10 +93,16 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
     events whose default was prevented).
   - Because of `mark_branches`, SSR HTML contains `<!--bo-…-->`/`<!--bc-…-->` comments. They are
     used by the diff. Don't strip them.
-- **Streaming**: routes use out-of-order streaming; each `<Suspense>` streams in when its resource
-  resolves. **Response headers and status must be set synchronously, before any `Suspense`
-  resolves** (headers go out with the first chunk). Use the cache helpers below at the top of the
-  page component.
+- **Streaming modes are per route (lead sets them in `lib.rs`)**: out-of-order streaming sends each
+  resolved `<Suspense>` as a `<template>` + inline script, so **OOO sections never appear without
+  JS**, and meta tags depending on suspended data miss the `<head>`. Therefore: `/` is OutOfOrder
+  (with a `<noscript>` redirect to `/nojs`, the same page in order); `/c/:slug`, `/search`, `/cart`,
+  `/checkout`, `/orders/:id` are **InOrder** (work fully without JS); `/p/:slug` is
+  **PartiallyBlocked** — use `Resource::new_blocking` for the product so `<head>` (title, OG,
+  JSON-LD) waits for it and its HTML is inline; other sections still stream. islands-router
+  navigations always get in-order HTML (leptos_axum disables OOO for them).
+  **Response headers and status must be set before the first chunk** — synchronously at the top of
+  the page component (or, in PartiallyBlocked pages, before the blocking resource resolves).
 - Data: `Resource::new(source, fetcher)` + `<Suspense fallback=…>` / `<Transition>`;
   `Suspend::new(async move { … })` inside the view; `ErrorBoundary` per section;
   `ServerAction::<Fn>::new()` + `<ActionForm action=…>` (works without JS: a plain POST to the

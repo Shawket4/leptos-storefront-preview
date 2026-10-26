@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Cairo, system-ui, sans-serif; background: #ffffff; color: #111; }
+  .wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 0; }
+  .col { padding: 28px 24px 32px; }
+  .col h2 { margin: 0 0 2px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .col .tag { margin: 0 0 18px; font-size: 13px; opacity: .7; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .sw { width: 64px; }
+  .sw b { display: block; height: 40px; border-radius: 10px; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .06); }
+  .sw span { display: block; font: 600 10px/1.3 "IBM Plex Mono", monospace; margin-top: 4px; }
+  .sw i { display: block; font: 10px/1.2 Cairo, sans-serif; font-style: normal; opacity: .7; }
+  .card { border-radius: 20px; padding: 10px 10px 14px; width: 200px; }
+  .well { aspect-ratio: 1; border-radius: 14px; display: grid; place-items: center; font-size: 48px; }
+  .brand { font-size: 12px; font-weight: 600; margin: 10px 6px 0; }
+  .name { font-size: 15px; font-weight: 600; margin: 2px 6px 0; line-height: 1.35; }
+  .price { font: 600 15px "IBM Plex Mono", monospace; margin: 6px 6px 0; }
+  .was { font: 500 12px "IBM Plex Mono", monospace; text-decoration: line-through; margin-inline-start: 6px; }
+  .btns { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .btn { padding: 11px 16px; border-radius: 12px; font-weight: 700; font-size: 14px; }
+  .chip { padding: 5px 12px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+  .stack { display: flex; gap: 14px; align-items: flex-start; }
+  .dark { margin-top: 18px; border-radius: 20px; padding: 14px; }
+  .dark .stack { gap: 10px; }
+  .lbl { font: 600 11px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .08em; margin: 18px 0 8px; opacity: .6; }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+<script>
+const NILE = { l: "#0D6273", d: "#2E94A6" }, SOUQ = { l: "#A8431E", d: "#F08A5D" };
+const palettes = [
+  { key: "A · Linen (current)", tag: "Warm off-white + warm ink, stone greys. Calm, premium, regional without clichés.",
+    l: { page: "#F6F4EF", surface: "#FFFFFF", sunk: "#EFECE6", well: "#F2EFE9", text: "#1A1814", text2: "#5B554C", text3: "#8A8377" },
+    d: { page: "#121110", surface: "#1C1B19", sunk: "#2A2825", well: "#34312D", text: "#F2EEE7", text2: "#BFB8AC", text3: "#8B8479" } },
+  { key: "B · Porcelain", tag: "Neutral near-white + near-black, zinc greys. Crisp gallery look; colour comes only from the tenant.",
+    l: { page: "#FAFAF9", surface: "#FFFFFF", sunk: "#F1F1F0", well: "#F4F4F3", text: "#111111", text2: "#52525B", text3: "#8E8E96" },
+    d: { page: "#0B0B0C", surface: "#18181B", sunk: "#232326", well: "#2C2C30", text: "#F4F4F5", text2: "#B4B4BB", text3: "#85858D" } },
+  { key: "C · Clay", tag: "Rosy sand + cocoa ink. More character; pairs with Souq's terracotta, contrasts Nile's teal.",
+    l: { page: "#F8F1EC", surface: "#FFFDFB", sunk: "#F0E6DE", well: "#F4ECE6", text: "#24160F", text2: "#6B5548", text3: "#9A857A" },
+    d: { page: "#17110D", surface: "#221A15", sunk: "#2E241E", well: "#3A2F28", text: "#F6EDE6", text2: "#C9B6A9", text3: "#977F71" } },
+];
+const sw = (c, n) => `<div class="sw"><b style="background:${c}"></b><span>${c}</span><i>${n}</i></div>`;
+const card = (p, accent, icon, name, brand) => `
+  <div class="card" style="background:${p.surface};color:${p.text};box-shadow:0 1px 2px rgb(0 0 0/.06)">
+    <div class="well" style="background:${p.well}">${icon}</div>
+    <div class="brand" style="color:${p.text3}">${brand}</div>
+    <div class="name">${name}</div>
+    <div class="price">EGP 1,299.00<span class="was" style="color:${p.text3}">1,599.00</span></div>
+    <div class="btns"><span class="btn" style="background:${accent};color:#fff">Add to cart</span></div>
+  </div>`;
+document.getElementById("wrap").innerHTML = palettes.map(P => `
+  <div class="col" style="background:${P.l.page};color:${P.l.text}">
+    <h2>${P.key}</h2><p class="tag" style="color:${P.l.text2}">${P.tag}</p>
+    <div class="lbl">Light (default)</div>
+    <div class="row">${sw(P.l.page,"page")}${sw(P.l.surface,"surface")}${sw(P.l.sunk,"sunk")}${sw(P.l.text,"text")}${sw(P.l.text2,"text-2")}${sw(P.l.text3,"text-3")}</div>
+    <div class="stack">${card(P.l, NILE.l, "📱", "Galaxy S25 Ultra", "SAMSUNG · Nile")}${card(P.l, SOUQ.l, "🍅", "طماطم بلدي", "SOUQ")}</div>
+    <div class="btns">
+      <span class="chip" style="background:color-mix(in oklab, ${NILE.l} 12%, ${P.l.surface});color:${NILE.l}">Express 30 min</span>
+      <span class="chip" style="background:color-mix(in oklab, ${SOUQ.l} 12%, ${P.l.surface});color:${SOUQ.l}">−20%</span>
+      <span class="btn" style="background:transparent;color:${P.l.text};box-shadow:inset 0 0 0 1px rgb(0 0 0/.18)">Outline</span>
+    </div>
+    <div class="dark" style="background:${P.d.page};color:${P.d.text}">
+      <div class="lbl" style="margin-top:0">Dark (opt-in)</div>
+      <div class="row">${sw(P.d.page,"page")}${sw(P.d.surface,"surface")}${sw(P.d.sunk,"sunk")}${sw(P.d.text,"text")}${sw(P.d.text2,"text-2")}</div>
+      <div class="stack">${card(P.d, NILE.d, "🎧", "AirPods Pro", "APPLE · Nile")}</div>
+    </div>
+  </div>`).join("");
+</script>
+</body>
+</html>
