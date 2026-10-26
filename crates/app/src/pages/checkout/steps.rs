@@ -1,6 +1,5 @@
 //! The server-rendered parts of checkout: the stepper, the delivery-slot, payment and review steps
-//! (plain forms the islands router posts for us), the order summary, and the tiny island that
-//! moves focus to a step's heading when the router swaps steps in.
+//! (plain forms; with JS the client router posts them), and the order summary.
 
 use super::{CheckoutPayment, CheckoutPlace, CheckoutSlot, Ctx, Step, fee_label};
 use crate::api::types::{CartView, DeliverySlot};
@@ -17,19 +16,6 @@ use domain::{L10n, PaymentMethod, Piastres};
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::server_fn::ServerFn;
-
-/// Focus the step's heading (`#co-step-title`) when this step arrived by an islands-router
-/// navigation, so keyboard and screen-reader users land on the new step, not on <body>. On a
-/// full page load it does nothing (the browser's own focus order applies).
-#[component]
-pub fn StepFocus() -> impl IntoView {
-    Effect::new(move |_| {
-        if crate::pages::cart::store::arrived_by_navigation() {
-            crate::pages::cart::store::focus_soon("#co-step-title");
-        }
-    });
-    view! { <span class="sr-only"></span> }
-}
 
 #[component]
 pub fn Stepper(step: Step, done: [bool; 4], lang: Lang, num: Numerals) -> impl IntoView {
@@ -66,7 +52,7 @@ pub fn Stepper(step: Step, done: [bool; 4], lang: Lang, num: Numerals) -> impl I
     }
 }
 
-/// An error message the server sent back for this step, focused after a router round-trip.
+/// An error message the server sent back for this step (`features/checkout.ts` focuses it).
 #[component]
 fn StepError(message: Option<String>) -> impl IntoView {
     message.map(|m| {
@@ -98,7 +84,6 @@ fn StepHeading(text: &'static str, #[prop(optional)] sub: Option<&'static str>) 
         <div class="co-step-head">
             <h2 id="co-step-title" class="co-step-title" tabindex="-1">{text}</h2>
             {sub.map(|s| view! { <p class="co-step-sub">{s}</p> })}
-            <StepFocus/>
         </div>
     }
 }
@@ -375,7 +360,7 @@ pub fn ReviewStep(
     );
     let lines = ctx.cart.lines.clone();
     // Stock moved since these were added: say what, and where to fix it, before anything else.
-    let blocked = crate::pages::cart::math::stock_blocked(&ctx.cart);
+    let blocked = ctx.blocked;
     let error = if blocked { None } else { error };
     view! {
         <div class="co-review">
@@ -451,8 +436,14 @@ fn MiniLine(l: crate::api::types::CartLineView, lang: Lang, num: Numerals) -> im
         detail.push(l.variant_label.pick(ar).to_owned());
     }
     detail.extend(l.addons.iter().map(|a| a.pick(ar).to_owned()));
-    let stock =
-        crate::pages::cart::math::stock_message(crate::pages::cart::math::stock(&l), lang, num);
+    let stock = crate::server::cart::issue(&l).map(|i| match i {
+        crate::server::cart::Issue::OutOfStock => {
+            crate::strings::get("cart.issue.out_of_stock", lang).to_owned()
+        }
+        crate::server::cart::Issue::Capped(n) => {
+            crate::pages::cart::tx("cart.issue.capped", lang, &[("n", &format::count(n, num))])
+        }
+    });
     view! {
         <li class="mini-line">
             <span class="mini-line__media"><Picture img=l.img.clone() sizes="48px" lang/></span>

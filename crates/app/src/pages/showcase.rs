@@ -1,27 +1,23 @@
-//! `/showcase` — every Leptos feature this storefront uses, each with a plain explanation (EN +
-//! AR), why it matters here, a live demo, where it is used in the app, and the code that does it.
+//! `/showcase`: a guided tour of the storefront as built. What Leptos does on the server, what the
+//! TypeScript client does, and why the WASM islands went. Each card has what it is, why it matters
+//! here, a live demo, where the app uses it, and short excerpts of the real source, cut at compile
+//! time (`showcase/snippets.rs`) so they can't go stale.
 //!
-//! The page is a server component; each demo that needs the browser is one small island
-//! (`showcase/islands.rs`). Code excerpts are cut from the repository at compile time
-//! (`showcase/snippets.rs`), so they can't go stale. It is `private, no-store`: it shows the
-//! visitor's own simulated-latency settings and the server's live cache counters.
+//! Everything here is server-rendered (in order). Demos that need the browser are small TypeScript
+//! features (`client/src/features/showcase.ts`) mounted on this markup with `data-ts="sc-…"`. The
+//! page is `private, no-store`: it shows the visitor's own latency settings and live cache counters.
 
 mod data;
 mod demos;
-mod islands;
-#[cfg(feature = "hydrate")]
-mod js;
-mod notes;
 mod snippets;
+mod stream;
 
-pub use islands::provide_store;
+pub use stream::StreamDemoPage;
 
-use crate::api::types::{CacheInfo, NavCategory};
+use crate::api::types::CacheInfo;
 use crate::components::icons::Icon;
-use crate::components::product_card::CardData;
-use crate::media::Img;
 use crate::pages::errors::ErrorPage;
-use crate::prefs::{Lang, Numerals, Theme, tr};
+use crate::prefs::{Lang, Numerals, tr};
 use crate::request::req;
 use crate::tenant::TenantVia;
 use data::{Cat, FEATURES, Feature, Href};
@@ -36,60 +32,29 @@ use std::sync::Arc;
 /// Query parameters this page understands.
 #[derive(Clone, Debug, Default)]
 pub(crate) struct Query {
-    pub tab: Option<String>,
     pub cat: Option<Cat>,
-    /// `?fail=` (per-request simulated faults).
-    pub fail: Vec<String>,
-    /// `?crash=1|500|503`: show the full-page error view (route-level failure).
+    /// `?crash=1|500|503`: the full-page error view (a route-level failure).
     pub crash: Option<u16>,
-    /// View-transition demo layout: `list` or grid.
-    pub vt_list: bool,
-    /// The raw query string (router demo).
-    pub raw: String,
-    /// `?__path=…&__err=…` from a no-JS ActionForm post that failed.
-    pub action_err: Option<(String, String)>,
 }
 
 impl Query {
     fn parse(path_and_query: &str) -> Query {
-        let raw = path_and_query
-            .split_once('?')
-            .map(|(_, q)| q)
-            .unwrap_or("")
-            .to_owned();
-        let mut q = Query {
-            raw: raw.clone(),
-            ..Default::default()
-        };
-        let mut path = None;
-        let mut err = None;
+        let raw = path_and_query.split_once('?').map(|(_, q)| q).unwrap_or("");
+        let mut q = Query::default();
         for pair in raw.split('&').filter(|p| !p.is_empty()) {
             let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
-            let v = crate::api::types::url_decode(v);
             match k {
-                "tab" if !v.is_empty() => q.tab = Some(v),
-                "cat" => q.cat = Cat::parse(&v),
-                "fail" => {
-                    q.fail = v
-                        .split([',', ' ', '+'])
-                        .filter(|s| !s.is_empty())
-                        .map(str::to_owned)
-                        .collect()
-                }
+                "cat" => q.cat = Cat::parse(v),
                 "crash" => {
-                    q.crash = match v.as_str() {
+                    q.crash = match v {
                         "" | "0" => None,
                         "503" => Some(503),
                         _ => Some(500),
                     }
                 }
-                "vt" => q.vt_list = v == "list",
-                "__path" => path = Some(v),
-                "__err" => err = Some(v),
                 _ => {}
             }
         }
-        q.action_err = path.zip(err);
         q
     }
 }
@@ -99,7 +64,6 @@ impl Query {
 pub(crate) struct Links {
     pub category: Option<String>,
     pub product: Option<String>,
-    pub variant: Option<u32>,
 }
 
 impl Links {
@@ -107,15 +71,7 @@ impl Links {
         match h {
             Href::Path(p) => Some(p.to_owned()),
             Href::Category => self.category.as_ref().map(|c| format!("/c/{c}")),
-            Href::CategoryQuery => self
-                .category
-                .as_ref()
-                .map(|c| format!("/c/{c}?stock=1&sort=price-asc")),
             Href::Product => self.product.as_ref().map(|p| format!("/p/{p}")),
-            Href::ProductVariant => match (&self.product, self.variant) {
-                (Some(p), Some(v)) => Some(format!("/p/{p}?v={v}")),
-                _ => None,
-            },
             Href::ProductQuery(q) => self.product.as_ref().map(|p| format!("/p/{p}?{q}")),
         }
     }
@@ -134,83 +90,42 @@ pub(crate) struct TenantFacts {
     pub express_minutes: Option<u32>,
     pub categories: usize,
     pub products: usize,
-    /// (id, name, href, other origin?)
-    pub other: Option<(String, L10n, String, bool)>,
+    /// (name, href, another origin?)
+    pub other: Option<(L10n, String, bool)>,
 }
 
-/// Measures when each streamed block resolved on the server, relative to the page's start.
-#[derive(Debug)]
-pub(crate) struct Clock {
-    #[cfg(feature = "ssr")]
-    pub start: std::time::Instant,
-    pub arrivals: std::sync::atomic::AtomicU32,
-}
-
-impl Clock {
-    fn new() -> Self {
-        Clock {
-            #[cfg(feature = "ssr")]
-            start: std::time::Instant::now(),
-            arrivals: std::sync::atomic::AtomicU32::new(0),
-        }
-    }
-
-    /// (ms since the page started rendering, arrival rank starting at 1)
-    pub fn arrived(&self) -> (u64, u32) {
-        #[cfg(feature = "ssr")]
-        let ms = self.start.elapsed().as_millis() as u64;
-        #[cfg(not(feature = "ssr"))]
-        let ms = 0;
-        (
-            ms,
-            self.arrivals
-                .fetch_add(1, std::sync::atomic::Ordering::SeqCst)
-                + 1,
-        )
-    }
+/// A real product, with everything the cart and template demos show already formatted.
+#[derive(Clone, Debug, Default)]
+pub(crate) struct Sample {
+    pub product: u32,
+    pub variant: u32,
+    pub name: String,
+    pub price: String,
+    pub img: String,
+    pub href: String,
 }
 
 #[derive(Clone, Debug)]
 pub(crate) struct Ctx {
     pub lang: Lang,
     pub num: Numerals,
-    pub theme: Theme,
     pub path_and_query: String,
-    pub origin: String,
     pub q: Query,
     pub tenant: TenantFacts,
     pub base_ms: u64,
     /// The visitor set the latency with the `sim` cookie (else it's the server default).
     pub sim_cookie: bool,
     pub fail_cookie: Vec<String>,
-    pub cats: Vec<NavCategory>,
     pub links: Links,
-    /// Three products for the calculator and the wishlist.
-    pub picks: Vec<CardData>,
-    /// The active tab's category slug and its first products (islands-router demo).
-    pub tab: Option<(NavCategory, Vec<CardData>)>,
-    pub image: Option<Img>,
-    pub vt_cards: Vec<CardData>,
     pub cache: CacheInfo,
-    pub board: notes::Board,
-    pub note_error: Option<String>,
-    pub files: Vec<islands::DiskFile>,
-    pub debug_build: bool,
-    /// This HTML is for an islands-router navigation (in-order) rather than a full load.
-    pub router_nav: bool,
-    pub now_ms: i64,
-    pub clock: Arc<Clock>,
-    /// Router demo: the parsed listing query and its first results.
-    pub listing: Option<(crate::api::types::ListingQuery, Vec<CardData>, u32)>,
-    /// Pages in the Transition demo's listing (all products, 24 per page), and its first page.
-    pub pager_pages: u32,
-    pub pager_first: Vec<CardData>,
-    /// In-stock products priced under the free-delivery line (price calculator).
-    pub calc_units: Vec<CardData>,
+    /// The cart demo's product (in stock, one variant).
+    pub sample: Option<Sample>,
+    /// Rows for the template demo.
+    pub rows: Vec<Sample>,
 }
 
 impl Ctx {
-    /// `/showcase…` with `#anchor`, for `next=` parameters (URL-encoded).
+    /// `/showcase…#anchor`, URL-encoded for `next=` parameters.
     pub fn next_here(&self, anchor: &str) -> String {
         crate::api::types::url_encode(&format!("{}#{anchor}", self.path_and_query))
     }
@@ -225,201 +140,51 @@ fn build_ctx(q: Query) -> Ctx {
     let st = state();
     let cat = current_catalog();
     let t = &rq.tenant;
+    let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
+    let ar = lang.is_rtl();
     let cats = cat.nav().to_vec();
-    let first_cat = cats.iter().find(|c| c.count > 0).map(|c| c.slug.clone());
     let multi = cat
         .products()
         .iter()
         .find(|p| p.variants.len() > 1 && p.variants.iter().filter(|v| v.stock > 0).count() > 1);
-    let any_product = cat.products().first();
     let links = Links {
-        category: first_cat.clone(),
-        product: multi.or(any_product).map(|p| p.slug.clone()),
-        variant: multi.and_then(|p| p.variants.get(1)).map(|v| v.id.0),
+        category: cats.iter().find(|c| c.count > 0).map(|c| c.slug.clone()),
+        product: multi.or(cat.products().first()).map(|p| p.slug.clone()),
     };
-    // Three in-stock products with images, from different categories when possible.
-    let mut picks: Vec<CardData> = Vec::new();
+    // In-stock, single-variant products with images, one per category when possible.
+    let mut rows: Vec<Sample> = Vec::new();
     for c in &cats {
-        if picks.len() == 3 {
+        if rows.len() == 3 {
             break;
         }
-        let page = cat.listing(&ListingQuery {
-            category: Some(c.slug.clone()),
-            page: 1,
-            ..Default::default()
-        });
-        if let Some(card) = page
-            .items
-            .into_iter()
-            .find(|c| c.in_stock && !c.img.is_missing())
-        {
-            picks.push(card);
-        }
-    }
-    let tab = q
-        .tab
-        .as_deref()
-        .and_then(|s| cats.iter().find(|c| c.slug == s))
-        .or_else(|| cats.iter().find(|c| c.count > 0))
-        .cloned()
-        .map(|c| {
-            let page = cat.listing(&ListingQuery {
-                category: Some(c.slug.clone()),
-                page: 1,
-                ..Default::default()
+        let page = cat.listing(&ListingQuery { category: Some(c.slug.clone()), page: 1, ..Default::default() });
+        if let Some(card) = page.items.into_iter().find(|c| c.in_stock && c.single_variant && !c.img.is_missing()) {
+            rows.push(Sample {
+                product: card.id.0,
+                variant: card.default_variant.0,
+                name: card.name.pick(ar).to_owned(),
+                price: crate::format::money(card.price, lang, num),
+                img: card.img.src_near(160),
+                href: format!("/p/{}", card.slug),
             });
-            (c, page.items.into_iter().take(4).collect::<Vec<_>>())
-        });
-    let image = picks
-        .first()
-        .map(|c| c.img.clone())
-        .filter(|i| i.widths.len() > 2);
-    let vt_cards: Vec<CardData> = cat
-        .listing(&ListingQuery {
-            page: 1,
-            deal: true,
-            ..Default::default()
-        })
-        .items
-        .into_iter()
-        .filter(|c| !c.img.is_missing())
-        .take(4)
-        .collect();
-
-    let fail_cookie = rq_cookie("fail")
-        .map(|v| {
-            v.split(',')
-                .filter(|s| !s.is_empty())
-                .map(str::to_owned)
-                .collect()
-        })
-        .unwrap_or_default();
-    let stats = st.reads().stats();
-    let cache = CacheInfo {
-        entries: stats.entries,
-        hits: stats.hits,
-        misses: stats.misses,
-        generation: st.reads().generation(&t.id),
-        base_latency_ms: crate::server::sim::base_ms(),
-    };
-    let note_error = q.action_err.as_ref().and_then(|(path, err)| {
-        use leptos::server_fn::ServerFn;
-        (path.as_str() == <notes::LeaveNote as ServerFn>::PATH).then(|| {
-            let e = leptos::server_fn::error::ServerFnUrlError::<ServerFnError>::decode_err(err);
-            match e {
-                ServerFnError::ServerError(m) => m,
-                other => other.to_string(),
-            }
-        })
-    });
-    let site = leptos::config::get_configuration(None)
-        .ok()
-        .map(|c| c.leptos_options);
-    let files = site
-        .map(|o| {
-            let dir = std::path::Path::new(o.site_root.as_ref()).join(o.site_pkg_dir.as_ref());
-            let name = o.output_name.to_string();
-            [
-                format!("{name}.wasm"),
-                format!("{name}_bg.wasm"),
-                format!("{name}.js"),
-            ]
-            .into_iter()
-            .filter_map(|f| {
-                std::fs::metadata(dir.join(&f))
-                    .ok()
-                    .map(|m| islands::DiskFile {
-                        name: f,
-                        bytes: m.len(),
-                    })
-            })
-            .collect()
-        })
-        .unwrap_or_default();
-
-    let other = crate::tenant::TENANT_IDS
-        .iter()
-        .copied()
-        .find(|id| *id != t.id)
-        .map(|id| {
-            let other = st.tenant(id);
-            match (rq.via, crate::tenant::swap_tenant_label(&rq.host, id)) {
-                (TenantVia::Subdomain, Some(host)) => {
-                    let scheme = rq.origin.split("://").next().unwrap_or("http");
-                    (
-                        id.to_owned(),
-                        other.name.clone(),
-                        format!("{scheme}://{host}/showcase#tenancy"),
-                        true,
-                    )
-                }
-                _ => (
-                    id.to_owned(),
-                    other.name.clone(),
-                    format!("/__tenant/{id}?next=%2Fshowcase%23tenancy"),
-                    false,
-                ),
-            }
-        });
-
-    // Router demo: read the query the way a listing page does (use_query_map), parse it with the
-    // listing's own parser, and render its first results.
-    let listing = {
-        let qm = leptos_router::hooks::use_query_map();
-        let c = qm
-            .with_untracked(|m| m.get("c"))
-            .filter(|c| cats.iter().any(|x| &x.slug == c))
-            .or(first_cat);
-        c.map(|slug| {
-            let lq = ListingQuery::from_query(Some(slug), &q.raw);
-            let page = cat.listing(&lq);
-            let total = page.total;
-            (lq, page.items.into_iter().take(3).collect(), total)
-        })
-    };
-
-    let pager = cat.listing(&ListingQuery {
-        page: 1,
-        sort: crate::api::types::Sort::Newest,
-        ..Default::default()
-    });
-    let pager_pages = pager.pages;
-    // The thumbnails don't use the blurred placeholder; keep the island's props small.
-    let pager_first: Vec<CardData> = pager
-        .items
-        .into_iter()
-        .map(|mut c| {
-            c.img.lqip = String::new();
-            c
-        })
-        .collect();
-    // Calculator: real products under the free-delivery line, so a few steps cross it.
-    let free = t.free_delivery_over.0;
-    let mut calc_units: Vec<CardData> = Vec::new();
-    for c in &cats {
-        if calc_units.len() == 3 {
-            break;
-        }
-        let page = cat.listing(&ListingQuery {
-            category: Some(c.slug.clone()),
-            page: 1,
-            ..Default::default()
-        });
-        if let Some(card) = page
-            .items
-            .into_iter()
-            .find(|x| x.in_stock && x.price.0 >= free / 6 && x.price.0 < free * 9 / 10)
-        {
-            calc_units.push(card);
         }
     }
-
+    let stats = st.reads().stats();
+    let other = crate::tenant::TENANT_IDS.iter().copied().find(|id| *id != t.id).map(|id| {
+        let other = st.tenant(id);
+        match (rq.via, crate::tenant::swap_tenant_label(&rq.host, id)) {
+            (TenantVia::Subdomain, Some(host)) => {
+                let scheme = rq.origin.split("://").next().unwrap_or("http");
+                (other.name.clone(), format!("{scheme}://{host}/showcase#tenancy"), true)
+            }
+            _ => (other.name.clone(), format!("/__tenant/{id}?next=%2Fshowcase%23tenancy"), false),
+        }
+    });
     Ctx {
-        lang: rq.prefs.lang,
-        num: rq.prefs.numerals,
-        theme: rq.prefs.theme,
+        lang,
+        num,
         path_and_query: crate::pages::errors::strip_param(&rq.path_and_query, "__err"),
-        origin: rq.origin.clone(),
+        q,
         tenant: TenantFacts {
             id: t.id.clone(),
             name: t.name.clone(),
@@ -436,26 +201,19 @@ fn build_ctx(q: Query) -> Ctx {
         },
         base_ms: crate::server::sim::base_ms(),
         sim_cookie: rq_cookie("sim").is_some(),
-        fail_cookie,
-        cats,
+        fail_cookie: rq_cookie("fail")
+            .map(|v| v.split(',').filter(|s| !s.is_empty()).map(str::to_owned).collect())
+            .unwrap_or_default(),
         links,
-        picks,
-        tab,
-        image,
-        vt_cards,
-        cache,
-        board: notes::board_now(),
-        note_error,
-        files,
-        debug_build: cfg!(debug_assertions),
-        router_nav: false,
-        now_ms: crate::server::orders::now_ms(),
-        clock: Arc::new(Clock::new()),
-        listing,
-        pager_pages,
-        pager_first,
-        calc_units,
-        q,
+        cache: CacheInfo {
+            entries: stats.entries,
+            hits: stats.hits,
+            misses: stats.misses,
+            generation: st.reads().generation(&t.id),
+            base_latency_ms: crate::server::sim::base_ms(),
+        },
+        sample: rows.first().cloned(),
+        rows,
     }
 }
 
@@ -463,45 +221,26 @@ fn build_ctx(q: Query) -> Ctx {
 fn rq_cookie(name: &str) -> Option<String> {
     let parts = use_context::<http::request::Parts>()?;
     let header = parts.headers.get(http::header::COOKIE)?.to_str().ok()?;
-    crate::request::parse_cookies(header)
-        .find(|(k, _)| *k == name)
-        .map(|(_, v)| v.to_owned())
+    crate::request::parse_cookies(header).find(|(k, _)| *k == name).map(|(_, v)| v.to_owned())
 }
 
-/// The hydrate build never renders this page (it is a server component); this only has to
-/// compile.
+/// Only the server renders this page; this keeps `cargo check -p app` (no features) compiling.
 #[cfg(not(feature = "ssr"))]
 fn build_ctx(q: Query) -> Ctx {
     let rq = req();
     Ctx {
         lang: rq.prefs.lang,
         num: rq.prefs.numerals,
-        theme: rq.prefs.theme,
         path_and_query: rq.path_and_query.clone(),
-        origin: rq.origin.clone(),
         q,
         tenant: TenantFacts::default(),
         base_ms: 0,
         sim_cookie: false,
         fail_cookie: vec![],
-        cats: vec![],
         links: Links::default(),
-        picks: vec![],
-        tab: None,
-        image: None,
-        vt_cards: vec![],
         cache: CacheInfo::default(),
-        board: notes::Board::default(),
-        note_error: None,
-        files: vec![],
-        debug_build: false,
-        router_nav: false,
-        now_ms: 0,
-        clock: Arc::new(Clock::new()),
-        listing: None,
-        pager_pages: 1,
-        pager_first: vec![],
-        calc_units: vec![],
+        sample: None,
+        rows: vec![],
     }
 }
 
@@ -509,7 +248,7 @@ fn build_ctx(q: Query) -> Ctx {
 
 #[component]
 pub fn ShowcasePage() -> impl IntoView {
-    // Personal (sim cookies, live counters): never cached. Set before anything streams.
+    // Personal (sim cookies, live counters): never cached. Set before the first byte.
     #[cfg(feature = "ssr")]
     crate::server::cache::private();
 
@@ -519,22 +258,19 @@ pub fn ShowcasePage() -> impl IntoView {
     let ar = lang.is_rtl();
     let title = format!(
         "{} · {}",
-        tr(lang, "How this storefront is built", "إزاي المتجر ده متبني"),
+        tr(lang, "How this storefront is built", "المتجر ده متبني إزاي"),
         rq.tenant.name.pick(ar)
     );
     let description = tr(
         lang,
-        "Every Leptos feature this storefront uses — islands, streaming SSR, server functions, the islands router — each with a live demo, where it's used, and the code.",
-        "كل خاصية في Leptos المتجر ده بيستخدمها — الجزر، والبث من السيرفر، ودوال السيرفر، والـ islands router — كل واحدة بديمو حي، وفين مستخدمة، والكود بتاعها.",
+        "A guided tour of the storefront as built: Leptos rendering every page on the server, a small TypeScript client for state, and why the WASM islands went. Live demos, real code.",
+        "جولة في المتجر زي ما هو متبني: Leptos بيرسم كل صفحة على السيرفر، وعميل TypeScript صغير للحالة، وليه جزر الـ WASM اتشالت. ديموهات حية وكود حقيقي.",
     );
 
-    // A route-level error view, demonstrated without wrapping the streamed page: an
-    // <ErrorBoundary> that *contains* <Suspense> waits for all of it before sending anything
-    // (see "Sharp edges"), so the boundary here holds only the synchronous failure.
+    // A route-level failure, decided before the first byte: the status is a real 500 / 503.
     if let Some(code) = q.crash {
-        let unavailable = code == 503;
         return view! {
-            <ErrorBoundary fallback=move |errors| view! { <ErrorPage errors unavailable/> }>
+            <ErrorBoundary fallback=move |errors| view! { <ErrorPage errors unavailable={code == 503}/> }>
                 {Err::<(), _>(ServerFnError::new(format!("simulated route-level failure (/showcase?crash={code})")))}
             </ErrorBoundary>
         }
@@ -557,7 +293,12 @@ pub fn ShowcasePage() -> impl IntoView {
         <Meta property="og:locale" content=if ar { "ar_EG" } else { "en_EG" }/>
         <Meta name="twitter:card" content="summary"/>
 
-        <article id="sc" class="sc" data-filter=filter>
+        // Rows the demos add (filled by TypeScript, see features/showcase.ts).
+        <template id="tpl-sc-logline"><li data-slot="text"></li></template>
+        <template id="tpl-sc-kv">
+            <div class="sc-kv"><dt class="mono" dir="ltr" data-slot="k"></dt><dd dir="auto" data-slot="v"></dd></div>
+        </template>
+        <article id="sc" class="sc" data-filter=filter data-ts="sc-filter">
             <Intro cx=cx.clone()/>
             <div class="sc-layout container">
                 <aside class="sc-toc" aria-labelledby="sc-toc-title">
@@ -565,7 +306,6 @@ pub fn ShowcasePage() -> impl IntoView {
                 </aside>
                 <div id="features" class="sc-features">
                     {Cat::ALL.into_iter().map(|cat| view! { <Category cat cx=cx.clone()/> }).collect_view()}
-                    <demos::SharpEdges cx=cx.clone()/>
                 </div>
             </div>
         </article>
@@ -573,104 +313,88 @@ pub fn ShowcasePage() -> impl IntoView {
     .into_any()
 }
 
-/// Title, lede, a few numbers, and the request's path through the stack.
+/// Title, lede, a few numbers, and one request's path through the stack.
 #[component]
 fn Intro(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
     let num = cx.num;
-    let n_features = crate::format::count(FEATURES.len() as u32, num);
+    let js_kb = crate::format::dec1(crate::client_js::APP_JS.len() as f32 / 1024.0, num);
     let steps: [(&str, (&str, &str), (&str, &str), &str); 5] = [
         (
             "globe",
             ("Browser", "المتصفح"),
-            (
-                "Asks for /showcase with its Host, cookies and Accept-Encoding.",
-                "بيطلب ‎/showcase‎ ومعاه الـ Host والكوكيز و Accept-Encoding.",
-            ),
+            ("Asks for /showcase with its Host and cookies.", "بيطلب ‎/showcase‎ ومعاه الـ Host والكوكيز."),
             "GET /showcase",
         ),
         (
             "store",
             ("Axum", "Axum"),
             (
-                "Resolves the tenant from Host, serves /media and the /__prefs, /__tenant, /__sim helpers, compresses.",
-                "بيحدد المتجر من الـ Host، وبيقدّم ‎/media‎ و ‎/__prefs‎ و ‎/__tenant‎ و ‎/__sim‎، وبيضغط.",
+                "Picks the shop from the Host, serves /js, /media and the /__prefs and /__sim helpers, and compresses.",
+                "بيحدد المحل من الـ Host، وبيقدّم ‎/js‎ و ‎/media‎ وأدوات ‎/__prefs‎ و ‎/__sim‎، وبيضغط.",
             ),
             "tower-http · moka",
         ),
         (
             "layout-grid",
-            ("leptos_axum", "leptos_axum"),
+            ("Leptos SSR", "Leptos SSR"),
             (
-                "Matches the route, runs server functions, provides context: AppState, RequestCtx, Ui.",
-                "بيطابق الـ route، ويشغّل دوال السيرفر، ويوفّر الـ context: ‏AppState و RequestCtx و Ui.",
+                "Renders the route in order into one complete document; status and headers go first.",
+                "بيرسم الـ route بالترتيب في مستند واحد كامل؛ وكود الحالة والهيدرز بيخرجوا الأول.",
             ),
-            "/api/* · SsrMode",
+            "SsrMode::InOrder",
+        ),
+        (
+            "package",
+            ("Page data", "بيانات الصفحة"),
+            (
+                "#app-config and #app-strings: the shop, the language, the endpoints and every UI string the client needs.",
+                "‏#app-config و #app-strings: المحل واللغة والـ endpoints وكل نصوص الواجهة اللي العميل محتاجها.",
+            ),
+            "application/json",
         ),
         (
             "zap",
-            ("SSR stream", "بث الـ SSR"),
+            ("TypeScript", "TypeScript"),
             (
-                "Shell and <head> first; each <Suspense> streams in as its data resolves.",
-                "الهيكل والـ <head> الأول؛ وكل <Suspense> بيوصل أول ما بياناته تخلص.",
+                "One module boots: read the page, sync the stores, mount the features, start the router.",
+                "ملف واحد بيبدأ: يقرا الصفحة، ويظبط الـ stores، ويركّب الـ features، ويشغّل الراوتر.",
             ),
-            "OutOfOrder · InOrder",
-        ),
-        (
-            "sparkles",
-            ("Islands hydrate", "الجزر تصحى"),
-            (
-                "WASM loads on idle; only #[island]s wake up; the islands router takes over links and forms.",
-                "الـ WASM بيحمّل لما المتصفح يفضى؛ والـ ‎#[island]‎ بس اللي بتصحى؛ والـ islands router بيمسك اللينكات والفورمز.",
-            ),
-            "hydrate_islands()",
+            "/js/app-….js",
         ),
     ];
-    let mode = if cx.router_nav {
-        tr(
-            lang,
-            "This HTML: an islands-router navigation (in-order).",
-            "الـ HTML ده: تنقل بالـ islands router (بالترتيب).",
-        )
-    } else {
-        tr(
-            lang,
-            "This HTML: a full page load (out-of-order stream).",
-            "الـ HTML ده: تحميل كامل للصفحة (بث بأي ترتيب).",
-        )
-    };
+    let n_cards = crate::format::count(FEATURES.len() as u32, num);
     view! {
         <header class="sc-intro container">
             <p class="sc-kicker">
                 <span class="mono" dir="ltr">"Leptos 0.8.22"</span>
                 <span aria-hidden="true">" · "</span>
-                <span>{tr(lang, "SSR + islands + islands router, on Axum", "SSR مع islands و islands router، على Axum")}</span>
+                <span>{tr(lang, "SSR on Axum, a TypeScript client, no WASM", "SSR على Axum، وعميل TypeScript، ومن غير WASM")}</span>
             </p>
-            <h1 class="sc-title">{tr(lang, "How this storefront is built", "إزاي المتجر ده متبني")}</h1>
+            <h1 class="sc-title">{tr(lang, "How this storefront is built", "المتجر ده متبني إزاي")}</h1>
             <p class="sc-lede">
                 {tr(
                     lang,
-                    "This page is the evaluation: every Leptos feature the storefront uses, explained in a sentence, demonstrated live, linked to where the app uses it, and quoted from the actual code. Nothing here is a mock-up.",
-                    "الصفحة دي هي التقييم: كل خاصية في Leptos المتجر بيستخدمها، متشرحة في جملة، وليها ديمو حي، ولينك للمكان اللي الأبلكيشن بيستخدمها فيه، ومقتبسة من الكود الحقيقي. مفيش هنا حاجة شكلية.",
+                    "Leptos renders every page on the server. A small TypeScript client changes state in the browser and asks the server only for data it doesn't have. Each card below says what a piece does and why, runs it live, links to where the shop uses it, and quotes the code.",
+                    "‏Leptos بيرسم كل صفحة على السيرفر. وعميل TypeScript صغير بيغيّر الحالة في المتصفح ومابيطلبش من السيرفر غير البيانات اللي مش عنده. كل كارت تحت بيقول الجزء ده بيعمل إيه وليه، وبيشغّله قدامك، وبيوديك للمكان اللي المتجر بيستخدمه فيه، وبيعرض الكود.",
                 )}
             </p>
             <ul class="sc-facts" role="list">
-                <li><strong class="mono">{n_features}</strong><span>{tr(lang, "features, each with a demo", "خاصية، لكل واحدة ديمو")}</span></li>
-                <li><strong class="mono">"0"</strong><span>{tr(lang, "bytes of JS for server components", "بايت JS لكومبوننتس السيرفر")}</span></li>
+                <li><strong class="mono">{n_cards}</strong><span>{tr(lang, "cards, each with a live demo", "كارت، وفي كل واحد ديمو حي")}</span></li>
+                <li><strong class="mono">{crate::format::count(0, num)}</strong><span>{tr(lang, "bytes of WebAssembly", "بايت WebAssembly")}</span></li>
                 <li>
-                    {if cx.base_ms == 0 {
-                        view! { <strong>{tr(lang, "Off", "مقفول")}</strong> }.into_any()
+                    <strong class="mono">{js_kb}<small>" KB"</small></strong>
+                    <span>{if cfg!(debug_assertions) {
+                        tr(lang, "of JavaScript, raw (this dev build keeps it readable, with a source map)", "JavaScript من غير ضغط (نسخة التطوير دي مقروءة ومعاها source map)")
                     } else {
-                        view! { <strong class="mono">{crate::format::count(cx.base_ms as u32, num)}<small>" ms"</small></strong> }.into_any()
-                    }}
-                    <span>{tr(lang, "simulated backend latency (yours — see Streaming)", "زمن الباك إند التجريبي (بتاعك — شوف البث)")}</span>
+                        tr(lang, "of JavaScript, raw, minified", "JavaScript من غير ضغط، مصغّر")
+                    }}</span>
                 </li>
-                <li><strong>{cx.tenant.name.pick(lang.is_rtl()).to_owned()}</strong><span>{tr(lang, "tenant, from the Host header", "المتجر، من الـ Host")}</span></li>
+                <li><strong>{cx.tenant.name.pick(lang.is_rtl()).to_owned()}</strong><span>{tr(lang, "shop, picked from the Host header", "المحل، من الـ Host")}</span></li>
             </ul>
             <figure class="sc-arch" aria-labelledby="sc-arch-cap">
                 <figcaption id="sc-arch-cap" class="sc-arch__cap">
                     <span>{tr(lang, "One request, end to end", "طلب واحد من أوله لآخره")}</span>
-                    <span class="sc-arch__mode">{mode}</span>
                 </figcaption>
                 <ol class="sc-arch__steps" role="list">
                     {steps.into_iter().enumerate().map(|(i, (icon, t, d, code))| view! {
@@ -689,8 +413,8 @@ fn Intro(cx: Arc<Ctx>) -> impl IntoView {
                     <Icon name="info" size=18/>
                     <span>{tr(
                         lang,
-                        "JavaScript is off. Links, filters and the forms still work; the out-of-order streamed demos stay as placeholders (that is the trade-off the “SSR modes” card explains), and the browser-measured numbers can't be read.",
-                        "الـ JavaScript مقفول. اللينكات والفلاتر والفورمز شغالة؛ بس الديموهات اللي بتتبعت بأي ترتيب هتفضل placeholders (ودي المقايضة اللي كارت «طرق الـ SSR» بيشرحها)، والأرقام اللي بتتقاس في المتصفح مش هتظهر.",
+                        "JavaScript is off. Every page of the shop still works, and so does every link and form here. The live demos that run in the browser show their server-rendered state only.",
+                        "الـ JavaScript مقفول. كل صفحات المتجر شغالة، وكل اللينكات والفورمز هنا كمان. بس الديموهات اللي بتشتغل في المتصفح هتعرض اللي السيرفر رسمه بس.",
                     )}</span>
                 </p>
             </noscript>
@@ -698,30 +422,17 @@ fn Intro(cx: Arc<Ctx>) -> impl IntoView {
     }
 }
 
-/// Sticky contents: category filter chips (island) + the feature list (server HTML, plain anchors).
+/// Sticky contents: part filter chips (links; `sc-filter` applies them in place) and the list.
 #[component]
 fn Toc(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
     let num = cx.num;
-    let mut chips = vec![islands::Chip {
-        code: "all".into(),
-        en: "All".into(),
-        ar: "الكل".into(),
-        count: FEATURES.len() as u32,
-    }];
+    let active = cx.q.cat.map(|c| c.code()).unwrap_or("all");
+    let mut chips: Vec<(&'static str, &'static str, u32)> =
+        vec![("all", tr(lang, "All", "الكل"), FEATURES.len() as u32)];
     chips.extend(Cat::ALL.into_iter().map(|c| {
-        let (en, ar) = c.short();
-        islands::Chip {
-            code: c.code().into(),
-            en: en.into(),
-            ar: ar.into(),
-            count: FEATURES.iter().filter(|f| f.cat == c).count() as u32,
-        }
+        (c.code(), c.label(lang), FEATURES.iter().filter(|f| f.cat == c).count() as u32)
     }));
-    let active =
-        cx.q.cat
-            .map(|c| c.code().to_owned())
-            .unwrap_or_else(|| "all".into());
     let entries = move || {
         FEATURES
             .iter()
@@ -738,35 +449,35 @@ fn Toc(cx: Arc<Ctx>) -> impl IntoView {
             })
             .collect_view()
     };
-    let edges = move || {
-        view! {
-            <li class="sc-toc__item sc-toc__item--edges">
-                <a href="#sharp-edges">
-                    <Icon name="triangle-alert" size=16/>
-                    <span>{tr(lang, "Sharp edges we hit", "حاجات جرحتنا")}</span>
-                </a>
-            </li>
-        }
-    };
     view! {
         <h2 id="sc-toc-title" class="sc-toc__title">{tr(lang, "Contents", "المحتويات")}</h2>
         <div class="sc-toc__bar">
-            // Phones: a dropdown next to the chips. Wide screens use the list below instead.
+            // Phones: a dropdown beside the chips. Wide screens use the list below instead.
             <details class="sc-toc__menu">
                 <summary class="sc-toc__sum">
                     <Icon name="list" size=18/>
                     <span>{tr(lang, "Contents", "المحتويات")}</span>
                     <Icon name="chevron-down" size=16 class="sc-toc__chev"/>
                 </summary>
-                <ol class="sc-toc__ol" role="list">{entries()}{edges()}</ol>
+                <ol class="sc-toc__ol" role="list">{entries()}</ol>
             </details>
-            <islands::TocFilter chips active/>
+            <nav class="sc-filter" aria-label=tr(lang, "Show a part", "اعرض جزء")>
+                {chips.into_iter().map(|(code, label, n)| {
+                    let href = if code == "all" { "/showcase#features".to_owned() } else { format!("/showcase?cat={code}#features") };
+                    view! {
+                        <a class="sc-chip" href=href data-cat-chip=code aria-current=if code == active { "true" } else { "false" }>
+                            <span>{label}</span>
+                            <span class="sc-chip__n mono">{crate::format::count(n, num)}</span>
+                        </a>
+                    }
+                }).collect_view()}
+            </nav>
         </div>
-        <ol class="sc-toc__ol sc-toc__ol--side" role="list">{entries()}{edges()}</ol>
+        <ol class="sc-toc__ol sc-toc__ol--side" role="list">{entries()}</ol>
     }
 }
 
-/// One category: heading, a line, then its feature cards.
+/// One part: heading, a line, then its cards.
 #[component]
 fn Category(cat: Cat, cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
@@ -788,191 +499,93 @@ fn Category(cat: Cat, cx: Arc<Ctx>) -> impl IntoView {
     }
 }
 
-/// The code each card quotes (one or two short excerpts).
+/// The code each card quotes (one or two short excerpts of the real files).
 fn cuts_for(id: &str) -> Vec<Cut> {
     match id {
-        "islands" => vec![
-            cut(Src::Home, "#[island]", "let left", 14),
-            cut(Src::Frontend, "pub fn hydrate()", "^}", 6),
+        "in-order" => vec![
+            cut(Src::Lib, "<Routes fallback", "</Routes>", 22),
+            cut(Src::Shell, "let config = serde_json::to_string(&config)", "^    }", 6),
         ],
-        "ssr-modes" => vec![cut(Src::Lib, "<Routes fallback", "</Routes>", 26)],
         "streaming" => vec![
-            cut(
-                Src::Home,
-                "let data = Resource::new(|| (), move |_| api::home_rail",
-                "</Suspense>",
-                28,
-            ),
-            cut(Src::Product, "let data = Resource::new_blocking", "", 1),
+            cut(Src::Lib, "path!(\"showcase/stream\")", "", 1),
+            cut(Src::Stream, "let data = Resource::new(", "</Suspense>", 26),
         ],
-        "errors" => vec![cut(
-            Src::Errors,
-            "pub fn SectionError(",
-            ") -> impl IntoView",
-            10,
-        )],
-        "meta" => vec![
-            cut(
-                Src::Home,
-                "<Title text=title.clone()/>",
-                "<Script type_",
-                18,
-            ),
-            cut(
-                Src::ProductHead,
-                "<Meta property=\"product:price:amount\"",
-                "<Script type_",
-                8,
-            ),
+        "server-fns" => vec![
+            cut(Src::ApiMod, "#[server(endpoint = \"cache/stats\"", "^}", 14),
+            cut(Src::Net, "export async function getJSON", "^}", 8),
         ],
-        "reactivity" => vec![
-            cut(
-                Src::ProductPanel,
-                "let sel = RwSignal::new(data.selected);",
-                "let image = Memo",
-                8,
-            ),
-            cut(Src::Islands, "// A derived signal", "let total = Memo", 8),
+        "errors" => vec![
+            cut(Src::Errors, "pub fn SectionError(", ") -> impl IntoView", 8),
+            cut(Src::Sim, "pub fn check_fail", "^}", 10),
         ],
-        "shared-state" => vec![
-            cut(
-                Src::Client,
-                "pub fn init()",
-                "crate::stores::provide_all();",
-                6,
-            ),
-            cut(Src::Stores, "pub struct CartStore", "^}", 10),
-        ],
-        "server-fns" => vec![cut(
-            Src::ApiMod,
-            "/// Invalidate every cached read",
-            "^}",
-            8,
-        )],
-        "transition" => vec![
-            cut(
-                Src::Explorer,
-                "let page = AsyncDerived::new(move || {",
-                "^    });",
-                18,
-            ),
-            cut(Src::Explorer, "^<Transition", "})}", 9),
-        ],
-        "sim" => vec![cut(Src::Sim, "pub fn check_fail", "^}", 12)],
-        "action-form" => vec![
-            cut(Src::ApiCart, "/// Remove a line.", "^}", 9),
-            cut(
-                Src::CartPage,
-                "<ActionForm action=remove",
-                "</ActionForm>",
-                6,
-            ),
-            cut(
-                Src::Islands,
-                "let action = ServerAction::<notes::LeaveNote>::new();",
-                "let pending",
-                16,
-            ),
-        ],
-        "islands-router" => vec![
-            cut(Src::Lib, "<HydrationScripts", "<HydrationScripts", 1),
-            cut(
-                Src::CartPage,
-                "<For each=move || lines.clone() key=|l| l.key.clone()",
-                "</For>",
-                3,
-            ),
-            cut(Src::Product, "^<For", "key=|id| *id", 3),
-        ],
-        "router" => vec![
-            cut(
-                Src::Product,
-                "let slug = use_params_map()",
-                "let v = q.get(\"v\")",
-                3,
-            ),
-            cut(Src::ApiTypes, "pub fn from_query", "\"sort\" =>", 14),
-        ],
-        "caching" => vec![cut(Src::Cache, "pub fn public(tags", "^}", 24)],
-        "states" => vec![
-            cut(
-                Src::Errors,
-                "pub fn NotFound()",
-                "let back = same_origin_referer",
-                16,
-            ),
-            cut(Src::Net, "// Offline: don't spend a try", "^}", 18),
-        ],
-        "router-patches" => vec![
-            cut(
-                Src::ShellJs,
-                "// ── The button that submitted a form",
-                "}, true);",
-                16,
-            ),
-            cut(
-                Src::ShellJs,
-                "const doc = new DOMParser().parseFromString(html",
-                "} catch (_) {}",
-                12,
-            ),
-        ],
-        "motion" => vec![
-            cut(
-                Src::Motion,
-                "pub fn project(",
-                "(overshoot * d * constant)",
-                12,
-            ),
-            cut(
-                Src::Gallery,
-                "// A sample at release: a finger that rested",
-                "Release::Swipe",
-                26,
-            ),
+        "read-cache" => vec![
+            cut(Src::Cache, "let full = format!(", ".await;", 12),
+            cut(Src::Cache, "pub fn bump(", "^    }", 3),
         ],
         "tenancy" => vec![
             cut(Src::Tenant, "pub fn tenant_from_host", "^}", 8),
-            cut(
-                Src::Request,
-                "let (tenant_id, via) = match tenant_from_host",
-                "};",
-                10,
-            ),
+            cut(Src::Request, "let (tenant_id, via) = match tenant_from_host", "};", 12),
         ],
-        "i18n" => vec![
-            cut(Src::ServerMain, "async fn set_prefs", "^}", 18),
-            cut(
-                Src::Client,
-                "// The language/numeral/theme controls",
-                "on_change.forget();",
-                40,
-            ),
+        "meta" => vec![cut(Src::ProductHead, "<Title", "<Script", 14)],
+        "sim" => vec![
+            cut(Src::Sim, "pub fn base_ms()", "^}", 7),
+            cut(Src::Sim, "pub async fn delay(", "^}", 6),
         ],
-        "view-transitions" => vec![
-            cut(
-                Src::ShellJs,
-                "// A product card: name only its image",
-                "media.setAttribute(\"data-vt-named\", \"\");",
-                9,
-            ),
-            cut(
-                Src::Demos,
-                "// Each tile keeps one `view-transition-name`",
-                "}).collect_view()}",
-                13,
-            ),
+        "router" => vec![
+            cut(Src::Router, "const PAGE_CACHE = {", "", 1),
+            cut(Src::Router, "// ── Prefetch: Madar's gesture model", "const HOVER_DELAY_MS", 12),
+            cut(Src::Main, "readPage();", "});", 11),
         ],
-        "images" => vec![cut(Src::Media, "pub fn srcset(&self)", "^    }", 9)],
-        "a11y" => vec![
-            cut(Src::Steps, "pub fn StepFocus()", "^}", 8),
-            cut(Src::Islands, "<dialog id=\"sc-sheet\"", "</dialog>", 30),
+        "stores" => vec![
+            cut(Src::Store, "export function createStore", "^}", 19),
+            cut(Src::Toasts, "export function toast(", "^}", 6),
+        ],
+        "cart" => vec![
+            cut(Src::CartTs, "function commit(", "^}", 8),
+            cut(Src::DomainCart, "pub fn parse(raw: &str)", "^}", 22),
+            cut(Src::CartTs, "export function quote(", "^}", 4),
+        ],
+        "templates" => vec![
+            cut(Src::Dom, "export function fill(", "^}", 19),
+            cut(Src::Toast, "<template id=\"tpl-toast\">", "</template>", 16),
+        ],
+        "data-cache" => vec![cut(Src::ClientCache, "export async function cached", "^}", 15)],
+        "springs" => vec![
+            cut(Src::Motion, "export const project", "};", 9),
+            cut(Src::ShowcaseTs, "// Release: hand the finger's velocity", "^  };", 12),
+        ],
+        "bundle" => vec![
+            cut(Src::BuildRs, "node(&[\"node_modules/typescript/bin/tsc\"", "node(&args);", 7),
+            cut(Src::BuildMjs, "await build({", "});", 13),
+            cut(Src::ClientJs, "pub const APP_JS", "", 2),
         ],
         _ => vec![],
     }
 }
 
-/// One feature: number, title, what, why, the live demo, where it's used, sources, code.
+/// Prose with `{{n}}` marks: the numbers in the visitor's numerals, the rest as written.
+pub(crate) fn nums(text: &str, num: Numerals) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(i) = rest.find("{{") {
+        out.push_str(&rest[..i]);
+        let after = &rest[i + 2..];
+        match after.find("}}") {
+            Some(j) => {
+                out.push_str(&crate::format::digits(&after[..j], num));
+                rest = &after[j + 2..];
+            }
+            None => {
+                out.push_str(&rest[i..]);
+                rest = "";
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// One card: number, title, what, why, the live demo, where it's used, sources, code.
 #[component]
 fn Card(f: &'static Feature, cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
@@ -980,10 +593,10 @@ fn Card(f: &'static Feature, cx: Arc<Ctx>) -> impl IntoView {
     let n = data::number(f.id);
     let title_id = format!("{}-title", f.id);
     let labelled_by = title_id.clone();
-    let used: Vec<(String, &'static str)> = f
+    let used: Vec<(String, String)> = f
         .used_in
         .iter()
-        .filter_map(|u| cx.links.resolve(u.href).map(|h| (h, tr(lang, u.en, u.ar))))
+        .filter_map(|u| cx.links.resolve(u.href).map(|h| (h, nums(tr(lang, u.en, u.ar), num))))
         .collect();
     let demo = demos::demo(f.id, cx.clone());
     view! {
@@ -993,10 +606,10 @@ fn Card(f: &'static Feature, cx: Arc<Ctx>) -> impl IntoView {
                 <h3 id=title_id class="sc-card__title">{f.title(lang)}</h3>
                 <span class="sc-card__cat">{f.cat.label(lang)}</span>
             </header>
-            <p class="sc-card__what">{tr(lang, f.what.0, f.what.1)}</p>
+            <p class="sc-card__what">{nums(tr(lang, f.what.0, f.what.1), num)}</p>
             <p class="sc-card__why">
-                <strong>{tr(lang, "Why it matters here", "ليه مهمة هنا")}</strong>
-                <span>{tr(lang, f.why.0, f.why.1)}</span>
+                <strong>{tr(lang, "Why it matters here", "ليه ده مهم هنا")}</strong>
+                <span>{nums(tr(lang, f.why.0, f.why.1), num)}</span>
             </p>
             <div class="sc-demo">
                 <p class="sc-demo__label">
@@ -1007,25 +620,18 @@ fn Card(f: &'static Feature, cx: Arc<Ctx>) -> impl IntoView {
             </div>
             <footer class="sc-card__foot">
                 <div class="sc-used">
-                    <span class="sc-foot__label">{tr(lang, "Used in", "مستخدمة في")}</span>
-                    {if used.is_empty() && f.note.is_some() {
-                        // The note says why the demo is the only usage.
-                        ().into_any()
-                    } else if used.is_empty() {
-                        view! { <span class="sc-used__none">{tr(lang, "This demo is its only usage so far.", "الديمو ده هو الاستخدام الوحيد لحد دلوقتي.")}</span> }.into_any()
-                    } else {
-                        view! {
-                            <ul class="sc-used__list" role="list">
-                                {used.into_iter().map(|(href, label)| view! {
-                                    <li><a class="sc-used__link" href=href>
-                                        <span>{label}</span>
-                                        <Icon name="arrow-up-right" size=14 class="flip-rtl"/>
-                                    </a></li>
-                                }).collect_view()}
-                            </ul>
-                        }.into_any()
-                    }}
-                    {f.note.map(|(en, ar)| view! { <p class="sc-used__note">{tr(lang, en, ar)}</p> })}
+                    <span class="sc-foot__label">{tr(lang, "Used in", "مستخدم في")}</span>
+                    {(!used.is_empty()).then(|| view! {
+                        <ul class="sc-used__list" role="list">
+                            {used.into_iter().map(|(href, label)| view! {
+                                <li><a class="sc-used__link" href=href>
+                                    <span>{label}</span>
+                                    <Icon name="arrow-up-right" size=14 class="flip-rtl"/>
+                                </a></li>
+                            }).collect_view()}
+                        </ul>
+                    })}
+                    {f.note.map(|(en, ar)| view! { <p class="sc-used__note">{nums(tr(lang, en, ar), num)}</p> })}
                 </div>
                 <div class="sc-src">
                     <span class="sc-foot__label">{tr(lang, "Source", "الكود")}</span>
@@ -1033,7 +639,7 @@ fn Card(f: &'static Feature, cx: Arc<Ctx>) -> impl IntoView {
                         {f.sources.iter().map(|s| view! { <li><code class="mono" dir="ltr">{*s}</code></li> }).collect_view()}
                     </ul>
                 </div>
-                {cuts_for(f.id).into_iter().map(|c| view! { <Code cut=c/> }).collect_view()}
+                {cuts_for(f.id).into_iter().map(|c| view! { <Code cut=c lang/> }).collect_view()}
             </footer>
         </article>
     }

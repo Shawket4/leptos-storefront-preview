@@ -1,115 +1,31 @@
-//! Network helpers for islands: whether the device is online, waiting until it is, sleeping, and
-//! retrying an idempotent read with exponential backoff that pauses while offline.
-//!
-//! ```ignore
-//! // In an island, a read started by the visitor (opening the cart) that survives a flaky
-//! // connection. Never a resource still pending when the island hydrates: that panics after an
-//! // islands-router navigation into the page (AGENTS.md); seed first paint from props.
-//! on:click=move |_| leptos::task::spawn_local(async move {
-//!     if let Ok(c) = net::retry(|| api::cart::cart_get()).await { cart.set(Some(c)); }
-//! })
-//! // Only retry what can succeed on a second try:
-//! net::retry_if(|| api::product_detail(slug.clone()), |e| !e.to_string().contains("not_found")).await
-//! ```
-//!
-//! Backoff: 300 ms, 600 ms, 1.2 s (capped at 2.4 s), at most 4 tries. While the device reports
-//! itself offline no try is spent: the helper waits for the `online` event and goes on. On the
-//! server there is nothing to wait for: the read runs once.
-//!
-//! All futures here are `Send` (shared state is `Arc<Mutex<_>>`, listener handles are `Send`), so
-//! they also fit `Action::new` and a server component's `Resource::new`.
+//! Islands-era network helpers, kept only until their last callers are ported to the browser code
+//! (`client/src/core/net.ts` is the one network layer now: timeouts, retries, offline). Everything
+//! here runs on the server, where there is no connection to lose: `is_online` is always true,
+//! nothing waits, and a read runs once.
 
 use std::future::Future;
-use std::pin::Pin;
-use std::sync::{Arc, Mutex};
-use std::task::{Context, Poll, Waker};
 
-/// How many times a read is tried in all.
+/// How many times a read was tried in all (islands era; documentation for the showcase).
 pub const TRIES: u32 = 4;
-/// The wait before the second try; doubles after each failure.
+/// The wait before the second try; doubled after each failure (islands era).
 pub const FIRST_DELAY_MS: u64 = 300;
-/// The longest wait between tries.
+/// The longest wait between tries (islands era).
 pub const MAX_DELAY_MS: u64 = 2400;
 
-/// Whether the device says it has a connection (always `true` on the server).
+/// Whether the device says it has a connection: always `true` on the server.
 pub fn is_online() -> bool {
-    #[cfg(feature = "hydrate")]
-    {
-        leptos::prelude::window().navigator().on_line()
-    }
-    #[cfg(not(feature = "hydrate"))]
-    {
-        true
-    }
+    true
 }
 
-#[derive(Default)]
-#[cfg_attr(not(feature = "hydrate"), allow(dead_code))]
-struct Flag {
-    done: bool,
-    waker: Option<Waker>,
-}
-
-/// Completes once its flag is fired.
-#[cfg_attr(not(feature = "hydrate"), allow(dead_code))]
-struct Gate(Arc<Mutex<Flag>>);
-
-impl Future for Gate {
-    type Output = ();
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
-        let mut f = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        if f.done {
-            Poll::Ready(())
-        } else {
-            f.waker = Some(cx.waker().clone());
-            Poll::Pending
-        }
-    }
-}
-
-#[cfg(feature = "hydrate")]
-fn fire(flag: &Arc<Mutex<Flag>>) {
-    let waker = {
-        let mut f = flag.lock().unwrap_or_else(|e| e.into_inner());
-        f.done = true;
-        f.waker.take()
-    };
-    if let Some(w) = waker {
-        w.wake();
-    }
-}
-
-/// Wait `ms` milliseconds (browser timer; no wait on the server).
+/// A no-op on the server.
 pub async fn sleep(ms: u64) {
-    #[cfg(feature = "hydrate")]
-    {
-        let flag = Arc::new(Mutex::new(Flag::default()));
-        let f2 = flag.clone();
-        leptos::prelude::set_timeout(move || fire(&f2), std::time::Duration::from_millis(ms));
-        Gate(flag).await;
-    }
-    #[cfg(not(feature = "hydrate"))]
-    {
-        let _ = ms;
-    }
+    let _ = ms;
 }
 
-/// Resolve as soon as the device is online (at once if it already is).
-pub async fn until_online() {
-    #[cfg(feature = "hydrate")]
-    {
-        if is_online() {
-            return;
-        }
-        let flag = Arc::new(Mutex::new(Flag::default()));
-        let f2 = flag.clone();
-        let handle = leptos::prelude::window_event_listener_untyped("online", move |_| fire(&f2));
-        Gate(flag).await;
-        handle.remove();
-    }
-}
+/// Resolves at once on the server.
+pub async fn until_online() {}
 
-/// Run an idempotent read, retrying failures with backoff (see the module docs).
+/// Run a read once (the server has nothing to retry against).
 pub async fn retry<T, E, F, Fut>(f: F) -> Result<T, E>
 where
     F: FnMut() -> Fut,
@@ -118,31 +34,13 @@ where
     retry_if(f, |_| true).await
 }
 
-/// Like [`retry`], but only errors `should_retry` accepts are tried again (a "not found" won't
-/// succeed on the second try).
+/// Like [`retry`]: the read runs once on the server.
 pub async fn retry_if<T, E, F, Fut, P>(mut f: F, should_retry: P) -> Result<T, E>
 where
     F: FnMut() -> Fut,
     Fut: Future<Output = Result<T, E>>,
     P: Fn(&E) -> bool,
 {
-    let mut delay = FIRST_DELAY_MS;
-    let mut attempt = 1;
-    loop {
-        // Offline: don't spend a try, wait for the connection.
-        until_online().await;
-        match f().await {
-            Ok(v) => return Ok(v),
-            Err(e) if attempt >= TRIES || !should_retry(&e) || cfg!(not(feature = "hydrate")) => {
-                return Err(e);
-            }
-            Err(_) => {
-                attempt += 1;
-                if is_online() {
-                    sleep(delay).await;
-                    delay = (delay * 2).min(MAX_DELAY_MS);
-                }
-            }
-        }
-    }
+    let _ = should_retry;
+    f().await
 }

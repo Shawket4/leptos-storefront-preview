@@ -1,6 +1,9 @@
-//! `/ui` — the design system's own page: every component in every state, in the visitor's
-//! language and theme (switch them in the header), with real catalogue data. It doubles as the
-//! visual test bench for the design system.
+//! `/ui`: the design system's own page. Every component in every state, in the visitor's language
+//! and theme, with real catalogue data; it doubles as the visual test bench for the design system.
+//!
+//! Server-rendered like every page. The interactive specimens use the app's real browser code:
+//! core's drawer and stepper (`data-ts="drawer"`, `"stepper"`), the toast store, and small `kit-…`
+//! features in `client/src/features/showcase.ts` (toasts, the line total, the skeleton replay).
 
 use crate::components::badge::{Badge, BadgeKind};
 use crate::components::breadcrumbs::Breadcrumbs;
@@ -10,7 +13,7 @@ use crate::components::form::{Checkbox, RadioCard, Select, TextArea, TextInput};
 use crate::components::icons::{Icon, NAMES};
 use crate::components::image::Picture;
 use crate::components::layout::{Container, Rail, SectionHeader};
-use crate::components::price::{Price, PriceLive, PriceSize};
+use crate::components::price::{Price, PriceSize};
 use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton, ProductGrid};
 use crate::components::rating::Rating;
 use crate::components::segmented::{SegItem, Segmented};
@@ -20,9 +23,9 @@ use crate::components::skeleton::{
 use crate::components::states::{ComingSoon, SectionError, StateTone, StateView};
 use crate::components::status_pill::{StatusPill, Tone};
 use crate::components::stepper::Stepper;
-use crate::components::toast::{self, ToastKind};
+use crate::format;
 use crate::media::Img;
-use crate::prefs::{Lang, Numerals, tr, use_ui};
+use crate::prefs::{Lang, Numerals, tr};
 use domain::Piastres;
 use leptos::prelude::*;
 use leptos_meta::Title;
@@ -462,13 +465,13 @@ pub fn UiKitPage() -> impl IntoView {
 
             <Specimen id="overlays" title=t("Drawers & toasts", "الأدراج والتنبيهات") note=t("Springs you can grab: drawers follow the finger, velocity decides, and they leave the way they came. Toasts are the page turned over.", "حركة تقدر تمسكها: الدرج بيمشي مع صباعك والسرعة هي اللي بتقرر، وبيخرج من نفس السكة اللي دخل منها. التنبيهات بألوان الصفحة مقلوبة.") card=true>
                 <Row label=t("Drawer & sheet", "درج وشيت")>
-                    <KitDrawers/>
+                    <KitDrawers lang num/>
                 </Row>
                 <Row label=t("Toasts", "تنبيهات")>
-                    <KitToasts/>
+                    <KitToasts lang/>
                 </Row>
                 <Row label=t("Quantity", "الكمية")>
-                    <KitStepper/>
+                    <KitStepper lang num/>
                 </Row>
             </Specimen>
 
@@ -568,29 +571,42 @@ pub fn UiKitPage() -> impl IntoView {
                 </Row>
             </Specimen>
 
-            <Specimen id="network" title=t("Network", "الشبكة") note=t("What a visitor sees when the connection drops, a page is slow or a navigation fails. These buttons stage each one; nothing is really broken.", "اللي الزائر بيشوفه لما النت يقطع، أو صفحة تتأخر، أو التنقل يفشل. الأزرار دي بتمثّل كل حالة، ومفيش حاجة بايظة بجد.") card=true>
-                <Row label=t("Offline banner", "شريط عدم الاتصال")>
-                    <Button kind=ButtonKind::Secondary icon="wifi-off" attr:data-preview="offline">{t("Go offline", "اقطع النت")}</Button>
-                    <Button kind=ButtonKind::Secondary icon="wifi" attr:data-preview="online">{t("Come back online", "رجّع النت")}</Button>
-                </Row>
-                <Row label=t("A navigation fails", "التنقل فشل")>
-                    <Button kind=ButtonKind::Outline attr:data-preview="alert:offline">{t("Offline", "من غير نت")}</Button>
-                    <Button kind=ButtonKind::Outline attr:data-preview="alert:timeout">{t("Too slow", "اتأخر")}</Button>
-                    <Button kind=ButtonKind::Outline attr:data-preview="alert:server">{t("Server error", "خطأ في السيرفر")}</Button>
-                </Row>
-                <Row label=t("A slow navigation", "تنقل بطيء")>
-                    <Button kind=ButtonKind::Outline attr:data-preview="progress:1800">{t("Show the progress bar", "اعرض شريط التحميل")}</Button>
-                </Row>
+            <Specimen id="network" title=t("Network", "الشبكة") note=t("What a visitor sees when the connection drops, a page is slow or a navigation fails. The banner, the alert and the progress bar are page-wide pieces of the shell, driven by the router.", "اللي الزائر بيشوفه لما النت يقطع، أو صفحة تتأخر، أو التنقل يفشل. الشريط والتنبيه وشريط التحميل أجزاء ثابتة في إطار الصفحة، والراوتر هو اللي بيحركها.") card=true>
+                <ul class="kit__netlist" role="list">
+                    <li><Icon name="wifi-off" size=18/><span>{t("Offline: a calm banner at the top with Try again; back online, the page refreshes in place.", "من غير نت: شريط هادي فوق ومعاه «حاول تاني»؛ ولما النت يرجع الصفحة بتتحدّث مكانها.")}</span></li>
+                    <li><Icon name="triangle-alert" size=18/><span>{t("A navigation fails (offline, too slow, server error): an alert says why and offers Retry; the page you were on stays.", "التنقل فشل (من غير نت، اتأخر، خطأ في السيرفر): تنبيه بيقول السبب وبيديك «إعادة المحاولة»؛ والصفحة اللي كنت فيها بتفضل.")}</span></li>
+                    <li><Icon name="loader-circle" size=18/><span>{t("A slow navigation: a thin progress bar, shown only past 150 ms.", "تنقل بطيء: شريط تحميل رفيع، مابيظهرش غير بعد 150 مللي ثانية.")}</span></li>
+                </ul>
+                // Stages the real banner, alert and progress bar through core's `previewNet` (nothing
+                // is really disconnected). Hidden until the browser code says the hook is there.
+                <div class="kit__netbtns" data-ts="kit-net">
+                    <Row label=t("Offline banner", "شريط عدم الاتصال")>
+                        <Button kind=ButtonKind::Secondary icon="wifi-off" attr:data-net="offline" attr:data-needs-js="" attr:hidden="">{t("Go offline", "اقطع النت")}</Button>
+                        <Button kind=ButtonKind::Secondary icon="wifi" attr:data-net="online" attr:data-needs-js="" attr:hidden="">{t("Come back online", "رجّع النت")}</Button>
+                    </Row>
+                    <Row label=t("A navigation fails", "التنقل فشل")>
+                        <Button kind=ButtonKind::Outline attr:data-net="fail:offline" attr:data-needs-js="" attr:hidden="">{t("Offline", "من غير نت")}</Button>
+                        <Button kind=ButtonKind::Outline attr:data-net="fail:timeout" attr:data-needs-js="" attr:hidden="">{t("Too slow", "اتأخر")}</Button>
+                        <Button kind=ButtonKind::Outline attr:data-net="fail:server" attr:data-needs-js="" attr:hidden="">{t("Server error", "خطأ في السيرفر")}</Button>
+                    </Row>
+                    <Row label=t("A slow navigation", "تنقل بطيء")>
+                        <Button kind=ButtonKind::Outline attr:data-net="progress:1800" attr:data-needs-js="" attr:hidden="">{t("Show the progress bar", "اعرض شريط التحميل")}</Button>
+                    </Row>
+                </div>
                 <p class="kit__note t-caption">
                     {t(
-                        "Reads in islands retry by themselves (net::retry): after 300 ms, 600 ms, then 1.2 s, four tries in all, and none is spent while offline: they wait for the connection.",
-                        "القراءات جوه الـ islands بتعيد المحاولة لوحدها (net::retry): بعد ٣٠٠ مللي ثانية، و٦٠٠، وبعدين ١٫٢ ثانية، أربع محاولات في المجموع، ومن غير نت مفيش محاولة بتضيع: بتستنى الاتصال.",
+                        "Every read goes through core/net.ts: one 10 s timeout, one retry after a network failure or a 5xx (never after a 4xx), and no try is spent while offline.",
+                        "كل قراية بتعدّي على core/net.ts: مهلة واحدة 10 ثواني، ومحاولة تانية واحدة بعد عطل في الشبكة أو 5xx (عمرها ما بتحصل بعد 4xx)، ومن غير نت مفيش محاولة بتضيع.",
                     )}
                 </p>
             </Specimen>
 
             <Specimen id="skeletons" title=t("Skeletons", "هياكل التحميل") note=t("Solid blocks that pulse, built from the boxes of what replaces them. Each pair is loading beside loaded: nothing moves when one becomes the other.", "بلوكات مصمتة بتنبض، معمولة بنفس مقاسات اللي هيظهر مكانها. كل اتنين جنب بعض تحميل وجاهز: مفيش حاجة بتتحرك لما واحد يبقى التاني.") card=true>
-                <div class="kit__pairs">
+                <div class="kit__pairs" data-ts="kit-skeletons">
+                    <p class="kit__replay" data-needs-js="" hidden>
+                        <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="rotate-ccw" attr:data-act="replay">{t("Watch them load", "اتفرج عليهم وهما بيحمّلوا")}</Button>
+                        <span class="t-caption mono" data-slot="cls"></span>
+                    </p>
                     <KitPair title=t("Heading and text", "عنوان وكلام") loading=t("Loading", "بيحمّل") loaded=t("Loaded", "جاهز")>
                         <div class="kit__copy">
                             <SkeletonLines lines=1 class="t-h3" last_width="70%"/>
@@ -661,93 +677,85 @@ pub fn UiKitPage() -> impl IntoView {
     }
 }
 
-/// Drawer demo: the cart slide-over and the filters bottom sheet. Drag them toward their edge.
+/// Drawer demo: core's drawer from the inline end and the bottom sheet, opened by plain triggers.
 #[component]
-fn KitDrawers() -> impl IntoView {
-    let ui = use_ui();
-    let cart = RwSignal::new(false);
-    let sheet = RwSignal::new(false);
-    let t = move |en: &'static str, ar: &'static str| move || tr(ui.lang.get(), en, ar);
-    let qty = RwSignal::new(2u32);
+fn KitDrawers(lang: Lang, num: Numerals) -> impl IntoView {
+    let t = move |en: &'static str, ar: &'static str| tr(lang, en, ar);
+    let show = match lang {
+        Lang::En => format!("Show {} products", format::count(128, num)),
+        Lang::Ar => format!("اعرض {} منتج", format::count(128, num)),
+    };
     view! {
         <div class="kit__items">
-            <Button icon="shopping-bag" on:click=move |_| cart.set(true)>{t("Open the cart drawer", "افتح درج السلة")}</Button>
-            <Button kind=ButtonKind::Outline icon="sliders-horizontal" on:click=move |_| sheet.set(true)>
-                {t("Open the filters sheet", "افتح شيت الفلاتر")}
-            </Button>
+            <Button icon="shopping-bag" attr:data-drawer-open="kit-cart">{t("Open the cart drawer", "افتح درج السلة")}</Button>
+            <Button kind=ButtonKind::Outline icon="sliders-horizontal" attr:data-drawer-open="kit-sheet">{t("Open the filters sheet", "افتح شيت الفلاتر")}</Button>
         </div>
-        <Drawer open=cart title=Signal::derive(move || tr(ui.lang.get(), "Your cart", "سلتك").to_owned()) id="kit-cart">
+        <Drawer
+            id="kit-cart"
+            title=t("Your cart", "سلتك").to_owned()
+            footer=Box::new(move || view! {
+                <Button size=ButtonSize::Lg full_width=true attr:data-drawer-close="">{t("Checkout", "إتمام الطلب")}</Button>
+            }.into_any())
+        >
             <div class="kit__drawer-body">
-                <p class="t-muted">{t("Drag me toward the edge — let go fast to close, slow to snap back.", "اسحبني ناحية الطرف — لو سبت بسرعة هقفل، ولو براحة هرجع مكاني.")}</p>
+                <p class="t-muted">{t("Drag me toward the edge: let go fast to close, slowly to snap back.", "اسحبني ناحية الطرف: لو سبت بسرعة هقفل، ولو براحة هرجع مكاني.")}</p>
                 <div class="kit__line">
                     <span class="kit__line-name">{t("Galaxy S25 Ultra", "جالاكسي S25 ألترا")}</span>
-                    <Stepper value=qty on_change=Callback::new(move |v| qty.set(v)) min=1 max=5/>
+                    <Stepper name="kit-drawer-qty" value=2u32 min=1 max=5/>
                 </div>
-                <Button size=ButtonSize::Lg full_width=true on:click=move |_| cart.set(false)>{t("Checkout", "إتمام الطلب")}</Button>
             </div>
         </Drawer>
-        <Drawer open=sheet side=DrawerSide::Bottom title=Signal::derive(move || tr(ui.lang.get(), "Filters", "الفلاتر").to_owned()) id="kit-sheet">
+        <Drawer
+            id="kit-sheet"
+            side=DrawerSide::Bottom
+            title=t("Filters", "الفلاتر").to_owned()
+            footer=Box::new(move || view! {
+                <Button size=ButtonSize::Lg full_width=true attr:data-drawer-close="">{show}</Button>
+            }.into_any())
+        >
             <div class="kit__drawer-body">
                 <p class="t-muted">{t("Pull the grabber down to dismiss.", "اسحب المقبض لتحت عشان تقفل.")}</p>
                 <Checkbox name="stock" label=t("In stock only", "المتوفر بس")/>
                 <Checkbox name="deal" label=t("On sale", "عليه خصم") checked=true/>
                 <Checkbox name="express" label=t("Express delivery", "توصيل سريع") description=t("Within hours in Cairo and Giza", "خلال ساعات في القاهرة والجيزة")/>
-                <Button size=ButtonSize::Lg full_width=true on:click=move |_| sheet.set(false)>{t("Show 128 products", "اعرض ١٢٨ منتج")}</Button>
             </div>
         </Drawer>
     }
 }
 
-/// Toast demo.
+/// Toast demo: each button calls `toast()` from the one toast store (features/showcase.ts).
 #[component]
-fn KitToasts() -> impl IntoView {
-    let ui = use_ui();
-    let t = move |en: &'static str, ar: &'static str| move || tr(ui.lang.get(), en, ar);
-    let say = move |en: &'static str, ar: &'static str, kind: ToastKind| {
-        move |_| toast::show(tr(ui.lang.get_untracked(), en, ar).to_owned(), kind)
-    };
+fn KitToasts(lang: Lang) -> impl IntoView {
+    let t = move |en: &'static str, ar: &'static str| tr(lang, en, ar);
     view! {
-        <div class="kit__items">
-            <Button kind=ButtonKind::Secondary icon="circle-check" on:click=say("Added to your cart", "اتضاف للسلة", ToastKind::Success)>
-                {t("Success", "تمام")}
-            </Button>
-            <Button kind=ButtonKind::Secondary icon="info" on:click=say("Prices include 14% VAT", "الأسعار شاملة ضريبة ١٤٪", ToastKind::Info)>
-                {t("Info", "معلومة")}
-            </Button>
-            <Button kind=ButtonKind::Secondary icon="circle-x" on:click=say("Couldn't reach the store — try again", "مقدرناش نوصل للمتجر — جرّب تاني", ToastKind::Error)>
-                {t("Error", "خطأ")}
-            </Button>
+        <div class="kit__items" data-ts="kit-toasts">
+            <Button kind=ButtonKind::Secondary icon="circle-check" attr:data-toast="success" attr:data-needs-js="" attr:hidden="">{t("Success", "تمام")}</Button>
+            <Button kind=ButtonKind::Secondary icon="info" attr:data-toast="info" attr:data-needs-js="" attr:hidden="">{t("Info", "معلومة")}</Button>
+            <Button kind=ButtonKind::Secondary icon="circle-x" attr:data-toast="error" attr:data-needs-js="" attr:hidden="">{t("Error", "خطأ")}</Button>
+            <Button kind=ButtonKind::Secondary icon="rotate-ccw" attr:data-toast="action" attr:data-needs-js="" attr:hidden="">{t("With Undo", "ومعاه تراجع")}</Button>
+            <noscript><span class="t-caption">{t("Toasts need JavaScript.", "التنبيهات محتاجة JavaScript.")}</span></noscript>
         </div>
     }
 }
 
-/// Stepper demo, with a live line total (PriceLive re-renders on quantity, language, numerals).
+/// Steppers: core's stepper. The line total for each quantity is formatted by the server (the
+/// client picks one, it never computes money); the removable one becomes a bin at its minimum.
 #[component]
-fn KitStepper() -> impl IntoView {
-    let ui = use_ui();
-    let a = RwSignal::new(1u32);
-    let b = RwSignal::new(1u32);
+fn KitStepper(lang: Lang, num: Numerals) -> impl IntoView {
+    let t = move |en: &'static str, ar: &'static str| tr(lang, en, ar);
     let unit = Piastres(129_900);
-    let total = Signal::derive(move || unit * a.get());
+    let totals: std::collections::BTreeMap<String, String> =
+        (1..=5u32).map(|q| (q.to_string(), format::money(unit * q, lang, num))).collect();
+    let json = serde_json::to_string(&totals).unwrap_or_else(|_| "{}".into());
     view! {
-        <div class="kit__items">
-            <Stepper value=a on_change=Callback::new(move |v| a.set(v)) min=1 max=5/>
-            <PriceLive amount=total size=PriceSize::Lg/>
+        <div class="kit__items" data-ts="kit-total">
+            <script type="application/json" data-ts-json="" inner_html=json></script>
+            <Stepper name="kit-a" value=1u32 min=1 max=5 label=t("Quantity of Galaxy S25", "كمية جالاكسي S25")/>
+            <output class="kit__total mono" data-slot="total">{format::money(unit, lang, num)}</output>
         </div>
-        <div class="kit__items">
-            <Stepper
-                value=b
-                on_change=Callback::new(move |v| b.set(v))
-                min=1
-                max=9
-                on_remove=Callback::new(move |_| {
-                    toast::show(
-                        tr(ui.lang.get_untracked(), "Removed from your cart", "اتشال من السلة").to_owned(),
-                        ToastKind::Info,
-                    )
-                })
-            />
-            <Stepper value=Signal::stored(3u32) on_change=Callback::new(|_| {}) min=1 max=9 disabled=true/>
+        <div class="kit__items" data-ts="kit-remove">
+            <Stepper name="kit-b" value=1u32 min=1 max=9 removable=true/>
+            <Stepper name="kit-c" value=3u32 min=1 max=9 disabled=true/>
         </div>
     }
 }

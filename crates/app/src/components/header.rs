@@ -59,7 +59,7 @@ pub fn CatNav(
     let ar = lang.is_rtl();
     let label = tr(lang, "Categories", "الأقسام");
     view! {
-        <nav class="cat-nav" aria-label=label data-region="cat-nav">
+        <nav class="cat-nav" aria-label=label data-region="cat-nav" data-ts="cat-nav">
             <div class="container">
                 <ul class="cat-nav__list" role="list">
                     {categories

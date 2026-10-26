@@ -2,7 +2,7 @@
 //!
 //! - [`NotFound`] — the router's fallback (status 404): illustration, search, popular categories.
 //! - [`SectionError`] — the per-section fallback for an `<ErrorBoundary>` around one rail, widget
-//!   or panel. Works in server components *and* inside islands.
+//!   or panel; the rest of the page renders normally.
 //! - [`ErrorPage`] — the full-page view for a route-level `<ErrorBoundary>` (status 500 when the
 //!   failure is known before the first byte).
 //!
@@ -14,7 +14,6 @@
 //!
 //! Copy is clear Modern Standard Arabic (AGENTS.md: errors in MSA).
 
-use crate::api;
 use crate::components::icons::Icon;
 use crate::media::Img;
 use crate::prefs::{Lang, Theme, tr, use_ui};
@@ -46,8 +45,8 @@ fn art(_: &str) -> Art {
     Art::default()
 }
 
-/// The illustration for the visitor's theme. The element tree is identical for every theme (only
-/// the `<source media>` changes), so the islands router can patch it in place when the theme flips.
+/// The illustration for the visitor's theme: the `<source media>` picks the dark art for Dark (or
+/// System on a dark device), so one element tree serves every theme.
 #[component]
 fn Illustration(
     art: Art,
@@ -109,9 +108,8 @@ pub fn NotFound() -> impl IntoView {
     let ar = lang.is_rtl();
     let tenant_name = rq.tenant.name.pick(ar).to_owned();
     let back = same_origin_referer(&rq.origin);
-    // Blocking: the categories are cheap (in-memory, no simulated latency) and a 404 must be
-    // complete without JavaScript, so they render inline in the first chunk instead of streaming.
-    let cats = Resource::new_blocking(|| (), |_| api::nav_categories());
+    // The categories are in memory: read synchronously, so the 404 is complete in the first chunk.
+    let cats = popular_categories(ar);
 
     view! {
         <Title text=format!("{} · {}", tr(lang, "Page not found", "الصفحة غير موجودة"), tenant_name)/>
@@ -160,34 +158,40 @@ pub fn NotFound() -> impl IntoView {
         </section>
         <section class="err-cats container" aria-labelledby="err-cats-title">
             <h2 id="err-cats-title" class="err-cats__title">{tr(lang, "Popular categories", "أقسام يبحث عنها الناس")}</h2>
-            <Suspense fallback=|| ()>
-                <ErrorBoundary fallback=|errors| view! { <SectionError errors compact=true/> }>
-                    {move || Suspend::new(async move {
-                        cats.await.map(|cats| {
-                            view! {
-                                <ul class="err-cats__list">
-                                    {cats
-                                        .into_iter()
-                                        .take(8)
-                                        .map(|c| {
-                                            view! {
-                                                <li>
-                                                    <a class="err-cat" href=format!("/c/{}", c.slug)>
-                                                        <Icon name=c.icon.clone() size=20/>
-                                                        <span>{c.name.pick(ar).to_owned()}</span>
-                                                    </a>
-                                                </li>
-                                            }
-                                        })
-                                        .collect_view()}
-                                </ul>
-                            }
-                        })
-                    })}
-                </ErrorBoundary>
-            </Suspense>
+            <ul class="err-cats__list">
+                {cats
+                    .into_iter()
+                    .map(|(slug, icon, name)| view! {
+                        <li>
+                            <a class="err-cat" href=format!("/c/{slug}")>
+                                <Icon name=icon size=20/>
+                                <span>{name}</span>
+                            </a>
+                        </li>
+                    })
+                    .collect_view()}
+            </ul>
         </section>
     }
+}
+
+/// The first eight categories of this shop: (slug, icon, name in the visitor's language).
+#[cfg(feature = "ssr")]
+fn popular_categories(ar: bool) -> Vec<(String, String, String)> {
+    if use_context::<crate::server::AppState>().is_none() {
+        return Vec::new();
+    }
+    crate::server::current_catalog()
+        .nav()
+        .iter()
+        .take(8)
+        .map(|c| (c.slug.clone(), c.icon.clone(), c.name.pick(ar).to_owned()))
+        .collect()
+}
+
+#[cfg(not(feature = "ssr"))]
+fn popular_categories(_: bool) -> Vec<(String, String, String)> {
+    Vec::new()
 }
 
 /// The page the visitor came from, as a path, when it is on this site (and isn't this 404).
@@ -209,8 +213,8 @@ fn same_origin_referer(_: &str) -> Option<String> {
 
 /// One section failed: say so, offer a retry, keep the rest of the page.
 ///
-/// Same look as the home page's original `WidgetError`. Usable from server components and from
-/// inside islands (text follows the shared `Ui` store; no request context needed on the client).
+/// Same look as the home page's original `WidgetError`. Rendered on the server, in the request's
+/// language.
 ///
 /// - `errors` — pass the boundary's signal to show the error text in debug builds (never in
 ///   release).
@@ -224,28 +228,16 @@ pub fn SectionError(
     #[prop(optional, into)] retry_href: Option<String>,
     #[prop(optional)] compact: bool,
 ) -> impl IntoView {
-    let ui = use_ui();
+    let lang = use_ui().lang.get_untracked();
     let retry = retry_href.unwrap_or_else(current_url_without_fail);
     let sim_faults = sim_faults_active();
-    let detail = errors.filter(|_| cfg!(debug_assertions)).map(|errors| {
-        move || {
-            errors
-                .get()
-                .iter()
-                .map(|(_, e)| e.to_string())
-                .collect::<Vec<_>>()
-                .join(" · ")
-        }
-    });
-    let headline = move || {
-        let lang = ui.lang.get();
-        match &what {
-            Some(w) => match lang {
-                Lang::En => format!("{w} didn't load."),
-                Lang::Ar => format!("تعذّر تحميل {w}."),
-            },
-            None => tr(lang, "This section didn't load.", "تعذّر تحميل هذا القسم.").to_owned(),
-        }
+    let detail = errors.filter(|_| cfg!(debug_assertions)).map(error_text);
+    let headline = match &what {
+        Some(w) => match lang {
+            Lang::En => format!("{w} didn't load."),
+            Lang::Ar => format!("تعذّر تحميل {w}."),
+        },
+        None => tr(lang, "This section didn't load.", "تعذّر تحميل هذا القسم.").to_owned(),
     };
     view! {
         <div class="section-error" class:section-error--compact=compact role="status">
@@ -254,11 +246,11 @@ pub fn SectionError(
                 <p>
                     <strong>{headline}</strong>
                     " "
-                    <span>{move || tr(ui.lang.get(), "Everything else on the page still works.", "باقي الصفحة يعمل بشكل طبيعي.")}</span>
+                    <span>{tr(lang, "Everything else on the page still works.", "باقي الصفحة يعمل بشكل طبيعي.")}</span>
                 </p>
                 {detail.map(|d| view! {
                     <details class="section-error__detail">
-                        <summary>{move || tr(ui.lang.get(), "Details (debug build)", "التفاصيل (نسخة التطوير)")}</summary>
+                        <summary>{tr(lang, "Details (debug build)", "التفاصيل (نسخة التطوير)")}</summary>
                         <code dir="ltr">{d}</code>
                     </details>
                 })}
@@ -266,16 +258,26 @@ pub fn SectionError(
             <span class="section-error__actions">
                 <a class="section-error__retry" href=retry>
                     <Icon name="rotate-ccw" size=16/>
-                    <span>{move || tr(ui.lang.get(), "Try again", "إعادة المحاولة")}</span>
+                    <span>{tr(lang, "Try again", "إعادة المحاولة")}</span>
                 </a>
                 {sim_faults.map(|href| view! {
                     <a class="section-error__clear" href=href>
-                        {move || tr(ui.lang.get(), "Clear simulated faults", "إلغاء الأعطال التجريبية")}
+                        {tr(lang, "Clear simulated faults", "إلغاء الأعطال التجريبية")}
                     </a>
                 })}
             </span>
         </div>
     }
+}
+
+/// The boundary's errors as one line (debug builds only show it).
+fn error_text(errors: ArcRwSignal<Errors>) -> String {
+    errors
+        .get_untracked()
+        .iter()
+        .map(|(_, e)| e.to_string())
+        .collect::<Vec<_>>()
+        .join(" · ")
 }
 
 /// `path?query` of the current page with any `fail=` pair removed.
@@ -292,12 +294,7 @@ fn current_path_and_query() -> String {
 
 #[cfg(not(feature = "ssr"))]
 fn current_path_and_query() -> String {
-    let loc = window().location();
-    format!(
-        "{}{}",
-        loc.pathname().unwrap_or_default(),
-        loc.search().unwrap_or_default()
-    )
+    "/".into()
 }
 
 /// Remove every `name=…` pair from a `path?query` string.
@@ -370,16 +367,7 @@ pub fn ErrorPage(
     let lang = ui.lang.get_untracked();
     let theme = ui.theme.get_untracked();
     let retry = retry_href.unwrap_or_else(|| strip_param(&current_url_without_fail(), "crash"));
-    let detail = errors.filter(|_| cfg!(debug_assertions)).map(|errors| {
-        move || {
-            errors
-                .get()
-                .iter()
-                .map(|(_, e)| e.to_string())
-                .collect::<Vec<_>>()
-                .join(" · ")
-        }
-    });
+    let detail = errors.filter(|_| cfg!(debug_assertions)).map(error_text);
     let (code, title, body) = if unavailable {
         (
             tr(lang, "Error 503", "خطأ 503"),

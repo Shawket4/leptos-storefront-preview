@@ -15,8 +15,6 @@ pub mod tenant;
 #[cfg(feature = "ssr")]
 pub mod server;
 
-#[cfg(feature = "hydrate")]
-pub mod client;
 
 use leptos::prelude::*;
 use leptos_meta::provide_meta_context;
@@ -104,6 +102,8 @@ pub fn App() -> impl IntoView {
                     <Route path=path!("orders/:id") view=pages::OrderPage ssr=SsrMode::InOrder/>
                     <Route path=path!("showcase") view=pages::ShowcasePage ssr=SsrMode::InOrder/>
                     <Route path=path!("ui") view=pages::UiKitPage ssr=SsrMode::InOrder/>
+                    // Showcase agent (agreed with the lead): the one out-of-order route, the demo.
+                    <Route path=path!("showcase/stream") view=pages::showcase::StreamDemoPage ssr=SsrMode::OutOfOrder/>
                 </Routes>
             </components::shell::AppShell>
         </Router>

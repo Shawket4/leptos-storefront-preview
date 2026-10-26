@@ -3,7 +3,8 @@
 //! Works without JS: the form is a GET to `/orders?id=…`. The server tidies the reference
 //! (`nil 48213`, `#NIL48213` → `NIL-48213`) and, if this shop has that order, answers with a
 //! redirect to its tracking page; otherwise it renders the form again with the reference and an
-//! inline error. Below the form: orders placed from this browser, with their current status.
+//! inline error. Below the form: orders placed from this browser (its `visitor` cookie), with
+//! their current status.
 
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
@@ -100,8 +101,7 @@ pub fn OrdersLookupPage() -> impl IntoView {
     #[cfg(feature = "ssr")]
     let recent: Vec<Recent> = {
         let st = crate::server::state();
-        let mut v: Vec<Recent> = rq
-            .cart_id
+        let mut v: Vec<Recent> = crate::pages::checkout::draft::visitor()
             .as_deref()
             .map(crate::pages::checkout::draft::orders_of)
             .unwrap_or_default()

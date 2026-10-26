@@ -2,8 +2,11 @@
 //! HTML forms first and an app second.
 //!
 //! Each step is a real `<form method="post">` to its own server function. The function validates
-//! (with the same Rust rules the address island runs in the browser — see `rules`), stores a draft
-//! server-side keyed by the cart cookie, and calls `leptos_axum::redirect` to the next step.
+//! (`rules`), stores a draft server-side keyed by the `visitor` cookie (`draft`), and calls
+//! `leptos_axum::redirect` to the next step. The cart is read from the browser's `cart` cookie and
+//! priced again at every step; placing the order re-prices it, checks stock and clears the cookie.
+//! With JS the client router posts the same forms; `features/checkout.ts` adds constraint
+//! messages, focus on the first server error, a pending state and a double-submit guard.
 //!
 //! How that meets server_fn's own redirect for form posts (verified in the 0.8.22 source): a post
 //! that `Accept`s `text/html` (a browser without JS, or the islands router) makes server_fn set
@@ -15,12 +18,8 @@
 //!   server_fn would (`ServerFnUrlError`), instead of appending another `__err` pair to a Referer
 //!   that may already carry one; the page decodes it and renders the messages inline, next to the
 //!   fields, while the typed-in values come back from the draft (personal data stays out of URLs);
-//! - from an island (JSON request) `redirect` sets server_fn's redirect header instead, and our
-//!   redirect hook (`cart::store`) turns it into an islands-router navigation; an error comes back
-//!   as the `ServerAction`'s `Err` value and the island renders the same messages.
 
 mod address;
-#[cfg(feature = "ssr")]
 pub mod draft;
 pub mod rules;
 mod steps;
@@ -41,7 +40,6 @@ use rules::{AddressInput, FieldError};
 use serde::{Deserialize, Serialize};
 
 pub use address::AddressForm;
-pub use steps::StepFocus;
 
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -88,8 +86,8 @@ impl Step {
     }
 }
 
-/// What a checkout server function can fail with. One type for the island (the `ServerAction`'s
-/// `Err`) and for no-JS posts (encoded into the redirect URL by `ServerFnUrlError`).
+/// What a checkout server function can fail with (encoded into the redirect URL by
+/// `ServerFnUrlError`, decoded by the page that shows it).
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum CheckoutError {
     /// Problems with address fields.
@@ -184,6 +182,7 @@ impl CheckoutError {
 mod imp {
     use super::*;
     use crate::server::{cart, sim, state};
+    use domain::cart::CartLine;
 
     /// A browser form post (no JS) or an islands-router post — both ask for HTML.
     pub fn accepts_html() -> bool {
@@ -219,9 +218,15 @@ mod imp {
 
     pub struct Visit {
         pub tenant: crate::tenant::Tenant,
-        pub cart_id: Option<String>,
+        /// The `visitor` cookie (the draft's owner), if the browser has one yet.
+        pub visitor: Option<String>,
         pub key: Option<String>,
+        /// The `cart` cookie, as sent.
+        pub lines: Vec<CartLine>,
+        /// …priced now.
         pub cart: CartView,
+        /// A line can't be sent as it is (sold out, fewer left, gone from the catalogue).
+        pub blocked: bool,
     }
 
     /// The visitor's tenant, cart (priced now) and draft key. Synchronous: everything is in memory.
@@ -229,29 +234,17 @@ mod imp {
         let rq = crate::request::init();
         let st = state();
         let tenant = st.tenant(&rq.tenant.id).clone();
-        let catalog = st.catalog(&tenant.id);
-        let cart = rq
-            .cart_id
-            .as_deref()
-            .and_then(|id| st.carts().get(&tenant.id, id))
-            .and_then(|h| {
-                h.lock()
-                    .ok()
-                    .map(|c| cart::view(&c, &tenant, &catalog, st.media()))
-            })
-            .unwrap_or_else(|| CartView {
-                free_delivery_over: tenant.free_delivery_over,
-                ..Default::default()
-            });
-        let key = rq
-            .cart_id
-            .as_deref()
-            .map(|id| super::draft::key(&tenant.id, id));
+        let lines = cart::from_request();
+        let priced = cart::price(&lines, &tenant, &st.catalog(&tenant.id), st.media());
+        let visitor = super::draft::visitor();
+        let key = visitor.as_deref().map(|v| super::draft::key(&tenant.id, v));
         Visit {
             tenant,
-            cart_id: rq.cart_id.clone(),
+            visitor,
             key,
-            cart,
+            blocked: priced.blocked(),
+            cart: priced.view,
+            lines,
         }
     }
 
@@ -259,17 +252,23 @@ mod imp {
         crate::server::orders::slots(tenant, crate::server::orders::now_ms())
     }
 
-    /// Common start of every step: private response, simulated latency/outage, a non-empty cart.
+    /// Common start of every step: private response, simulated latency/outage, a non-empty cart
+    /// and a visitor id (created on the first step).
     pub async fn begin(fn_path: &str) -> Result<(Visit, String), CheckoutError> {
         crate::server::cache::private();
+        // Everything from the request first: after the `.await` the client may have gone.
+        let mut v = visit();
+        let visitor = super::draft::ensure_visitor();
         sim::check_fail(sim::Widget::Checkout)
             .map_err(|e| fail(CheckoutError::Server(e.to_string()), fn_path))?;
         sim::delay(sim::Widget::Checkout).await;
-        let v = visit();
-        match v.key.clone() {
-            Some(key) if !v.cart.lines.is_empty() => Ok((v, key)),
-            _ => Err(fail(CheckoutError::EmptyCart, fn_path)),
+        if v.lines.is_empty() {
+            return Err(fail(CheckoutError::EmptyCart, fn_path));
         }
+        let key = super::draft::key(&v.tenant.id, &visitor);
+        v.visitor = Some(visitor);
+        v.key = Some(key.clone());
+        Ok((v, key))
     }
 }
 
@@ -366,11 +365,11 @@ pub async fn checkout_payment(payment: Option<String>) -> Result<(), CheckoutErr
 #[server]
 pub async fn checkout_place(total: Option<i64>) -> Result<(), CheckoutError> {
     let path = <CheckoutPlace as leptos::server_fn::ServerFn>::PATH;
-    // Already placed from this cart (double submit, back button): go to that order.
+    // Already placed (double submit, back button): the cart is empty now — go to that order.
     {
         let v = imp::visit();
         if let Some(id) = v.key.as_deref().and_then(|k| draft::get(k).placed) {
-            if v.cart.lines.is_empty() {
+            if v.lines.is_empty() {
                 crate::server::cache::private();
                 leptos_axum::redirect(&format!("/orders/{id}"));
                 return Ok(());
@@ -394,7 +393,7 @@ pub async fn checkout_place(total: Option<i64>) -> Result<(), CheckoutError> {
     let Some(payment) = d.payment.filter(|p| *p == PaymentMethod::CashOnDelivery) else {
         return Err(imp::fail(CheckoutError::Missing(Step::Payment), path));
     };
-    if crate::pages::cart::math::stock_blocked(&v.cart) {
+    if v.blocked {
         return Err(imp::fail(CheckoutError::Stock, path));
     }
     let now_total = v.cart.total + slot.fee;
@@ -420,22 +419,17 @@ pub async fn checkout_place(total: Option<i64>) -> Result<(), CheckoutError> {
         &slot,
         payment,
     );
-    // Empty the cart and tell the badge.
-    let cart_id = v.cart_id.clone().unwrap_or_default();
-    if let Some(h) = st.carts().get(&v.tenant.id, &cart_id) {
-        if let Ok(mut c) = h.lock() {
-            c.clear();
-        }
-    }
+    // Empty the cart: clear the cookie (the browser code re-reads it after the navigation).
     if let Some(res) = use_context::<leptos_axum::ResponseOptions>() {
-        for c in crate::server::cart::cookies(&cart_id, 0) {
-            res.append_header(http::header::SET_COOKIE, c);
-        }
+        res.append_header(
+            http::header::SET_COOKIE,
+            crate::server::cart::set_cookie(&[]),
+        );
     }
     draft::remember_order(
         &order.id,
         draft::PlacedMeta {
-            owner: cart_id,
+            owner: v.visitor.clone().unwrap_or_default(),
             notes: address.notes.clone(),
             city: address.city.clone(),
             area: address.area.clone(),
@@ -455,6 +449,8 @@ pub async fn checkout_place(total: Option<i64>) -> Result<(), CheckoutError> {
 #[derive(Clone, Default)]
 pub struct Ctx {
     pub cart: CartView,
+    /// A line can't be sent as it is: the review step says so and can't be placed.
+    pub blocked: bool,
     pub step: Step,
     /// Which steps are complete.
     pub done: [bool; 4],
@@ -470,10 +466,9 @@ pub struct Ctx {
     pub now_ms: i64,
 }
 
-#[cfg(feature = "ssr")]
 fn load(asked: Step) -> Option<Ctx> {
     let v = imp::visit();
-    if v.cart.lines.is_empty() {
+    if v.lines.is_empty() {
         return None;
     }
     let d = v.key.as_deref().map(draft::get).unwrap_or_default();
@@ -513,6 +508,7 @@ fn load(asked: Step) -> Option<Ctx> {
     };
     Some(Ctx {
         cart: v.cart,
+        blocked: v.blocked,
         step,
         done,
         address: d.address,
@@ -526,15 +522,9 @@ fn load(asked: Step) -> Option<Ctx> {
     })
 }
 
-#[cfg(not(feature = "ssr"))]
-fn load(_: Step) -> Option<Ctx> {
-    None
-}
-
 #[component]
 pub fn CheckoutPage() -> impl IntoView {
     // Personal: never cached. Headers (and any redirect) are set before the first chunk.
-    #[cfg(feature = "ssr")]
     crate::server::cache::private();
     let rq = req();
     let (lang, num) = (rq.prefs.lang, rq.prefs.numerals);
@@ -565,7 +555,7 @@ pub fn CheckoutPage() -> impl IntoView {
     view! {
         <Title text=title/>
         <Meta name="robots" content="noindex"/>
-        <div class="container checkout">{body}</div>
+        <div class="container checkout" data-ts="checkout">{body}</div>
     }
 }
 

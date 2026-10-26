@@ -166,7 +166,9 @@ fn AppData(rq: RequestCtx) -> impl IntoView {
             cookie: domain::cart::COOKIE,
         },
     };
-    let config = serde_json::to_string(&config).unwrap_or_default().replace('<', "\\u003c");
+    let config = serde_json::to_string(&config)
+        .unwrap_or_default()
+        .replace('<', "\\u003c");
     view! {
         <script type="application/json" id="app-config" inner_html=config></script>
         <script type="application/json" id="app-strings" inner_html=crate::strings::client_json(rq.prefs.lang)></script>

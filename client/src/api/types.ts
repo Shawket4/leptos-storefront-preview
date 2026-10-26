@@ -72,3 +72,36 @@ export interface SuggestCategory {
   /** The aisle's lucide icon: the `d` of its one `<path>`. */
   icon: string;
 }
+
+// ── Showcase (owner: the showcase agent) ───────────────────────────────────────────────────────
+
+/** `GET /api/cache/stats`, `POST /api/cache/bump`. Rust: `api::types::CacheInfo`. */
+export interface CacheInfo {
+  entries: number;
+  hits: number;
+  misses: number;
+  generation: number;
+  base_latency_ms: number;
+}
+
+// ── Cart agent: order tracking ─────────────────────────────────────────────────────────────────
+
+/** `GET {api.orderTrack}?id=` → `OrderTrack | null`. Rust: `pages::order::TrackJson`. */
+export interface OrderTrack {
+  id: string;
+  /** `received`, `confirmed`, `preparing`, `ready`, `out_for_delivery`, `delivered`, `cancelled`, `rejected`. */
+  status: string;
+  headline: string;
+  eta: string;
+  /** One per timeline step, in order. */
+  steps: { state: "done" | "current" | "todo"; time: string | null }[];
+  /** How far the timeline's line has grown, 0..1. */
+  progress: number;
+  cancelled: boolean;
+  /** A final status: nothing will change any more (stop polling). */
+  done: boolean;
+  /** When the next step is due, from now (ms), for pacing the polls. */
+  next_in_ms: number | null;
+  /** "Updated 06:02 PM". */
+  updated: string;
+}

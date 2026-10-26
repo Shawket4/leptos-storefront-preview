@@ -848,3 +848,9 @@ a.co-step__link:hover {
 .notice--net[hidden] {
   display: none;
 }
+
+/* A step on its way to the server (features/checkout.ts): one submit at a time. */
+form[aria-busy="true"] [type="submit"][aria-busy="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
