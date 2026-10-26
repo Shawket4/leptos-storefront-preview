@@ -48,3 +48,12 @@ export function t(key: string, vars?: Record<string, string | number>): string {
   }
   return vars ? s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m)) : s;
 }
+
+/**
+ * Digits in the visitor's numerals (`cfg().numerals`): counts and clocks the client shows (the
+ * cart badge, a countdown). Not for money — money always arrives formatted by the server.
+ */
+export function digits(n: number | string): string {
+  const s = String(n);
+  return cfg().numerals === "arab" ? s.replace(/[0-9]/g, (d) => String.fromCharCode(0x0660 + Number(d))) : s;
+}

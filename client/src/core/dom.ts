@@ -33,11 +33,7 @@ export function fill(name: string, values: Record<string, string | number | null
   const tpl = document.getElementById(`tpl-${name}`);
   if (!(tpl instanceof HTMLTemplateElement)) throw new Error(`missing <template id="tpl-${name}">`);
   const frag = tpl.content.cloneNode(true) as DocumentFragment;
-  for (const el of $$("[data-slot]", frag)) {
-    const v = values[el.dataset.slot ?? ""];
-    if (v === null || v === undefined) el.hidden = true;
-    else el.textContent = String(v);
-  }
+  patch(frag, values);
   for (const el of $$("*", frag)) {
     for (const a of Array.from(el.attributes)) {
       if (!a.name.startsWith("data-attr-")) continue;
@@ -50,3 +46,17 @@ export function fill(name: string, values: Record<string, string | number | null
 }
 
 export const prefersReducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/**
+ * Update the `[data-slot]`s inside an already-rendered element in place (text only; `null` hides
+ * the slot, a value shows it again). Keeps the element — and focus inside it — where it is.
+ */
+export function patch(root: ParentNode, values: Record<string, string | number | null | undefined>): void {
+  for (const el of $$("[data-slot]", root)) {
+    const k = el.dataset.slot ?? "";
+    if (!(k in values)) continue;
+    const v = values[k];
+    el.hidden = v === null || v === undefined;
+    if (!el.hidden && el.textContent !== String(v)) el.textContent = String(v);
+  }
+}
