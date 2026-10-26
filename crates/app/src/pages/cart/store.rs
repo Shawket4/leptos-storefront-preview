@@ -254,6 +254,9 @@ impl CartOps {
             }
             self.base_count.set_value(n);
             self.cart.count.set(n);
+            // The lines we hold are someone else's past: show a skeleton until the refetch.
+            self.confirmed.set(None);
+            self.cart.view.set(None);
             if self.cart.open.get_untracked() {
                 self.revalidate();
             }
