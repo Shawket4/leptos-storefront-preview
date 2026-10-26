@@ -10,6 +10,7 @@
 use super::demos::LatencyLinks;
 use crate::api::{self, types::Rail};
 use crate::components::icons::Icon;
+use crate::components::skeleton::Skeleton;
 use crate::format;
 use crate::pages::errors::SectionError;
 use crate::prefs::{Lang, Numerals, tr};
@@ -249,13 +250,18 @@ fn StreamBlock(
     }
 }
 
+/// The same boxes as a resolved block (a meta line, then three 48 px rows), from the design
+/// system's skeletons.
 #[component]
 fn BlockSkeleton() -> impl IntoView {
     view! {
         <div class="sc-sblock__skel" aria-hidden="true">
-            <span class="skeleton sc-skel-line"></span>
+            <Skeleton width="60%" height="22px"/>
             {(0..3).map(|_| view! {
-                <span class="sc-skel-row"><span class="skeleton sc-skel-img"></span><span class="skeleton sc-skel-text"></span></span>
+                <span class="sc-skel-row">
+                    <Skeleton width="48px" height="48px"/>
+                    <Skeleton width="80%" height="14px"/>
+                </span>
             }).collect_view()}
         </div>
     }

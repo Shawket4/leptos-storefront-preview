@@ -4,6 +4,7 @@
 
 use super::{Ctx, Sample, nums};
 use crate::api::{self, types::Rail};
+use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::format;
 use crate::pages::errors::SectionError;
@@ -152,10 +153,9 @@ fn StreamingDemo(cx: Arc<Ctx>) -> impl IntoView {
             <LatencyLinks lang num current=cx.base_ms next router_off=true/>
         </div>
         <p class="sc-actions">
-            <a class="btn btn--primary btn--md" href="/showcase/stream" data-router="off">
-                <Icon name="zap" size=18/>
-                <span class="btn__label">{tr(lang, "Open the streaming demo", "افتح ديمو البث")}</span>
-            </a>
+            <Button href="/showcase/stream" icon="zap" attr:data-router="off">
+                {tr(lang, "Open the streaming demo", "افتح ديمو البث")}
+            </Button>
             <a class="sc-btnlink" href="/showcase/stream?fail=deals" data-router="off">
                 <Icon name="triangle-alert" size=16/>
                 <span>{tr(lang, "With the deals failing", "والعروض فاشلة")}</span>
@@ -196,10 +196,9 @@ fn ServerFnsDemo(cx: Arc<Ctx>) -> impl IntoView {
     view! {
         <div class="sc-api" data-ts="sc-api" data-url=stats>
             <p class="sc-row">
-                <button type="button" class="btn btn--secondary btn--md" data-act="call" hidden>
-                    <Icon name="zap" size=18/>
-                    <span class="btn__label">{format!("GET {stats}")}</span>
-                </button>
+                <Button kind=ButtonKind::Secondary icon="zap" attr:data-act="call" attr:hidden="">
+                    {format!("GET {stats}")}
+                </Button>
                 <a class="sc-link" href=stats data-router="off" data-nojs="">
                     <span>{tr(lang, "Open the JSON", "افتح الـ JSON")}</span>
                     <Icon name="arrow-up-right" size=14 class="flip-rtl"/>
@@ -310,14 +309,12 @@ fn ReadCacheDemo(cx: Arc<Ctx>) -> impl IntoView {
             <i class="sc-meter" style=format!("--p:{rate}") aria-hidden="true" data-out-meter=""><b></b></i>
             // Without JS this form posts to the server function, which redirects back here.
             <form class="sc-actions" method="post" action=bump_path()>
-                <button type="button" class="btn btn--secondary btn--md" data-act="refresh" hidden>
-                    <Icon name="refresh-cw" size=18/>
-                    <span class="btn__label">{tr(lang, "Read the stats again", "اقرا الأرقام تاني")}</span>
-                </button>
-                <button type="submit" class="btn btn--outline btn--md">
-                    <Icon name="rotate-ccw" size=18/>
-                    <span class="btn__label">{tr(lang, "Bump the generation", "زوّد الـ generation")}</span>
-                </button>
+                <Button kind=ButtonKind::Secondary icon="refresh-cw" attr:data-act="refresh" attr:hidden="">
+                    {tr(lang, "Read the stats again", "اقرا الأرقام تاني")}
+                </Button>
+                <Button kind=ButtonKind::Outline button_type="submit" icon="rotate-ccw">
+                    {tr(lang, "Bump the generation", "زوّد الـ generation")}
+                </Button>
             </form>
             <p class="sc-note" data-slot="note">{tr(
                 lang,
@@ -365,13 +362,12 @@ fn TenancyDemo(cx: Arc<Ctx>) -> impl IntoView {
         </dl>
         {t.other.clone().map(|(name, href, cross)| view! {
             <p class="sc-row">
-                <a class="btn btn--secondary btn--sm" href=href data-router=cross.then_some("off")>
-                    <Icon name="store" size=16/>
-                    <span class="btn__label">{match lang {
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm href=href icon="store" attr:data-router=cross.then_some("off")>
+                    {match lang {
                         Lang::En => format!("This page at {}", name.en),
                         Lang::Ar => format!("الصفحة دي في {}", name.ar),
-                    }}</span>
-                </a>
+                    }}
+                </Button>
                 <span class="sc-note">{if cross {
                     tr(lang, "Another subdomain is another origin: a full page load, with its own cookies.", "‏subdomain تاني يعني origin تاني: تحميل كامل للصفحة، وكوكيز خاصة بيه.")
                 } else {
@@ -450,18 +446,15 @@ fn RouterDemo(cx: Arc<Ctx>) -> impl IntoView {
     view! {
         <div data-ts="sc-router" data-href=target.clone()>
             <p class="sc-actions">
-                <button type="button" class="btn btn--secondary btn--md" data-act="prefetch" hidden>
-                    <Icon name="zap" size=18/>
-                    <span class="btn__label">{format!("prefetch(\"{target}\")")}</span>
-                </button>
-                <a class="btn btn--outline btn--md" href=target.clone()>
-                    <span class="btn__label">{tr(lang, "Open it", "افتحها")}</span>
-                    <Icon name="arrow-right" size=18 class="flip-rtl"/>
-                </a>
-                <button type="button" class="btn btn--ghost btn--md" data-act="refresh" hidden>
-                    <Icon name="refresh-cw" size=18/>
-                    <span class="btn__label">"refresh()"</span>
-                </button>
+                <Button kind=ButtonKind::Secondary icon="zap" attr:data-act="prefetch" attr:hidden="">
+                    {format!("prefetch(\"{target}\")")}
+                </Button>
+                <Button kind=ButtonKind::Outline href=target.clone() icon_end="arrow-right">
+                    {tr(lang, "Open it", "افتحها")}
+                </Button>
+                <Button kind=ButtonKind::Ghost icon="refresh-cw" attr:data-act="refresh" attr:hidden="">
+                    "refresh()"
+                </Button>
             </p>
             <dl class="sc-kvs">
                 <Kv k=tr(lang, "routing.pending", "routing.pending") v="false" out="pending"/>
@@ -491,22 +484,18 @@ fn StoresDemo(cx: Arc<Ctx>) -> impl IntoView {
                 <Kv k="routing" v="—" out="routing"/>
             </dl>
             <p class="sc-actions" data-needs-js="" hidden>
-                <button type="button" class="btn btn--secondary btn--sm" data-toast="success">
-                    <Icon name="circle-check" size=16/>
-                    <span class="btn__label">{tr(lang, "Success", "تمام")}</span>
-                </button>
-                <button type="button" class="btn btn--secondary btn--sm" data-toast="info">
-                    <Icon name="info" size=16/>
-                    <span class="btn__label">{tr(lang, "Info", "معلومة")}</span>
-                </button>
-                <button type="button" class="btn btn--secondary btn--sm" data-toast="error">
-                    <Icon name="circle-x" size=16/>
-                    <span class="btn__label">{tr(lang, "Error", "خطأ")}</span>
-                </button>
-                <button type="button" class="btn btn--secondary btn--sm" data-toast="action">
-                    <Icon name="rotate-ccw" size=16/>
-                    <span class="btn__label">{tr(lang, "With Undo", "ومعاه تراجع")}</span>
-                </button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="circle-check" attr:data-toast="success">
+                    {tr(lang, "Success", "تمام")}
+                </Button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="info" attr:data-toast="info">
+                    {tr(lang, "Info", "معلومة")}
+                </Button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="circle-x" attr:data-toast="error">
+                    {tr(lang, "Error", "خطأ")}
+                </Button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="rotate-ccw" attr:data-toast="action">
+                    {tr(lang, "With Undo", "ومعاه تراجع")}
+                </Button>
             </p>
             <p class="sc-note">{tr(
                 lang,
@@ -535,18 +524,15 @@ fn CartDemo(cx: Arc<Ctx>) -> impl IntoView {
                 <span class="sc-mini__price mono">{price}</span>
             </div>
             <p class="sc-actions" data-needs-js="" hidden>
-                <button type="button" class="btn btn--primary btn--sm" data-act="add">
-                    <Icon name="plus" size=16/>
-                    <span class="btn__label">{tr(lang, "Add one", "زوّد واحد")}</span>
-                </button>
-                <button type="button" class="btn btn--outline btn--sm" data-act="remove">
-                    <Icon name="trash-2" size=16/>
-                    <span class="btn__label">{tr(lang, "Remove the line", "شيل السطر")}</span>
-                </button>
-                <button type="button" class="btn btn--secondary btn--sm" data-act="quote">
-                    <Icon name="receipt" size=16/>
-                    <span class="btn__label">{tr(lang, "Ask the server for prices", "اسأل السيرفر عن الأسعار")}</span>
-                </button>
+                <Button kind=ButtonKind::Primary size=ButtonSize::Sm icon="plus" attr:data-act="add">
+                    {tr(lang, "Add one", "زوّد واحد")}
+                </Button>
+                <Button kind=ButtonKind::Outline size=ButtonSize::Sm icon="trash-2" attr:data-act="remove">
+                    {tr(lang, "Remove the line", "شيل السطر")}
+                </Button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="receipt" attr:data-act="quote">
+                    {tr(lang, "Ask the server for prices", "اسأل السيرفر عن الأسعار")}
+                </Button>
             </p>
             <dl class="sc-kvs">
                 <Kv k=tr(lang, "cart cookie", "كوكي cart") v="—" out="cookie"/>
@@ -589,14 +575,12 @@ fn TemplatesDemo(cx: Arc<Ctx>) -> impl IntoView {
                 </li>
             </template>
             <p class="sc-actions" data-needs-js="" hidden>
-                <button type="button" class="btn btn--secondary btn--sm" data-act="fill">
-                    <Icon name="copy" size=16/>
-                    <span class="btn__label">{"fill(\"sc-row\", row)"}</span>
-                </button>
-                <button type="button" class="btn btn--ghost btn--sm" data-act="clear">
-                    <Icon name="x" size=16/>
-                    <span class="btn__label">{tr(lang, "Clear", "امسح")}</span>
-                </button>
+                <Button kind=ButtonKind::Secondary size=ButtonSize::Sm icon="copy" attr:data-act="fill">
+                    {"fill(\"sc-row\", row)"}
+                </Button>
+                <Button kind=ButtonKind::Ghost size=ButtonSize::Sm icon="x" attr:data-act="clear">
+                    {tr(lang, "Clear", "امسح")}
+                </Button>
             </p>
             <ul class="sc-minis" role="list" data-out="rows"></ul>
             <p class="sc-note" data-slot="count">{tr(
@@ -616,14 +600,12 @@ fn DataCacheDemo(cx: Arc<Ctx>) -> impl IntoView {
     view! {
         <div data-ts="sc-cache" data-url=stats_path()>
             <p class="sc-actions" data-needs-js="" hidden>
-                <button type="button" class="btn btn--secondary btn--md" data-act="read">
-                    <Icon name="zap" size=18/>
-                    <span class="btn__label">{tr(lang, "Read through cached()", "اقرا من خلال cached()")}</span>
-                </button>
-                <button type="button" class="btn btn--ghost btn--md" data-act="invalidate">
-                    <Icon name="trash-2" size=18/>
-                    <span class="btn__label">"invalidate()"</span>
-                </button>
+                <Button kind=ButtonKind::Secondary icon="zap" attr:data-act="read">
+                    {tr(lang, "Read through cached()", "اقرا من خلال cached()")}
+                </Button>
+                <Button kind=ButtonKind::Ghost icon="trash-2" attr:data-act="invalidate">
+                    "invalidate()"
+                </Button>
             </p>
             <i class="sc-ttl" aria-hidden="true" data-out-ttl=""><b class="sc-ttl__fresh"></b><b class="sc-ttl__stale"></b><b class="sc-ttl__now"></b></i>
             <dl class="sc-kvs">
