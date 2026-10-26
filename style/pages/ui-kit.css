@@ -40,6 +40,7 @@
 }
 .kit__body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
 }
 .kit__body--card {

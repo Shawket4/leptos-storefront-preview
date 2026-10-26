@@ -369,6 +369,6 @@ hr {
     display: none !important;
   }
   body {
-    background: #fff;
+    background: var(--surface);
   }
 }
