@@ -40,7 +40,10 @@ ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="-C target-cpu=${TARGET_CPU}
     CARGO_PROFILE_RELEASE_LTO=${LTO_MODE} \
     LEPTOS_BIN_TARGET_TRIPLE=x86_64-unknown-linux-gnu \
     # Content-hashed CSS + hash.txt (Cargo.toml keeps hash-files off for `cargo leptos watch`).
-    LEPTOS_HASH_FILES=true
+    LEPTOS_HASH_FILES=true \
+    # leptos and leptos_config read this at COMPILE time (`option_env!`), and cargo-leptos sets it
+    # for its build: set for `cook` too, or the cooked leptos crates are rebuilt.
+    LEPTOS_OUTPUT_NAME=storefront
 
 # Dependencies only — this layer changes when Cargo.lock does. Same package, features, profile and
 # target as cargo-leptos's server build below, so it reuses every artifact.
