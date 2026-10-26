@@ -133,6 +133,10 @@
 .lx-filter-btn {
   flex: none;
 }
+/* The count shares the button's label span with the text: give it the same gap as the icon. */
+.lx-filter-btn .lx-badge {
+  margin-inline-start: var(--sp-2);
+}
 .lx-badge {
   display: inline-grid;
   place-items: center;
