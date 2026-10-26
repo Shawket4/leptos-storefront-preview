@@ -49,10 +49,12 @@ register("line-editor", (root) => {
   if (!picker) return;
   total = () => patch(root, { total: picker.current().stock === 0 ? null : money(picker.unit() * picker.qty()) });
   const form = $<HTMLFormElement>("form", root);
-  // The cart is the browser's: the line's quantity now, not the one the page was rendered with.
+  // The cart is the browser's: the line's quantity now, not the one the page was rendered with —
+  // unless the shopper changed it before this code arrived (that's what they meant).
   const line = cart.get().lines.find((l) => lineKey(l) === key);
   const stepper = $("[data-ts~=stepper]", root);
-  if (line && stepper) setStepper(stepper, { value: line.qty });
+  const input = stepper && $<HTMLInputElement>("input", stepper);
+  if (line && stepper && input && input.value === input.defaultValue) setStepper(stepper, { value: line.qty });
   total();
 
   const submit = (ev: SubmitEvent) => {
