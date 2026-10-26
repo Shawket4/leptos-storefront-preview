@@ -7,6 +7,10 @@
 //! dragged toward its edge, rubber-bands when pulled past open, and on release the velocity
 //! decides — projected past halfway it closes, otherwise it springs back (with a little bounce,
 //! because a flick preceded it). Reduced motion: a short cross-fade instead.
+//!
+//! SSR-safe: rendering it on the server creates nothing thread-bound (node refs and stored values
+//! are thread-safe, effects don't exist there, the spring is inert under `ssr`), so an island can
+//! render it in its server pass, on any worker thread.
 
 use super::button::IconButton;
 use super::motion::{Spring, SpringValue, VelocityTracker, project, rubberband};
