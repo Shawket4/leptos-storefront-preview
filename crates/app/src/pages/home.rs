@@ -385,12 +385,25 @@ fn RailSection(
             <Suspense fallback=move || view! { <RailSkeleton/> }>
                 <ErrorBoundary fallback=move |_| view! { <WidgetError lang/> }>
                     {move || Suspend::new(async move {
-                        data.await.map(|cards| view! {
-                            <Row>
-                                {cards.into_iter().enumerate().map(|(i, card)| view! {
-                                    <ProductCard card lang numerals=num priority=priority && i < 2/>
-                                }).collect_view()}
-                            </Row>
+                        data.await.map(|cards| {
+                            if cards.is_empty() {
+                                // A real empty state, not a blank strip.
+                                return view! {
+                                    <p class="rail-empty">
+                                        {tr(lang, "Nothing here right now — new picks land every morning.", "مفيش حاجة هنا دلوقتي — بننزّل اختيارات جديدة كل يوم الصبح.")}
+                                        " "<a href="/search">{tr(lang, "Browse everything", "تصفّح كل المنتجات")}</a>
+                                    </p>
+                                }
+                                .into_any();
+                            }
+                            view! {
+                                <Row>
+                                    {cards.into_iter().enumerate().map(|(i, card)| view! {
+                                        <ProductCard card lang numerals=num priority=priority && i < 2/>
+                                    }).collect_view()}
+                                </Row>
+                            }
+                            .into_any()
                         })
                     })}
                 </ErrorBoundary>

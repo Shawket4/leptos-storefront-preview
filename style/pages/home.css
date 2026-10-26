@@ -139,6 +139,10 @@
 }
 .countdown__clock { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 
+/* An empty rail */
+.rail-empty { margin: 0; padding: 18px; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); color: var(--text-2); font-size: .9375rem; }
+.rail-empty a { color: var(--text); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
 /* A failed widget */
 .widget-error {
   display: flex;
