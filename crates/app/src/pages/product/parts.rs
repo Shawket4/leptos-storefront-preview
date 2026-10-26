@@ -130,40 +130,31 @@ fn Promise(express: bool, lang: Lang, numerals: Numerals) -> impl IntoView {
         let (title, sub) = match lang {
             Lang::En => (
                 format!("At your door in {m} minutes"),
-                "From our nearest store, every day 8 am – 1 am".to_owned(),
+                "From our nearest store".to_owned(),
             ),
-            Lang::Ar => (
-                format!("عندك في {m} دقيقة"),
-                "من أقرب فرع لينا، كل يوم من ٨ الصبح لـ١ بالليل".to_owned(),
-            ),
+            Lang::Ar => (format!("عندك في {m} دقيقة"), "من أقرب فرع لينا".to_owned()),
         };
         (title, sub)
     });
+    // Only what the tenant's terms say: the fee, the free-delivery threshold, express minutes.
     let (dtitle, dsub) = match lang {
         Lang::En => (
             format!("Free delivery over {free}"),
-            format!("Otherwise {fee} · arrives in 1–3 days"),
+            format!("Otherwise {fee} per order"),
         ),
         Lang::Ar => (
             format!("توصيل مجاني فوق {free}"),
-            format!("غير كده {fee} · يوصلك في ١–٣ أيام"),
+            format!("غير كده {fee} للطلب"),
         ),
     };
-    let dsub = if fast.is_some() {
-        match lang {
-            Lang::En => format!("Otherwise {fee} per order"),
-            Lang::Ar => format!("غير كده {fee} للطلب"),
-        }
-    } else {
-        dsub
-    };
+    // Express-tagged stock ships from a dark store (`Tag::Express`: delivered within hours).
     let express_line = (fast.is_none() && express).then(|| {
         (
-            tr(lang, "Express delivery available", "متاح توصيل سريع"),
+            tr(lang, "Express delivery", "توصيل سريع"),
             tr(
                 lang,
-                "Order today, get it tomorrow in Cairo & Giza",
-                "اطلب النهارده يوصلك بكرة في القاهرة والجيزة",
+                "This item arrives within hours",
+                "المنتج ده يوصلك خلال ساعات",
             ),
         )
     });
@@ -185,8 +176,8 @@ fn Promise(express: bool, lang: Lang, numerals: Numerals) -> impl IntoView {
             {row("truck", dtitle, dsub)}
             {row(
                 "banknote",
-                tr(lang, "Cash or card on delivery", "ادفع كاش أو بالكارت عند الاستلام").to_owned(),
-                tr(lang, "Or pay online when you check out", "أو ادفع أونلاين وانت بتأكد الطلب").to_owned(),
+                tr(lang, "Cash on delivery", "الدفع عند الاستلام").to_owned(),
+                tr(lang, "Pay when your order arrives", "ادفع لما طلبك يوصل").to_owned(),
             )}
         </ul>
     }
@@ -250,10 +241,8 @@ pub fn Related(id: u32, category: NavCategory, lang: Lang, numerals: Numerals) -
     let data = Resource::new(move || id, |id| api::related_products(ProductId(id), 12));
     let title = tr(lang, "You may also like", "ممكن يعجبك كمان").to_owned();
     let (hid, hid_ref) = (format!("pdp-related-{id}"), format!("pdp-related-{id}"));
-    let more = match lang {
-        Lang::En => format!("More in {}", text(&category.name, lang)),
-        Lang::Ar => format!("المزيد من {}", text(&category.name, lang)),
-    };
+    // The shelf's own name is the link: short enough to leave the title on one line.
+    let more = text(&category.name, lang);
     let href = format!("/c/{}", category.slug);
     let label = title.clone();
     view! {

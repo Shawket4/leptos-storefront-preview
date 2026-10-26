@@ -20,6 +20,7 @@ use crate::api::types::CartView;
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
 use crate::components::price::{PriceLive, PriceSize};
+use crate::components::toast::{self, ToastKind};
 use crate::format;
 use crate::prefs::{Lang, tr, use_ui};
 use crate::stores::use_cart;
@@ -161,12 +162,12 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
     let tried = RwSignal::new(false);
     let phase = RwSignal::new(Phase::Idle);
     let bar = RwSignal::new(false);
-    let toast = RwSignal::new(None::<String>);
     let (initial_error, initial_added) = match &data.notice {
         Some(Notice::Error(c)) => (Some(c.clone()), None),
         Some(Notice::Added(n)) => (None, Some(*n)),
         None => (None, None),
     };
+    let has_notice = initial_error.is_some() || initial_added.is_some();
     let error = RwSignal::new(initial_error);
     let added_notice = RwSignal::new(initial_added);
     let action = ServerAction::<AddToCart>::new();
@@ -227,17 +228,16 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                 error.set(None);
                 phase.set(Phase::Added);
                 let name = d.with_value(|d| text(&d.name, ui.lang.get_untracked()));
-                toast.set(Some(match ui.lang.get_untracked() {
-                    Lang::En => format!("Added to your cart · {name}"),
-                    Lang::Ar => format!("اتضاف لسلتك · {name}"),
-                }));
+                toast::show(
+                    match ui.lang.get_untracked() {
+                        Lang::En => format!("Added to your cart · {name}"),
+                        Lang::Ar => format!("اتضاف لسلتك · {name}"),
+                    },
+                    ToastKind::Success,
+                );
                 set_timeout(
                     move || phase.set(Phase::Idle),
                     std::time::Duration::from_millis(1800),
-                );
-                set_timeout(
-                    move || toast.set(None),
-                    std::time::Duration::from_millis(3600),
                 );
             }
             Some(Err(e)) => {
@@ -413,7 +413,7 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                     let inner = if swatch {
                         view! { <span class="pp-swatch__dot" style=dot aria-hidden="true"></span> }.into_any()
                     } else {
-                        view! { <span class="pp-chip__label">{move || text(&label, ui.lang.get())}</span> }.into_any()
+                        view! { <span class="pp-chip__label trim">{move || text(&label, ui.lang.get())}</span> }.into_any()
                     };
                     view! {
                         <a
@@ -644,7 +644,7 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                                 type="button"
                                 class="pp-qty__btn"
                                 aria-label=move || tr(ui.lang.get(), "Decrease quantity", "قلّل الكمية")
-                                disabled=move || qty.get() <= 1 || stock_n.get() == 0
+                                disabled=move || { qty.get() <= 1 || stock_n.get() == 0 }
                                 on:click=move |_| qty.update(|q| *q = q.saturating_sub(1).max(1))
                                 data-press=""
                             >
@@ -670,7 +670,7 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                                 type="button"
                                 class="pp-qty__btn"
                                 aria-label=move || tr(ui.lang.get(), "Increase quantity", "زوّد الكمية")
-                                disabled=move || qty.get() >= max_qty.get() || stock_n.get() == 0
+                                disabled=move || { qty.get() >= max_qty.get() || stock_n.get() == 0 }
                                 on:click=move |_| qty.update(|q| *q = (*q + 1).min(max_qty.get_untracked()))
                                 data-press=""
                             >
@@ -687,14 +687,23 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                             disabled=Signal::derive(move || stock_n.get() == 0)
                             on:click=on_add
                         >
-                            <span class="pp-add__state" aria-hidden="true">
-                                {move || (phase.get() == Phase::Added).then(|| view! { <Icon name="check" size=18/> })}
+                            <span class="pp-add__main">
+                                <span class="pp-add__state" aria-hidden="true">
+                                    {move || (phase.get() == Phase::Added).then(|| view! { <Icon name="check" size=18/> })}
+                                </span>
+                                <span class="pp-add__label trim">{button_label}</span>
                             </span>
-                            <span class="pp-add__label">{button_label}</span>
                             <span class="pp-add__total mono" class:is-empty=move || stock_n.get() == 0>{total_text}</span>
                         </Button>
                     </div>
-                    <div class="pp-msgs" aria-live="polite">
+                    // A notice the server rendered (a no-JS add came back here) takes focus on load, so the
+                    // browser scrolls to it — no script needed.
+                    <div
+                        class="pp-msgs"
+                        aria-live="polite"
+                        tabindex=has_notice.then_some("-1")
+                        autofocus=has_notice
+                    >
                         {move || error.get().map(|code| view! {
                             <p class="pp-msg pp-msg--error" role="alert">
                                 <Icon name="circle-alert" size=16/>
@@ -737,13 +746,6 @@ pub fn PanelBody(data: PanelData) -> impl IntoView {
                 >
                     {button_label}
                 </Button>
-            </div>
-            <div class="pp-toast" role="status" aria-live="polite" class:is-shown=move || toast.get().is_some()>
-                {move || toast.get().map(|t| view! {
-                    <Icon name="circle-check" size=18/>
-                    <span class="pp-toast__text">{t}</span>
-                    <a class="pp-toast__link" href="/cart">{tr(ui.lang.get(), "View cart", "اعرض السلة")}</a>
-                })}
             </div>
         </div>
     }

@@ -29,7 +29,6 @@
 mod gallery;
 mod head;
 mod model;
-mod motion;
 mod panel;
 mod parts;
 mod shim;
@@ -167,7 +166,7 @@ pub fn ProductPage() -> impl IntoView {
         // Outside the keyed `<For>`: Leptos resolves a `<For>` item completely before rendering
         // it, which would freeze this Suspense on its skeleton. Here it streams on its own; its
         // cards are keyed so the islands router patches them one by one.
-        <div class="container">
+        <div class="container pdp-after">
             <Related id=id category=category lang=lang numerals=num/>
         </div>
     })

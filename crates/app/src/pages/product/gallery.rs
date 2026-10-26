@@ -1,10 +1,11 @@
 //! The product gallery (an island).
 //!
 //! Without JS it is a native scroll-snap strip (swipe, momentum and RTL come from the browser) with
-//! anchor thumbnails. Once hydrated it takes the gesture over, Apple-style: the strip follows the
-//! finger 1:1 from where it was grabbed, the release velocity decides next/previous, a flick's
-//! landing point is projected (`(v/1000)·d/(1−d)`), the ends rubber-band, and every movement is a
-//! spring that starts from the live position — grab it mid-flight and it stops under the finger.
+//! anchor thumbnails. Once hydrated it takes the gesture over, Apple-style, on the design system's
+//! springs (`components::motion`): the strip follows the finger 1:1 from where it was grabbed, the
+//! release velocity decides next/previous, a slow release lands where its momentum projects, the
+//! ends rubber-band, and every movement starts from the live position — grab it mid-flight and it
+//! stops under the finger; a flick hands its speed to the spring.
 //!
 //! Desktop: arrows, thumbnails, hover zoom-to-cursor. Everywhere: tap/click opens a fullscreen
 //! viewer (same strip engine) with double-tap and pinch zoom and pan. Keyboard: arrows, Home/End,
@@ -12,11 +13,11 @@
 //! page store the purchase panel writes).
 
 use super::model::{GalleryData, STAGE_SIZES, text};
-use super::motion::{Frames, Spring, SpringCfg, Tracker, project, reduced_motion, rubberband};
 use super::use_product_store;
 use crate::components::button::IconButton;
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
+use crate::components::motion::{Spring, SpringValue, VelocityTracker, project, rubberband};
 use crate::format;
 use crate::prefs::{tr, use_ui};
 use leptos::html;
@@ -31,10 +32,32 @@ const SLOP: f64 = 8.0;
 const TAP_ZOOM: f64 = 2.5;
 const MAX_ZOOM: f64 = 4.0;
 const DOUBLE_TAP_MS: f64 = 300.0;
+/// Apple's rubber-band constant.
+const RUBBER: f64 = 0.55;
+/// After a flick only: a little life at the landing (between DEFAULT and BOUNCY).
+const FLICK: Spring = Spring {
+    damping: 0.88,
+    response: 0.32,
+};
 
 #[island]
 pub fn Gallery(data: GalleryData) -> impl IntoView {
     view! { <GalleryBody data=data/> }
+}
+
+/// A spring that exists only in the browser. `SpringValue` keeps its state in thread-local
+/// storage; created during SSR it would be dropped later by whichever tokio worker ends the
+/// response stream, and a thread-local value dropped on another thread panics.
+fn client_spring(initial: f64, draw: impl Fn(f64) + 'static) -> Option<SpringValue> {
+    #[cfg(feature = "hydrate")]
+    {
+        Some(SpringValue::new(initial, draw))
+    }
+    #[cfg(not(feature = "hydrate"))]
+    {
+        let _ = (initial, draw);
+        None
+    }
 }
 
 // ── The strip engine (stage and viewer) ─────────────────────────────────────────────────────
@@ -52,21 +75,21 @@ struct Drag {
     id: i32,
     x0: f64,
     y0: f64,
+    /// Strip position when grabbed.
     pos0: f64,
+    /// The finger's (un-rubber-banded) position, for the release.
+    raw: f64,
     axis: Axis,
-    tracker: Tracker,
+    tracker: VelocityTracker,
 }
 
 #[derive(Default)]
 struct Strip {
-    /// Logical position along the reading direction, px (slide i rests at `i·w`).
-    pos: Spring,
     w: f64,
     n: usize,
     rtl: bool,
     index: usize,
     drag: Option<Drag>,
-    frames: Frames,
 }
 
 impl Strip {
@@ -77,17 +100,12 @@ impl Strip {
     /// The on-screen position for a raw (finger) position: rubber-banded past either end.
     fn shown(&self, raw: f64) -> f64 {
         if raw < 0.0 {
-            -rubberband(-raw, self.w)
+            -rubberband(-raw, self.w, RUBBER)
         } else if raw > self.max() {
-            self.max() + rubberband(raw - self.max(), self.w)
+            self.max() + rubberband(raw - self.max(), self.w, RUBBER)
         } else {
             raw
         }
-    }
-
-    fn css(&self) -> String {
-        let x = if self.rtl { self.pos.x } else { -self.pos.x };
-        format!("translate3d({x:.2}px,0,0)")
     }
 }
 
@@ -96,8 +114,18 @@ enum Release {
     /// It never moved past the slop: a tap.
     Tap,
     Swipe,
-    /// Another pointer / the browser took it (vertical scroll).
+    /// Another pointer, or the browser took it (vertical scroll).
     Nothing,
+}
+
+/// Paint a strip at logical position `pos` (px along the reading direction).
+fn draw_strip(st: StoredValue<Strip>, track: NodeRef<html::Div>, pos: f64) {
+    let rtl = st.try_with_value(|s| s.rtl).unwrap_or(false);
+    let x = if rtl { pos } else { -pos };
+    if let Some(t) = track.get_untracked() {
+        let _ = web_sys::HtmlElement::style(&t)
+            .set_property("transform", &format!("translate3d({x:.2}px,0,0)"));
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -107,19 +135,24 @@ struct StripRef {
     track: NodeRef<html::Div>,
     /// The committed index (dots, counter, thumbnails, aria).
     active: RwSignal<usize>,
+    /// Position along the reading direction, px (slide i rests at `i·w`). Browser only.
+    x: Option<SpringValue>,
 }
 
 impl StripRef {
     fn new(n: usize, start: usize) -> Self {
+        let st = StoredValue::new(Strip {
+            n,
+            index: start,
+            ..Default::default()
+        });
+        let track = NodeRef::<html::Div>::new();
         StripRef {
-            st: StoredValue::new(Strip {
-                n,
-                index: start,
-                ..Default::default()
-            }),
+            st,
             viewport: NodeRef::new(),
-            track: NodeRef::new(),
+            track,
             active: RwSignal::new(start),
+            x: client_spring(0.0, move |pos| draw_strip(st, track, pos)),
         }
     }
 
@@ -127,94 +160,91 @@ impl StripRef {
         self.st.with_value(|s| s.index)
     }
 
-    fn paint(self) {
-        let css = self.st.with_value(|s| s.css());
-        if let Some(t) = self.track.get_untracked() {
-            let _ = web_sys::HtmlElement::style(&t).set_property("transform", &css);
+    fn pos(self) -> f64 {
+        self.x.map(|x| x.get()).unwrap_or_default()
+    }
+
+    /// Put the strip somewhere now (stops any spring in flight).
+    fn set(self, pos: f64) {
+        if let Some(x) = self.x {
+            x.set(pos);
         }
     }
 
-    /// Re-read the slide width (on mount, resize, open) and rest on the current index.
+    /// Re-read the slide width (on mount, resize, open, direction change) and rest on the index.
     fn measure(self, rtl: bool) {
         let Some(vp) = self.viewport.get_untracked() else {
             return;
         };
         let w = vp.client_width() as f64;
-        self.st.update_value(|s| {
-            s.rtl = rtl;
-            if w > 0.0 && s.drag.is_none() {
-                s.frames.stop();
-                s.w = w;
-                s.pos = Spring::at(s.index as f64 * w);
-            }
-        });
-        self.paint();
+        let rest = self
+            .st
+            .try_update_value(|s| {
+                s.rtl = rtl;
+                if w > 0.0 && s.drag.is_none() {
+                    s.w = w;
+                    Some(s.index as f64 * w)
+                } else {
+                    None
+                }
+            })
+            .flatten();
+        match rest {
+            Some(p) => self.set(p),
+            None => draw_strip(self.st, self.track, self.pos()),
+        }
     }
 
-    /// Spring to slide `i`, starting from the live position and velocity `v` (px/s).
-    fn go(self, i: usize, v: f64, cfg: SpringCfg) {
-        let reduced = reduced_motion();
-        let Some((frames, i)) = self.st.try_update_value(|s| {
+    /// Spring to slide `i` from the live position, handing over velocity `v` (px/s).
+    fn go(self, i: usize, v: f64, spring: Spring) {
+        let Some((i, target)) = self.st.try_update_value(|s| {
             let i = i.min(s.n.saturating_sub(1));
             s.index = i;
-            s.pos.target = i as f64 * s.w;
-            s.pos.v = v;
-            if reduced {
-                s.pos = Spring::at(s.pos.target);
-            }
-            (s.frames.clone(), i)
+            (i, i as f64 * s.w)
         }) else {
             return;
         };
         self.active.set(i);
-        self.paint();
-        if reduced {
-            return;
+        if let Some(x) = self.x {
+            x.animate_to(target, spring, Some(v), None);
         }
-        frames.start(move |dt| {
-            let done = self
-                .st
-                .try_update_value(|s| s.pos.step(cfg, dt))
-                .unwrap_or(true);
-            self.paint();
-            !done
-        });
     }
 
     fn jump(self, i: usize) {
-        self.st.update_value(|s| {
-            s.frames.stop();
+        let target = self.st.try_update_value(|s| {
             s.index = i.min(s.n.saturating_sub(1));
-            s.pos = Spring::at(s.index as f64 * s.w);
+            s.index as f64 * s.w
         });
         self.active.set(self.index());
-        self.paint();
+        if let Some(t) = target {
+            self.set(t);
+        }
     }
 
     fn step_by(self, d: isize) {
         let (i, n) = self.st.with_value(|s| (s.index as isize, s.n as isize));
         let next = (i + d).clamp(0, (n - 1).max(0)) as usize;
-        self.go(next, 0.0, SpringCfg::DEFAULT);
+        self.go(next, 0.0, Spring::DEFAULT);
     }
 
-    /// Pointer down: grab the strip where it is (interrupting any spring).
+    /// Pointer down: grab the strip where it is on screen (interrupting any spring).
     fn down(self, ev: &PointerEvent) {
-        let (x, y) = (ev.client_x() as f64, ev.client_y() as f64);
+        let pos0 = self.pos();
+        self.set(pos0);
+        let (x, y, t) = (ev.client_x() as f64, ev.client_y() as f64, ev.time_stamp());
         self.st.update_value(|s| {
-            s.frames.stop();
-            s.pos.v = 0.0;
-            let mut tracker = Tracker::default();
-            tracker.reset(ev.time_stamp(), s.pos.x);
+            let mut tracker = VelocityTracker::default();
+            tracker.push(t, pos0);
             s.drag = Some(Drag {
                 id: ev.pointer_id(),
                 x0: x,
                 y0: y,
-                pos0: s.pos.x,
+                pos0,
+                raw: pos0,
                 axis: Axis::Undecided,
                 tracker,
             });
         });
-        self.paint();
     }
 
     /// Pointer move: decide the axis after the slop, then follow 1:1. Returns the axis.
@@ -225,13 +255,12 @@ impl StripRef {
             ev.time_stamp(),
             ev.pointer_id(),
         );
-        let axis = self
+        let (axis, shown) = self
             .st
             .try_update_value(|s| {
                 let sign = if s.rtl { 1.0 } else { -1.0 };
-                let (w, raw_shown) = (s.w, s.drag.as_ref().map(|d| d.pos0));
                 let Some(d) = s.drag.as_mut().filter(|d| d.id == id) else {
-                    return Axis::Undecided;
+                    return (Axis::Undecided, None);
                 };
                 let (dx, dy) = (x - d.x0, y - d.y0);
                 if d.axis == Axis::Undecided && (dx.abs() > SLOP || dy.abs() > SLOP) {
@@ -242,28 +271,28 @@ impl StripRef {
                     };
                 }
                 let axis = d.axis;
-                if axis == Axis::X && w > 0.0 {
-                    let raw = raw_shown.unwrap_or(0.0) + dx * sign;
+                let raw = d.pos0 + dx * sign;
+                if axis == Axis::X {
+                    d.raw = raw;
                     d.tracker.push(t, raw);
-                    let shown = s.shown(raw);
-                    s.pos = Spring::at(shown);
                 }
                 if axis == Axis::Y {
                     s.drag = None;
+                    return (axis, None);
                 }
-                axis
+                (axis, (axis == Axis::X && s.w > 0.0).then(|| s.shown(raw)))
             })
             .unwrap_or_default();
-        if axis == Axis::X {
-            self.paint();
+        if let Some(p) = shown {
+            self.set(p);
         }
         axis
     }
 
     /// Pointer up: a tap, or a swipe that springs to the slide its velocity points at.
     fn up(self, ev: &PointerEvent, cancelled: bool) -> Release {
-        let (x, t, id) = (ev.client_x() as f64, ev.time_stamp(), ev.pointer_id());
-        let Some(d) = self
+        let (t, id) = (ev.time_stamp(), ev.pointer_id());
+        let Some(mut d) = self
             .st
             .try_update_value(|s| s.drag.take().filter(|d| d.id == id))
             .flatten()
@@ -272,23 +301,15 @@ impl StripRef {
         };
         match d.axis {
             Axis::Undecided if !cancelled => {
-                // Nothing moved: settle exactly where we were and report a tap.
                 let i = self.index();
-                self.go(i, 0.0, SpringCfg::SNAPPY);
+                self.go(i, 0.0, Spring::SNAPPY);
                 Release::Tap
             }
             Axis::X => {
-                let (v, raw, w, index, n) = self.st.with_value(|s| {
-                    let sign = if s.rtl { 1.0 } else { -1.0 };
-                    (
-                        d.tracker.velocity(t),
-                        d.pos0 + (x - d.x0) * sign,
-                        s.w,
-                        s.index,
-                        s.n,
-                    )
-                });
-                let v = if cancelled { 0.0 } else { v };
+                // A sample at release: a finger that rested before lifting carries no speed.
+                d.tracker.push(t, d.raw);
+                let v = if cancelled { 0.0 } else { d.tracker.velocity() };
+                let (w, index, n) = self.st.with_value(|s| (s.w, s.index, s.n));
                 let target = if w <= 0.0 {
                     index
                 } else if v.abs() > FLICK_V {
@@ -299,27 +320,22 @@ impl StripRef {
                         index.saturating_sub(1)
                     }
                 } else {
-                    // Otherwise where the projected landing point is nearest.
-                    let landing = raw + project(v, 0.998);
-                    let near = (landing / w).round().max(0.0) as usize;
-                    near.clamp(index.saturating_sub(1), index + 1)
+                    // Otherwise the slide nearest to where its momentum would carry it.
+                    let landing = d.raw + project(v, 0.998);
+                    ((landing / w).round().max(0.0) as usize)
+                        .clamp(index.saturating_sub(1), index + 1)
                 };
-                let target = target.min(n.saturating_sub(1));
                 let flick = v.abs() > FLICK_V;
                 self.go(
-                    target,
+                    target.min(n.saturating_sub(1)),
                     v,
-                    if flick {
-                        SpringCfg::FLICK
-                    } else {
-                        SpringCfg::DEFAULT
-                    },
+                    if flick { FLICK } else { Spring::DEFAULT },
                 );
                 Release::Swipe
             }
             _ => {
                 let i = self.index();
-                self.go(i, 0.0, SpringCfg::DEFAULT);
+                self.go(i, 0.0, Spring::DEFAULT);
                 Release::Nothing
             }
         }
@@ -331,13 +347,10 @@ impl StripRef {
     }
 }
 
-// ── Viewer zoom (scale + pan, each its own spring) ──────────────────────────────────────────
+// ── Viewer zoom: scale and pan, each its own spring ─────────────────────────────────────────
 
 #[derive(Default)]
 struct Zoom {
-    s: Spring,
-    x: Spring,
-    y: Spring,
     /// Viewport box and the image's aspect (it is `object-fit: contain` inside the box).
     bw: f64,
     bh: f64,
@@ -347,7 +360,6 @@ struct Zoom {
     pinch: Option<(f64, (f64, f64), f64, (f64, f64))>,
     pan: Option<Pan>,
     last_tap: Option<(f64, f64, f64)>,
-    frames: Frames,
 }
 
 /// One finger (or the mouse) moving a zoomed photo.
@@ -358,22 +370,26 @@ struct Pan {
     y0: f64,
     ox: f64,
     oy: f64,
-    tx: Tracker,
-    ty: Tracker,
+    rx: f64,
+    ry: f64,
+    tx: VelocityTracker,
+    ty: VelocityTracker,
     moved: bool,
 }
 
 impl Pan {
     fn start(id: i32, x: f64, y: f64, t: f64, ox: f64, oy: f64) -> Pan {
-        let (mut tx, mut ty) = (Tracker::default(), Tracker::default());
-        tx.reset(t, ox);
-        ty.reset(t, oy);
+        let (mut tx, mut ty) = (VelocityTracker::default(), VelocityTracker::default());
+        tx.push(t, ox);
+        ty.push(t, oy);
         Pan {
             id,
             x0: x,
             y0: y,
             ox,
             oy,
+            rx: ox,
+            ry: oy,
             tx,
             ty,
             moved: false,
@@ -382,10 +398,6 @@ impl Pan {
 }
 
 impl Zoom {
-    fn zoomed(&self) -> bool {
-        self.s.x > 1.01
-    }
-
     fn fit(&self) -> (f64, f64) {
         let a = if self.aspect > 0.0 { self.aspect } else { 1.0 };
         if self.bh <= 0.0 {
@@ -406,34 +418,25 @@ impl Zoom {
             ((ih * s - self.bh) / 2.0).max(0.0),
         )
     }
-
-    fn reset(&mut self) {
-        self.frames.stop();
-        self.s = Spring::at(1.0);
-        self.x = Spring::at(0.0);
-        self.y = Spring::at(0.0);
-        self.pinch = None;
-        self.pan = None;
-        self.pointers.clear();
-    }
-
-    fn css(&self) -> String {
-        format!(
-            "translate3d({:.2}px,{:.2}px,0) scale({:.4})",
-            self.x.x, self.y.x, self.s.x
-        )
-    }
 }
 
 /// Rubber-band a pan offset beyond `[-b, b]`.
 fn band(v: f64, b: f64, dim: f64) -> f64 {
     if v > b {
-        b + rubberband(v - b, dim)
+        b + rubberband(v - b, dim, RUBBER)
     } else if v < -b {
-        -b - rubberband(-b - v, dim)
+        -b - rubberband(-b - v, dim, RUBBER)
     } else {
         v
     }
+}
+
+/// The three springs of the zoom (scale, x, y). Browser only.
+#[derive(Clone, Copy)]
+struct ZoomSprings {
+    s: SpringValue,
+    x: SpringValue,
+    y: SpringValue,
 }
 
 #[derive(Clone, Copy)]
@@ -441,32 +444,73 @@ struct ZoomRef {
     z: StoredValue<Zoom>,
     strip: StripRef,
     aspects: StoredValue<Vec<f32>>,
+    springs: StoredValue<Option<ZoomSprings>>,
+}
+
+/// Paint the current viewer photo's zoom (each of the three springs calls this every frame).
+fn draw_zoom(springs: StoredValue<Option<ZoomSprings>>, strip: StripRef) {
+    let Some(Some(sp)) = springs.try_get_value() else {
+        return;
+    };
+    let (s, x, y) = (sp.s.get(), sp.x.get(), sp.y.get());
+    if let Some(el) = zoom_el(strip) {
+        let _ = el.style().set_property(
+            "transform",
+            &format!("translate3d({x:.2}px,{y:.2}px,0) scale({s:.4})"),
+        );
+    }
+    if let Some(vp) = strip.viewport.get_untracked() {
+        let _ = if s > 1.01 {
+            vp.class_list().add_1("is-zoomed")
+        } else {
+            vp.class_list().remove_1("is-zoomed")
+        };
+    }
+}
+
+fn zoom_el(strip: StripRef) -> Option<web_sys::HtmlElement> {
+    use wasm_bindgen::JsCast;
+    let i = strip.index();
+    let track = strip.track.get_untracked()?;
+    track
+        .query_selector(&format!("[data-i=\"{i}\"] .pv__zoom"))
+        .ok()
+        .flatten()
+        .and_then(|e| e.dyn_into::<web_sys::HtmlElement>().ok())
 }
 
 impl ZoomRef {
-    fn target_el(self) -> Option<web_sys::HtmlElement> {
-        use wasm_bindgen::JsCast;
-        let i = self.strip.index();
-        let track = self.strip.track.get_untracked()?;
-        track
-            .query_selector(&format!("[data-i=\"{i}\"] .pv__zoom"))
-            .ok()
-            .flatten()
-            .and_then(|e| e.dyn_into::<web_sys::HtmlElement>().ok())
+    fn new(strip: StripRef, aspects: Vec<f32>) -> Self {
+        let springs = StoredValue::new(None::<ZoomSprings>);
+        let draw = move |_| draw_zoom(springs, strip);
+        if let (Some(s), Some(x), Some(y)) = (
+            client_spring(1.0, draw),
+            client_spring(0.0, draw),
+            client_spring(0.0, draw),
+        ) {
+            springs.set_value(Some(ZoomSprings { s, x, y }));
+        }
+        ZoomRef {
+            z: StoredValue::new(Zoom::default()),
+            strip,
+            aspects: StoredValue::new(aspects),
+            springs,
+        }
     }
 
-    fn paint(self) {
-        let css = self.z.with_value(|z| z.css());
-        let zoomed = self.z.with_value(|z| z.zoomed());
-        if let Some(el) = self.target_el() {
-            let _ = el.style().set_property("transform", &css);
-        }
-        if let Some(vp) = self.strip.viewport.get_untracked() {
-            let _ = if zoomed {
-                vp.class_list().add_1("is-zoomed")
-            } else {
-                vp.class_list().remove_1("is-zoomed")
-            };
+    fn values(self) -> (f64, f64, f64) {
+        self.springs
+            .get_value()
+            .map(|sp| (sp.s.get(), sp.x.get(), sp.y.get()))
+            .unwrap_or((1.0, 0.0, 0.0))
+    }
+
+    /// Follow the fingers (1:1).
+    fn set(self, s: f64, x: f64, y: f64) {
+        if let Some(sp) = self.springs.get_value() {
+            sp.s.set(s);
+            sp.x.set(x);
+            sp.y.set(y);
         }
     }
 
@@ -487,50 +531,38 @@ impl ZoomRef {
         });
     }
 
+    /// Back to fit, at once, on every photo (after switching photos or closing).
     fn reset(self) {
-        if let Some(el) = self.target_el() {
-            let _ = el.style().set_property("transform", "none");
+        self.z.update_value(|z| {
+            z.pinch = None;
+            z.pan = None;
+            z.pointers.clear();
+        });
+        if let Some(track) = self.strip.track.get_untracked()
+            && let Ok(all) = track.query_selector_all(".pv__zoom")
+        {
+            use wasm_bindgen::JsCast;
+            for i in 0..all.length() {
+                if let Some(el) = all
+                    .item(i)
+                    .and_then(|n| n.dyn_into::<web_sys::HtmlElement>().ok())
+                {
+                    let _ = el.style().remove_property("transform");
+                }
+            }
         }
-        self.z.update_value(|z| z.reset());
-        self.paint();
+        self.set(1.0, 0.0, 0.0);
     }
 
     /// Spring scale and offset to `(s, x, y)`, clamped to what the image allows.
-    fn settle(self, s: f64, x: f64, y: f64, vx: f64, vy: f64, cfg: SpringCfg) {
-        let reduced = reduced_motion();
-        let frames = self.z.try_update_value(|z| {
-            let s = s.clamp(1.0, MAX_ZOOM);
-            let (bx, by) = z.bounds(s);
-            z.s.target = s;
-            z.x.target = x.clamp(-bx, bx);
-            z.y.target = y.clamp(-by, by);
-            z.x.v = vx;
-            z.y.v = vy;
-            if reduced {
-                z.s = Spring::at(z.s.target);
-                z.x = Spring::at(z.x.target);
-                z.y = Spring::at(z.y.target);
-            }
-            z.frames.clone()
-        });
-        self.paint();
-        let Some(frames) = frames else { return };
-        if reduced {
-            return;
+    fn settle(self, s: f64, x: f64, y: f64, vx: f64, vy: f64, spring: Spring) {
+        let s = s.clamp(1.0, MAX_ZOOM);
+        let (bx, by) = self.z.with_value(|z| z.bounds(s));
+        if let Some(sp) = self.springs.get_value() {
+            sp.s.animate_to(s, spring, None, None);
+            sp.x.animate_to(x.clamp(-bx, bx), spring, Some(vx), None);
+            sp.y.animate_to(y.clamp(-by, by), spring, Some(vy), None);
         }
-        frames.start(move |dt| {
-            let done = self
-                .z
-                .try_update_value(|z| {
-                    let a = z.s.step_eps(cfg, dt, 0.002);
-                    let b = z.x.step(cfg, dt);
-                    let c = z.y.step(cfg, dt);
-                    a && b && c
-                })
-                .unwrap_or(true);
-            self.paint();
-            !done
-        });
     }
 
     /// Double-tap: zoom in to the tapped point, or back out.
@@ -544,9 +576,9 @@ impl ZoomRef {
             cx - r.left() - r.width() / 2.0,
             cy - r.top() - r.height() / 2.0,
         );
-        let (zoomed, x, y, s) = self.z.with_value(|z| (z.zoomed(), z.x.x, z.y.x, z.s.x));
-        if zoomed {
-            self.settle(1.0, 0.0, 0.0, 0.0, 0.0, SpringCfg::SNAPPY);
+        let (s, x, y) = self.values();
+        if s > 1.01 {
+            self.settle(1.0, 0.0, 0.0, 0.0, 0.0, Spring::SNAPPY);
         } else {
             let k = TAP_ZOOM / s.max(0.01);
             self.settle(
@@ -555,7 +587,7 @@ impl ZoomRef {
                 fy - (fy - y) * k,
                 0.0,
                 0.0,
-                SpringCfg::DEFAULT,
+                Spring::DEFAULT,
             );
         }
     }
@@ -575,14 +607,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
 
     let main = StripRef::new(n, start);
     let viewer = StripRef::new(n, start);
-    let zoom = ZoomRef {
-        z: StoredValue::new(Zoom {
-            s: Spring::at(1.0),
-            ..Default::default()
-        }),
-        strip: viewer,
-        aspects: StoredValue::new(data.images.iter().map(|i| i.aspect).collect()),
-    };
+    let zoom = ZoomRef::new(viewer, data.images.iter().map(|i| i.aspect).collect());
     let root = NodeRef::<html::Section>::new();
     let dialog = NodeRef::<html::Dialog>::new();
     // Hover zoom-to-cursor (fine pointers only): position in % of the slide.
@@ -644,7 +669,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                 && i < n
                 && i != main.index()
             {
-                main.go(i, 0.0, SpringCfg::DEFAULT);
+                main.go(i, 0.0, Spring::DEFAULT);
             }
         },
         false,
@@ -695,16 +720,18 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
             return;
         }
         // Hovering with a mouse: zoom to the cursor (not while a button is held).
-        if fine.get_value() && ev.pointer_type() == "mouse" && ev.buttons() == 0 {
-            if let Some(vp) = main.viewport.get_untracked() {
-                let r = vp.get_bounding_client_rect();
-                let x = ((ev.client_x() as f64 - r.left()) / r.width() * 100.0).clamp(0.0, 100.0);
-                let y = ((ev.client_y() as f64 - r.top()) / r.height() * 100.0).clamp(0.0, 100.0);
-                if hover.get_untracked().is_none() {
-                    sharpen(main, main.index());
-                }
-                hover.set(Some((x, y)));
+        if fine.get_value()
+            && ev.pointer_type() == "mouse"
+            && ev.buttons() == 0
+            && let Some(vp) = main.viewport.get_untracked()
+        {
+            let r = vp.get_bounding_client_rect();
+            let x = ((ev.client_x() as f64 - r.left()) / r.width() * 100.0).clamp(0.0, 100.0);
+            let y = ((ev.client_y() as f64 - r.top()) / r.height() * 100.0).clamp(0.0, 100.0);
+            if hover.get_untracked().is_none() {
+                sharpen(main, main.index());
             }
+            hover.set(Some((x, y)));
         }
     };
     let stage_up = move |ev: PointerEvent| {
@@ -721,8 +748,8 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
         match ev.key().as_str() {
             k if k == fwd => main.step_by(1),
             k if k == back => main.step_by(-1),
-            "Home" => main.go(0, 0.0, SpringCfg::DEFAULT),
-            "End" => main.go(n - 1, 0.0, SpringCfg::DEFAULT),
+            "Home" => main.go(0, 0.0, Spring::DEFAULT),
+            "End" => main.go(n - 1, 0.0, Spring::DEFAULT),
             "Enter" | " " => open(main.index()),
             _ => return,
         }
@@ -739,10 +766,12 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
         }
         zoom.measure();
         let (x, y, id) = (ev.client_x() as f64, ev.client_y() as f64, ev.pointer_id());
+        let (s, tx, ty) = zoom.values();
+        // Grab the photo where it is (stops any settle in flight).
+        zoom.set(s, tx, ty);
         let count = zoom
             .z
             .try_update_value(|z| {
-                z.frames.stop();
                 z.pointers.retain(|p| p.0 != id);
                 z.pointers.push((id, x, y));
                 z.pointers.len()
@@ -752,7 +781,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
             // Second finger: pinch. The strip lets go where it is.
             viewer.st.update_value(|s| s.drag = None);
             let i = viewer.index();
-            viewer.go(i, 0.0, SpringCfg::SNAPPY);
+            viewer.go(i, 0.0, Spring::SNAPPY);
             zoom.z.update_value(|z| {
                 let (a, b) = (z.pointers[0], z.pointers[1]);
                 let d = ((a.1 - b.1).powi(2) + (a.2 - b.2).powi(2)).sqrt().max(1.0);
@@ -761,12 +790,11 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                     (a.2 + b.2) / 2.0 - z.bh / 2.0,
                 );
                 z.pan = None;
-                z.pinch = Some((d, m, z.s.x, (z.x.x, z.y.x)));
+                z.pinch = Some((d, m, s, (tx, ty)));
             });
-        } else if zoom.z.with_value(|z| z.zoomed()) {
-            zoom.z.update_value(|z| {
-                z.pan = Some(Pan::start(id, x, y, ev.time_stamp(), z.x.x, z.y.x))
-            });
+        } else if s > 1.01 {
+            zoom.z
+                .update_value(|z| z.pan = Some(Pan::start(id, x, y, ev.time_stamp(), tx, ty)));
         } else {
             viewer.down(&ev);
         }
@@ -778,7 +806,8 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
             ev.pointer_id(),
             ev.time_stamp(),
         );
-        let handled = zoom
+        let s_now = zoom.values().0;
+        let next = zoom
             .z
             .try_update_value(|z| {
                 if let Some(p) = z.pointers.iter_mut().find(|p| p.0 == id) {
@@ -787,7 +816,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                 }
                 if let Some((d0, m0, s0, t0)) = z.pinch {
                     if z.pointers.len() < 2 {
-                        return true;
+                        return Some(None);
                     }
                     let (a, b) = (z.pointers[0], z.pointers[1]);
                     let d = ((a.1 - b.1).powi(2) + (a.2 - b.2).powi(2)).sqrt().max(1.0);
@@ -798,48 +827,50 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                     let raw = s0 * d / d0;
                     // Resist past the limits instead of stopping dead.
                     let s = if raw < 1.0 {
-                        1.0 - rubberband(1.0 - raw, 1.0)
+                        1.0 - rubberband(1.0 - raw, 1.0, RUBBER)
                     } else if raw > MAX_ZOOM {
-                        MAX_ZOOM + rubberband(raw - MAX_ZOOM, MAX_ZOOM)
+                        MAX_ZOOM + rubberband(raw - MAX_ZOOM, MAX_ZOOM, RUBBER)
                     } else {
                         raw
                     };
                     let k = s / s0;
-                    z.s = Spring::at(s);
-                    z.x = Spring::at(m.0 - (m0.0 - t0.0) * k);
-                    z.y = Spring::at(m.1 - (m0.1 - t0.1) * k);
-                    return true;
+                    return Some(Some((s, m.0 - (m0.0 - t0.0) * k, m.1 - (m0.1 - t0.1) * k)));
                 }
+                let (bw, bh) = (z.bw, z.bh);
+                let (bx, by) = z.bounds(s_now);
                 if let Some(p) = z.pan.as_mut() {
                     if p.id != id {
-                        return true;
+                        return Some(None);
                     }
                     if (x - p.x0).abs() > SLOP || (y - p.y0).abs() > SLOP {
                         p.moved = true;
                     }
-                    let (rx, ry) = (p.ox + x - p.x0, p.oy + y - p.y0);
-                    p.tx.push(t, rx);
-                    p.ty.push(t, ry);
-                    let s = z.s.x;
-                    let (bx, by) = z.bounds(s);
-                    let (bw, bh) = (z.bw, z.bh);
-                    z.x = Spring::at(band(rx, bx, bw));
-                    z.y = Spring::at(band(ry, by, bh));
-                    return true;
+                    p.rx = p.ox + x - p.x0;
+                    p.ry = p.oy + y - p.y0;
+                    p.tx.push(t, p.rx);
+                    p.ty.push(t, p.ry);
+                    return Some(Some((s_now, band(p.rx, bx, bw), band(p.ry, by, bh))));
                 }
-                false
+                None
             })
-            .unwrap_or(false);
-        if handled {
-            ev.prevent_default();
-            zoom.paint();
-        } else if viewer.moved(&ev) == Axis::X {
-            ev.prevent_default();
+            .flatten();
+        match next {
+            Some(Some((s, tx, ty))) => {
+                ev.prevent_default();
+                zoom.set(s, tx, ty);
+            }
+            Some(None) => ev.prevent_default(),
+            None => {
+                if viewer.moved(&ev) == Axis::X {
+                    ev.prevent_default();
+                }
+            }
         }
     };
     let v_up = move |ev: PointerEvent, cancelled: bool| {
         let (id, t) = (ev.pointer_id(), ev.time_stamp());
         let (x, y) = (ev.client_x() as f64, ev.client_y() as f64);
+        let (s_now, x_now, y_now) = zoom.values();
         enum After {
             Strip,
             Settle(f64, f64, f64, f64, f64),
@@ -857,25 +888,32 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                     z.pinch = None;
                     // One finger left: it carries on as a pan; settle when it lifts.
                     if let Some(&(pid, px, py)) = z.pointers.first() {
-                        z.pan = Some(Pan::start(pid, px, py, t, z.x.x, z.y.x));
+                        z.pan = Some(Pan::start(pid, px, py, t, x_now, y_now));
                         return After::Wait;
                     }
-                    return After::Settle(z.s.x, z.x.x, z.y.x, 0.0, 0.0);
+                    return After::Settle(s_now, x_now, y_now, 0.0, 0.0);
                 }
                 if z.pan.as_ref().is_some_and(|p| p.id != id) {
                     return After::Wait;
                 }
-                if let Some(p) = z.pan.take() {
+                if let Some(mut p) = z.pan.take() {
                     if !p.moved && !cancelled {
                         return After::Tap;
                     }
+                    p.tx.push(t, p.rx);
+                    p.ty.push(t, p.ry);
                     let (vx, vy) = if cancelled {
                         (0.0, 0.0)
                     } else {
-                        (p.tx.velocity(t), p.ty.velocity(t))
+                        (p.tx.velocity(), p.ty.velocity())
                     };
-                    let (px, py) = (z.x.x + project(vx, 0.995), z.y.x + project(vy, 0.995));
-                    return After::Settle(z.s.x, px, py, vx, vy);
+                    return After::Settle(
+                        s_now,
+                        x_now + project(vx, 0.995),
+                        y_now + project(vy, 0.995),
+                        vx,
+                        vy,
+                    );
                 }
                 After::Strip
             })
@@ -897,7 +935,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
             }
         };
         match after {
-            After::Settle(s, sx, sy, vx, vy) => zoom.settle(s, sx, sy, vx, vy, SpringCfg::DEFAULT),
+            After::Settle(s, sx, sy, vx, vy) => zoom.settle(s, sx, sy, vx, vy, Spring::DEFAULT),
             After::Tap => double_tap(),
             After::Wait => {}
             After::Strip => {
@@ -988,7 +1026,7 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                         aria-current=move || (main.active.get() == i).then_some("true")
                         on:click=move |ev| {
                             ev.prevent_default();
-                            main.go(i, 0.0, SpringCfg::DEFAULT);
+                            main.go(i, 0.0, Spring::DEFAULT);
                         }
                     >
                         <Picture img=img sizes=THUMB_SIZES lang=lang/>
@@ -1047,7 +1085,13 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                     class="pg__viewport"
                     node_ref=main.viewport
                     tabindex="0"
-                    aria-label=move || tr(ui.lang.get(), "Product photos. Use arrow keys to browse, Enter to enlarge.", "صور المنتج. استخدم الأسهم للتنقل وEnter للتكبير.")
+                    aria-label=move || {
+                        tr(
+                            ui.lang.get(),
+                            "Product photos. Use arrow keys to browse, Enter to enlarge.",
+                            "صور المنتج. استخدم الأسهم للتنقل وEnter للتكبير.",
+                        )
+                    }
                     on:pointerdown=stage_down
                     on:pointermove=stage_move
                     on:pointerup=stage_up
@@ -1077,7 +1121,10 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                         disabled=Signal::derive(move || main.active.get() + 1 >= n)
                         on:click=move |_| main.step_by(1)
                     />
-                    <p class="pg__count mono" aria-hidden="true" dir="ltr">{move || count_text(main.active.get())}</p>
+                    // `dir` on an inner span: on the positioned element it would flip its inset.
+                    <p class="pg__count mono" aria-hidden="true">
+                        <span dir="ltr">{move || count_text(main.active.get())}</span>
+                    </p>
                 })}
                 <IconButton
                     icon="zoom-in"
@@ -1099,7 +1146,9 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                 on:keydown=v_key
             >
                 <div class="pv__bar">
-                    <p class="pv__count mono" dir="ltr">{move || multi.then(|| count_text(viewer.active.get()))}</p>
+                    <p class="pv__count mono">
+                        <span dir="ltr">{move || multi.then(|| count_text(viewer.active.get()))}</span>
+                    </p>
                     <IconButton
                         icon="x"
                         label=move || tr(ui.lang.get(), "Close", "إغلاق").to_owned()
@@ -1120,8 +1169,12 @@ pub fn GalleryBody(data: GalleryData) -> impl IntoView {
                 </div>
                 <p class="pv__hint" aria-hidden="true">
                     <Icon name="zoom-in" size=14/>
-                    <span class="pv__hint-touch">{move || tr(ui.lang.get(), "Double-tap or pinch to zoom", "دوس مرتين أو قرّب بصباعين للتكبير")}</span>
-                    <span class="pv__hint-mouse">{move || tr(ui.lang.get(), "Double-click to zoom · drag to move", "دوس مرتين للتكبير · اسحب للتحريك")}</span>
+                    <span class="pv__hint-touch">
+                        {move || tr(ui.lang.get(), "Double-tap or pinch to zoom", "دوس مرتين أو قرّب بصباعين للتكبير")}
+                    </span>
+                    <span class="pv__hint-mouse">
+                        {move || tr(ui.lang.get(), "Double-click to zoom · drag to move", "دوس مرتين للتكبير · اسحب للتحريك")}
+                    </span>
                 </p>
             </dialog>
         </section>
