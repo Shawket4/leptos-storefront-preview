@@ -10,10 +10,11 @@ use super::tx;
 use crate::api::types::{CartView, Rail};
 use crate::components::button::{Button, ButtonKind, ButtonSize};
 use crate::components::icons::Icon;
-use crate::components::image::Picture;
-use crate::components::price::{Price, PriceSize};
+use crate::components::item_row::{ItemList, ItemRow, ItemSize};
+use crate::components::notice::{Notice, Tone};
 use crate::components::product_card::CardData;
 use crate::components::states::{StateTone, StateView};
+use crate::components::totals::{TotalRow, TotalTone};
 use crate::format;
 use crate::media::Img;
 use crate::prefs::{Lang, Numerals, tr};
@@ -164,15 +165,10 @@ pub fn CartPage() -> impl IntoView {
                 <h1 class="t-h1" id="cart-title" tabindex="-1">{strings::get("cart.title", lang)}</h1>
                 <p class="cart-page__count" data-slot="count" hidden=empty>{count}</p>
             </header>
-            {added.then(|| view! {
-                <p class="notice notice--success" role="status" data-cart-notice="">
-                    <Icon name="circle-check" size=20/><span>{strings::get("cart.added", lang)}</span>
-                </p>
-            })}
+            {added.then(|| view! { <Notice tone=Tone::Success title=strings::get("cart.added", lang) attr:data-cart-notice=""/> })}
             {err.map(|code| view! {
-                <p class="notice notice--error" role="alert" tabindex="-1" data-cart-notice="">
-                    <Icon name="circle-alert" size=20/><span>{strings::get(&format!("cart.err.{code}"), lang)}</span>
-                </p>
+                <Notice tone=Tone::Danger title=strings::get(&format!("cart.err.{code}"), lang)
+                    attr:tabindex="-1" attr:data-cart-notice=""/>
             })}
             <PriceChanged lang/>
             <div class="cart-empty card" data-cart-empty="" hidden=!empty>
@@ -183,9 +179,9 @@ pub fn CartPage() -> impl IntoView {
             </div>
             <div class="cart-layout" data-cart-full="" hidden=empty>
                 <section class="cart-lines card" aria-labelledby="cart-title">
-                    <ul class="clines" data-cart-lines="" aria-label=strings::get("cart.lines_label", lang)>
+                    <ItemList attr:data-cart-lines="" attr:aria-label=strings::get("cart.lines_label", lang)>
                         {rows.into_iter().map(|d| view! { <LineRow d lang next=CART_PATH/> }).collect_view()}
-                    </ul>
+                    </ItemList>
                 </section>
                 <aside class="cart-summary card" aria-label=tr(lang, "Order summary", "ملخص الطلب")>
                     <CartSummary d=summary lang num/>
@@ -219,10 +215,7 @@ pub fn snapshots_json(
 #[component]
 pub fn PriceChanged(lang: Lang) -> impl IntoView {
     view! {
-        <p class="notice notice--info" data-price-changed="" role="status" hidden="">
-            <Icon name="info" size=20/>
-            <span>{strings::get("cart.price_changed", lang)}</span>
-        </p>
+        <Notice tone=Tone::Info title=strings::get("cart.price_changed", lang) attr:data-price-changed="" attr:hidden=true/>
     }
 }
 
@@ -233,25 +226,31 @@ fn Picks(picks: Vec<CardData>, lang: Lang, num: Numerals) -> impl IntoView {
     view! {
         <section class="picks" aria-labelledby="picks-title">
             <h2 class="t-h3" id="picks-title">{strings::get("cart.picks", lang)}</h2>
-            <ul class="picks__list" role="list">
-                {picks.into_iter().map(|c| view! {
-                    <li class="pick card">
-                        <a class="pick__media" href=format!("/p/{}", c.slug) tabindex="-1" aria-hidden="true">
-                            <Picture img=c.img.clone() sizes="88px" lang/>
-                        </a>
-                        <div class="pick__main">
-                            <a class="pick__name" href=format!("/p/{}", c.slug)>{c.name.pick(ar).to_owned()}</a>
-                            <Price amount=c.price compare_at=c.compare_at size=PriceSize::Sm lang numerals=num/>
-                        </div>
-                        <QuickAdd card=c.clone() lang numerals=num/>
-                    </li>
+            <ItemList size=ItemSize::Compact class="picks__list">
+                {picks.into_iter().map(|c| {
+                    let price = format::money(c.price, lang, num);
+                    let href = format!("/p/{}", c.slug);
+                    let name = c.name.pick(ar).to_owned();
+                    let card = c.clone();
+                    match (!c.img.is_missing()).then(|| c.img.src_near(192)) {
+                        Some(img) => view! {
+                            <ItemRow size=ItemSize::Compact name img href price class="card pick">
+                                <QuickAdd card lang numerals=num/>
+                            </ItemRow>
+                        }.into_any(),
+                        None => view! {
+                            <ItemRow size=ItemSize::Compact name href price class="card pick">
+                                <QuickAdd card lang numerals=num/>
+                            </ItemRow>
+                        }.into_any(),
+                    }
                 }).collect_view()}
-            </ul>
+            </ItemList>
         </section>
     }
 }
 
-/// Totals as a definition list, for checkout (its summary and review step), from a priced cart.
+/// A priced cart's totals for checkout (its summary and review step), through core's `Totals`.
 #[component]
 pub fn Totals(
     v: CartView,
@@ -262,33 +261,17 @@ pub fn Totals(
     extra_fee: Piastres,
 ) -> impl IntoView {
     let fee = v.delivery_fee + extra_fee;
-    let total = v.total + extra_fee;
+    let m = |p| format::money(p, lang, num);
     let g = |k: &str| strings::get(k, lang);
-    view! {
-        <dl class="totals">
-            <div class="totals__row">
-                <dt>{g("cart.subtotal")}</dt>
-                <dd><Price amount=v.subtotal size=PriceSize::Sm no_badge=true lang numerals=num/></dd>
-            </div>
-            {(v.savings.0 > 0).then(|| view! {
-                <div class="totals__row totals__row--save">
-                    <dt>{g("cart.savings")}</dt>
-                    <dd><Price amount=v.savings size=PriceSize::Sm no_badge=true lang numerals=num/></dd>
-                </div>
-            })}
-            <div class="totals__row">
-                <dt>{g("cart.delivery")}</dt>
-                <dd>{if fee.0 == 0 {
-                    Either::Left(view! { <span class="totals__free">{g("cart.free")}</span> })
-                } else {
-                    Either::Right(view! { <Price amount=fee size=PriceSize::Sm no_badge=true lang numerals=num/> })
-                }}</dd>
-            </div>
-            <div class="totals__row totals__row--total">
-                <dt>{g("cart.total")}</dt>
-                <dd><Price amount=total size=PriceSize::Lg no_badge=true lang numerals=num/></dd>
-            </div>
-        </dl>
-        <p class="totals__vat">{vat_note(v.tax_included, lang, num)}</p>
+    let mut rows = vec![TotalRow::new(g("cart.subtotal"), m(v.subtotal))];
+    if v.savings.0 > 0 {
+        rows.push(TotalRow::new(g("cart.savings"), m(v.savings)).tone(TotalTone::Saving));
     }
+    rows.push(if fee.0 == 0 {
+        TotalRow::new(g("cart.delivery"), g("cart.free")).tone(TotalTone::Free)
+    } else {
+        TotalRow::new(g("cart.delivery"), m(fee))
+    });
+    rows.push(TotalRow::new(g("cart.total"), m(v.total + extra_fee)).tone(TotalTone::Total));
+    view! { <crate::components::totals::Totals rows note=vat_note(v.tax_included, lang, num)/> }
 }

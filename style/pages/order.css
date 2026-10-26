@@ -104,7 +104,7 @@
   }
 }
 
-/* ── The live part (island) ─────────────────────────────────────────────────── */
+/* ── The live part (Timeline + LiveStatus, moved by features/checkout.ts) ──── */
 .order-live {
   display: flex;
   flex-direction: column;
@@ -140,139 +140,16 @@
   font-size: var(--fs-sm);
   color: var(--text-3);
 }
-.live {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-weight: var(--fw-semibold);
-  color: var(--text-2);
-}
-.live__dot {
-  corner-shape: round;
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: var(--r-pill);
-  background: var(--success);
-  animation: live-breathe 2.4s var(--ease-in-out) infinite;
-}
+
 @keyframes live-breathe {
   50% { opacity: 0.35; }
 }
 
-/* Timeline: vertical; a track behind the dots, filled up to the current step. */
-.timeline {
-  position: relative;
-  list-style: none;
-  margin: var(--sp-2) 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-.timeline::before,
-.timeline::after {
-  content: "";
-  position: absolute;
-  inset-inline-start: 11px;
-  inset-block: 12px;
-  inline-size: 2px;
-  border-radius: var(--r-pill);
-  background: var(--rule);
-}
-.timeline::after {
-  background: var(--brand);
-  transform-origin: 50% 0;
-  scale: 1 var(--p, 0);
-  transition: scale var(--spring-gentle-dur, var(--dur-brand)) var(--spring-gentle, var(--ease-out));
-}
-.timeline[data-cancelled="true"]::after {
-  scale: 1 0;
-}
-.timeline__step {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-3);
-  min-block-size: 24px;
-}
-.timeline__dot {
-  corner-shape: round;
-  position: relative;
-  z-index: 1;
-  flex: none;
-  display: grid;
-  place-items: center;
-  inline-size: 24px;
-  block-size: 24px;
-  border-radius: var(--r-pill);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 2px var(--rule);
-  color: transparent;
-  transition:
-    background-color var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    color var(--dur-base) var(--ease-out),
-    scale var(--spring-bouncy-dur, var(--dur-base)) var(--spring-bouncy, var(--ease-pop));
-}
-.timeline__step.is-done .timeline__dot {
-  background: var(--brand);
-  box-shadow: none;
-  color: var(--on-brand);
-}
-.timeline__step.is-current .timeline__dot {
-  background: var(--brand);
-  box-shadow: 0 0 0 5px var(--brand-wash);
-  scale: 1.1;
-}
-.timeline__step.is-current .timeline__dot::after {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border-radius: inherit;
-  box-shadow: 0 0 0 2px var(--brand);
-  opacity: 0;
-  animation: step-ring 2s var(--ease-out) infinite;
-}
 @keyframes step-ring {
   0% { opacity: 0.5; scale: 0.9; }
   100% { opacity: 0; scale: 1.5; }
 }
-/* The last step, done: success green. */
-.timeline__step.is-done:last-child .timeline__dot {
-  background: var(--success);
-}
-.timeline__text {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding-block-start: 1px;
-}
-.timeline__label {
-  font-weight: var(--fw-semibold);
-  color: var(--text-3);
-  transition: color var(--dur-base) var(--ease-out);
-}
-.timeline__step.is-done .timeline__label,
-.timeline__step.is-current .timeline__label {
-  color: var(--text);
-}
-.timeline__step.is-current .timeline__label {
-  font-weight: var(--fw-bold);
-}
-.timeline__time {
-  font-size: var(--fs-sm);
-  color: var(--text-3);
-  font-variant-numeric: tabular-nums;
-}
-.timeline__step.is-current .timeline__time,
-.timeline__step.is-todo .timeline__time {
-  color: var(--text-2);
-}
 
-.order-side .totals {
-  padding-block-start: var(--sp-4);
-  border-block-start: 1px solid var(--rule);
-}
 .order-side .co-sub {
   margin-block: var(--sp-2) 0;
 }
@@ -283,8 +160,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .placed { animation: none; }
-  .live__dot,
-  .timeline__step.is-current .timeline__dot::after { animation: none; }
+  
 }
 
 /* ── /orders: find an order ────────────────────────────────────────────────── */
@@ -416,29 +292,7 @@
   max-inline-size: 640px;
   margin-inline: auto;
 }
-.order-missing__head {
-  padding-block: var(--sp-6) var(--sp-2);
-}
-.order-missing__head .cart-empty__body {
-  max-inline-size: 46ch;
-}
 
-/* Connection states under the timeline. */
-.net-state {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-weight: var(--fw-semibold);
-}
-.net-state--lost {
-  color: var(--warning-text, var(--warning));
-}
-.net-state--offline {
-  color: var(--text-2);
-}
-.net-state .icon {
-  flex: none;
-}
 .order-live__foot .link-btn {
   min-block-size: 36px;
   margin: 0;

@@ -11,10 +11,10 @@
 
 mod live;
 
-use crate::components::icons::Icon;
-use crate::components::image::Picture;
-use crate::components::price::{Price, PriceSize};
+use crate::components::item_row::{ItemList, ItemRow, ItemSize};
+use crate::components::kv::{KeyValueList, KvRow};
 use crate::components::states::{StateTone, StateView};
+use crate::components::totals::{TotalRow, TotalTone, Totals};
 use crate::format;
 use crate::media::Img;
 use crate::pages::cart::{ArtImage, art};
@@ -392,51 +392,34 @@ fn OrderView(d: OrderPageData, just_placed: bool, lang: Lang, num: Numerals) -> 
                 </div>
             </section>
             <aside class="card order-side" aria-label=tr(lang, "Order details", "تفاصيل الطلب")>
-                <dl class="review">
-                    <div class="review__row">
-                        <dt><Icon name="map-pin" size=18/><span>{tr(lang, "Delivering to", "التوصيل على")}</span></dt>
-                        <dd>{address.into_iter().map(|l| view! { <span class="review__line">{l}</span> }).collect_view()}</dd>
-                    </div>
-                    <div class="review__row">
-                        <dt><Icon name="credit-card" size=18/><span>{tr(lang, "Payment", "الدفع")}</span></dt>
-                        <dd><span class="review__line">{payment_label(o.payment, lang)}</span></dd>
-                    </div>
-                </dl>
+                <KeyValueList rows=vec![
+                    KvRow::new("map-pin", tr(lang, "Delivering to", "التوصيل على"), address),
+                    KvRow::new("credit-card", tr(lang, "Payment", "الدفع"), vec![payment_label(o.payment, lang).to_owned()]),
+                ]/>
                 <h2 class="co-sub">{format::items(count, lang, num)}</h2>
-                <ul class="mini-lines" role="list">
-                    {lines.into_iter().map(|(l, img)| view! {
-                        <li class="mini-line">
-                            <span class="mini-line__media"><Picture img sizes="48px" lang/></span>
-                            <span class="mini-line__main">
-                                <span class="mini-line__name">{l.name.pick(ar).to_owned()}</span>
-                                <span class="mini-line__meta">
-                                    <span class="mono">{format!("{}×", format::count(l.quantity, num))}</span>
-                                    {(!l.variant_label.pick(ar).is_empty()).then(|| view! { <span>{l.variant_label.pick(ar).to_owned()}</span> })}
-                                </span>
-                            </span>
-                            <span class="mini-line__total"><Price amount=l.line_total size=PriceSize::Sm no_badge=true lang numerals=num/></span>
-                        </li>
+                <ItemList size=ItemSize::Compact>
+                    {lines.into_iter().map(|(l, img)| {
+                        let (name, meta, price) = (
+                            l.name.pick(ar).to_owned(),
+                            format!("{}×", format::count(l.quantity, num)),
+                            format::money(l.line_total, lang, num),
+                        );
+                        let detail = l.variant_label.pick(ar).to_owned();
+                        match (!img.is_missing()).then(|| img.src_near(96)) {
+                            Some(img) => view! { <ItemRow size=ItemSize::Compact name img detail meta price/> }.into_any(),
+                            None => view! { <ItemRow size=ItemSize::Compact name detail meta price/> }.into_any(),
+                        }
                     }).collect_view()}
-                </ul>
-                <dl class="totals">
-                    <div class="totals__row">
-                        <dt>{tr(lang, "Subtotal", "المجموع")}</dt>
-                        <dd><Price amount=o.subtotal size=PriceSize::Sm no_badge=true lang numerals=num/></dd>
-                    </div>
-                    <div class="totals__row">
-                        <dt>{tr(lang, "Delivery", "التوصيل")}</dt>
-                        <dd>{if o.delivery_fee == Piastres::ZERO {
-                            Either::Left(view! { <span class="totals__free">{tr(lang, "Free", "مجاني")}</span> })
-                        } else {
-                            Either::Right(view! { <Price amount=o.delivery_fee size=PriceSize::Sm no_badge=true lang numerals=num/> })
-                        }}</dd>
-                    </div>
-                    <div class="totals__row totals__row--total">
-                        <dt>{tr(lang, "Total", "الإجمالي")}</dt>
-                        <dd><Price amount=o.total size=PriceSize::Lg no_badge=true lang numerals=num/></dd>
-                    </div>
-                </dl>
-                <p class="totals__vat">{vat}</p>
+                </ItemList>
+                <Totals rows=vec![
+                    TotalRow::new(tr(lang, "Subtotal", "المجموع"), format::money(o.subtotal, lang, num)),
+                    if o.delivery_fee == Piastres::ZERO {
+                        TotalRow::new(tr(lang, "Delivery", "التوصيل"), tr(lang, "Free", "مجاني")).tone(TotalTone::Free)
+                    } else {
+                        TotalRow::new(tr(lang, "Delivery", "التوصيل"), format::money(o.delivery_fee, lang, num))
+                    },
+                    TotalRow::new(tr(lang, "Total", "الإجمالي"), format::money(o.total, lang, num)).tone(TotalTone::Total),
+                ] note=vat/>
             </aside>
         </div>
         <p class="order-page__more">

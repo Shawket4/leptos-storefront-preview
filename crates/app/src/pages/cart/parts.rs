@@ -16,7 +16,11 @@ pub fn CartButton() -> impl IntoView {
     // Off /cart and /checkout it's the drawer's trigger (core's drawer; the router leaves it alone).
     let path = crate::request::req().path_and_query;
     let page = path.starts_with("/cart") || path.starts_with("/checkout");
-    let (trigger, router) = if page { (None, None) } else { (Some("cart-drawer"), Some("off")) };
+    let (trigger, router) = if page {
+        (None, None)
+    } else {
+        (Some("cart-drawer"), Some("off"))
+    };
     view! {
         <IconButton icon="shopping-bag" label=strings::get("cart.title", lang) href="/cart"
             kind=ButtonKind::Ghost class="cart-btn" attr:data-ts="cart-badge" attr:data-count="0"

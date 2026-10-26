@@ -7,6 +7,7 @@
 use super::line::{CartSummary, LineData, LineRow, SummaryData};
 use crate::components::button::{Button, ButtonKind};
 use crate::components::drawer::{Drawer, DrawerSide};
+use crate::components::item_row::ItemList;
 use crate::components::states::{StateTone, StateView};
 use crate::prefs::use_ui;
 use crate::strings;
@@ -29,7 +30,7 @@ pub fn CartDrawer() -> impl IntoView {
                         <Button href="/" kind=ButtonKind::Primary attr:data-drawer-close="">{g("cart.start")}</Button>
                     </StateView>
                 </div>
-                <ul class="clines" data-cart-lines="" aria-label=g("cart.lines_label")></ul>
+                <ItemList attr:data-cart-lines="" attr:aria-label=g("cart.lines_label")/>
             </div>
         </Drawer>
         <template id="tpl-cart-line">

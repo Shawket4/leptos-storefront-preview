@@ -39,7 +39,9 @@ type Issue = "out_of_stock" | "capped" | "unavailable" | null;
 
 const issueOf = (l: CartLine, s: PricedSnapshot): Issue => (s.maxQty <= 0 ? "out_of_stock" : l.qty > s.maxQty ? "capped" : null);
 
-/** What a line shows, all computed from its snapshot (`null` hides a slot). */
+/** What a line shows, all computed from its snapshot (`null` hides a slot). Same words as /cart's
+ * server render (`pages::cart::line::LineData`): `meta` is the line's problem, else its breakdown
+ * and low stock; `price` is the line total. */
 function lineValues(l: CartLine, key: string, s: LineSnapshot | undefined, gone: boolean) {
   const name = s?.name || (gone ? t("cart.unavailable_name") : "");
   const base = {
@@ -51,21 +53,23 @@ function lineValues(l: CartLine, key: string, s: LineSnapshot | undefined, gone:
     detail: [s?.variant, ...(s?.addons ?? [])].filter(Boolean).join(" · ") || null,
   };
   if (!isPriced(s) || gone) {
-    const issue = gone ? t("cart.issue.unavailable") : null;
-    return { ...base, unit: null, was: null, total: null, breakdown: null, low: null, issue, fix: null };
+    return { ...base, meta: gone ? t("cart.issue.unavailable") : null, price: null, fix: null };
   }
   const unit = unitWithAddons(s);
-  const extra = unit - s.unit;
   const issue = issueOf(l, s);
+  const note = [
+    l.qty > 1 ? t("cart.breakdown", { qty: digits(l.qty), unit: money(unit) }) : null,
+    s.maxQty <= 5 ? t("cart.low_stock", { n: digits(s.maxQty) }) : null,
+  ].filter(Boolean);
   return {
     ...base,
-    unit: money(unit),
-    was: s.compareAt && s.compareAt > s.unit ? money(s.compareAt + extra) : null,
-    total: money(unit * l.qty),
-    breakdown: l.qty > 1 ? t("cart.breakdown", { qty: digits(l.qty), unit: money(unit) }) : null,
-    low: !issue && s.maxQty <= 5 ? t("cart.low_stock", { n: digits(s.maxQty) }) : null,
-    issue:
-      issue === "capped" ? t("cart.issue.capped", { n: digits(s.maxQty) }) : issue ? t("cart.issue.out_of_stock") : null,
+    meta:
+      issue === "capped"
+        ? t("cart.issue.capped", { n: digits(s.maxQty) })
+        : issue
+          ? t("cart.issue.out_of_stock")
+          : note.join(" · ") || null,
+    price: money(unit * l.qty),
     fix: issue === "capped" ? t("cart.fix", { n: digits(s.maxQty) }) : null,
   };
 }
@@ -97,8 +101,8 @@ function totals(lines: CartLine[], gone: Set<string>) {
 
 function paintLine(el: HTMLElement, l: CartLine, s: LineSnapshot | undefined, v: Values, gone: boolean): void {
   patch(el, v);
-  if (v.href) for (const a of $$<HTMLAnchorElement>("a.cline__media, a.cline__name", el)) a.setAttribute("href", v.href);
-  const img = $<HTMLImageElement>(".cline__img", el);
+  if (v.href) for (const a of $$<HTMLAnchorElement>("a.item-row__media, a.item-row__name", el)) a.setAttribute("href", v.href);
+  const img = $<HTMLImageElement>(".item-row__img", el);
   if (img && v.img && img.getAttribute("src") !== v.img) img.src = v.img;
   el.dataset.issue = gone ? "unavailable" : isPriced(s) ? (issueOf(l, s) ?? "") : "";
   el.toggleAttribute("data-loading", !v.name);
@@ -218,7 +222,7 @@ class CartView {
     const err = $("[data-quote-error]", s);
     if (err) {
       err.hidden = !this.error;
-      patch(err, { qerr: this.error === "offline" ? t("cart.quote_offline") : t("cart.quote_failed") });
+      patch(err, { title: this.error === "offline" ? t("cart.quote_offline") : t("cart.quote_failed") });
     }
     // The drawer's footer goes with an empty cart (on /cart the whole layout does).
     if (!this.p.full) (s.closest<HTMLElement>(".drawer__foot") ?? s).hidden = !lines.length;

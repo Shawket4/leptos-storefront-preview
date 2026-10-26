@@ -26,6 +26,7 @@ mod steps;
 
 use crate::api::types::{CartView, DeliverySlot};
 use crate::components::icons::Icon;
+use crate::components::steps::StepIndicator;
 use crate::format;
 use crate::prefs::{Lang, Numerals, tr};
 use crate::request::req;
@@ -620,6 +621,10 @@ fn CheckoutBody(
             <steps::ReviewStep ctx=ctx.clone() extra_fee error=step_error.clone() lang num/>
         }),
     };
+    let step_links: Vec<(String, Option<String>)> = Step::ALL
+        .into_iter()
+        .map(|s| (s.label(lang).to_owned(), Some(s.href())))
+        .collect();
     view! {
         <header class="co-head">
             <a class="co-back" href={if step == Step::Address { "/cart".to_owned() } else { Step::ALL[step.index() - 1].href() }}>
@@ -628,7 +633,8 @@ fn CheckoutBody(
             </a>
             <h1 class="t-h2 co-title">{tr(lang, "Checkout", "إتمام الطلب")}</h1>
         </header>
-        <steps::Stepper step done=ctx.done lang num/>
+        <StepIndicator label=tr(lang, "Checkout steps", "خطوات إتمام الطلب") steps=step_links current=step.index()
+            done=ctx.done.to_vec()/>
         <script type="application/json" data-cart-snapshots="" inner_html=ctx.snapshots_json.clone()></script>
         <crate::pages::cart::PriceChanged lang/>
         <div class={if step == Step::Review { "co-layout co-layout--single" } else { "co-layout" }}>
