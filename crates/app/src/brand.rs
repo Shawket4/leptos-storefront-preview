@@ -7,10 +7,11 @@
 
 pub const AA: f64 = 4.5;
 
-/// The page grounds the storefront paints (`--page` in `style/tokens.css`). Keep in step.
-pub const GROUND_LIGHT: &str = "#EFF3F4";
-pub const GROUND_DARK: &str = "#14181E";
-const INK_LABEL: &str = "#12222A";
+/// The page grounds the storefront paints (`--page` in `style/tokens.css`: warm linen / warm
+/// charcoal). Keep in step.
+pub const GROUND_LIGHT: &str = "#F6F4EF";
+pub const GROUND_DARK: &str = "#121110";
+const INK_LABEL: &str = "#1A1814";
 
 fn rgb(hex: &str) -> Option<[u8; 3]> {
     let h = hex.strip_prefix('#')?;
