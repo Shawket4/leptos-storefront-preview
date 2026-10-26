@@ -49,6 +49,9 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.hs-trigger__text.is-filled {
+  color: var(--text);
+}
 /* Squeezed by the header: just the glass, as a round button. */
 @container hs (max-width: 140px) {
   .hs-trigger {
@@ -427,12 +430,14 @@
   text-box: trim-both cap alphabetic;
 }
 
+/* Phones: the header shows a search button, so the page carries the box (and is the
+   no-JS fallback behind that button). Wider screens have it in the header bar. */
 .search-page__box {
   max-inline-size: 45rem;
   margin-block: var(--sp-2) var(--sp-6);
 }
-@media (min-width: 769px) {
+@media (min-width: 601px) {
   .search-page__box {
-    margin-block: var(--sp-4) var(--sp-8);
+    display: none;
   }
 }

@@ -418,7 +418,9 @@ pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView 
             {header.then(|| view! {
                 <a class="hs-trigger" href="/search" node_ref=trigger on:click=open_overlay aria-haspopup="dialog">
                     <Icon name="search" size=20/>
-                    <span class="hs-trigger__text">{placeholder}</span>
+                    <span class="hs-trigger__text" class:is-filled=move || !text.with(String::is_empty)>
+                        {move || if text.with(String::is_empty) { placeholder().to_owned() } else { text.get() }}
+                    </span>
                 </a>
             })}
             <form
