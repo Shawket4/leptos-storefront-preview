@@ -6,6 +6,7 @@ use super::islands::{self, Probe, SaveItem, StreamTarget, Unit};
 use crate::api::{self, types::Rail};
 use crate::components::icons::Icon;
 use crate::components::product_card::CardData;
+use crate::components::states::{ComingSoon, StateTone, StateView};
 use crate::format;
 use crate::pages::errors::SectionError;
 use crate::prefs::{Lang, Numerals, Theme, tr};
@@ -20,15 +21,18 @@ pub fn demo(id: &str, cx: Arc<Ctx>) -> AnyView {
         "ssr-modes" => view! { <SsrModesDemo cx/> }.into_any(),
         "streaming" => view! { <StreamingDemo cx/> }.into_any(),
         "errors" => view! { <ErrorsDemo cx/> }.into_any(),
+        "states" => view! { <StatesDemo cx/> }.into_any(),
         "meta" => view! { <MetaDemo cx/> }.into_any(),
         "reactivity" => view! { <ReactivityDemo cx/> }.into_any(),
         "shared-state" => view! { <SharedStateDemo cx/> }.into_any(),
         "server-fns" => view! { <ServerFnsDemo cx/> }.into_any(),
-        "transition" => view! { <islands::ListingPager pages=cx.pager_pages/> }.into_any(),
+        "transition" => view! { <TransitionDemo cx/> }.into_any(),
         "sim" => view! { <SimDemo cx/> }.into_any(),
         "action-form" => view! { <ActionFormDemo cx/> }.into_any(),
         "islands-router" => view! { <RouterTabsDemo cx/> }.into_any(),
         "router" => view! { <RouterDemo cx/> }.into_any(),
+        "router-patches" => view! { <PatchesDemo cx/> }.into_any(),
+        "motion" => view! { <MotionDemo cx/> }.into_any(),
         "caching" => view! { <CachingDemo cx/> }.into_any(),
         "tenancy" => view! { <TenancyDemo cx/> }.into_any(),
         "i18n" => view! { <I18nDemo cx/> }.into_any(),
@@ -112,8 +116,10 @@ fn IslandsDemo(cx: Arc<Ctx>) -> impl IntoView {
 #[component]
 fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
+    let yes = ("yes", "أيوه");
+    let no = ("no", "لأ");
     // (mode, where it's used here, first byte, needs JS to show streamed parts, <head> from data)
-    let modes: [(&str, (&str, &str), (&str, &str), bool, bool); 4] = [
+    let modes: [(&str, (&str, &str), (&str, &str), bool, (&str, &str)); 4] = [
         (
             "OutOfOrder",
             ("/ (home), /showcase", "/ (الرئيسية)، ‎/showcase‎"),
@@ -122,7 +128,7 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
                 "فورًا؛ والأقسام بتوصل مع بياناتها",
             ),
             true,
-            false,
+            no,
         ),
         (
             "InOrder",
@@ -135,7 +141,7 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
                 "فورًا؛ وبعدين بترتيب الصفحة، كل قسم مستني اللي قبله",
             ),
             false,
-            false,
+            no,
         ),
         (
             "PartiallyBlocked",
@@ -144,15 +150,16 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
                 "after its blocking resources",
                 "بعد الـ blocking resources بتاعته",
             ),
-            false,
+            // leptos_axum 0.8.22: `_ = replace_blocks; // TODO` — blocks aren't spliced in.
             true,
+            ("not in 0.8.22", "لأ، مش في 0.8.22"),
         ),
         (
             "Async",
             ("not used", "مش مستخدم"),
             ("after everything", "بعد ما كله يخلص"),
             false,
-            true,
+            yes,
         ),
     ];
     let targets = vec![
@@ -175,8 +182,6 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
             router: true,
         },
     ];
-    let yes = tr(lang, "yes", "أيوه");
-    let no = tr(lang, "no", "لأ");
     view! {
         <ul class="sc-modes" role="list">
             {modes.into_iter().map(|(m, used, first, js, head)| view! {
@@ -185,8 +190,8 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
                     <dl class="sc-mode__kv">
                         <div><dt>{tr(lang, "Used for", "مستخدم في")}</dt><dd>{tr(lang, used.0, used.1)}</dd></div>
                         <div><dt>{tr(lang, "First byte", "أول بايت")}</dt><dd>{tr(lang, first.0, first.1)}</dd></div>
-                        <div><dt>{tr(lang, "Streamed parts need JS", "الأجزاء المتبعتة محتاجة JS")}</dt><dd class:is-warn=js>{if js { yes } else { no }}</dd></div>
-                        <div><dt>{tr(lang, "<head> can use data", "الـ <head> يقدر يستخدم البيانات")}</dt><dd>{if head { yes } else { no }}</dd></div>
+                        <div><dt>{tr(lang, "Streamed parts need JS", "الأجزاء المتبعتة محتاجة JS")}</dt><dd class:is-warn=js>{if js { tr(lang, yes.0, yes.1) } else { tr(lang, no.0, no.1) }}</dd></div>
+                        <div><dt>{tr(lang, "<head> can use data", "الـ <head> يقدر يستخدم البيانات")}</dt><dd>{tr(lang, head.0, head.1)}</dd></div>
                     </dl>
                 </li>
             }).collect_view()}
@@ -194,8 +199,8 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
         <p class="sc-note">
             {tr(
                 lang,
-                "Modes are per route, not per request — a server can't tell whether the visitor has JavaScript. Client navigations by the islands router always get in-order HTML (leptos_axum switches off out-of-order when it sees the Islands-Router header), so such a navigation waits for the page's slowest section.",
-                "الطريقة بتتحدد لكل route، مش لكل طلب — السيرفر مايعرفش الزائر عنده JavaScript ولا لأ. والتنقلات اللي بيعملها الـ islands router بتاخد HTML بالترتيب دايمًا (‏leptos_axum بيقفل الـ out-of-order لما يشوف هيدر Islands-Router)، فالتنقل ده بيستنى أبطأ قسم في الصفحة.",
+                "Modes are per route, not per request — a server can't tell whether the visitor has JavaScript. Client navigations by the islands router always get in-order HTML (leptos_axum switches off out-of-order when it sees the Islands-Router header), so such a navigation waits for the page's slowest section. PartiallyBlocked in 0.8.22 only delays the first byte: leptos_axum leaves block replacement as a TODO, so the product page keeps its product inside a keyed <For> (resolved before it renders) and builds its <head> without waiting for data.",
+                "الطريقة بتتحدد لكل route، مش لكل طلب — السيرفر مايعرفش الزائر عنده JavaScript ولا لأ. والتنقلات اللي بيعملها الـ islands router بتاخد HTML بالترتيب دايمًا (‏leptos_axum بيقفل الـ out-of-order لما يشوف هيدر Islands-Router)، فالتنقل ده بيستنى أبطأ قسم في الصفحة. و PartiallyBlocked في 0.8.22 بيأخر أول بايت وبس: ‏leptos_axum سايب استبدال البلوكات TODO، فصفحة المنتج حاطة المنتج جوه <For> بمفتاح (بيخلص قبل ما يترسم) وبتبني الـ <head> من غير ما تستنى البيانات.",
             )}
         </p>
         <islands::StreamInspector targets/>
@@ -208,7 +213,6 @@ fn SsrModesDemo(cx: Arc<Ctx>) -> impl IntoView {
 fn StreamingDemo(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
     let num = cx.num;
-    let next = cx.next_here("streaming");
     let replay = format!("/showcase?replay={}#streaming", cx.now_ms);
     let mode = if cx.router_nav {
         tr(
@@ -224,15 +228,16 @@ fn StreamingDemo(cx: Arc<Ctx>) -> impl IntoView {
         )
     };
     view! {
-        <div class="sc-row">
-            <span class="sc-row__label">{tr(lang, "Base latency", "الزمن الأساسي")}</span>
-            <LatencyLinks cx=cx.clone() next=next external=true/>
+        <LatencyCallout cx=cx.clone() anchor="streaming" external=true
+            see=("Turn it on to watch the blocks arrive out of order.", "شغّله عشان تشوف البلوكات بتوصل بأي ترتيب.")/>
+        <p class="sc-note">
+            {mode}
+            " "
             <a class="sc-link" href=replay rel="external">
                 <Icon name="rotate-ccw" size=16/>
                 <span>{tr(lang, "Replay with a full load", "أعد بتحميل كامل")}</span>
             </a>
-        </div>
-        <p class="sc-note">{mode}</p>
+        </p>
         <div class="sc-sblocks">
             <StreamBlock cx=cx.clone() rail=Rail::Deals label=("Today's deals", "عروض النهارده")/>
             <StreamBlock cx=cx.clone() rail=Rail::Featured label=("Picked for you", "اخترنالك")/>
@@ -242,11 +247,11 @@ fn StreamingDemo(cx: Arc<Ctx>) -> impl IntoView {
         <p class="sc-note">
             {match lang {
                 Lang::En => format!(
-                    "Blocks are in page order; the badge is the order the server finished them in. Each waits {} ms × its widget's factor of simulated backend time; a cache miss adds the pretend database.",
+                    "Blocks are in page order; the badge is the order the server finished them in. Each waits {} ms × its widget's factor of simulated backend time.",
                     format::int(cx.base_ms as i64, num)
                 ),
                 Lang::Ar => format!(
-                    "البلوكات بترتيب الصفحة؛ والرقم هو ترتيب ما السيرفر خلّصهم. كل واحد بيستنى {} ms × معامل الـ widget بتاعه كزمن باك إند تجريبي؛ والـ cache miss بيزوّد زمن قاعدة البيانات التجريبية.",
+                    "البلوكات بترتيب الصفحة؛ والرقم هو ترتيب ما السيرفر خلّصهم. كل واحد بيستنى {} ms × معامل الـ widget بتاعه كزمن باك إند تجريبي.",
                     format::int(cx.base_ms as i64, num)
                 ),
             }}
@@ -360,11 +365,17 @@ fn LatencyLinks(cx: Arc<Ctx>, next: String, #[prop(optional)] external: bool) ->
     let lang = cx.lang;
     let num = cx.num;
     let current = cx.base_ms;
-    let mut opts: Vec<(Option<u64>, String)> = [0u64, 350, 1200]
+    let opts: Vec<(Option<u64>, String)> = [0u64, 350, 1200]
         .into_iter()
-        .map(|v| (Some(v), format!("{} ms", format::int(v as i64, num))))
+        .map(|v| {
+            let label = if v == 0 {
+                tr(lang, "Off", "مقفول").to_owned()
+            } else {
+                format!("{} ms", format::int(v as i64, num))
+            };
+            (Some(v), label)
+        })
         .collect();
-    opts.push((None, tr(lang, "Default", "الافتراضي").to_owned()));
     let rel = external.then_some("external");
     view! {
         <span class="sc-seg" role="group" aria-label=tr(lang, "Simulated latency", "الزمن التجريبي")>
@@ -376,6 +387,73 @@ fn LatencyLinks(cx: Arc<Ctx>, next: String, #[prop(optional)] external: bool) ->
                 }
             }).collect_view()}
         </span>
+    }
+}
+
+/// "Simulated latency is off — turn it on to see this", with the control right there. Latency is
+/// off by default (owner); it is a per-visitor cookie set through `/__sim`.
+#[component]
+fn LatencyCallout(
+    cx: Arc<Ctx>,
+    /// The anchor to come back to.
+    anchor: &'static str,
+    /// What becomes visible with latency on (EN, AR).
+    see: (&'static str, &'static str),
+    /// Full page load after switching (needed to watch out-of-order streaming).
+    #[prop(optional)]
+    external: bool,
+) -> impl IntoView {
+    let lang = cx.lang;
+    let num = cx.num;
+    let next = cx.next_here(anchor);
+    let off = cx.base_ms == 0;
+    let state = if off {
+        tr(
+            lang,
+            "Simulated latency is off: every read answers at once.",
+            "الزمن التجريبي مقفول: كل قراءة بترد على طول.",
+        )
+        .to_owned()
+    } else {
+        let source = if cx.sim_cookie {
+            tr(lang, "your cookie", "الكوكي بتاعتك")
+        } else {
+            tr(lang, "server default", "الافتراضي بتاع السيرفر")
+        };
+        match lang {
+            Lang::En => format!(
+                "Simulated latency: {} ms ({source}).",
+                format::int(cx.base_ms as i64, num)
+            ),
+            Lang::Ar => format!(
+                "الزمن التجريبي: {} ms (‏{source}).",
+                format::int(cx.base_ms as i64, num)
+            ),
+        }
+    };
+    view! {
+        <div class="sc-callout" class:is-off=off>
+            <p class="sc-callout__text">
+                <Icon name="timer" size=18/>
+                <span>
+                    <strong>{state}</strong>
+                    " "
+                    {if off { tr(lang, see.0, see.1) } else { "" }}
+                </span>
+            </p>
+            <LatencyLinks cx=cx.clone() next=next external/>
+        </div>
+    }
+}
+
+// ─── <Transition> ──────────────────────────────────────────────────────────────────────────────
+
+#[component]
+fn TransitionDemo(cx: Arc<Ctx>) -> impl IntoView {
+    view! {
+        <LatencyCallout cx=cx.clone() anchor="transition"
+            see=("Turn it on to watch the old page stay, dimmed, while the next one loads.", "شغّله عشان تشوف الصفحة القديمة فاضلة ومعتّمة لحد ما الجديدة تحمّل.")/>
+        <islands::ListingPager pages=cx.pager_pages first=cx.pager_first.clone()/>
     }
 }
 
@@ -496,7 +574,11 @@ fn MetaDemo(cx: Arc<Ctx>) -> impl IntoView {
 fn ReactivityDemo(cx: Arc<Ctx>) -> impl IntoView {
     let free = cx.tenant.free_over.0;
     // Products from this shop's catalogue priced under the free-delivery line (see build_ctx).
-    let source = if cx.calc_units.is_empty() { &cx.picks } else { &cx.calc_units };
+    let source = if cx.calc_units.is_empty() {
+        &cx.picks
+    } else {
+        &cx.calc_units
+    };
     let units: Vec<Unit> = source
         .iter()
         .map(|c| Unit {
@@ -554,6 +636,8 @@ fn ServerFnsDemo(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
     let t = cx.tenant.id.clone();
     view! {
+        <LatencyCallout cx=cx.clone() anchor="server-fns"
+            see=("Turn it on to feel each round trip (a cache hit skips only the pretend database, CACHE_MISS_MS, which is off here too).", "شغّله عشان تحس بكل رحلة للسيرفر (الـ hit بيوفّر بس وقت قاعدة البيانات التجريبية CACHE_MISS_MS، وده مقفول هنا كمان).")/>
         <islands::CacheLab initial=cx.cache.clone() tenant=t.clone()/>
         <ul class="sc-steps">
             <li>{tr(lang, "Every catalogue read goes through a moka cache keyed by tenant + generation + query (the shape of Madar's menu cache).", "كل قراءة من الكتالوج بتعدّي على كاش moka بمفتاح المتجر + الجيل + الاستعلام (نفس شكل كاش المنيو في مدار).")}</li>
@@ -589,10 +673,10 @@ fn SimDemo(cx: Arc<Ctx>) -> impl IntoView {
         "nav",
     ];
     let on: Vec<String> = cx.fail_cookie.clone();
-    let source = if cx.base_ms == cx.default_ms {
-        tr(lang, "the server default", "الافتراضي بتاع السيرفر")
-    } else {
+    let source = if cx.sim_cookie {
         tr(lang, "your cookie", "الكوكي بتاعتك")
+    } else {
+        tr(lang, "the server default", "الافتراضي بتاع السيرفر")
     };
     view! {
         <div class="sc-row">
@@ -842,11 +926,12 @@ fn CachingDemo(cx: Arc<Ctx>) -> impl IntoView {
     view! {
         <islands::HeaderProbe targets/>
         <ul class="sc-steps">
-            <li>{tr(lang, "Catalogue pages: public, s-maxage=300 (5 min at the edge), stale-while-revalidate=60; tagged t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}.", "صفحات الكتالوج: ‏public و s-maxage=300 (٥ دقايق على الـ CDN) و stale-while-revalidate=60؛ ومتاجة بـ t{tenant} و t{tenant}-p{id} و t{tenant}-cat{id}.")}</li>
+            <li>{tr(lang, "Catalogue pages, for browsers: Cache-Control: no-cache (always revalidate — a stale page after a language switch would be a bug) and Vary: Cookie.", "صفحات الكتالوج للمتصفح: ‏Cache-Control: no-cache (اتأكد كل مرة — صفحة قديمة بعد تغيير اللغة تبقى غلطة) و Vary: Cookie.")}</li>
+            <li>{tr(lang, "For the edge: CDN-Cache-Control: public, s-maxage=300, stale-while-revalidate=60, tagged t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}. Cloudflare ignores Vary: Cookie, so its cache key must include the lang, num and theme cookies; the Host already separates shops.", "للـ CDN: ‏CDN-Cache-Control: public, s-maxage=300, stale-while-revalidate=60 ومتاجة بـ t{tenant} و t{tenant}-p{id} و t{tenant}-cat{id}. و Cloudflare بيتجاهل Vary: Cookie، فمفتاح الكاش لازم يشمل كوكيز lang و num و theme؛ والـ Host أصلًا بيفصل المحلات.")}</li>
             <li>{tr(lang, "Cart, checkout, orders, this page: private, no-store — personal data never reaches a shared cache.", "السلة والدفع والطلبات والصفحة دي: ‏private, no-store — البيانات الشخصية عمرها ما بتوصل لكاش مشترك.")}</li>
             <li>{tr(lang, "x-read-cache is set by the read cache. On a streamed page it only appears when the read finished before the headers left — headers go out with the first chunk.", "‏x-read-cache بيتحط من كاش القراءة. وفي الصفحة المتبعتة بيظهر بس لو القراءة خلصت قبل ما الهيدرز تطلع — الهيدرز بتطلع مع أول chunk.")}</li>
             {via_cookie.then(|| view! {
-                <li class="is-warn">{tr(lang, "You reached this shop through a cookie (no tenant in the host), so catalogue pages fall back to private: the URL alone wouldn't identify the shop for a CDN.", "انت وصلت للمتجر ده عن طريق كوكي (مفيش اسم متجر في الـ host)، فصفحات الكتالوج بقت private: الـ URL لوحده مش هيعرّف الـ CDN بالمتجر.")}</li>
+                <li class="is-warn">{tr(lang, "You reached this shop through a cookie (no tenant in the host), so catalogue pages get no CDN-Cache-Control: the URL alone wouldn't identify the shop for a CDN.", "انت وصلت للمتجر ده عن طريق كوكي (مفيش اسم متجر في الـ host)، فصفحات الكتالوج مابتاخدش CDN-Cache-Control: الـ URL لوحده مش هيعرّف الـ CDN بالمتجر.")}</li>
             })}
         </ul>
     }
@@ -1145,7 +1230,7 @@ fn A11yDemo(cx: Arc<Ctx>) -> impl IntoView {
 #[component]
 pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
     let lang = cx.lang;
-    let items: [((&str, &str), (&str, &str), (&str, &str)); 12] = [
+    let items: [((&str, &str), (&str, &str), (&str, &str)); 18] = [
         (
             (
                 "Out-of-order streaming needs JavaScript",
@@ -1172,6 +1257,34 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
             (
                 "Always <Suspense> outside, <ErrorBoundary> inside, per section; no route-level boundary around streamed content.",
                 "دايمًا <Suspense> برّه و <ErrorBoundary> جوه، لكل قسم؛ ومفيش boundary على مستوى الـ route حوالين محتوى متبعت.",
+            ),
+        ),
+        (
+            (
+                "PartiallyBlocked only delays the first byte",
+                "الـ PartiallyBlocked بيأخر أول بايت وبس",
+            ),
+            (
+                "leptos_axum 0.8.22 doesn't splice blocking resources into the first chunk (render_app_to_stream_with_context_and_replace_blocks opens with `_ = replace_blocks; // TODO`): the stream only waits for them, and a <Suspense> over one still ships as an out-of-order template + script — without JavaScript it stays on its fallback.",
+                "‏leptos_axum 0.8.22 مابيحطش الـ blocking resources جوه أول chunk (الدالة render_app_to_stream_with_context_and_replace_blocks بتبدأ بـ ‎`_ = replace_blocks; // TODO`‎): البث بيستناهم وبس، والـ <Suspense> اللي فوق واحد منهم بيتبعت برضه كـ template و script بأي ترتيب — ومن غير JavaScript بيفضل على الـ fallback.",
+            ),
+            (
+                "The product page keeps its product inside a keyed <For>, whose items resolve before they render, so it arrives inline; related products stream on their own.",
+                "صفحة المنتج حاطة المنتج جوه <For> بمفتاح، وعناصره بتخلص قبل ما تترسم، فبيوصل جوه الصفحة على طول؛ والمنتجات المشابهة بتتبعت لوحدها.",
+            ),
+        ),
+        (
+            (
+                "Head tags inside <Suspense> never reach <head>",
+                "تاجات الـ head جوه <Suspense> عمرها ما بتوصل للـ <head>",
+            ),
+            (
+                "leptos_meta writes into <head> only what was registered when the first chunk is ready (inject_meta_context). A <Title> or <Meta> rendered inside a <Suspense> — even over a blocking resource — registers later and is silently dropped.",
+                "‏leptos_meta بيكتب في الـ <head> اللي اتسجل لحد ما أول chunk يجهز بس (‏inject_meta_context). و <Title> أو <Meta> جوه <Suspense> — حتى لو فوق blocking resource — بيتسجل بعدها وبيضيع من غير أي رسالة.",
+            ),
+            (
+                "Head tags are built synchronously at the top of each page from in-memory data (product, category), never from a resource.",
+                "تاجات الـ head بتتبني على طول في أول كل صفحة من بيانات في الذاكرة (المنتج والقسم)، ومش من resource أبدًا.",
             ),
         ),
         (
@@ -1204,6 +1317,34 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
         ),
         (
             (
+                "Cross-page diffs can slip inside <head>",
+                "الـ diff بين صفحتين ممكن يتلخبط في الـ <head>",
+            ),
+            (
+                "The diff walks the old and new documents in lockstep, <head> included. Two pages with a different number of head tags (title, meta, JSON-LD) knock the walk out of step, and the next page's content never makes it to the screen — the URL changes, the page doesn't.",
+                "الـ diff بيمشي على المستند القديم والجديد خطوة بخطوة، والـ <head> منهم. صفحتين فيهم عدد مختلف من تاجات الـ head (العنوان و meta و JSON-LD) بيلخبطوا الخطوات، ومحتوى الصفحة الجديدة مابيوصلش للشاشة — الـ URL بيتغير والصفحة لأ.",
+            ),
+            (
+                "shell.js applies the new page's head tags itself and hands the router HTML whose <head> matches the live one.",
+                "‏shell.js بيطبّق تاجات الـ head بتاعة الصفحة الجديدة بنفسه، ويدي الراوتر HTML الـ <head> بتاعه مطابق للي على الشاشة.",
+            ),
+        ),
+        (
+            (
+                "<noscript> comes alive in fetched pages",
+                "الـ <noscript> بيصحى في الصفحات اللي بتتجاب",
+            ),
+            (
+                "The router parses fetched HTML with DOMParser, where scripting is off, so <noscript> content is real markup — and the diff moves it into the live page. A <noscript><meta http-equiv=refresh> sent every JS visitor clicking “Home” to the no-JS page with a full reload.",
+                "الراوتر بيقرا الـ HTML اللي جابه بـ DOMParser، واللي الـ scripting فيه مقفول، فمحتوى الـ <noscript> بيبقى عناصر حقيقية — والـ diff بينقلها للصفحة. ‏<noscript><meta http-equiv=refresh> كان بيبعت أي حد عنده JS داس على «الرئيسية» لصفحة الـ no-JS بتحميل كامل.",
+            ),
+            (
+                "The home page's no-JS fallback is now a <noscript> link to /nojs, never sent on router responses, and shell.js empties <noscript> on both sides before diffing.",
+                "البديل بتاع الـ no-JS في الرئيسية بقى <noscript> فيه لينك لـ ‎/nojs‎، وعمره ما بيتبعت في ردود الراوتر، و shell.js بيفضّي الـ <noscript> في الناحيتين قبل الـ diff.",
+            ),
+        ),
+        (
+            (
                 "The diff adds attributes, never removes them",
                 "الـ diff بيضيف attributes ومابيشيلهاش",
             ),
@@ -1219,12 +1360,26 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
         (
             ("No scroll handling on navigation", "مفيش scroll مع التنقل"),
             (
-                "After a client navigation the new page opens at the old scroll position — the router diffs and calls pushState, nothing else.",
-                "بعد التنقل الصفحة الجديدة بتفتح في نفس مكان الـ scroll القديم — الراوتر بيعمل diff و pushState وبس.",
+                "Without help, a client navigation opens the new page at the old scroll position — the router diffs and calls pushState, nothing else.",
+                "من غير مساعدة، التنقل بيفتح الصفحة الجديدة في نفس مكان الـ scroll القديم — الراوتر بيعمل diff و pushState وبس.",
             ),
             (
-                "A small shell script is needed: scroll to the top on a new path, restore on Back.",
-                "محتاجين سكريبت صغير في الـ shell: يطلع لفوق مع مسار جديد، ويرجّع المكان مع الرجوع.",
+                "shell.js: a new path scrolls to the top, #hash to its section, Back/Forward to the saved position (history.scrollRestoration = manual).",
+                "‏shell.js: المسار الجديد بيطلع لفوق، والـ ‎#hash‎ بيروح لقسمه، والرجوع والتقدم بيرجعوا للمكان المحفوظ (‏history.scrollRestoration = manual).",
+            ),
+        ),
+        (
+            (
+                "Router form posts drop the pressed button",
+                "فورمز الراوتر بتنسى الزرار اللي اتداس",
+            ),
+            (
+                "The islands router builds the request from new FormData(form) without the submitter (islands_routing.js, submitToReq), so <button name=\"op\" value=\"remove\"> never reaches the server with JavaScript on — it does without.",
+                "الـ islands router بيبني الطلب من new FormData(form)‎ من غير الـ submitter (‏islands_routing.js، ‏submitToReq)، فـ <button name=\"op\" value=\"remove\"> عمره ما بيوصل للسيرفر والـ JavaScript شغال — مع إنه بيوصل من غيره.",
+            ),
+            (
+                "shell.js adds the pressed button as a hidden field for that one submission (found on the cart page).",
+                "‏shell.js بيضيف الزرار اللي اتداس كخانة مخفية للإرسال ده بس (اتلقت في صفحة السلة).",
             ),
         ),
         (
@@ -1237,8 +1392,8 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
                 "‏Action::dispatch عمره ما بيزوّد عدّاد «الأحدث» بتاعه (‏reactive_graph actions/action.rs)، فلو فيه طلبين شغالين اللي يخلص متأخر هو اللي بيكسب — حتى لو كان اتبعت الأول. وعدّاد الكمية لو اتداس بسرعة ممكن يقف على سلة قديمة.",
             ),
             (
-                "Cart mutations go through one serialized queue with optimistic updates (the commerce branch's CartOps).",
-                "تعديلات السلة بتعدّي على طابور واحد بالترتيب مع تحديث متفائل (‏CartOps في فرع الشراء).",
+                "Cart mutations go through one serialized queue with optimistic updates (CartOps in pages/cart/store.rs).",
+                "تعديلات السلة بتعدّي على طابور واحد بالترتيب مع تحديث متفائل (‏CartOps في pages/cart/store.rs).",
             ),
         ),
         (
@@ -1251,8 +1406,8 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
                 "مع الـ URL encoding الافتراضي (‏serde_qs)، الـ Vec الفاضي جوه struct مش بيتبعت خالص، والسيرفر بيرفض الطلب: ‏api::list_products(ListingQuery { brands: vec![], .. }) بيفشل من المتصفح بـ «missing field brands»، مع إن نفس النداء بيشتغل وقت الـ SSR لإن مفيش encoding.",
             ),
             (
-                "#[serde(default)] on such fields (reported for ListingQuery), a JSON input encoding, or flat arguments — this page's pager uses pager_page(page).",
-                "‏#[serde(default)] على الحقول دي (اتبلّغ عنه في ListingQuery)، أو JSON encoding، أو وسايط بسيطة — والـ pager في الصفحة دي بيستخدم pager_page(page).",
+                "#[serde(default)] on the struct — ListingQuery has it now — or a JSON input encoding, or flat arguments.",
+                "‏#[serde(default)] على الـ struct — و ListingQuery بقى عليه — أو JSON encoding، أو وسايط بسيطة.",
             ),
         ),
         (
@@ -1261,12 +1416,26 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
                 "نسخة التطوير مش نسخة الإصدار",
             ),
             (
-                "cargo leptos watch compiles with --cfg erase_components (every view becomes an AnyView, so every node gets an islands-router branch marker) and adds hot-reload comments. Dev HTML and WASM are several times larger than release; the numbers on this dev server overstate both.",
-                "‏cargo leptos watch بيبني بـ ‎--cfg erase_components‎ (كل view بيبقى AnyView، فكل عنصر بياخد branch marker للـ islands router) وبيضيف تعليقات hot-reload. الـ HTML والـ WASM في التطوير أكبر بكتير من الإصدار؛ والأرقام على السيرفر ده مبالغ فيها.",
+                "cargo leptos watch compiles with --cfg erase_components (every view becomes an AnyView, so nearly every node gets an islands-router branch marker) and adds hot-reload comments. Measured on 26 Oct: the home page is ~650–750 KB of HTML with ~7,600–9,000 markers in dev, but 213 KB with 1,014 markers (20 KB, 9%) in release; the WASM is ~12 MB in dev and 1.13 MB raw / 326 KB brotli in release.",
+                "‏cargo leptos watch بيبني بـ ‎--cfg erase_components‎ (كل view بيبقى AnyView، فتقريبًا كل عنصر بياخد branch marker للـ islands router) وبيضيف تعليقات hot-reload. قسناها يوم ٢٦ أكتوبر: الرئيسية حوالي ٦٥٠–٧٥٠ KB HTML وفيها ٧٦٠٠–٩٠٠٠ marker في التطوير، لكن ٢١٣ KB و ١٠١٤ marker (٢٠ KB، ٩٪) في الإصدار؛ والـ WASM حوالي ١٢ MB في التطوير و ١٫١٣ MB خام / ٣٢٦ KB بـ brotli في الإصدار.",
             ),
             (
                 "Judge size and speed on cargo leptos build --release (tools/wasm-size.mjs for the bundle).",
                 "احكم على الحجم والسرعة من cargo leptos build --release (‏tools/wasm-size.mjs للـ bundle).",
+            ),
+        ),
+        (
+            (
+                "A pending <Suspense> inside an island breaks client navigation",
+                "‏<Suspense> مستني جوه island بيكسر التنقل",
+            ),
+            (
+                "An island whose <Suspense>/<Transition> isn't ready when it hydrates (a Resource or LocalResource inside it) hydrates fine on a full load, but after an islands-router navigation into the page it panics: its hydration depends on inline scripts (serialized resources, incomplete-chunk markers) that the router never runs, and on the page-wide hydration-id sequence. The panic then takes down every island hydrated after it on that page.",
+                "الـ island اللي الـ <Suspense>/<Transition> بتاعها مش جاهز وقت الـ hydration (‏Resource أو LocalResource جواها) بتصحى عادي في التحميل الكامل، لكن بعد التنقل للصفحة بالـ islands router بتعمل panic: الـ hydration بتاعتها معتمدة على سكريبتات جوه الصفحة (الـ resources المتسلسلة وعلامات الـ chunks الناقصة) والراوتر عمره ما بيشغّلها، ومعتمدة كمان على تسلسل أرقام الـ hydration في الصفحة كلها. والـ panic بيوقّع كل الـ islands اللي بعدها في نفس الصفحة.",
+            ),
+            (
+                "Seed from props: an AsyncDerived that is ready on its first poll (the listing explorer and this page's pager), so server and client render the same branch with no hydration data.",
+                "ابدأ من الـ props: ‏AsyncDerived جاهز من أول poll (زي explorer القوايم والـ pager في الصفحة دي)، فالسيرفر والمتصفح بيرسموا نفس الفرع من غير بيانات hydration.",
             ),
         ),
         (
@@ -1325,5 +1494,108 @@ pub fn SharpEdges(cx: Arc<Ctx>) -> impl IntoView {
                 }).collect_view()}
             </ol>
         </section>
+    }
+}
+
+// ─── islands-router patches ────────────────────────────────────────────────────────────────────
+
+#[component]
+fn PatchesDemo(cx: Arc<Ctx>) -> impl IntoView {
+    let lang = cx.lang;
+    view! {
+        <islands::PatchProbe/>
+        <ol class="sc-steps">
+            <li>{tr(lang, "Head realignment: before the router diffs, shell.js applies the new page's title/meta/JSON-LD itself and splices the live <head> into the fetched HTML, so the lockstep walk reaches <body> in step.", "ظبط الـ head: قبل الـ diff، ‏shell.js بيطبّق العنوان و meta و JSON-LD بتوع الصفحة الجديدة بنفسه، ويحط الـ <head> الحالي في الـ HTML اللي اتجاب، فالمشي خطوة بخطوة يوصل للـ <body> مظبوط.")}</li>
+            <li>{tr(lang, "Inert <noscript>: emptied in the page and in fetched HTML; the server also leaves the home page's no-JS link out when the request carries Islands-Router (lib.rs).", "‏<noscript> مالوش أثر: بيتفضّى في الصفحة وفي الـ HTML اللي بيتجاب؛ والسيرفر كمان مابيحطش لينك الـ no-JS بتاع الرئيسية لما الطلب فيه Islands-Router (‏lib.rs).")}</li>
+            <li>{tr(lang, "Scroll: new path → top, #hash → its section, Back/Forward → the saved position, all applied inside the view transition right after the swap.", "الـ scroll: مسار جديد → لفوق، و ‎#hash‎ → قسمه، والرجوع والتقدم → المكان المحفوظ، وكله بيتطبق جوه الـ view transition بعد التبديل على طول.")}</li>
+            <li>{tr(lang, "Revalidation: router fetches use cache: no-cache — pages vary by the language/theme cookies, and a stale copy would answer in the old language.", "التأكد من السيرفر: طلبات الراوتر بتستخدم cache: no-cache — الصفحات بتختلف حسب كوكيز اللغة والثيم، والنسخة القديمة هترد باللغة القديمة.")}</li>
+            <li>{tr(lang, "The pressed button: the router posts new FormData(form), which leaves out the clicked <button name value>; shell.js adds it as a hidden field for that one submission.", "الزرار اللي اتداس: الراوتر بيبعت new FormData(form)‎ اللي مافيهوش الـ <button name value> اللي اتداس؛ و shell.js بيضيفه كخانة مخفية للإرسال ده بس.")}</li>
+            <li>{tr(lang, "Prefetch on intent: a hover (after a short pause), keyboard focus or a press warms the router's own GET, used once by the click that follows; nothing on Save-Data or 2G, and never a /__ preference link.", "التجهيز قبل الضغط: الـ hover (بعد وقفة قصيرة) أو فوكس الكيبورد أو اللمس بيجهّز نفس طلب الراوتر، والضغطة اللي بعدها بتستخدمه مرة واحدة؛ ومفيش تجهيز مع Save-Data أو 2G، ولا للينكات التفضيلات ‎/__‎.")}</li>
+            <li>{tr(lang, "Progress and failure: a thin bar only past 150 ms; offline, a 5xx or 12 s without an answer shows a notice with Retry, and a second failure falls back to a full page load.", "التقدم والفشل: شريط رفيع بعد ١٥٠ مللي ثانية بس؛ ولو مفيش نت أو 5xx أو ١٢ ثانية من غير رد بيظهر تنبيه فيه «إعادة المحاولة»، والفشل التاني بيعمل تحميل كامل للصفحة.")}</li>
+            <li>{tr(lang, "Clean addresses: server_fn redirects end in a bare “?” (/cart?); the history entry is committed without it.", "عناوين نضيفة: تحويلات server_fn بتخلص بـ «?» لوحدها (‎/cart?‎)؛ والعنوان بيتسجل في الـ history من غيرها.")}</li>
+            <li>{tr(lang, "Preference links follow you: at press time their next= points at the live address, so a language switch keeps the listing's filters.", "لينكات التفضيلات بتمشي وراك: وقت الضغط الـ next=‎ بيتوجه للعنوان الحالي، فتبديل اللغة بيحافظ على فلاتر القايمة.")}</li>
+            <li>{tr(lang, "Server markup shaped for the diff: attributes always present, keyed <For> lists, Option/Either for parts that come and go.", "‏HTML السيرفر متظبط على مقاس الـ diff: الـ attributes موجودة دايمًا، و <For> بمفاتيح، و Option/Either للأجزاء اللي بتظهر وتختفي.")}</li>
+        </ol>
+        <p class="sc-note">
+            {tr(lang, "Try a cross-page round trip: ", "جرّب رحلة بين صفحتين: ")}
+            <a class="link" href="/ui#overlays">{tr(lang, "open the UI kit", "افتح الـ UI kit")}</a>
+            {tr(lang, ", then press Back — the title changes, the new page starts at its top, and Back lands where you were.", "، وبعدين ارجع — العنوان بيتغير، والصفحة الجديدة بتبدأ من فوق، والرجوع بيرجّعك لمكانك.")}
+        </p>
+    }
+}
+
+// ─── Motion ────────────────────────────────────────────────────────────────────────────────────
+
+#[component]
+fn MotionDemo(cx: Arc<Ctx>) -> impl IntoView {
+    let lang = cx.lang;
+    view! {
+        <islands::SpringLab/>
+        <ul class="sc-steps">
+            <li>{tr(lang, "Drag the puck: it follows 1:1 from where you grabbed it; pull past an end and it resists progressively (rubberband, Apple's constant 0.55).", "اسحب الكرة: بتمشي مع صباعك بالظبط من المكان اللي مسكتها منه؛ ولو شديتها بعد الحافة بتقاوم بالتدريج (‏rubberband بمعامل Apple ‏0.55).")}</li>
+            <li>{tr(lang, "Let go mid-flick: the release velocity is handed to the spring, the projection (v/1000)·d/(1−d) picks the resting place, and a flick earns a little bounce.", "سيبها وهي مقذوفة: السرعة لحظة الترك بتتسلم للسبرينج، والتوقع ‏(v/1000)·d/(1−d) بيختار مكان الوقوف، والقذفة بتاخد ارتداد خفيف.")}</li>
+            <li>{tr(lang, "Grab it while it moves: it stops where it is on screen and follows you — no jump, no waiting for the animation to finish.", "امسكها وهي بتتحرك: بتقف مكانها على الشاشة وتمشي معاك — من غير نطة ولا استنى الحركة تخلص.")}</li>
+            <li>{tr(lang, "Reduced motion: springs land at once.", "لو مفعّل «حركة أقل»: السبرينج بيوصل على طول.")}</li>
+        </ul>
+    }
+}
+
+// ─── States ────────────────────────────────────────────────────────────────────────────────────
+
+#[component]
+fn StatesDemo(cx: Arc<Ctx>) -> impl IntoView {
+    let lang = cx.lang;
+    let slow = format!("/__sim?ms=1200&next={}", cx.next_here("streaming"));
+    view! {
+        <div class="sc-states">
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "Loading", "بيحمّل")}</h4>
+                <SBlockSkeleton/>
+                <p class="sc-note">{tr(lang, "Solid blocks that pulse, sized like what replaces them — nothing moves when the data lands.", "بلوكات مصمتة بتنبض، بنفس مقاس اللي هيجي مكانها — ومفيش حاجة بتتحرك لما البيانات توصل.")}</p>
+                <a class="sc-link" href=slow rel="external">{tr(lang, "Slow every read to 1.2 s and watch", "بطّأ كل قراءة لـ ١٫٢ ث وشوف")}</a>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "A section failed", "قسم واقع")}</h4>
+                <SectionError what=tr(lang, "Bestsellers", "الأكثر مبيعًا") retry_href="/showcase#states" compact=true/>
+                <p class="sc-note">{tr(lang, "Only that section; the page around it keeps working. Retry drops the fault.", "القسم ده بس؛ والصفحة اللي حواليه شغالة. وإعادة المحاولة بتشيل العطل.")}</p>
+                <a class="sc-link" href="/showcase?fail=bestsellers#errors">{tr(lang, "Break a real one", "اكسر قسم حقيقي")}</a>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "Nothing to show", "مفيش حاجة تتعرض")}</h4>
+                <StateView compact=true tone=StateTone::Empty
+                    title=tr(lang, "No results for “galaxy s99”", "مفيش نتايج لـ «galaxy s99»")
+                    body=tr(lang, "Check the spelling, or try fewer words.", "اتأكد من الكتابة، أو جرّب كلمات أقل.")/>
+                <a class="sc-link" href="/search?q=galaxy+s99">{tr(lang, "Run that search", "جرّب البحث ده")}</a>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "Offline", "من غير نت")}</h4>
+                <p class="sc-note">{tr(lang, "The shell mounts one OfflineBanner on every page: a notice with Retry while the connection is down; “Back online” and an in-place refresh when it returns. These buttons fire the browser's own events — DevTools → Network → Offline does it for real.", "الـ shell بيركّب OfflineBanner واحد في كل صفحة: تنبيه فيه «إعادة المحاولة» طول ما النت مقطوع؛ و«عاد الاتصال» وتحديث للصفحة مكانها لما يرجع. الزراير دي بتطلق نفس أحداث المتصفح — و DevTools ← Network ← Offline بيعملها بجد.")}</p>
+                <islands::OfflineDemo/>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "A read that retries", "قراية بتعيد المحاولة")}</h4>
+                <p class="sc-note">{tr(lang, "net::retry tries again after 300 ms, 600 ms, then 1.2 s — four tries in all — and spends none while offline.", "‏net::retry بيعيد المحاولة بعد ٣٠٠ مللي ثانية، وبعدين ٦٠٠، وبعدين ١٫٢ ثانية — أربع محاولات في المجموع — ومن غير نت مابيضيعش ولا محاولة.")}</p>
+                <islands::RetryDemo/>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "Not found", "مش موجود")}</h4>
+                <p class="sc-note">{tr(lang, "A designed 404 with status 404: illustration, search, popular categories, back and home links. Works without JavaScript.", "صفحة 404 متصممة وبـ status 404: رسمة، وبحث، وأشهر الأقسام، ولينكات للرجوع وللرئيسية. وشغالة من غير JavaScript.")}</p>
+                <a class="sc-link" href="/showcase/no-such-thing">{tr(lang, "Open a 404", "افتح صفحة 404")}</a>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "Something broke", "حاجة وقعت")}</h4>
+                <p class="sc-note">{tr(lang, "A route-level failure renders the full-page error: 500 for a bug, 503 (with Retry-After) when the shop is briefly unavailable.", "لما الـ route كله يقع بتظهر صفحة الخطأ الكاملة: 500 لو فيه bug، و 503 (ومعاها Retry-After) لما المتجر مش متاح لفترة قصيرة.")}</p>
+                <span class="sc-state__links">
+                    <a class="sc-link" href="/showcase?crash=1">"500"</a>
+                    <a class="sc-link" href="/showcase?crash=503">"503"</a>
+                </span>
+            </section>
+            <section class="sc-state">
+                <h4 class="sc-state__title">{tr(lang, "Not built yet", "لسه ما اتعملش")}</h4>
+                <ComingSoon compact=true
+                    feature=tr(lang, "Card payments", "الدفع بالكارت")
+                    description=tr(lang, "Pay by card or mobile wallet at checkout. Until then, cash on delivery.", "ادفع بالكارت أو المحفظة وانت بتطلب. ولحد ده، الدفع عند الاستلام.")/>
+            </section>
+        </div>
     }
 }

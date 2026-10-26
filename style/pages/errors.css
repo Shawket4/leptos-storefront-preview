@@ -115,6 +115,11 @@
 .err-search__go:active {
   scale: var(--press);
 }
+.err-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-5);
+}
 .err-page__home {
   justify-self: start;
   display: inline-flex;

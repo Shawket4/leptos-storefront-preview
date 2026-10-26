@@ -1,5 +1,6 @@
-//! The "rate this showcase" board behind the ActionForm demo: one server function, an in-memory
-//! list per tenant (the last 40 notes; it resets when the server restarts).
+//! The showcase's own server functions: the "rate this showcase" board behind the ActionForm demo
+//! (an in-memory list per tenant, the last 40 notes; it resets when the server restarts), and the
+//! flaky read behind the `net::retry` demo.
 //!
 //! Shaped for `<ActionForm>`: flat, form-encodable arguments (`rating`, `note`). Without JS the
 //! browser posts the form to the function's URL and server_fn redirects back to the Referer (an
@@ -91,4 +92,17 @@ pub async fn leave_note(rating: Option<u8>, note: Option<String>) -> Result<Boar
         .collect();
     let at = crate::server::orders::now_ms();
     Ok(store::add(&rq.tenant.id, Note { rating, text, at }))
+}
+
+/// The flaky read behind the retry demo: try `attempt` (1-based) fails while it is within the
+/// first `fail_first` (at most 3), then succeeds. The browser numbers its tries, so nothing is
+/// kept on the server and two visitors can't disturb each other.
+#[server]
+pub async fn flaky_read(attempt: u32, fail_first: u32) -> Result<u32, ServerFnError> {
+    crate::server::cache::private();
+    if attempt <= fail_first.min(3) {
+        Err(ServerFnError::new("flaky"))
+    } else {
+        Ok(attempt)
+    }
 }

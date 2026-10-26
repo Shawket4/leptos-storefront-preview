@@ -2282,6 +2282,199 @@ a.sc-mini__name:hover {
   color: var(--success-text);
 }
 
+/* ── Motion: the spring lab ──────────────────────────────────────────────── */
+.sc-spring__track {
+  position: relative;
+  block-size: 68px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.sc-spring__rail {
+  position: absolute;
+  inset: 12px;
+}
+.sc-spring__stop {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc((100% - 44px) * var(--k) + 22px);
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--r-pill);
+  background: var(--line-strong);
+  translate: -50% -50%;
+}
+.sc-spring__puck {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  box-shadow: var(--shadow-md);
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+}
+.sc-spring__puck:active {
+  cursor: grabbing;
+}
+.sc-spring .sc-actions {
+  margin-block-start: var(--sp-3);
+}
+
+/* ── Router patches: live checks ─────────────────────────────────────────── */
+.sc .sc-checks {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  list-style: none;
+}
+.sc-check-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-block: var(--sp-1);
+  font-size: var(--fs-sm);
+}
+.sc-check-row__mark {
+  font-weight: var(--fw-bold);
+  color: var(--text-3);
+}
+.sc-check-row[data-ok="yes"] .sc-check-row__mark {
+  color: var(--success-text);
+}
+.sc-check-row[data-ok="no"] .sc-check-row__mark {
+  color: var(--danger-text);
+}
+
+/* ── States ──────────────────────────────────────────────────────────────── */
+.sc-states {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
+  gap: var(--sp-3);
+}
+.sc-state {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  min-inline-size: 0;
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.sc-state__title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+}
+.sc-state .sc-link {
+  justify-self: start;
+}
+.sc-state__links {
+  display: flex;
+  gap: var(--sp-3);
+}
+.sc-online {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+.sc-online__dot {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: var(--r-pill);
+  background: var(--success);
+}
+.sc-online[data-online="no"] .sc-online__dot {
+  background: var(--danger);
+}
+/* A StateView / ComingSoon inside a tile: the tile is already the frame. */
+.sc-state .state {
+  padding-block: var(--sp-2);
+}
+.sc-retry {
+  display: grid;
+  justify-items: start;
+  gap: var(--sp-2);
+}
+.sc-retry__log {
+  display: grid;
+  gap: 4px;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sc-retry__log:empty {
+  display: none;
+}
+.sc-retry__try {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-block-size: 32px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--r-sm);
+  background: var(--sunk);
+  font-size: var(--fs-sm);
+  animation: fade-in var(--dur-base) var(--ease-out);
+}
+.sc-retry__n {
+  font-weight: var(--fw-semibold);
+}
+.sc-retry__at {
+  font-size: var(--fs-xs);
+  color: var(--text-2);
+}
+.sc-retry__res {
+  font-weight: var(--fw-bold);
+  color: var(--text-3);
+}
+.sc-retry__try[data-state="ok"] .sc-retry__res {
+  color: var(--success-text);
+}
+.sc-retry__try[data-state="fail"] .sc-retry__res {
+  color: var(--danger-text);
+}
+.sc-callout {
+  display: grid;
+  gap: var(--sp-2);
+  margin-block-end: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.sc-callout.is-off {
+  background: var(--info-wash);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--info) 30%, transparent);
+}
+.sc-callout__text {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+.sc-callout__text .icon {
+  flex: none;
+  margin-block-start: 2px;
+  color: var(--info-text);
+}
+.sc-callout .sc-seg {
+  justify-self: start;
+}
+
 /* Apple continuous corners where supported. */
 @supports (corner-shape: squircle) {
   .sc-card,
@@ -2305,7 +2498,10 @@ a.sc-mini__name:hover {
   .sc-vt__tile,
   .sc-sheet,
   .sc-card__why,
-  .sc-code {
+  .sc-code,
+  .sc-state,
+  .sc-callout,
+  .sc-retry__try {
     corner-shape: squircle;
   }
 }
