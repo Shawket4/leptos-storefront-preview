@@ -96,6 +96,7 @@ a.co-step__link:hover {
   color: var(--text);
 }
 .co-step__dot {
+  corner-shape: round;
   display: grid;
   place-items: center;
   inline-size: 32px;
@@ -485,6 +486,7 @@ a.co-step__link:hover {
 }
 .slot__tick,
 .pay-opt__tick {
+  corner-shape: round;
   position: absolute;
   inset-block-start: var(--sp-2);
   inset-inline-end: var(--sp-2);

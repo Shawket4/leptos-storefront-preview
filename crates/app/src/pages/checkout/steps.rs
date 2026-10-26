@@ -387,7 +387,7 @@ pub fn ReviewStep(
                     <a class="review__edit" href=Step::Payment.href()>{tr(lang, "Change", "تغيير")}</a>
                 </div>
             </dl>
-            <h3 class="co-sub">{format!("{} · {}", tr(lang, "Items", "المنتجات"), format::items(ctx.cart.count, lang, num))}</h3>
+            <h3 class="co-sub">{format::items(ctx.cart.count, lang, num)}</h3>
             <ul class="mini-lines" role="list">
                 <For each=move || lines.clone() key=|l| l.key.clone() let:l>
                     <MiniLine l lang num/>

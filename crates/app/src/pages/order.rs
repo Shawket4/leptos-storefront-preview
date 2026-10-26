@@ -351,7 +351,7 @@ fn OrderView(d: OrderPageData, just_placed: bool, lang: Lang, num: Numerals) -> 
                         <dd><span class="review__line">{payment_label(o.payment, lang)}</span></dd>
                     </div>
                 </dl>
-                <h2 class="co-sub">{format!("{} · {}", tr(lang, "Items", "المنتجات"), format::items(count, lang, num))}</h2>
+                <h2 class="co-sub">{format::items(count, lang, num)}</h2>
                 <ul class="mini-lines" role="list">
                     {lines.into_iter().map(|(l, img)| view! {
                         <li class="mini-line">

@@ -148,6 +148,7 @@
   color: var(--text-2);
 }
 .live__dot {
+  corner-shape: round;
   inline-size: 8px;
   block-size: 8px;
   border-radius: var(--r-pill);
@@ -195,6 +196,7 @@
   min-block-size: 24px;
 }
 .timeline__dot {
+  corner-shape: round;
   position: relative;
   z-index: 1;
   flex: none;

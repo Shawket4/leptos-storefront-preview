@@ -26,6 +26,7 @@
   display: contents;
 }
 .quick-add__btn {
+  corner-shape: round;
   position: relative;
   display: grid;
   place-items: center;
@@ -424,6 +425,7 @@ form[aria-busy="true"] {
   text-align: center;
 }
 .cart-empty__art {
+  corner-shape: round;
   display: grid;
   place-items: center;
   inline-size: 88px;
@@ -496,6 +498,7 @@ form[aria-busy="true"] {
   :root[data-theme="system"] .art:has(.art__dark) .art__light { display: none; }
 }
 .art--icon {
+  corner-shape: round;
   inline-size: 96px;
   block-size: 96px;
   border-radius: var(--r-pill);
