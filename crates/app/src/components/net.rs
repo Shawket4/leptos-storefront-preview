@@ -2,8 +2,12 @@
 //! retrying an idempotent read with exponential backoff that pauses while offline.
 //!
 //! ```ignore
-//! // In an island: a server-function read that survives a flaky connection.
-//! let view = LocalResource::new(move || net::retry(|| api::cart::cart_get()));
+//! // In an island, a read started by the visitor (opening the cart) that survives a flaky
+//! // connection. Never a resource still pending when the island hydrates: that panics after an
+//! // islands-router navigation into the page (AGENTS.md); seed first paint from props.
+//! on:click=move |_| leptos::task::spawn_local(async move {
+//!     if let Ok(c) = net::retry(|| api::cart::cart_get()).await { cart.set(Some(c)); }
+//! })
 //! // Only retry what can succeed on a second try:
 //! net::retry_if(|| api::product_detail(slug.clone()), |e| !e.to_string().contains("not_found")).await
 //! ```
@@ -13,7 +17,7 @@
 //! server there is nothing to wait for: the read runs once.
 //!
 //! All futures here are `Send` (shared state is `Arc<Mutex<_>>`, listener handles are `Send`), so
-//! they also fit `Resource::new`.
+//! they also fit `Action::new` and a server component's `Resource::new`.
 
 use std::future::Future;
 use std::pin::Pin;
