@@ -120,13 +120,23 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   (arrows, chevrons, "back") get the `.flip-rtl` class. Figures stay LTR (`format` already isolates
   them). Don't mirror logos, product photos or media controls.
 
-## Design rules (Madar's language)
+## Design rules — the storefront's own look (owner, 2026-10-26: *not* Madar's tokens, no gradients)
 
-- Tokens only (CSS custom properties from `style/tokens.css`); no raw hex in components.
-- Borders, not shadows: white cards on the paper ground, 1px hairline, radius 16. Brand colour
-  (`var(--brand)`) is the one primary per screen; the rest is ink/paper/slate.
-- IBM Plex Sans Arabic for words (both scripts), IBM Plex Mono with tabular figures for prices,
-  quantities, order codes.
+- **Not Madar's look.** Madar provided the domain model, money format and quality bar; the visual
+  language is the storefront's own: warm **linen/sand neutrals** (page `#F6F4EF`, surface `#FFFFFF`,
+  warm ink `#1A1814`, stone greys; dark mode warm charcoal `#121110` / `#1C1B19`), the tenant accent
+  (`var(--brand)`) as the single primary per screen.
+- **No gradients.** None in backgrounds, buttons, scrims or skeletons (a *very* faint one is tolerated
+  only where it is functionally needed, e.g. a rail's edge fade). Text never sits on a photo behind a
+  dark scrim — put copy on solid surfaces (split layouts, solid chips/cards overlapping an image).
+  Skeletons **pulse** (opacity), they don't shimmer.
+- **Surfaces:** softer and rounder than Madar: radii `--r-sm 8 · --r-md 12 (controls) · --r-lg 16 ·
+  --r-xl 20 (cards) · --r-2xl 28 (sheets, hero) · --r-pill`. Cards are `--surface` on the linen
+  `--page` with a very subtle `--shadow-sm` and **no hairline border** by default (hairlines only to
+  separate content inside a surface); hover lifts to `--shadow-md`.
+- **Type:** **Cairo** (variable, Arabic + Latin) for all UI text — confident weights (600–800) for
+  headings, tight Latin tracking, no tracking in Arabic; **IBM Plex Mono** with tabular figures for
+  prices, quantities, order codes.
 - Motion: tokens `--dur-fast 160ms`, `--dur-base 220ms`, `--dur-slow 320ms`, `--dur-brand 500ms`,
   `--ease-out cubic-bezier(.22,1,.36,1)`, `--ease-drawer cubic-bezier(.32,.72,0,1)`,
   `--ease-expo cubic-bezier(.16,1,.3,1)`, `--ease-pop cubic-bezier(.34,1.56,.64,1)`. Animate
