@@ -49,7 +49,6 @@ fn home_art(_: &str, _: Lang) -> HomeArt {
 
 /// Copy that differs per tenant (in production this is CMS content).
 struct Copy {
-    kicker: L10n,
     sub: L10n,
     cta: L10n,
     promos: [(L10n, L10n, &'static str); 2],
@@ -58,7 +57,6 @@ struct Copy {
 fn copy(tenant: &str) -> Copy {
     match tenant {
         "souq" => Copy {
-            kicker: L10n::new("Express in 30 minutes", "توصيل سريع في ٣٠ دقيقة"),
             sub: L10n::new(
                 "Fresh produce, Egyptian pantry staples and sweets — packed by people who know a good tomato.",
                 "خضار وفاكهة طازة، خزين البيت المصري، وحلويات — بيجهّزها ناس فاهمة يعني إيه طماطم حلوة.",
@@ -70,7 +68,6 @@ fn copy(tenant: &str) -> Copy {
             ],
         },
         _ => Copy {
-            kicker: L10n::new("Free delivery over EGP 1,500", "توصيل مجاني فوق ١٬٥٠٠ ج.م"),
             sub: L10n::new(
                 "Phones, beauty, fashion and home — genuine products, delivered across Egypt, cash on delivery.",
                 "موبايلات وجمال وموضة وبيت — منتجات أصلية، توصيل لكل مصر، والدفع عند الاستلام.",
@@ -117,6 +114,17 @@ pub fn HomePage() -> impl IntoView {
     .replace("</", "<\\/");
 
     let express = t.express_minutes.is_some();
+    // The hero kicker carries figures, so it goes through `format` like every number.
+    let kicker = match t.express_minutes {
+        Some(m) => match lang {
+            Lang::En => format!("Express in {} minutes", format::count(m, num)),
+            Lang::Ar => format!("توصيل سريع في {} دقيقة", format::count(m, num)),
+        },
+        None => match lang {
+            Lang::En => format!("Free delivery over {}", format::money(t.free_delivery_over, lang, num)),
+            Lang::Ar => format!("توصيل مجاني فوق {}", format::money(t.free_delivery_over, lang, num)),
+        },
+    };
 
     view! {
         <Title text=title.clone()/>
@@ -136,7 +144,7 @@ pub fn HomePage() -> impl IntoView {
         <Meta name="twitter:card" content="summary_large_image"/>
         <Script type_="application/ld+json">{website_ld}</Script>
 
-        <Hero art=art.clone() kicker=c.kicker.pick(ar).to_owned() headline=t.tagline.pick(ar).to_owned()
+        <Hero art=art.clone() kicker=kicker headline=t.tagline.pick(ar).to_owned()
             sub=c.sub.pick(ar).to_owned() cta=c.cta.pick(ar).to_owned() lang/>
         <TrustStrip lang num express_minutes=t.express_minutes free_over=t.free_delivery_over/>
 
