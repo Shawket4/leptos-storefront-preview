@@ -3,9 +3,14 @@
    scrolling under it. Phones: the logo row scrolls away and the search row
    stays pinned (one sticky element with a negative top). From 768px the
    search joins the bar and the whole bar is pinned.
+   Either way the pinned part is exactly --header-h tall, so sticky bars
+   below it (the listing's filters) sit flush at inset-block-start: --header-h.
    ───────────────────────────────────────────────────────────────────────────── */
 .site-header {
-  --row1: 3.25rem;
+  /* Phones: the search row (44px) pinned with equal space above and below it. */
+  --pin-pad: calc((var(--header-h) - 2.75rem) / 2);
+  /* What scrolls away: the top padding and the 44px logo row. */
+  --row1: calc(0.375rem + 2.75rem);
   position: sticky;
   z-index: var(--z-header);
   inset-block-start: calc(var(--row1) * -1);
@@ -41,13 +46,14 @@
 .site-header__bar {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 2.75rem 2.75rem;
   grid-template-areas:
     "logo . actions"
     "search search search";
   align-items: center;
   column-gap: var(--sp-2);
-  row-gap: var(--sp-1);
-  padding-block: 0.375rem 0.625rem;
+  row-gap: var(--pin-pad);
+  padding-block: 0.375rem var(--pin-pad);
 }
 .site-header__logo {
   grid-area: logo;
@@ -71,6 +77,7 @@
     inset-block-start: 0;
   }
   .site-header__bar {
+    grid-template-rows: auto;
     grid-template-areas: "logo search actions";
     column-gap: var(--sp-6);
     min-block-size: var(--header-h);
@@ -81,27 +88,6 @@
     inline-size: 100%;
     max-inline-size: 40rem;
   }
-}
-
-/* The search slot (pages::search::HeaderSearch). The browse agent owns the box;
-   these rules give a bare form/input the house look until then. */
-.site-header__search form {
-  position: relative;
-  margin: 0;
-}
-.site-header__search input[type="search"] {
-  inline-size: 100%;
-  block-size: 2.75rem;
-  padding-inline: 1rem;
-  border: 0;
-  border-radius: var(--r-md);
-  background: var(--sunk);
-  color: var(--text);
-  font-size: var(--fs-md);
-  outline-offset: 0;
-}
-.site-header__search input[type="search"]::placeholder {
-  color: var(--text-3);
 }
 
 /* The cart slot (pages::cart::CartButton): a bare link looks like a button until

@@ -308,6 +308,26 @@
     if (u.pathname !== location.pathname) pending = { top: true };
   }, true);
 
+  // ── Preference and tenant links come back to where you are ────────────────
+  // Their `next` is the page as the server rendered it, and an island may have moved the address
+  // since (the listing filters push their state). At press time, point `next` at the live
+  // address, so switching the language keeps the filters; the server's href stays the no-JS
+  // link. A tenant link that sends elsewhere on purpose (the other shop's home, from a deep
+  // page) keeps its `next`.
+  const freshNext = (e) => {
+    const a = e.target.closest && e.target.closest('a[href^="/__prefs"], a[href^="/__tenant/"]');
+    if (!a) return;
+    const u = new URL(a.href, location.href);
+    const next = u.searchParams.get("next");
+    if (next == null) return;
+    const n = new URL(next, location.href);
+    if (u.pathname.startsWith("/__tenant/") && n.pathname !== location.pathname) return;
+    u.searchParams.set("next", location.pathname + location.search + n.hash);
+    a.setAttribute("href", u.pathname + u.search);
+  };
+  d.addEventListener("pointerdown", freshNext, true);
+  d.addEventListener("click", freshNext, true);
+
   // ── Popovers: <details data-popover> ──────────────────────────────────────
   // Light dismiss (outside press, Escape), one open at a time, and an exit that runs the entry
   // backwards (CSS [data-closing]) before the element really closes.
