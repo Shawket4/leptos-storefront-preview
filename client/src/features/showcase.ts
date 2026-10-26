@@ -15,7 +15,7 @@ import { stepperValue } from "../core/stepper";
 import { add, cart, lineKey, quote, remove, serialize } from "../stores/cart";
 import { toast, toasts } from "../stores/toasts";
 import type { CacheInfo } from "../api/types";
-import * as coreFeatures from "./core";
+import { previewNet } from "./core";
 
 // ── Small shared helpers ───────────────────────────────────────────────────────────────────────
 
@@ -431,8 +431,10 @@ register("sc-spring", (root) => {
   measure();
   const stops = () => [0, max / 2, max];
   const nearest = (x: number) => stops().reduce((a, b) => (Math.abs(b - x) < Math.abs(a - x) ? b : a), 0);
+  // Past either end the drawn position rubber-bands, so an overshoot stays near the track.
+  const drawn = (x: number) => (x < 0 ? -rubberband(-x, max) : x > max ? max + rubberband(x - max, max) : x);
   const spring = new SpringValue(0, (x) => {
-    puck.style.transform = `translate3d(${sign * x}px,0,0)`;
+    puck.style.transform = `translate3d(${sign * drawn(x)}px,0,0)`;
     patch(root, {
       x: t("showcase.px", { n: digits(Math.round(x)) }),
       v: t("showcase.pxs", { n: digits(Math.round(spring.velocity)) }),
@@ -456,17 +458,14 @@ register("sc-spring", (root) => {
   };
   const move = (ev: PointerEvent) => {
     if (!drag) return;
-    let x = drag.from + sign * (ev.clientX - drag.x0);
-    if (x < 0) x = -rubberband(-x, max);
-    else if (x > max) x = max + rubberband(x - max, max);
-    spring.jump(x);
+    spring.jump(drag.from + sign * (ev.clientX - drag.x0));
     tracker.add(sign * ev.clientX, ev.timeStamp);
   };
   // Release: hand the finger's velocity to the spring and aim where the flick would come to rest.
   const release = () => {
     if (!drag) return;
     drag = null;
-    const v = tracker.velocity();
+    const v = Math.max(-4000, Math.min(4000, tracker.velocity()));
     const rest = spring.value + project(v);
     patch(root, { proj: t("showcase.px", { n: digits(Math.round(rest)) }) });
     aim(nearest(Math.min(Math.max(rest, 0), max)), v);
@@ -612,12 +611,8 @@ register("kit-skeletons", (root) => {
 });
 
 // Network states: stage the real offline banner, failure alert and progress bar through core's
-// `previewNet` (features/core.ts). Until core ships the hook, the buttons stay hidden.
-type NetPreview = "offline" | "online" | { fail: "offline" | "timeout" | "server" } | { progress: number };
-const previewNet = (coreFeatures as { previewNet?: (state: NetPreview) => void }).previewNet;
-
+// `previewNet` (features/core.ts); nothing is really disconnected.
 register("kit-net", (root) => {
-  if (!previewNet) return;
   reveal(root);
   return on(root, "click", "button[data-net]", (_, b) => {
     const v = b.dataset.net ?? "";

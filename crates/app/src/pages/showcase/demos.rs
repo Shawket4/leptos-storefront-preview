@@ -259,7 +259,6 @@ fn ErrorsDemo(cx: Arc<Ctx>) -> impl IntoView {
 /// A small rail read through `api::home_rail` in its own boundary (honours `?fail=`).
 #[component]
 fn RailBlock(lang: Lang, num: Numerals, rail: Rail, label: (&'static str, &'static str)) -> impl IntoView {
-    let data = Resource::new(move || (), move |_| api::home_rail(rail, 3));
     let name = tr(lang, label.0, label.1);
     view! {
         <section class="sc-sblock" aria-label=name>
@@ -267,10 +266,12 @@ fn RailBlock(lang: Lang, num: Numerals, rail: Rail, label: (&'static str, &'stat
                 <strong>{name}</strong>
                 <code class="sc-tag mono" dir="ltr">{format!("home_rail({rail:?})")}</code>
             </header>
+            // In order, so no Resource: the read is awaited where it stands and nothing is
+            // serialized for a browser that would never pick it up.
             <Suspense fallback=|| ()>
                 <ErrorBoundary fallback=move |errors| view! { <SectionError errors what=name.to_owned() compact=true/> }>
                     {move || Suspend::new(async move {
-                        data.await.map(|cards| view! {
+                        api::home_rail(rail, 3).await.map(|cards| view! {
                             <ul class="sc-minis" role="list">
                                 {cards.into_iter().map(|c| view! {
                                     <li class="sc-mini">

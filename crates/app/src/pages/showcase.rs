@@ -532,8 +532,9 @@ fn cuts_for(id: &str) -> Vec<Cut> {
             cut(Src::Sim, "pub async fn delay(", "^}", 6),
         ],
         "router" => vec![
+            cut(Src::Router, "const PAGE_CACHE = {", "", 1),
+            cut(Src::Router, "// ── Prefetch: Madar's gesture model", "const HOVER_DELAY_MS", 12),
             cut(Src::Main, "readPage();", "});", 11),
-            cut(Src::Router, "export function prefetch(", "", 1),
         ],
         "stores" => vec![
             cut(Src::Store, "export function createStore", "^}", 19),

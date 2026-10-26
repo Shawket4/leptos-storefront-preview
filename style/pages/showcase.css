@@ -1270,6 +1270,8 @@ a.sc-mini__name:hover {
 /* Spring lab. */
 .sc-spring__track {
   position: relative;
+  overflow: clip;
+  overflow-clip-margin: 6px;
   block-size: 56px;
   border-radius: var(--r-lg);
   background: var(--surface);

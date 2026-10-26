@@ -14,7 +14,6 @@
 //!
 //! Copy is clear Modern Standard Arabic (AGENTS.md: errors in MSA).
 
-use crate::api;
 use crate::components::icons::Icon;
 use crate::media::Img;
 use crate::prefs::{Lang, Theme, tr, use_ui};
@@ -109,9 +108,8 @@ pub fn NotFound() -> impl IntoView {
     let ar = lang.is_rtl();
     let tenant_name = rq.tenant.name.pick(ar).to_owned();
     let back = same_origin_referer(&rq.origin);
-    // Blocking: the categories are cheap (in-memory, no simulated latency) and a 404 must be
-    // complete without JavaScript, so they render inline in the first chunk instead of streaming.
-    let cats = Resource::new_blocking(|| (), |_| api::nav_categories());
+    // The categories are in memory: read synchronously, so the 404 is complete in the first chunk.
+    let cats = popular_categories(ar);
 
     view! {
         <Title text=format!("{} · {}", tr(lang, "Page not found", "الصفحة غير موجودة"), tenant_name)/>
@@ -160,34 +158,40 @@ pub fn NotFound() -> impl IntoView {
         </section>
         <section class="err-cats container" aria-labelledby="err-cats-title">
             <h2 id="err-cats-title" class="err-cats__title">{tr(lang, "Popular categories", "أقسام يبحث عنها الناس")}</h2>
-            <Suspense fallback=|| ()>
-                <ErrorBoundary fallback=|errors| view! { <SectionError errors compact=true/> }>
-                    {move || Suspend::new(async move {
-                        cats.await.map(|cats| {
-                            view! {
-                                <ul class="err-cats__list">
-                                    {cats
-                                        .into_iter()
-                                        .take(8)
-                                        .map(|c| {
-                                            view! {
-                                                <li>
-                                                    <a class="err-cat" href=format!("/c/{}", c.slug)>
-                                                        <Icon name=c.icon.clone() size=20/>
-                                                        <span>{c.name.pick(ar).to_owned()}</span>
-                                                    </a>
-                                                </li>
-                                            }
-                                        })
-                                        .collect_view()}
-                                </ul>
-                            }
-                        })
-                    })}
-                </ErrorBoundary>
-            </Suspense>
+            <ul class="err-cats__list">
+                {cats
+                    .into_iter()
+                    .map(|(slug, icon, name)| view! {
+                        <li>
+                            <a class="err-cat" href=format!("/c/{slug}")>
+                                <Icon name=icon size=20/>
+                                <span>{name}</span>
+                            </a>
+                        </li>
+                    })
+                    .collect_view()}
+            </ul>
         </section>
     }
+}
+
+/// The first eight categories of this shop: (slug, icon, name in the visitor's language).
+#[cfg(feature = "ssr")]
+fn popular_categories(ar: bool) -> Vec<(String, String, String)> {
+    if use_context::<crate::server::AppState>().is_none() {
+        return Vec::new();
+    }
+    crate::server::current_catalog()
+        .nav()
+        .iter()
+        .take(8)
+        .map(|c| (c.slug.clone(), c.icon.clone(), c.name.pick(ar).to_owned()))
+        .collect()
+}
+
+#[cfg(not(feature = "ssr"))]
+fn popular_categories(_: bool) -> Vec<(String, String, String)> {
+    Vec::new()
 }
 
 /// The page the visitor came from, as a path, when it is on this site (and isn't this 404).
