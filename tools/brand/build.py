@@ -11,7 +11,6 @@ What is generated and what is hand-drawn:
     (the shapes) and this file (layout, colour). Edit those, not the SVGs.
   * empty-state illustrations: hand-drawn `<name>-light.svg`; `<name>-dark.svg` is derived here by
     a role-for-role colour swap (ART_DARK).
-  * madar-mark(-dark).svg: verbatim copies of Madar's own symbol-primary / symbol-reversed.
 
 Rules (owner, 2026-10-26): one global Porcelain + graphite palette for every shop, so logos are
 monochrome and the shops differ by mark and wordmark, not colour; light first; app icons are
@@ -361,12 +360,6 @@ def jobs() -> list[dict]:
             out.append(dict(key=f"brand/og-{t}-{lang}", svg=f"og-{t}-{lang}.svg", kind="art", width=1200,
                             alt_en=f"{en}: {' '.join(cfg['tagline']['en'])}",
                             alt_ar=f"{ar}: {' '.join(cfg['tagline']['ar'])}", gen=("og", t, lang)))
-    for dark in (False, True):
-        sfx = "-dark" if dark else ""
-        out.append(dict(key=f"brand/madar-mark{sfx}", svg=f"madar-mark{sfx}.svg", kind="logo", width=1024,
-                        alt_en="Madar", alt_ar="مدار", gen=None,
-                        source=f"MadarDashboard/site/src/assets/brand/symbol-{'reversed' if dark else 'primary'}.svg",
-                        license="Madar brand asset, used for the Powered by Madar badge", credit="Madar"))
     for name in ART:
         en, ar = ART_ALT[name]
         out.append(dict(key=f"brand/{name}-light", svg=f"{name}-light.svg", kind="art", width=1280,

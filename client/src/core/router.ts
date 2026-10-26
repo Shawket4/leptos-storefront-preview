@@ -8,7 +8,7 @@
 // focus to the new page's <main>, a view transition when the browser has them and motion isn't
 // reduced. Pages go through the page cache (core/cache.ts: fresh 30 s, then served stale for 5 min
 // while revalidated); back/forward are served from it at once. Personal pages (Cache-Control
-// private) are never kept. Prefetch on intent follows Madar's gesture model (below).
+// private) are never kept. Prefetch on intent follows one gesture model (below).
 //
 // The progress bar, the failure alert and the offline banner are features/core.ts: they read
 // `routing` and `navFailure`. Without fetch/DOMParser, or for links this can't take, navigations are
@@ -485,7 +485,7 @@ function onPop(ev: PopStateEvent): void {
   void go({ url: u, method: "GET", push: false, scroll: "restore", y, pop: true });
 }
 
-// ── Prefetch: Madar's gesture model (MadarDashboard/src/lib/prefetch/intent.ts) ───────────────
+// ── Prefetch: the gesture model ─────────────────────────────────────────────────────────────────
 // - a mouse or pen hover warms after HOVER_DELAY_MS (a pass-over warms nothing); one pending
 //   hover at a time — entering another target or leaving cancels it;
 // - keyboard focus waits the same; blur cancels;

@@ -82,34 +82,3 @@ pub fn TenantLogo(
     }
     .into_any()
 }
-
-/// "Powered by Madar" — the platform's signature at the end of every page: Madar's mark (its own
-/// colours, in both themes) and the words, linking to Madar's site in a new tab.
-#[component]
-pub fn MadarBadge(lang: Lang, tenant_id: String) -> impl IntoView {
-    let href = format!(
-        "https://get.madar-pos.cloud/{}/?utm_source={}&utm_medium=powered_by&utm_campaign=storefront",
-        lang.code(),
-        tenant_id
-    );
-    let mark = media_img("brand/madar-mark");
-    let mark_dark = media_img("brand/madar-mark-dark").or_else(|| mark.clone());
-    let (by, name, new_tab) = match lang {
-        Lang::En => ("Powered by", "Madar", "(opens in a new tab)"),
-        Lang::Ar => ("مدعوم من", "مدار", "(يفتح في تبويب جديد)"),
-    };
-    view! {
-        // The badge is an inverted (ink) surface: on a light page it is dark, so it wears the
-        // mark drawn for dark grounds, and the other way round.
-        <a class="madar-badge" href=href target="_blank" rel="noopener" data-press="">
-            {mark_dark.map(|i| logo_img(&i, 22, String::new(), "madar-badge__mark logo__img--light"))}
-            {mark.map(|i| logo_img(&i, 22, String::new(), "madar-badge__mark logo__img--dark"))}
-            <span class="madar-badge__text">
-                <span class="madar-badge__by">{by}</span>
-                <span class="madar-badge__name">{name}</span>
-            </span>
-            <super::icons::Icon name="arrow-up-right" size=16 class="madar-badge__go flip-rtl"/>
-            <span class="sr-only">{new_tab}</span>
-        </a>
-    }
-}

@@ -436,7 +436,7 @@ pub fn UiKitPage() -> impl IntoView {
                 </Row>
             </Specimen>
 
-            <Specimen id="price" title=t("Price & rating", "السعر والتقييم") note=t("Madar's money shape in ink; a sale is red with what it was beside it. Stars fill to the tenth, from the reading start.", "شكل الفلوس بتاع مدار باللون الأسود؛ الخصم بالأحمر وجنبه السعر القديم. النجوم بتتملي بالعُشر من بداية القراية.") card=true>
+            <Specimen id="price" title=t("Price & rating", "السعر والتقييم") note=t("Money in ink; a sale is red with what it was beside it. Stars fill to the tenth, from the reading start.", "الفلوس باللون الأسود؛ الخصم بالأحمر وجنبه السعر القديم. النجوم بتتملي بالعُشر من بداية القراية.") card=true>
                 <Row label=t("Sizes", "المقاسات")>
                     <Price amount=Piastres(129_900) size=PriceSize::Sm lang=lang numerals=num/>
                     <Price amount=Piastres(129_900) size=PriceSize::Md lang=lang numerals=num/>

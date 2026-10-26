@@ -181,7 +181,7 @@ The rules (owner's, 2026-10-26), checked by `node tools/ui-lint.mjs` — it must
 | `steps::StepIndicator` | numbered steps on a filling track (checkout) | `label` (aria), `steps: Vec<(label, Option<href>)>`, `current: usize`, `done?: Vec<bool>`, `class?` — finished steps link back |
 | `timeline::{Timeline, TimelineStep, StepState}` | a vertical timeline of stages (order tracking) | `steps: Vec<TimelineStep>` (`TimelineStep::new(label, Done/Current/Todo).time(Option<String>)`), `progress?` (0..1), `stopped?`, `slots?` (`data-slot="t{i}"`), `label?`, `class?` — TS: `setTimeline(el, {progress, states, times, stopped})` (`core/timeline.ts`) |
 | `live_status::{LiveStatus, LiveState}` | the state of a polling region: live dot · "Retrying in N s" + Retry · offline · idle line | `state?` (`Live`/`Retrying`/`Offline`/`Idle`), `message?`, `class?` — TS: `setLiveStatus(el, state, message?)`, `retryIn(el, ms, retry)` → cancel (`core/live-status.ts`); screen readers hear state changes, not countdown ticks |
-| `assets::{TenantLogo, MadarBadge}`, `header::{SiteHeader, CatNav}`, `footer::SiteFooter`, `bottom_nav::BottomNav`, `prefs_controls::PrefsControls`, `offline::OfflineBanner`, `shell::AppShell` | the shell (core) | — |
+| `assets::TenantLogo`, `header::{SiteHeader, CatNav}`, `footer::SiteFooter`, `bottom_nav::BottomNav`, `prefs_controls::PrefsControls`, `offline::OfflineBanner`, `shell::AppShell` | the shell (core) | — |
 
 Items of the list components (`LinkChip`, `FilterChip`, `MenuItem`, `ChoiceChip`, `ChoiceRow`, `SegItem`)
 take extra attributes with `.attr(name, value)` — features' `data-*` hooks; the component's root takes

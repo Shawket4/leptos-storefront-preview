@@ -546,7 +546,7 @@ fn cuts_for(id: &str) -> Vec<Cut> {
         ],
         "router" => vec![
             cut(Src::Router, "const PAGE_CACHE = {", "", 1),
-            cut(Src::Router, "// ── Prefetch: Madar's gesture model", "const HOVER_DELAY_MS", 12),
+            cut(Src::Router, "// ── Prefetch: the gesture model", "const HOVER_DELAY_MS", 12),
             cut(Src::Main, "readPage();", "});", 11),
         ],
         "stores" => vec![

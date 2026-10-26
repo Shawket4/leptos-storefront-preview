@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    Site footer (components::footer): a sunk band, the shop's promise and link
-   columns, the display preferences, the other shop, "Powered by Madar".
+   columns, the display preferences, the other shop.
    ───────────────────────────────────────────────────────────────────────────── */
 .site-footer {
   margin-block-start: var(--sp-16);
@@ -134,56 +134,4 @@
   grid-column: 2;
   grid-row: 1 / 4;
   color: var(--text);
-}
-
-/* "Powered by Madar": an inverted badge with Madar's own mark. */
-.madar-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  block-size: 2.75rem;
-  padding: 0 0.75rem 0 0.625rem;
-  border-radius: var(--r-md);
-  background: var(--ink);
-  color: var(--on-ink);
-  box-shadow: var(--shadow-sm);
-  transition:
-    translate var(--spring-snappy-dur) var(--spring-snappy),
-    scale var(--spring-snappy-dur) var(--spring-snappy);
-}
-[dir="rtl"] .madar-badge {
-  padding: 0 0.625rem 0 0.75rem;
-}
-.madar-badge:hover {
-  translate: 0 -1px;
-}
-.madar-badge__mark {
-  inline-size: 1.375rem;
-  block-size: 1.375rem;
-}
-.madar-badge__text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  line-height: 1.1;
-}
-.madar-badge__by {
-  font-size: var(--fs-2xs);
-  letter-spacing: var(--tracking-small);
-  color: var(--on-ink-2);
-}
-.madar-badge__name {
-  font-size: 0.9375rem;
-  font-weight: var(--fw-heavy);
-}
-.madar-badge__go {
-  opacity: 0.7;
-  transition: translate var(--spring-snappy-dur) var(--spring-snappy), opacity var(--dur-fast) var(--ease-out);
-}
-.madar-badge:hover .madar-badge__go {
-  opacity: 1;
-  translate: 1px -1px;
-}
-[dir="rtl"] .madar-badge:hover .madar-badge__go {
-  translate: -1px -1px;
 }

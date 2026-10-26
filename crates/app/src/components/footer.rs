@@ -1,7 +1,7 @@
 //! The site footer: the shop's promise, link columns, the display preferences in the open, a
 //! switch to the other shop on the platform, and "Powered by Madar".
 
-use super::assets::{MadarBadge, TenantLogo};
+use super::assets::TenantLogo;
 use super::bottom_nav::{ACCOUNT_HREF, DEALS_HREF};
 use super::header::NavItem;
 use super::icons::Icon;
@@ -173,7 +173,6 @@ pub fn SiteFooter(rq: RequestCtx, categories: Vec<NavItem>) -> impl IntoView {
             </div>
             <div class="container site-footer__base">
                 <p class="site-footer__legal">{legal}</p>
-                <MadarBadge lang=lang tenant_id=tenant.id.clone()/>
             </div>
         </footer>
     }

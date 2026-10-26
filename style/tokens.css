@@ -43,7 +43,7 @@
   --brand-text: var(--brand);
   --brand-line: color-mix(in oklab, var(--brand) 30%, var(--surface));
 
-  /* Inverted surfaces (toasts, the "Powered by Madar" badge). */
+  /* Inverted surfaces (toasts). */
   --ink: #111111;
   --on-ink: #FAFAF9;
   --on-ink-2: color-mix(in oklab, var(--on-ink) 68%, var(--ink));

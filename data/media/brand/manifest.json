@@ -167,50 +167,6 @@
   "license": "Original artwork for this storefront",
   "credit": "Storefront brand kit (tools/brand)"
  },
- "brand/madar-mark": {
-  "kind": "logo",
-  "widths": [
-   64,
-   128,
-   192,
-   256,
-   384,
-   512
-  ],
-  "aspect": 1.0,
-  "alpha": true,
-  "lqip": "data:image/webp;base64,UklGRjABAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSL0AAAABgFPbtqvqkE1EFZkSEdTXAGh4r363wwY2Mg7yz7m7LWuMf6OEiFDgto2SHDP8QlxL3cm4W5KgLf0G8FY0AywM60ypbI25naYOS449cew/4OSUWTX8Jf/gZmeYY0N8Z38P0xTR9CRkqU8hpbe1/NPQX1/a2Wb9WuqSWTSAtuR0JyjLF8CXRTFOI60SHlK3bF5L0YWkRxF9K2kcTdN700BcMY++fe/IMvhHuVL5BjMX32bxCvDq/WXgz8eBPxcAVlA4IEwAAADQAwCdASoUABQAPwFsrU8rJiQiMAgBYCAJYwDDNCnX/+KEXVh4zUAA/u+Bp+1+jc0Wx4nsVVDzPXQytagG36meEcidR8nM83zeAUAA",
-  "color": "#b8bcbe",
-  "alt": {
-   "en": "Madar",
-   "ar": "مدار"
-  },
-  "source": "MadarDashboard/site/src/assets/brand/symbol-primary.svg",
-  "license": "Madar brand asset, used for the Powered by Madar badge",
-  "credit": "Madar"
- },
- "brand/madar-mark-dark": {
-  "kind": "logo",
-  "widths": [
-   64,
-   128,
-   192,
-   256,
-   384,
-   512
-  ],
-  "aspect": 1.0,
-  "alpha": true,
-  "lqip": "data:image/webp;base64,UklGRkIBAABXRUJQVlA4WAoAAAAQAAAAEwAAEwAAQUxQSL0AAAABgFPbtqvqkE1EFZkSEdTXAGh4r363wwY2Mg7yz7m7LWuMf6OEiFDgto2SHDP8QlxL3cm4W5KgLf0G8FY0AywM60ypbI25naYOS449cew/4OSUWTX8Jf/gZmeYY0N8Z38P0xTR9CRkqU8hpbe1/NPQX1/a2Wb9WuqSWTSAtuR0JyjLF8CXRTFOI60SHlK3bF5L0YWkRxF9K2kcTdN700BcMY++fe/IMvhHuVL5BjMX32bxCvDq/WXgz8eBPxcAVlA4IF4AAADQAwCdASoUABQAPwFqrU8rJiQiMAgBYCAJZQAAW+qhB/BHIDMyR0AA/u1HQ9hwsbQFdz1LzM7mnRchROtO43kjJKF7YOrFcJdrImeShwWC/viEgOHOD3upXg8kIAAA",
-  "color": "#f3f7f8",
-  "alt": {
-   "en": "Madar",
-   "ar": "مدار"
-  },
-  "source": "MadarDashboard/site/src/assets/brand/symbol-reversed.svg",
-  "license": "Madar brand asset, used for the Powered by Madar badge",
-  "credit": "Madar"
- },
  "brand/nile-icon": {
   "kind": "logo",
   "widths": [

@@ -204,8 +204,8 @@ pub static FEATURES: &[Feature] = &[
         cat: Cat::Server,
         title: ("The moka read cache", "كاش القراءة (moka)"),
         what: (
-            "Catalogue reads go through one moka cache keyed tenant:generation:kind:key, the shape of Madar's MenuCache. Entries expire after their TTL, and bumping a shop's generation drops all of its entries at once, without a scan.",
-            "قراءات الكتالوج كلها بتعدّي على كاش moka واحد، مفتاحه tenant:generation:kind:key، بنفس شكل MenuCache بتاع مدار. العناصر بتنتهي بعد الـ TTL بتاعها، ولو زوّدنا الـ generation بتاع محل، كل عناصره بتتشال مرة واحدة من غير ما نلف عليها.",
+            "Catalogue reads go through one moka cache keyed tenant:generation:kind:key. Entries expire after their TTL, and bumping a shop's generation drops all of its entries at once, without a scan.",
+            "قراءات الكتالوج كلها بتعدّي على كاش moka واحد، مفتاحه tenant:generation:kind:key. العناصر بتنتهي بعد الـ TTL بتاعها، ولو زوّدنا الـ generation بتاع محل، كل عناصره بتتشال مرة واحدة من غير ما نلف عليها.",
         ),
         why: (
             "Listings, rails and search results are computed once and served from memory to every visitor who asks the same thing. A catalogue edit is one counter bump, plus a CDN purge by Cache-Tag in production.",
@@ -224,8 +224,8 @@ pub static FEATURES: &[Feature] = &[
         cat: Cat::Server,
         title: ("Tenancy by Host", "المحل من الـ Host"),
         what: (
-            "One binary serves both shops. The shop is the first label of the Host header (nile.…, souq.…), as with Madar's per-shop subdomains. It is resolved before rendering, so the logo, the name and the default language are in the first byte.",
-            "سيرفر واحد بيخدم المحلين. المحل بيتحدد من أول جزء في الـ Host ‏(nile.…‏ و souq.…)، زي الـ subdomains بتاعة كل محل في مدار. وبيتحدد قبل الرسم، فاللوجو والاسم واللغة الافتراضية بيبقوا في أول بايت.",
+            "One binary serves both shops. The shop is the first label of the Host header (nile.…, souq.…). It is resolved before rendering, so the logo, the name and the default language are in the first byte.",
+            "سيرفر واحد بيخدم المحلين. المحل بيتحدد من أول جزء في الـ Host ‏(nile.…‏ و souq.…). وبيتحدد قبل الرسم، فاللوجو والاسم واللغة الافتراضية بيبقوا في أول بايت.",
         ),
         why: (
             "Adding a shop is data, not a deployment. Hosts without a shop label, like a bare IP on the phone, fall back to a tenant cookie.",
