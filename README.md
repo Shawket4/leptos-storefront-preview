@@ -30,9 +30,12 @@ Requirements:
 - `cargo install cargo-leptos --version 0.3.11 --locked`.
 - Node.js (built with 22), plus `npm ci --prefix client` for esbuild and TypeScript (versions
   pinned).
-- A checkout of `madar-shared` at `/home/apex/ClaudeProjects/madar-shared`. Pricing and VAT come
-  from its `madar-catalog` and `madar-money` crates by path.
-- `.cargo/config.toml` uses sccache and mold. Delete those lines on a machine that has neither.
+- Read access to the private `Shawket4/madar-shared` repository. Pricing and VAT come from its
+  `madar-catalog` and `madar-money` crates, a git dependency pinned to tag `v0.12.0`. Cargo
+  fetches it through git (`[net] git-fetch-with-cli` in `.cargo/config.toml`), so `gh auth login`
+  or any other git credential for github.com is enough.
+- `.cargo/config.toml` also sets up sccache, mold and a build directory under `/home/apex/work`.
+  Delete those lines on another machine.
 
 ```bash
 npm ci --prefix client            # once
@@ -45,8 +48,9 @@ LEPTOS_SITE_ADDR=0.0.0.0:3000 LEPTOS_ENV=PROD ./target/release/server
 ```
 
 The TypeScript in `client/` is type-checked by `tsc` and bundled by esbuild from
-`crates/app/build.rs`. The bundle is embedded in the server binary and served at
-`/js/app-<content hash>.js` with `immutable` caching. A type error fails the Rust build.
+`crates/app/build.rs`. The result is an entry module plus chunks that load when a page needs them,
+all named by content hash. They're embedded in the server binary and served from `/js/` with
+`immutable` caching. A type error fails the Rust build.
 
 **On a phone** (Tailscale): `http://nile.100-123-21-13.sslip.io:3000` and
 `http://souq.100-123-21-13.sslip.io:3000`. sslip.io maps the name to the tailnet IP, and the shop is
@@ -78,7 +82,7 @@ TypeScript makes it instant:
 | `/c/:slug` | Listing with facets, chips, sort, result count and server-side pages, all from the URL (`ListingQuery`) | Filter sheet; a filter or sort change becomes a debounced in-app navigation that keeps the scroll position and dims the old results while the new ones load |
 | `/search?q=` | Bilingual search results (below) with "did you mean" | Instant search in the header: an ARIA combobox fed by `/api/search/suggest`, cached for 60 s |
 | `/p/:slug` | Product page, its SEO head (OpenGraph, JSON-LD) and a real 404 with suggestions | Variant picker (price, stock and photo switch with **no request**), add-ons, quantity, add to cart; gallery swipe, zoom and fullscreen on springs |
-| `/cart` | Priced lines from the `cart` cookie; forms that work without JS | The same line renderer as the drawer; quantity and remove are local and instant, then totals come from the quote |
+| `/cart` | Priced lines from the `cart` cookie; forms that work without JS | The same line renderer as the drawer. Quantity, remove and Undo are local: lines, totals, savings and delivery are computed in the browser, with no request |
 | `/checkout` | Four steps, each a real POST validated by the server. Placing an order re-prices, re-checks stock and clears the cart | Inline validation messages, pending state, double-submit guard |
 | `/orders`, `/orders/:id` | Order lookup and the status timeline | Live status polling with backoff and Retry |
 | `/showcase` | A guided tour of this architecture: Leptos's server features and the TypeScript client, with live demos | Spring lab, cache inspector, toast stack |
@@ -147,12 +151,13 @@ Arabic script, because that's how Arabic shoppers type them («سامسونج»,
  browser                                        server (Rust, Leptos SSR on Axum)
  ───────                                        ─────────────────────────────────
  HTML, complete, per page   ◀── GET /c/phones ──  pages: #[component]s rendered in order
- /js/app-<hash>.js (TS)     ◀── once, cached ────  build.rs: tsc + esbuild → embedded
+ /js/app-<hash>.js + chunks ◀── once, cached ────  build.rs: tsc + esbuild → embedded
    router + page cache ───────── GET (prefetch) ─▶ same pages (X-Router: 1)
    stores: cart, toasts                           data endpoints (server functions, fixed URLs):
-   cart cookie (state) ─────── GET /api/cart/quote ▶  price the cart (madar-catalog, madar-money)
+   cart cookie + snapshots ─── GET /api/cart/quote ▶  price lines the browser lacks
    search box ─────────── GET /api/search/suggest ▶  bilingual search
    order page ─────────── GET /api/orders/track ──▶  order status
+   checkout (plain forms) ─ POST server functions ▶  re-price (madar-shared), re-check stock, order
                                                   data layer: in-memory catalogue + moka cache
 ```
 
@@ -167,17 +172,24 @@ Arabic script, because that's how Arabic shoppers type them («سامسونج»,
    - one string catalogue (`crates/app/src/strings/`).
 3. **Markup lives in Rust, once.** TypeScript never builds HTML. When it shows data (a cart line, a
    toast, a search suggestion) it fills a `<template>` the server rendered. Money and dates arrive
-   formatted by the server, so the client never formats or computes money.
+   formatted by the server, with one exception: the cart, which the browser computes in integer
+   piastres and formats with `core/money.ts`, an exact port of the server's formatter.
 4. **Progressive enhancement:** every page and form works without JS.
 5. **Fail loudly in development, gracefully for shoppers.**
-6. **Small:** the whole client has a size budget (below).
+6. **Small:** the JavaScript of the first load and of each page has a budget (below).
 
 **The cart.** The browser owns it, in a cookie: `product:variant:qty[:addons]` lines joined by `|`.
 The format has two identical implementations, `crates/domain/src/cart.rs` and
 `client/src/stores/cart.ts`.
-- Adding, removing and changing quantities write the cookie: instant, with no request.
-- The server reads the same cookie only to price it: `/cart`, the drawer's quote, and checkout,
-  where it re-prices and re-checks stock, like Madar at order intake.
+- Each line also keeps a **snapshot** from the card or product page it was added from: name,
+  image, variant, add-ons, and prices in piastres (unit, was, add-ons, stock cap). Snapshots are
+  kept in `localStorage`, per shop and language.
+- Adding, removing and changing quantities write the cookie. The browser computes line totals,
+  subtotal, savings and the delivery rule from the snapshots: instant, with no request.
+- The server is asked only for what the browser lacks. `/api/cart/quote` fills lines that have no
+  snapshot (added without JS, or storage cleared).
+- `/cart` and checkout render the server's prices from the cookie. Checkout re-prices with
+  madar-shared and re-checks stock, like Madar at order intake, and says so if a price moved.
 - Without JS, plain forms rewrite the cookie on the server, and nothing else changes.
 
 **Caching:**
@@ -261,8 +273,8 @@ Rust renders everything on the server. See Stage 2.
 | Money in integer piastres; `name_translations {en, ar}` | `domain::money`, `domain::text::L10n` | Copied. |
 | Order statuses (`delivery_order_status`) and their en/ar labels (MadarDashboard i18n) | `domain::order` | Copied. |
 | `CartLineInput`, `DeliveryTracking` shapes | `domain::order` | Copied and trimmed. |
-| Pricing (`madar_catalog::price_line`) and VAT (`madar_money::tax::compute`) | server only, `app::server::pricing` | **Used as is**, as path dependencies on `madar-shared`. The client never computes money: totals come from the server's quote. |
-| Money and time display (MadarDashboard `format.ts` / madar-core `display.rs`): Western digits by default, bidi isolation of figures, 12-hour Cairo time, Egyptian month names | `app::format` | Ported. |
+| Pricing (`madar_catalog::price_line`) and VAT (`madar_money::tax::compute`) | server, `app::server::pricing` | **Used as is**: a git dependency on `madar-shared`, pinned to tag `v0.12.0`. The browser computes the cart's running totals from snapshot prices; the server's pricing decides at checkout. |
+| Money and time display (MadarDashboard `format.ts` / madar-core `display.rs`): Western digits by default, bidi isolation of figures, 12-hour Cairo time, Egyptian month names | `app::format`; for the cart, `client/src/core/money.ts` | Ported. The TypeScript port gives the same output for the same input. |
 | Per-shop subdomains (`hostSlug`, `tenant_shell.rs`) | `app::tenant` | Same rule: the tenant is the first hostname label. |
 | Read-cache key shape (`MenuCache` `"{org}:{version}:{variant}"`) | `app::server::cache::ReadCache` | Same shape and invalidation by version bump. |
 | Data caching on the client: TTL, stale-while-revalidate, refresh (the Madar app's data layer) | `client/src/core/cache.ts` | Same model, applied to pages and API reads. |
