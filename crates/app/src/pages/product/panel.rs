@@ -19,7 +19,10 @@ use super::model::{
 };
 use crate::api::types::ProductView;
 use crate::components::button::{Button, ButtonKind, ButtonSize};
+use crate::components::choice_chips::{ChoiceChip, ChoiceChips, ChoiceKind, ChoiceState};
+use crate::components::choice_list::{ChoiceList, ChoiceRow};
 use crate::components::icons::Icon;
+use crate::components::notice::{Notice as NoticeBox, Tone};
 use crate::components::price::{Price, PriceSize};
 use crate::components::stepper::Stepper;
 use crate::format;
@@ -46,6 +49,19 @@ struct PickerData {
     /// Every add-on option of the product, by id: its name and surcharge (piastres), for the cart
     /// line's snapshot.
     addons: std::collections::BTreeMap<String, AddonData>,
+    /// The add-on groups' rules, for checking before an add (the server checks the no-JS post).
+    groups: Vec<GroupData>,
+}
+
+#[derive(Serialize)]
+struct GroupData {
+    /// The group's fieldset (`ChoiceList` id; its error line is `{id}-error`).
+    id: String,
+    min: u32,
+    /// `None`: any number.
+    max: Option<u32>,
+    /// What to say when the group blocks the add.
+    problem: String,
 }
 
 #[derive(Serialize)]
@@ -272,151 +288,109 @@ pub fn PurchasePanel(
                 )
             })
             .collect(),
+        groups: p
+            .modifier_groups
+            .iter()
+            .map(|g| {
+                let (min, max) = bounds(g);
+                GroupData {
+                    id: group_id(pid, &g.id),
+                    min,
+                    max: (max != u32::MAX).then_some(max),
+                    problem: group_problem(g, lang, num),
+                }
+            })
+            .collect(),
     };
     let json = serde_json::to_value(&data)
         .map(|v| script_json(&v))
         .unwrap_or_default();
-    let (labels, states, notes) = axis_states(&pv, &cur, lang);
+    let (_, states, notes) = axis_states(&pv, &cur, lang);
 
-    // ── Variant picker: one radio group per axis, every value a link ──
+    // ── Variant picker: one `ChoiceChips` group per axis, every value a link (`?v=`) ──
     let axes = p
         .options
         .iter()
         .enumerate()
         .map(|(ai, axis)| {
             let swatch = axis.kind == OptionKind::Swatch;
-            let head_id = format!("pp-ax-{pid}-{ai}");
-            let note_id = format!("pp-axn-{pid}-{ai}");
-            let note = notes[ai].clone();
-            let values = axis
+            let items = axis
                 .values
                 .iter()
                 .enumerate()
                 .map(|(vi, val)| {
                     let st = &states[ai][vi];
-                    let on = st.s == "on";
-                    let enabled = matches!(st.s, "on" | "open");
-                    let href = st.v.filter(|_| enabled).map(|v| variant_href(&p.slug, v));
-                    let label = text(&val.label, lang);
-                    let title = if enabled {
-                        swatch.then(|| label.clone())
-                    } else {
-                        st.why.clone()
+                    let state = match st.s {
+                        "on" => ChoiceState::Selected,
+                        "open" => ChoiceState::Available,
+                        _ => ChoiceState::Unavailable,
                     };
-                    let dot = val
-                        .swatch
-                        .as_deref()
-                        .filter(|c| c.len() == 7 && c.starts_with('#') && c[1..].chars().all(|x| x.is_ascii_hexdigit()))
-                        .map(|c| format!("--sw:{c}"));
-                    let mut cls = String::from(if swatch { "pp-swatch" } else { "pp-chip" });
-                    if on {
-                        cls.push_str(" is-on");
+                    let mut chip = ChoiceChip::new(text(&val.label, lang), val.id.clone())
+                        .state(state)
+                        .attr("data-axis", ai.to_string())
+                        .attr("data-index", vi.to_string());
+                    if let Some(v) = st.v.filter(|_| state != ChoiceState::Unavailable) {
+                        chip = chip.href(variant_href(&p.slug, v));
                     }
-                    if !enabled {
-                        cls.push_str(" is-off");
+                    if let Some(why) = &st.why {
+                        chip = chip.title(why.clone());
                     }
-                    let inner = if swatch {
-                        Either::Left(view! { <span class="pp-swatch__dot" style=dot aria-hidden="true"></span> })
-                    } else {
-                        Either::Right(view! { <span class="pp-chip__label trim">{label.clone()}</span> })
-                    };
-                    view! {
-                        <a
-                            class=cls
-                            role="radio"
-                            href=href
-                            data-axis=ai
-                            data-index=vi
-                            aria-checked=if on { "true" } else { "false" }
-                            aria-disabled=(!enabled).then_some("true")
-                            aria-describedby=(!enabled).then(|| note_id.clone())
-                            aria-label=swatch.then(|| label.clone())
-                            title=title
-                            data-press=""
-                        >
-                            {inner}
-                        </a>
+                    if let Some(c) = &val.swatch {
+                        chip = chip.swatch(c.clone());
                     }
+                    chip
                 })
-                .collect_view();
+                .collect::<Vec<_>>();
+            let kind = if swatch {
+                ChoiceKind::Swatch
+            } else {
+                ChoiceKind::Chip
+            };
+            let note = notes[ai].clone();
             view! {
-                <div class="pp-axis" role="radiogroup" aria-labelledby=format!("pp-ax-{pid}-{ai}") data-axis=ai>
-                    <p class="pp-axis__head" id=head_id>
-                        <span class="pp-axis__name">{text(&axis.name, lang)}</span>
-                        <span class="pp-axis__value">{labels[ai].clone()}</span>
-                    </p>
-                    <div class=if swatch { "pp-swatches" } else { "pp-chips" }>{values}</div>
-                    <p class="pp-axis__note" id=note_id class:is-empty=note.is_empty()>{note.clone()}</p>
-                </div>
+                <ChoiceChips
+                    label=text(&axis.name, lang)
+                    items=items
+                    kind=kind
+                    show_value=true
+                    id=format!("pp-ax-{pid}-{ai}")
+                    note=note
+                    attr:data-axis=ai.to_string()
+                />
             }
         })
         .collect_view();
 
-    // ── Add-on groups. Checkboxes post as `addon`; a single-choice group's radios need a name
-    // of their own (one radio group each), `addon.<group>`. ──
+    // ── Add-on groups (`ChoiceList`). Checkboxes post as `addon`; a single-choice group's radios
+    // need a name of their own (one radio group each): `addon.<group>`. ──
     let groups = p
         .modifier_groups
         .iter()
         .map(|g| {
             let single = g.selection == SelectionType::Single;
-            let (min, max) = bounds(g);
-            let err_id = format!("pp-ge-{pid}-{}", g.id);
+            let (min, _) = bounds(g);
             let name = if single {
                 format!("addon.{}", g.id)
             } else {
                 "addon".to_owned()
             };
-            let none = (single && min == 0).then(|| {
-                view! {
-                    <label class="pp-opt">
-                        <input class="pp-opt__input" type="radio" name=name.clone() value="" checked=true/>
-                        <span class="pp-opt__box" aria-hidden="true"></span>
-                        <span class="pp-opt__name">{tr(lang, "No, thanks", "لا، شكرًا")}</span>
-                        <span class="pp-opt__price"></span>
-                    </label>
-                }
-            });
-            let options = g
-                .options
-                .iter()
-                .map(|o| {
-                    view! {
-                        <label class="pp-opt">
-                            <input
-                                class="pp-opt__input"
-                                type=if single { "radio" } else { "checkbox" }
-                                name=name.clone()
-                                value=o.id.clone()
-                            />
-                            <span class="pp-opt__box" aria-hidden="true">
-                                {(!single).then(|| view! { <Icon name="check" size=14/> })}
-                            </span>
-                            <span class="pp-opt__name">{text(&o.name, lang)}</span>
-                            <span class="pp-opt__price mono">{surcharge(o.price, lang, num)}</span>
-                        </label>
-                    }
-                })
-                .collect_view();
+            let mut rows = Vec::new();
+            if single && min == 0 {
+                rows.push(ChoiceRow::new("", tr(lang, "No, thanks", "لا، شكرًا")).checked(true));
+            }
+            rows.extend(g.options.iter().map(|o| {
+                ChoiceRow::new(o.id.clone(), text(&o.name, lang))
+                    .meta(surcharge(o.price, lang, num))
+            }));
             view! {
-                <fieldset
-                    class="pp-group"
-                    aria-describedby=format!("pp-ge-{pid}-{}", g.id)
-                    data-min=min
-                    data-max=(max != u32::MAX).then_some(max)
-                >
-                    <legend class="pp-group__head">
-                        <span class="pp-group__name">{text(&g.name, lang)}</span>
-                        <span class="pp-group__hint" class:is-req={min > 0}>{group_hint(g, lang, num)}</span>
-                    </legend>
-                    <div class="pp-group__opts">
-                        {none}
-                        {options}
-                    </div>
-                    <p class="pp-group__err" id=err_id role="alert">
-                        <Icon name="circle-alert" size=16/>
-                        <span>{group_problem(g, lang, num)}</span>
-                    </p>
-                </fieldset>
+                <ChoiceList
+                    legend=text(&g.name, lang)
+                    name=name
+                    items=rows
+                    single=single
+                    id=group_id(pid, &g.id)
+                    hint=group_hint(g, lang, num)
+                />
             }
         })
         .collect_view();
@@ -541,21 +515,19 @@ fn notice_view(n: Notice, lang: Lang, num: Numerals) -> impl IntoView {
                 .replace("{qty}", &format::count(qty, num))
                 .replace("{items}", &format::items(qty, lang, num));
             Either::Left(view! {
-                <p class="pp-msg pp-msg--ok" role="status">
-                    <Icon name="circle-check" size=16/>
-                    <span>{msg}</span>
-                    <a class="pp-msg__link" href="/cart">{strings::get("cart.view", lang)}</a>
-                </p>
+                <NoticeBox tone=Tone::Success title=msg>
+                    <a class="link" href="/cart">{strings::get("cart.view", lang)}</a>
+                </NoticeBox>
             })
         }
         Notice::Error(code) => {
             let key = format!("cart.err.{code}");
-            Either::Right(view! {
-                <p class="pp-msg pp-msg--error" role="alert">
-                    <Icon name="circle-alert" size=16/>
-                    <span class="pp-msg__text">{strings::get(&key, lang)}</span>
-                </p>
-            })
+            Either::Right(view! { <NoticeBox tone=Tone::Danger title=strings::get(&key, lang)/> })
         }
     }
+}
+
+/// An add-on group's fieldset id (its hint and error lines hang off it).
+fn group_id(pid: u32, group: &str) -> String {
+    format!("pp-g-{pid}-{group}")
 }

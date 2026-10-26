@@ -4,7 +4,7 @@
 // quantity are form state, and adding goes into the cookie cart — no request.
 
 import { register } from "../core/mount";
-import { $, $$, fill, on, prefersReducedMotion } from "../core/dom";
+import { $, $$, fill, on, patch, prefersReducedMotion } from "../core/dom";
 import { digits, t } from "../core/page";
 import { SPRING, SpringValue, VelocityTracker, project, rubberband, type SpringConfig } from "../core/motion";
 import { setStepper, stepperValue } from "../core/stepper";
@@ -23,6 +23,14 @@ interface PickerData {
   variants: VariantData[];
   /** Every add-on option, by id: name and surcharge in piastres. */
   addons: Record<string, { name: string; price: number }>;
+  /** The add-on groups' rules (`ChoiceList` ids). */
+  groups: GroupData[];
+}
+interface GroupData {
+  id: string;
+  min: number;
+  max: number | null;
+  problem: string;
 }
 interface VariantData {
   id: number;
@@ -93,34 +101,30 @@ register("variant-picker", (root) => {
     if (stockText) stockText.textContent = v.stockText;
     const sku = $("[data-sku]", root);
     if (sku) sku.textContent = v.sku;
-    // Every axis: the picked value's name, each value's state, why the others can't be picked.
-    for (const axis of $$(".pp-axis[data-axis]", root)) {
+    // Every axis (`ChoiceChips`): the picked value's name, each value's state — the look follows
+    // aria-checked / aria-disabled — and why the others can't be picked (the group's note).
+    for (const axis of $$(".choice-chips[data-axis]", root)) {
       const ai = Number(axis.dataset.axis);
-      const value = $(".pp-axis__value", axis);
-      if (value) value.textContent = v.labels[ai] ?? "";
-      const note = $(".pp-axis__note", axis);
-      if (note) {
-        note.textContent = v.notes[ai] ?? "";
-        note.classList.toggle("is-empty", !v.notes[ai]);
-      }
+      const noteText = v.notes[ai] ?? "";
+      patch(axis, { value: v.labels[ai] ?? "", note: noteText || null });
+      const noteId = `${axis.id}-note`;
       for (const a of $$<HTMLAnchorElement>("a[data-index]", axis)) {
         const st = v.values[ai]?.[Number(a.dataset.index)];
         if (!st) continue;
         const enabled = st.s === "on" || st.s === "open";
-        a.classList.toggle("is-on", st.s === "on");
-        a.classList.toggle("is-off", !enabled);
         a.setAttribute("aria-checked", String(st.s === "on"));
         a.tabIndex = st.s === "on" ? 0 : -1;
         if (enabled && st.v !== undefined) a.setAttribute("href", `${data.href}?v=${st.v}`);
         else a.removeAttribute("href");
-        a.toggleAttribute("aria-disabled", !enabled);
+        const swatch = a.classList.contains("choice-chip--swatch");
         if (enabled) {
+          a.removeAttribute("aria-disabled");
           a.removeAttribute("aria-describedby");
-          if (a.classList.contains("pp-swatch")) a.title = a.getAttribute("aria-label") ?? "";
+          if (swatch) a.title = a.getAttribute("aria-label") ?? "";
           else a.removeAttribute("title");
         } else {
           a.setAttribute("aria-disabled", "true");
-          if (note?.id) a.setAttribute("aria-describedby", note.id);
+          a.setAttribute("aria-describedby", noteId);
           a.title = st.why ?? "";
         }
       }
@@ -147,30 +151,31 @@ register("variant-picker", (root) => {
   // ── Add-on groups: limits as you pick. A group's problem shows only once an add was tried
   // (like checkout): then on every unmet group at once, and from there it follows the answers
   // live. Changing the variant starts over. ──
-  const groupState = (g: HTMLElement) => {
-    const min = Number(g.dataset.min ?? 0);
-    const max = g.dataset.max ? Number(g.dataset.max) : Infinity;
-    const picked = $$<HTMLInputElement>("input:checked", g).filter((i) => i.value !== "").length;
-    return { ok: picked >= min && picked <= max, picked, max };
+  const groups = data.groups
+    .map((g) => ({ ...g, el: document.getElementById(g.id) }))
+    .filter((g): g is GroupData & { el: HTMLElement } => !!g.el && root.contains(g.el));
+  const picked = (g: { el: HTMLElement }) => $$<HTMLInputElement>("input:checked", g.el).filter((i) => i.value !== "").length;
+  const groupOk = (g: GroupData & { el: HTMLElement }) => {
+    const n = picked(g);
+    return n >= g.min && (g.max === null || n <= g.max);
   };
-  const markGroup = (g: HTMLElement, bad: boolean) => {
-    g.classList.toggle("is-bad", bad);
-    if (bad) g.setAttribute("aria-invalid", "true");
-    else g.removeAttribute("aria-invalid");
+  /** `ChoiceList`'s invalid state: the danger edge, a red hint, the problem in its error line. */
+  const markGroup = (g: GroupData & { el: HTMLElement }, bad: boolean) => {
+    if (bad) g.el.setAttribute("aria-invalid", "true");
+    else g.el.removeAttribute("aria-invalid");
+    const line = document.getElementById(`${g.id}-error`);
+    if (line) patch(line, { error: bad ? g.problem : "" });
   };
-  const limitGroup = (g: HTMLElement) => {
-    const { picked, max } = groupState(g);
-    for (const box of $$<HTMLInputElement>("input[type=checkbox]", g)) {
-      const full = !box.checked && picked >= max;
-      box.disabled = full;
-      box.closest(".pp-opt")?.classList.toggle("is-full", full);
-    }
+  /** A group with a maximum: once it's reached, the rest can't be ticked. */
+  const limitGroup = (g: GroupData & { el: HTMLElement }) => {
+    if (g.max === null) return;
+    const full = picked(g) >= g.max;
+    for (const box of $$<HTMLInputElement>("input[type=checkbox]", g.el)) box.disabled = full && !box.checked;
   };
-  for (const g of $$(".pp-group", root)) limitGroup(g);
+  for (const g of groups) limitGroup(g);
   /** Mark the unmet groups (only after an attempt); returns them. */
-  const validate = (): HTMLElement[] => {
-    const groups = $$(".pp-group", root);
-    const bad = groups.filter((g) => !groupState(g).ok);
+  const validate = () => {
+    const bad = groups.filter((g) => !groupOk(g));
     for (const g of groups) markGroup(g, attempted && bad.includes(g));
     return bad;
   };
@@ -179,7 +184,7 @@ register("variant-picker", (root) => {
     ev.preventDefault();
     if (cur.stock === 0) return;
     attempted = true;
-    const first = validate()[0];
+    const first = validate()[0]?.el;
     if (first) {
       first.scrollIntoView({ block: "center", behavior: prefersReducedMotion() ? "auto" : "smooth" });
       $<HTMLInputElement>("input:not(:disabled)", first)?.focus({ preventScroll: true });
@@ -219,7 +224,7 @@ register("variant-picker", (root) => {
     const fwd = { ArrowDown: true, ArrowUp: false, ArrowRight: !rtl, ArrowLeft: rtl }[ev.key];
     if (fwd === undefined) return;
     ev.preventDefault();
-    const axis = a.closest<HTMLElement>(".pp-axis");
+    const axis = a.closest<HTMLElement>(".choice-chips[data-axis]");
     if (!axis) return;
     const ai = Number(axis.dataset.axis);
     const states = cur.values[ai] ?? [];
@@ -240,8 +245,8 @@ register("variant-picker", (root) => {
 
   // A notice from the no-JS add was rendered for this visit only: drop its parameter.
   writeUrl(new URL(location.href).searchParams.has("v") ? cur : null);
-  for (const axis of $$(".pp-axis", root))
-    for (const a of $$<HTMLAnchorElement>("a[data-index]", axis)) a.tabIndex = a.classList.contains("is-on") ? 0 : -1;
+  for (const a of $$<HTMLAnchorElement>(".choice-chips a[data-index]", root))
+    a.tabIndex = a.getAttribute("aria-checked") === "true" ? 0 : -1;
 
   const offs = [
     on(root, "click", "a[data-axis][data-index]", (ev, a) => {
@@ -252,8 +257,8 @@ register("variant-picker", (root) => {
       if (v) select(v);
     }),
     on(root, "keydown", "a[data-axis][data-index]", onKey),
-    on(root, "change", ".pp-group input", (_ev, el) => {
-      const g = el.closest<HTMLElement>(".pp-group");
+    on(root, "change", ".pp-groups input", (_ev, el) => {
+      const g = groups.find((x) => x.el.contains(el));
       if (!g) return;
       limitGroup(g);
       validate(); // live, once an add was tried

@@ -8,8 +8,10 @@
 
 use crate::api::{self, types::Rail};
 use crate::components::{
+    button::{Button, ButtonKind, ButtonSize},
     icons::Icon,
     layout::{Container, Rail as Row, SectionHeader},
+    notice::{Announce, Notice, Tone},
     product_card::ProductCard,
 };
 use crate::format;
@@ -249,15 +251,16 @@ fn WidgetError(lang: Lang) -> impl IntoView {
         })
         .unwrap_or_else(|| rq.path_and_query.clone());
     view! {
-        <div class="widget-error" role="status">
-            <Icon name="triangle-alert" size=20/>
-            <p>
-                <strong>{tr(lang, "This section didn't load.", "القسم ده ما اتحمّلش.")}</strong>
-                " "
-                {tr(lang, "Everything else on the page is fine.", "باقي الصفحة شغالة عادي.")}
-            </p>
-            <a class="widget-error__retry" href=retry>{tr(lang, "Try again", "جرّب تاني")}</a>
-        </div>
+        <Notice
+            tone=Tone::Warning
+            title=tr(lang, "This section didn't load.", "القسم ده ما اتحمّلش.")
+            body=tr(lang, "Everything else on the page is fine.", "باقي الصفحة شغالة عادي.")
+            announce=Announce::Polite
+        >
+            <Button kind=ButtonKind::Secondary size=ButtonSize::Sm href=retry icon="rotate-ccw">
+                {tr(lang, "Try again", "جرّب تاني")}
+            </Button>
+        </Notice>
     }
 }
 

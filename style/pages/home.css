@@ -14,7 +14,8 @@
 /* Sections */
 .home-section { margin-block: 28px; }
 .home-cats { margin-block-start: 20px; }
-@media (min-width: 768px) { .home-section { margin-block: 48px; } }
+@media (min-width: 768px) { .home-section { margin-block: 48px; }
+}
 .home-rail__head { display: grid; gap: 6px; margin-block-end: 14px; }
 .home-rail__head .section-header { margin-block-end: 0; }
 
@@ -72,17 +73,3 @@
 /* An empty rail */
 .rail-empty { margin: 0; padding: 18px; border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-sm); color: var(--text-2); font-size: .9375rem; }
 .rail-empty a { color: var(--text); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
-
-/* A failed widget */
-.widget-error {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 16px;
-  border-radius: var(--r-lg);
-  background: var(--warning-wash, #F8EBDA);
-  color: var(--text);
-}
-.widget-error p { margin: 0; flex: 1 1 220px; font-size: .9rem; }
-.widget-error__retry { font-weight: 700; color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
