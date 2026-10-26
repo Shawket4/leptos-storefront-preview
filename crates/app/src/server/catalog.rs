@@ -70,10 +70,14 @@ impl TenantCatalog {
             let b = brand.unwrap_or(&empty);
             let c = cat.unwrap_or(&empty);
             DocText {
-                names: [p.name.en.as_str(), p.name.ar.as_str()],
+                names: both(&p.name),
                 brands: [b.en.as_str(), b.ar.as_str()],
                 categories: [c.en.as_str(), c.ar.as_str()],
-                extra: vec![p.subtitle.en.as_str(), p.subtitle.ar.as_str()],
+                subtitles: both(&p.subtitle),
+                variants: p.options.iter().flat_map(|o| &o.values).flat_map(|v| both(&v.label)).collect(),
+                // Not the description: it is prose ("stuffed zucchini with rice", "serve with
+                // tahini"), so its words name other products.
+                details: p.highlights.iter().chain(p.specs.iter().map(|s| &s.v)).flat_map(both).collect(),
             }
         }));
 
@@ -285,14 +289,11 @@ impl TenantCatalog {
             (std::cmp::Reverse(s), !c.in_stock, std::cmp::Reverse(c.reviews))
         });
         let total = hits.len() as u32;
-        let qt = search::tokens(q);
+        let query = search::Query::parse(q);
         let categories = self
             .nav
             .iter()
-            .filter(|c| {
-                let words = format!("{} {}", search::fold(&c.name.en), search::fold(&c.name.ar));
-                !qt.is_empty() && qt.iter().all(|t| words.split(' ').any(|w| w.starts_with(t.as_str())))
-            })
+            .filter(|c| query.matches_text(&format!("{} {}", c.name.en, c.name.ar)))
             .take(3)
             .cloned()
             .collect();
@@ -317,6 +318,11 @@ impl TenantCatalog {
         let p = self.product(product)?;
         Some((p, p.variant(variant)?))
     }
+}
+
+/// Both languages of a text, for the search index.
+fn both(t: &L10n) -> [&str; 2] {
+    [t.en.as_str(), t.ar.as_str()]
 }
 
 fn discount_pct(c: &CardData) -> u8 {
