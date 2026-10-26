@@ -89,7 +89,12 @@ async fn main() {
             },
             shell,
         ))
-        .layer(axum::middleware::map_response(static_cache_headers))
+        .layer(axum::middleware::map_response({
+            // `cargo leptos watch` rewrites the stylesheet under the same hashed name, so only a
+            // release build (LEPTOS_ENV=PROD) may call it immutable.
+            let prod = matches!(leptos_options.env, leptos::config::Env::PROD);
+            move |uri: axum::http::Uri, res: Response| async move { static_cache_headers(&uri, res, prod) }
+        }))
         .layer(CompressionLayer::new())
         .with_state(leptos_options);
 
@@ -99,13 +104,13 @@ async fn main() {
     axum::serve(listener, app.into_make_service()).await.expect("serve");
 }
 
-/// Static assets get explicit caching: fonts never change, and the stylesheet is content-hashed by
-/// cargo-leptos (`hash-files`: `/pkg/storefront.<hash>.css`), so both are cached forever. Anything in
-/// `/pkg` without a hash in its name (a build without hash-files) is revalidated.
-async fn static_cache_headers(uri: axum::http::Uri, mut res: Response) -> Response {
+/// Static assets get explicit caching: fonts never change, and in a release build the stylesheet is
+/// content-hashed by cargo-leptos (`hash-files`: `/pkg/storefront.<hash>.css`), so both are cached
+/// forever. Everything else in `/pkg` (and all of it in dev) is revalidated.
+fn static_cache_headers(uri: &axum::http::Uri, mut res: Response, prod: bool) -> Response {
     let path = uri.path();
     if !res.headers().contains_key(header::CACHE_CONTROL) && res.status().is_success() {
-        let value = if path.starts_with("/fonts/") || is_hashed_pkg(path) {
+        let value = if path.starts_with("/fonts/") || (prod && is_hashed_pkg(path)) {
             Some("public, max-age=31536000, immutable")
         } else if path.starts_with("/pkg/") || path.starts_with("/dev/") {
             Some("no-cache")
