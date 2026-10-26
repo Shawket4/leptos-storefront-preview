@@ -321,6 +321,22 @@
     if (u.pathname !== location.pathname) pending = { top: true };
   }, true);
 
+  // ── The button that submitted a form ──────────────────────────────────────
+  // The islands router posts `new FormData(form)`, which leaves out the pressed button (a
+  // `<button name="op" value="remove">`); without JS the browser sends it. Add it as a hidden
+  // field for this one submission. (A "dialog" form isn't the router's: the browser submits it,
+  // button included.)
+  d.addEventListener("submit", (e) => {
+    const f = e.target, b = e.submitter;
+    if (!(f instanceof HTMLFormElement) || !b || !b.name || f.method === "dialog") return;
+    const i = d.createElement("input");
+    i.type = "hidden";
+    i.name = b.name;
+    i.value = b.value;
+    f.appendChild(i);
+    setTimeout(() => i.remove(), 0);
+  }, true);
+
   // ── Preference and tenant links come back to where you are ────────────────
   // Their `next` is the page as the server rendered it, and an island may have moved the address
   // since (the listing filters push their state). At press time, point `next` at the live
