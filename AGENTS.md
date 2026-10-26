@@ -207,7 +207,8 @@ are the single source of truth for listing URLs (server and islands). Errors are
 Server-only (`#[cfg(feature = "ssr")]`): `server::state()`, `server::current_catalog()`
 (synchronous, in-memory — use it to compute cache tags before streaming starts),
 `server::cache::{public, private, tag_product, tag_category}`, `server::sim::{delay, check_fail,
-Widget}` (every read already waits its simulated latency; `?fail=<widget>` on the page URL makes it
+Widget}` (simulated latency is OFF by default — `SIM_LATENCY_MS=350` env for the server, or the
+`sim` cookie via `/__sim?ms=350&next=…` per visitor; `?fail=<widget>` on the page URL makes a read
 fail — use that to demo error boundaries), `state().orders()` (`place`, `get`, `next_step_at`) and
 `server::orders::slots(&tenant, now_ms)`, `server::cart::{view, cookies}`,
 `TenantCatalog::variant_label`.

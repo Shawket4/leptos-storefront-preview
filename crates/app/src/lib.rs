@@ -53,6 +53,17 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
                 <meta name="color-scheme" content=color_scheme/>
                 {home_nojs_fallback(&rq.path_and_query)}
+                // The two faces the first screen needs, per language (Arabic pages set Arabic words).
+                {match p.lang {
+                    prefs::Lang::Ar => view! {
+                        <link rel="preload" href="/fonts/cairo-arabic-wght-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                        <link rel="preload" href="/fonts/cairo-latin-wght-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                    }.into_any(),
+                    prefs::Lang::En => view! {
+                        <link rel="preload" href="/fonts/cairo-latin-wght-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                        <link rel="preload" href="/fonts/ibm-plex-mono-latin-600-normal.woff2" r#as="font" r#type="font/woff2" crossorigin=""/>
+                    }.into_any(),
+                }}
                 <link rel="stylesheet" id="leptos" href="/pkg/storefront.css"/>
                 // Per-tenant icons (WebP, like every image asset here).
                 <link rel="icon" type="image/webp" sizes="64x64" href=format!("/media/brand/{}-icon-64.webp", t.id)/>

@@ -117,7 +117,8 @@ impl ReadCache {
     }
 
     /// Get `kind:key` for `tenant`, computing it with `load` on a miss (concurrent misses for the
-    /// same key share one computation). Misses pay `CACHE_MISS_MS` (default 120) of pretend DB time.
+    /// same key share one computation). Misses pay `CACHE_MISS_MS` (default 0 = off) of pretend DB
+    /// time, to make the cache's effect visible in demos.
     pub async fn get<T, F, Fut>(&self, tenant: &str, kind: &str, key: &str, load: F) -> Arc<T>
     where
         T: Send + Sync + 'static,
@@ -130,8 +131,10 @@ impl ReadCache {
             .cache
             .get_with(full, async {
                 missed = true;
-                let miss_ms = std::env::var("CACHE_MISS_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(120);
-                tokio::time::sleep(Duration::from_millis(miss_ms)).await;
+                let miss_ms: u64 = std::env::var("CACHE_MISS_MS").ok().and_then(|v| v.parse().ok()).unwrap_or(0);
+                if miss_ms > 0 {
+                    tokio::time::sleep(Duration::from_millis(miss_ms)).await;
+                }
                 Arc::new(load().await) as Value
             })
             .await;
