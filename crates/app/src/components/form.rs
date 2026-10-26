@@ -240,8 +240,49 @@ pub fn Select(
     frame(id, label, hint, error, optional, String::new(), control)
 }
 
-/// A radio as a card: delivery slots, payment methods. Group them in a `<fieldset class="radio-cards">`
-/// with a `<legend>`.
+/// A group of [`RadioCard`]s (delivery slots, payment methods): a `<fieldset>` with its legend, an
+/// optional hint under it and an inline error after the cards, wired with `aria-describedby`.
+/// Give it an `id` when it has a hint or an error (they're `{id}-hint` / `{id}-error`).
+#[component]
+pub fn RadioGroup(
+    #[prop(into)] legend: TextProp,
+    #[prop(optional, into)] id: Option<String>,
+    #[prop(optional, into)] hint: Option<TextProp>,
+    #[prop(optional, into)] error: MaybeProp<String>,
+    #[prop(optional, into)] class: String,
+    children: Children,
+) -> impl IntoView {
+    let err = error.get_untracked().filter(|e| !e.is_empty());
+    let base = id.clone().unwrap_or_default();
+    let describe = (!base.is_empty())
+        .then(|| described_by(&base, hint.is_some(), err.is_some()))
+        .flatten();
+    let cls = if class.is_empty() {
+        "radio-cards".to_owned()
+    } else {
+        format!("radio-cards {class}")
+    };
+    let invalid = err.is_some().then_some("true");
+    let hint_id = (!base.is_empty()).then(|| format!("{base}-hint"));
+    let error_id = (!base.is_empty()).then(|| format!("{base}-error"));
+    view! {
+        <fieldset class=cls id=id aria-describedby=describe aria-invalid=invalid>
+            <legend>{move || legend.get()}</legend>
+            {hint.map(|h| view! { <p class="field__hint" id=hint_id>{move || h.get()}</p> })}
+            {children()}
+            {err.map(|e| {
+                view! {
+                    <p class="field__error" id=error_id>
+                        <Icon name="circle-alert" size=16/>
+                        <span>{e}</span>
+                    </p>
+                }
+            })}
+        </fieldset>
+    }
+}
+
+/// A radio as a card: delivery slots, payment methods. Put them in a [`RadioGroup`].
 #[component]
 pub fn RadioCard(
     #[prop(into)] name: String,
