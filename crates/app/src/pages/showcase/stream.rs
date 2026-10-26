@@ -200,6 +200,8 @@ fn StreamBlock(
 ) -> impl IntoView {
     let data = Resource::new(move || (), move |_| api::home_rail(rail, 3));
     let name = tr(lang, label.0, label.1);
+    // The Suspend below may run more than once; the block takes its arrival rank once.
+    let seen: Arc<std::sync::OnceLock<(u64, u32)>> = Arc::new(std::sync::OnceLock::new());
     view! {
         <section class="sc-sblock" aria-label=name data-stream-block="">
             <header class="sc-sblock__head">
@@ -212,9 +214,10 @@ fn StreamBlock(
                         let clock = clock.clone();
                         move || {
                             let clock = clock.clone();
+                            let seen = seen.clone();
                             Suspend::new(async move {
                                 let r = data.await;
-                                let (ms, rank) = clock.arrived();
+                                let (ms, rank) = *seen.get_or_init(|| clock.arrived());
                                 r.map(|cards| view! {
                                     <p class="sc-sblock__meta" data-streamed="">
                                         <span class="sc-rank mono">{format!("#{}", format::count(rank, num))}</span>

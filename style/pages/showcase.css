@@ -563,8 +563,14 @@ a.sc-mini__name:hover {
 /* ── Layout: contents + features ─────────────────────────────────────────── */
 .sc-layout {
   display: grid;
+  /* minmax(0, …): the sticky contents' chip scroller and the code excerpts must never widen the
+     column past the screen (in RTL that overflow would sit off-screen, unscrollable). */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
   align-items: start;
+}
+.sc-toc {
+  min-inline-size: 0;
 }
 @media (min-width: 1100px) {
   .sc-layout {
