@@ -80,7 +80,7 @@ pub fn FilterChips(
                     view! {
                         <li>
                             <a class="filter-chip" href=it.href aria-label=aria data-press="" {..spread(it.attrs)}>
-                                <span class="filter-chip__label">{it.label}</span>
+                                <span class="filter-chip__label" dir="auto">{it.label}</span>
                                 <Icon name="x" size=14/>
                             </a>
                         </li>

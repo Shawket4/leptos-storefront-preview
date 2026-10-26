@@ -20,7 +20,7 @@
 //! ```
 
 use super::attrs::{Attrs, spread};
-use super::icons::Icon;
+use super::form::error_line;
 use leptos::either::Either;
 use leptos::prelude::*;
 
@@ -121,7 +121,8 @@ pub fn ChoiceChips(
     /// A line under the choices: why some can't be picked (needs `id`).
     #[prop(optional, into)]
     note: Option<String>,
-    /// An inline error (radios: none chosen yet); marks the group invalid (needs `id`).
+    /// An inline error (radios: none chosen yet); marks the group invalid. With an `id` the error
+    /// line is always rendered (empty), for browser checks — like the form controls.
     #[prop(optional, into)]
     error: MaybeProp<String>,
     /// Radios: one must be chosen.
@@ -153,9 +154,8 @@ pub fn ChoiceChips(
         if note.is_some() {
             v.extend(note_id.clone());
         }
-        if err.is_some() {
-            v.extend(error_id.clone());
-        }
+        // The error line is always there with an id (empty until there's an error).
+        v.extend(error_id.clone());
         (!v.is_empty()).then(|| v.join(" "))
     };
     let chosen = items
@@ -163,8 +163,9 @@ pub fn ChoiceChips(
         .find(|c| c.state == ChoiceState::Selected)
         .map(|c| c.label.clone())
         .unwrap_or_default();
-    let value = (swatch || show_value)
-        .then(|| view! { <span class="choice-chips__value" data-slot="value">{chosen}</span> });
+    let value = (swatch || show_value).then(
+        || view! { <span class="choice-chips__value" data-slot="value" dir="auto">{chosen}</span> },
+    );
     let chips = items
         .into_iter()
         .map(|c| {
@@ -172,7 +173,7 @@ pub fn ChoiceChips(
             let off = c.state == ChoiceState::Unavailable;
             let face = match swatch_style(c.swatch.as_deref()) {
                 _ if !swatch => Either::Left(
-                    view! { <span class="choice-chip__label">{c.label.clone()}</span> },
+                    view! { <span class="choice-chip__label" dir="auto">{c.label.clone()}</span> },
                 ),
                 style => Either::Right(
                     view! { <span class="choice-chip__dot" style=style aria-hidden="true"></span> },
@@ -246,14 +247,7 @@ pub fn ChoiceChips(
                 let empty = note.is_none();
                 view! { <p class="choice-chips__note" id=nid data-slot="note" hidden=empty>{note.clone()}</p> }
             })}
-            {err.map(|e| {
-                view! {
-                    <p class="field__error" id=error_id>
-                        <Icon name="circle-alert" size=16/>
-                        <span>{e}</span>
-                    </p>
-                }
-            })}
+            {(error_id.is_some() || err.is_some()).then(|| error_line(error_id, err))}
         </div>
     }
 }

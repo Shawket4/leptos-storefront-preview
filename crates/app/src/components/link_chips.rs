@@ -79,7 +79,7 @@ pub fn LinkChips(
                             <li>
                                 <a class="link-chip" href=it.href data-press="" {..spread(it.attrs)}>
                                     {it.icon.map(|i| view! { <Icon name=i size=18/> })}
-                                    <span class="link-chip__label">{it.label}</span>
+                                    <span class="link-chip__label" dir="auto">{it.label}</span>
                                 </a>
                             </li>
                         }

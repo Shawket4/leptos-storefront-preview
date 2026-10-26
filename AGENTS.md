@@ -161,13 +161,26 @@ The rules (owner's, 2026-10-26), checked by `node tools/ui-lint.mjs` — it must
 | `layout::{Container, Section, SectionHeader, Rail}` | page column, section rhythm, a section's title row (+ "See all"), sideways rails | `title`, `subtitle?`, `href?`, `link_label?` · `label?` |
 | `breadcrumbs::Breadcrumbs` | trails | `items` |
 | `segmented::Segmented` | segmented choices | `items`, `label`, `full?` |
-| `form::{Field, TextInput, TextArea, Select, RadioCard, Checkbox}` | every form control (label + control + hint + error) | `id`, `name`, `label`, `hint?`, `error?`, `value?`, `required?`… |
+| `form::{Field, TextInput, TextArea, Select, RadioCard, Checkbox}` | every form control (label + control + hint + error) | `id`, `name`, `label`, `hint?`, `error?`, `value?`, `required?`… · `minlength?`/`maxlength?` (text) · Select `groups?` (`<optgroup>`s), `required?` · RadioCard `required?` · Checkbox `meta?` (a trailing count or price). The `{id}-error` line is always rendered, empty: show a browser check with `patch(errLine, {error})`, clear it with `{error: ""}` (not `null`) |
 | `stepper::Stepper` | every quantity | `name`, `value`, `min`, `max`, `label`, `removable?`, `disabled?` |
 | `drawer::Drawer` | every drawer and bottom sheet | `id`, `side?`, `title`, `footer?`, children |
-| `states::{StateView, ComingSoon}`, `empty_state::EmptyState` | empty, error, offline, 404, not-yet-built states | `tone?`, `title`, `body`, `kicker?`, children |
+| `states::{StateView, ComingSoon}`, `empty_state::EmptyState` | empty, error, offline, 404, not-yet-built states | `tone?`, `title`, `body`, `kicker?`, children · EmptyState `suggestion?` (`(href, term)`: "Did you mean *term*?") |
+| `notice::{Notice, Tone, Announce}` | inline messages: a failed load or rail, `?added` / `cart_err`, the search panel's states, checkout problems | `tone?` (`Info`/`Success`/`Warning`/`Danger`/`Neutral`/`Brand`), `title`, `body?`, `icon?`, `announce?` (role by tone unless set), `slots?` (title/body `data-slot`s), `class?`, children (actions) |
+| `link_chips::{LinkChips, LinkChip}` | ways forward: popular searches, aisles (empty states, a 404) | `items` (`LinkChip::new(label, href).icon(…)`), `label`, `hide_label?`, `center?` |
+| `filter_chips::{FilterChips, FilterChip}` | active filters, each a link that removes it, + "Clear all" | `items` (`FilterChip::new(label, href)`), `clear_all?` (`FilterChip::clear_all(href)`), `label?`, `scroll?` |
+| `menu::{Menu, MenuItem, MenuAlign}` | a menu of links in a `<details data-popover>` (sort) | `label`, `value?` (`data-slot="value"`), `items` (`MenuItem::new(label, href, current)`), `icon?`, `align?`, `compact?` |
+| `pager::Pager` | pagination (links; fits its own width) | `page`, `pages`, `href` (`Fn(u32) -> String`), `label?` |
+| `facet_group::FacetGroup` | a filter group (checkboxes with counts, price boxes) | `legend`, `show_first?` ("Show all N"), `expanded?`, children (one per option) |
+| `choice_chips::{ChoiceChips, ChoiceChip, ChoiceState, ChoiceKind}` | pick one: variant values (links, radio semantics), a city (radios), colour swatches | `label`, `items` (`ChoiceChip::new(label, value).href(…).state(…).title(…).swatch(…)`), `kind?`, `name?` (radios), `show_value?`, `id?`, `note?`, `error?`, `required?`, `full?` |
+| `choice_list::{ChoiceList, ChoiceRow}` | radio / checkbox rows with a price (add-ons) | `legend`, `name`, `items` (`ChoiceRow::new(value, label).meta(…)`), `single?`, `id?`, `hint?`, `error?` |
 | `skeleton::{Skeleton, SkeletonLines, SkeletonText, SkeletonMedia, SkeletonField, SkeletonRail}` | every loading placeholder (same box as the real thing) | sizes / `lines` / `aspect` |
 | `toast::Toaster` | (shell) — toasts come from `stores/toasts.ts` | — |
 | `assets::{TenantLogo, MadarBadge}`, `header::{SiteHeader, CatNav}`, `footer::SiteFooter`, `bottom_nav::BottomNav`, `prefs_controls::PrefsControls`, `offline::OfflineBanner`, `shell::AppShell` | the shell (core) | — |
+
+Items of the list components (`LinkChip`, `FilterChip`, `MenuItem`, `ChoiceChip`, `ChoiceRow`, `SegItem`)
+take extra attributes with `.attr(name, value)` — features' `data-*` hooks; the component's root takes
+`attr:`. Live text the client updates in place carries a `data-slot` (`patch()`): a Menu's `value`, a
+ChoiceChips' `value` and `note`, every error line's `error`, a Notice's `title`/`body` with `slots`.
 
 **Loading features on demand.** `main.ts` loads the always-present behaviour (core, the cart badge,
 drawer and quick add, the header search) with the page; a feature only some pages have (product,

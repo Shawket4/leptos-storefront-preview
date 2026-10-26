@@ -304,3 +304,8 @@
 .check__meta:empty {
   display: none;
 }
+/* The error line is always in the page (browser checks fill it): hidden while
+   its text slot is hidden or empty. */
+.field__error:has(> [data-slot="error"]:is([hidden], :empty)) {
+  display: none;
+}
