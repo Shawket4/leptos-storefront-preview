@@ -6,7 +6,6 @@ use crate::components::badge::{Badge, BadgeKind};
 use crate::components::breadcrumbs::Breadcrumbs;
 use crate::components::button::{Button, ButtonKind, ButtonSize, IconButton};
 use crate::components::drawer::{Drawer, DrawerSide};
-use crate::components::empty_state::EmptyState;
 use crate::components::form::{Checkbox, RadioCard, Select, TextArea, TextInput};
 use crate::components::icons::{Icon, NAMES};
 use crate::components::image::Picture;
@@ -15,7 +14,10 @@ use crate::components::price::{Price, PriceLive, PriceSize};
 use crate::components::product_card::{CardData, ProductCard, ProductCardSkeleton, ProductGrid};
 use crate::components::rating::Rating;
 use crate::components::segmented::{SegItem, Segmented};
-use crate::components::skeleton::{Skeleton, SkeletonText};
+use crate::components::skeleton::{
+    Skeleton, SkeletonField, SkeletonLines, SkeletonMedia, SkeletonRail,
+};
+use crate::components::states::{ComingSoon, SectionError, StateTone, StateView};
 use crate::components::status_pill::{StatusPill, Tone};
 use crate::components::stepper::Stepper;
 use crate::components::toast::{self, ToastKind};
@@ -94,6 +96,34 @@ fn Row(#[prop(into)] label: String, children: Children) -> impl IntoView {
     }
 }
 
+/// A skeleton beside what replaces it (children: the loading view, then the loaded one), each
+/// under its label; `stack` puts them one above the other (full-width things like rails).
+#[component]
+fn KitPair(
+    #[prop(into)] title: String,
+    #[prop(into)] loading: String,
+    #[prop(into)] loaded: String,
+    #[prop(optional)] stack: bool,
+    children: ChildrenFragment,
+) -> impl IntoView {
+    let mut sides = children().nodes.into_iter();
+    let first = sides.next();
+    let second = sides.next();
+    view! {
+        <div class="kit__pair" class:kit__pair--stack=stack>
+            <p class="kit__pair-title">{title}</p>
+            <div class="kit__pair-side">
+                <p class="kit__label">{loading}</p>
+                <div class="kit__pair-body" data-side="loading">{first}</div>
+            </div>
+            <div class="kit__pair-side">
+                <p class="kit__label">{loaded}</p>
+                <div class="kit__pair-body" data-side="loaded">{second}</div>
+            </div>
+        </div>
+    }
+}
+
 #[component]
 pub fn UiKitPage() -> impl IntoView {
     let rq = crate::request::req();
@@ -102,10 +132,13 @@ pub fn UiKitPage() -> impl IntoView {
     let t = move |en: &'static str, ar: &'static str| tr(lang, en, ar);
     let cards = sample_cards(10);
     let rail_cards = cards.clone();
+    let pair_card = cards.first().cloned();
+    let pair_rail: Vec<CardData> = cards.iter().take(6).cloned().collect();
     let first_img = cards
         .first()
         .map(|c| c.img.clone())
         .unwrap_or_else(|| Img::missing("x"));
+    let pair_img = first_img.clone();
     let photo = crate::components::assets::media_img("brand/og-nile-en")
         .unwrap_or_else(|| Img::missing("og"));
 
@@ -229,8 +262,8 @@ pub fn UiKitPage() -> impl IntoView {
                         ("colour", t("Colour", "الألوان")), ("type", t("Type", "الخط")), ("shape", t("Shape & motion", "الشكل والحركة")),
                         ("buttons", t("Buttons", "الأزرار")), ("segmented", t("Segmented", "مفاتيح")), ("labels", t("Badges & status", "شارات وحالات")),
                         ("price", t("Price & rating", "السعر والتقييم")), ("picture", t("Pictures", "الصور")), ("cards", t("Product cards", "كروت المنتجات")),
-                        ("overlays", t("Drawers & toasts", "الأدراج والتنبيهات")), ("forms", t("Forms", "النماذج")), ("states", t("Empty states", "الحالات الفاضية")),
-                        ("skeletons", t("Skeletons", "هياكل التحميل")), ("icons", t("Icons", "الأيقونات")),
+                        ("overlays", t("Drawers & toasts", "الأدراج والتنبيهات")), ("forms", t("Forms", "النماذج")), ("states", t("States", "الحالات")),
+                        ("network", t("Network", "الشبكة")), ("skeletons", t("Skeletons", "هياكل التحميل")), ("icons", t("Icons", "الأيقونات")),
                     ]
                         .into_iter()
                         .map(|(id, label)| view! { <a class="kit__toc-link" href=format!("#{id}") target="_self">{label}</a> })
@@ -466,28 +499,145 @@ pub fn UiKitPage() -> impl IntoView {
                 </div>
             </Specimen>
 
-            <Specimen id="states" title=t("Empty states & wayfinding", "الحالات الفاضية والتنقل") note=t("Every dead end offers a way on. Breadcrumbs say where you are.", "كل نهاية طريق فيها خطوة جاية. ومسار التنقل بيقولك انت فين.") card=true>
+            <Specimen id="states" title=t("States", "الحالات") note=t("Every state says what happened and offers a way on: empty, failed, offline, not found, not built yet. Errors are worded in plain Modern Standard Arabic.", "كل حالة بتقول اللي حصل وبتديك خطوة جاية: فاضي، فشل، من غير نت، مش موجود، لسه ما اتعملش. رسايل الأخطاء بالفصحى البسيطة.") card=true>
                 <Breadcrumbs items=vec![
                     (t("Home", "الرئيسية").to_owned(), Some("/".to_owned())),
                     (t("Phones", "موبايلات").to_owned(), Some("/c/phones".to_owned())),
                     ("Galaxy S25 Ultra".to_owned(), None),
                 ]/>
-                <EmptyState
-                    art="empty-cart"
-                    title=t("Your cart is empty", "سلتك فاضية")
-                    body=t("Today's deals are a good place to start.", "عروض النهارده بداية حلوة.")
-                    action=("/search?deal=1&sort=discount".to_owned(), t("See today's deals", "شوف عروض النهارده").to_owned())
-                />
+                <div class="kit__states">
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Empty · cart", "فاضي · السلة")}</p>
+                        <StateView compact=true art="empty-cart" title=t("Your cart is empty", "سلتك فاضية") body=t("Today's deals are a good place to start.", "عروض النهارده بداية حلوة.")>
+                            <Button href="/search?deal=1&sort=discount" icon="tag">{t("See today's deals", "شوف عروض النهارده")}</Button>
+                        </StateView>
+                    </div>
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Empty · no results", "فاضي · مفيش نتائج")}</p>
+                        <StateView compact=true tone=StateTone::Empty title=t("No results for “galaxy s99”", "مفيش نتائج لـ «galaxy s99»") body=t("Check the spelling, or try fewer words.", "اتأكد من الكتابة، أو جرّب كلمات أقل.")>
+                            <Button kind=ButtonKind::Outline href="/search" icon="x">{t("Clear the search", "امسح البحث")}</Button>
+                        </StateView>
+                    </div>
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Error", "خطأ")}</p>
+                        <StateView compact=true tone=StateTone::Error title=t("Your orders didn't load", "تعذّر تحميل طلباتك") body=t("It's not you. Please try again in a moment.", "المشكلة ليست عندك. يُرجى المحاولة مرة أخرى بعد قليل.") footnote=t("Reference 7F3K-21", "رقم المرجع 7F3K-21")>
+                            <Button href="/ui#states" icon="rotate-ccw">{t("Try again", "إعادة المحاولة")}</Button>
+                        </StateView>
+                    </div>
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Offline", "من غير نت")}</p>
+                        <StateView compact=true tone=StateTone::Offline title=t("You're offline", "لا يوجد اتصال بالإنترنت") body=t("Check your connection. We'll reconnect by ourselves.", "تحقّق من اتصالك، وسنعيد الاتصال تلقائيًا.")>
+                            <Button href="/ui#states" icon="rotate-ccw">{t("Try again", "إعادة المحاولة")}</Button>
+                        </StateView>
+                    </div>
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Not found", "مش موجود")}</p>
+                        <StateView compact=true tone=StateTone::NotFound kicker=t("Error 404", "خطأ 404") title=t("We couldn't find that page", "لم نعثر على هذه الصفحة") body=t("The link may be old or mistyped.", "ربما يكون الرابط قديمًا أو به خطأ.")>
+                            <Button kind=ButtonKind::Outline href="/" icon="house">{t("Home page", "الصفحة الرئيسية")}</Button>
+                        </StateView>
+                    </div>
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Coming soon · payment", "قريبًا · الدفع")}</p>
+                        <ComingSoon
+                            compact=true
+                            feature=t("Card and wallet payments", "الدفع بالكارت والمحفظة")
+                            description=t("Pay by card, Apple Pay or a mobile wallet. In this preview every order is cash on delivery.", "هتقدر تدفع بالكارت أو Apple Pay أو محفظة الموبايل. في المعاينة دي كل الطلبات كاش عند الاستلام.")
+                            back_href="/ui#states"
+                        />
+                    </div>
+                    <div class="kit__state">
+                        <p class="kit__label">{t("Coming soon · account", "قريبًا · الحساب")}</p>
+                        <ComingSoon
+                            compact=true
+                            feature=t("Your account", "حسابك")
+                            description=t("Saved addresses, past orders and one-tap reorder, on every device.", "عناوينك المحفوظة وطلباتك القديمة وإعادة الطلب بلمسة، على كل أجهزتك.")
+                            back_href="/ui#states"
+                            back_label=t("Keep shopping", "كمّل تسوق")
+                        />
+                    </div>
+                </div>
+                <Row label=t("A section fails", "قسم فشل")>
+                    <div class="kit__section-errors">
+                        <SectionError what=t("Today's deals", "عروض اليوم") retry_href="/ui#states"/>
+                        <SectionError compact=true retry_href="/ui#states"/>
+                    </div>
+                </Row>
+                <Row label=t("A whole page fails", "الصفحة كلها فشلت")>
+                    <Button kind=ButtonKind::Outline href="/ui/no-such-page" icon="search">{t("Open the 404 page", "افتح صفحة 404")}</Button>
+                    <Button kind=ButtonKind::Outline href="/showcase?crash=1" icon="triangle-alert">{t("Open the 500 page", "افتح صفحة 500")}</Button>
+                </Row>
             </Specimen>
 
-            <Specimen id="skeletons" title=t("Skeletons", "هياكل التحميل") note=t("Solid blocks that pulse, exactly the size of what replaces them.", "بلوكات مصمتة بتنبض، بنفس مقاس اللي هيظهر مكانها بالظبط.") card=true>
-                <div class="kit__skeletons">
-                    <Skeleton width="3.5rem" height="3.5rem" circle=true/>
-                    <div class="kit__skel-text">
-                        <SkeletonText lines=1 class="t-h3"/>
-                        <SkeletonText lines=3/>
+            <Specimen id="network" title=t("Network", "الشبكة") note=t("What a visitor sees when the connection drops, a page is slow or a navigation fails. These buttons stage each one; nothing is really broken.", "اللي الزائر بيشوفه لما النت يقطع، أو صفحة تتأخر، أو التنقل يفشل. الأزرار دي بتمثّل كل حالة، ومفيش حاجة بايظة بجد.") card=true>
+                <Row label=t("Offline banner", "شريط عدم الاتصال")>
+                    <Button kind=ButtonKind::Secondary icon="wifi-off" attr:data-preview="offline">{t("Go offline", "اقطع النت")}</Button>
+                    <Button kind=ButtonKind::Secondary icon="wifi" attr:data-preview="online">{t("Come back online", "رجّع النت")}</Button>
+                </Row>
+                <Row label=t("A navigation fails", "التنقل فشل")>
+                    <Button kind=ButtonKind::Outline attr:data-preview="alert:offline">{t("Offline", "من غير نت")}</Button>
+                    <Button kind=ButtonKind::Outline attr:data-preview="alert:timeout">{t("Too slow", "اتأخر")}</Button>
+                    <Button kind=ButtonKind::Outline attr:data-preview="alert:server">{t("Server error", "خطأ في السيرفر")}</Button>
+                </Row>
+                <Row label=t("A slow navigation", "تنقل بطيء")>
+                    <Button kind=ButtonKind::Outline attr:data-preview="progress:1800">{t("Show the progress bar", "اعرض شريط التحميل")}</Button>
+                </Row>
+                <p class="kit__note t-caption">
+                    {t(
+                        "Reads in islands retry by themselves (net::retry): after 300 ms, 600 ms, then 1.2 s, four tries in all, and none is spent while offline: they wait for the connection.",
+                        "القراءات جوه الـ islands بتعيد المحاولة لوحدها (net::retry): بعد ٣٠٠ مللي ثانية، و٦٠٠، وبعدين ١٫٢ ثانية، أربع محاولات في المجموع، ومن غير نت مفيش محاولة بتضيع: بتستنى الاتصال.",
+                    )}
+                </p>
+            </Specimen>
+
+            <Specimen id="skeletons" title=t("Skeletons", "هياكل التحميل") note=t("Solid blocks that pulse, built from the boxes of what replaces them. Each pair is loading beside loaded: nothing moves when one becomes the other.", "بلوكات مصمتة بتنبض، معمولة بنفس مقاسات اللي هيظهر مكانها. كل اتنين جنب بعض تحميل وجاهز: مفيش حاجة بتتحرك لما واحد يبقى التاني.") card=true>
+                <div class="kit__pairs">
+                    <KitPair title=t("Heading and text", "عنوان وكلام") loading=t("Loading", "بيحمّل") loaded=t("Loaded", "جاهز")>
+                        <div class="kit__copy">
+                            <SkeletonLines lines=1 class="t-h3" last_width="70%"/>
+                            <SkeletonLines lines=3 class="kit__para"/>
+                        </div>
+                        <div class="kit__copy">
+                            <h3 class="t-h3">{t("Galaxy S25", "جالاكسي S25")}</h3>
+                            <p class="kit__para kit__clamp">
+                                {t(
+                                    "A 6.9-inch screen that stays readable in the midday sun, a titanium frame, the S Pen tucked inside, and a 200 MP camera that keeps detail at night. Seven years of updates, and delivery in Cairo within hours.",
+                                    "شاشة ٦٫٩ بوصة بتتقري في شمس الضهر، وإطار تيتانيوم، والقلم جوه الموبايل، وكاميرا ٢٠٠ ميجابكسل بتحافظ على التفاصيل بالليل. سبع سنين تحديثات، وتوصيل في القاهرة خلال ساعات.",
+                                )}
+                            </p>
+                        </div>
+                    </KitPair>
+                    <KitPair title=t("Product card", "كارت منتج") loading=t("Loading", "بيحمّل") loaded=t("Loaded", "جاهز")>
+                        <ProductCardSkeleton/>
+                        {pair_card.map(|c| view! { <ProductCard card=c lang=lang numerals=num/> })}
+                    </KitPair>
+                    <KitPair title=t("Picture", "صورة") loading=t("Loading", "بيحمّل") loaded=t("Loaded", "جاهز")>
+                        <SkeletonMedia aspect=1.0 class="kit__pic-box"/>
+                        <Picture img=pair_img sizes="(min-width: 768px) 280px, 45vw" lang=lang aspect=1.0 class="kit__pic-box"/>
+                    </KitPair>
+                    <KitPair title=t("Fields", "خانات") loading=t("Loading", "بيحمّل") loaded=t("Loaded", "جاهز")>
+                        <div class="kit__fields">
+                            <SkeletonField hint=true/>
+                            <SkeletonField multiline=true/>
+                        </div>
+                        <div class="kit__fields">
+                            <TextInput id="kit-skel-name" name="skel-name" label=t("Full name", "الاسم") hint=t("For the courier", "للمندوب") value="Mona Adel"/>
+                            <TextArea id="kit-skel-notes" name="skel-notes" label=t("Notes", "ملاحظات") placeholder=t("Ring the bell twice", "اضرب الجرس مرتين")/>
+                        </div>
+                    </KitPair>
+                    <KitPair title=t("Rail", "شريط منتجات") loading=t("Loading", "بيحمّل") loaded=t("Loaded", "جاهز") stack=true>
+                        <SkeletonRail/>
+                        <Rail label=t("Picks", "مختارات")>
+                            {pair_rail
+                                .into_iter()
+                                .map(|c| view! { <ProductCard card=c lang=lang numerals=num/> })
+                                .collect_view()}
+                        </Rail>
+                    </KitPair>
+                    <div class="kit__skeletons">
+                        <Skeleton width="3.5rem" height="3.5rem" circle=true/>
+                        <SkeletonLines lines=2 class="t-h3" last_width="40%"/>
+                        <Skeleton width="100%" height="2.75rem"/>
                     </div>
-                    <Skeleton width="100%" height="2.75rem"/>
                 </div>
             </Specimen>
 

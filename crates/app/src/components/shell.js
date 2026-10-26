@@ -148,6 +148,9 @@
     const n = (fails.get(key) || 0) + 1;
     fails.set(key, n);
     if (n >= 2 && method === "GET") { location.assign(key); return; }
+    showAlert(key, method, why);
+  };
+  const showAlert = (key, method, why) => {
     const el = d.querySelector(".nav-alert");
     if (!el) return;
     el.dataset.open = "true";
@@ -164,6 +167,16 @@
       if (why_el) why_el.textContent = el.getAttribute("data-why-" + why) || "";
     });
   };
+
+  // The design system's page (/ui) stages these states with buttons; nothing really fails.
+  d.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest("button[data-preview]");
+    if (!b) return;
+    const [what, arg] = b.dataset.preview.split(":");
+    if (what === "progress") { navBegin(); setTimeout(() => navEnd(true), +arg || 1500); }
+    else if (what === "alert") showAlert(location.href, "GET", arg || "network");
+    else if (what === "offline" || what === "online") w.dispatchEvent(new Event(what));
+  });
 
   // ── Keep the router's page diff aligned ───────────────────────────────────
   // The islands router walks the old and new documents in lockstep, <head> included. Pages carry
