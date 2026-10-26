@@ -173,6 +173,48 @@
 .link-btn:hover {
   color: var(--text);
 }
+/* The "Undo" a removed line leaves in its place. */
+.cline--gone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  min-block-size: 56px;
+  margin-block: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
+  border-radius: var(--r-lg);
+  corner-shape: squircle;
+  background: var(--sunk);
+  animation: gone-in var(--dur-base) var(--ease-out);
+}
+.cline--gone + .cline,
+.cline + .cline--gone {
+  border-block-start: 0;
+}
+.cline__gone-text {
+  margin: 0;
+  min-inline-size: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cline__undo .link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: var(--fw-bold);
+}
+@keyframes gone-in {
+  from { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cline--gone { animation: none; }
+}
 .cline--skeleton .cline__main {
   gap: var(--sp-2);
   padding-block-start: var(--sp-1);
@@ -562,214 +604,89 @@ form[aria-busy="true"] {
 }
 
 /* ── The drawer's own layout ───────────────────────────────────────────────── */
-.cart-drawer .drawer__panel > .cart-drawer__scroll {
+dialog[data-cart] .cart-drawer__scroll {
   flex: 1;
   min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-inline: var(--sp-5);
 }
-.cart-drawer .cart-summary {
+dialog[data-cart] .cart-summary {
   padding: var(--sp-4) var(--sp-5) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
   border-block-start: 1px solid var(--rule);
   background: var(--surface);
 }
-.cart-drawer .cart-empty,
-.cart-drawer .cart-note {
+dialog[data-cart] .cart-empty,
+dialog[data-cart] .cart-note {
   flex: 1;
   justify-content: center;
 }
-html:has(dialog.cart-drawer[open]) {
-  overflow: hidden;
-}
 
 /* ═════════════════════════════════════════════════════════════════════════════
-   TEMPORARY — styles for the local drawer + toast shims (pages/cart/shim.rs).
-   Delete this block when components::drawer / components::toast land (tier 3).
+   TEMPORARY — layout for components::drawer::Drawer as the cart uses it, until
+   style/components/drawer.css has content (it is an empty stub on main today).
+   Scoped to the cart's dialog ([data-cart]); delete this block when the design
+   system styles the drawer. The panel's motion is the component's spring (JS
+   transform); CSS only places things.
    ═════════════════════════════════════════════════════════════════════════════ */
-dialog.drawer {
+dialog.drawer[data-cart] {
   position: fixed;
-  inset-block: 0;
-  inset-inline: auto 0;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
   margin: 0;
   padding: 0;
   border: 0;
-  inline-size: min(26.5rem, 92vw);
-  max-inline-size: none;
-  block-size: 100dvh;
-  max-block-size: none;
-  background: var(--surface);
+  background: transparent;
+  overflow: hidden;
   color: var(--text);
+}
+dialog.drawer[data-cart]::backdrop {
+  background: transparent;
+}
+dialog.drawer[data-cart] .drawer__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+}
+dialog.drawer[data-cart] .drawer__panel {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: flex;
+  flex-direction: column;
+  inline-size: min(26.5rem, 92vw);
+  background: var(--surface);
   border-start-start-radius: var(--r-2xl);
   border-end-start-radius: var(--r-2xl);
   corner-shape: squircle;
   box-shadow: var(--shadow-modal);
-  overflow: hidden;
-  translate: 100% 0;
-  /* In and out along the same path: from and back to the inline-end edge. */
-  transition:
-    translate var(--spring-default-dur, var(--dur-slow)) var(--spring-default, var(--ease-drawer)),
-    overlay var(--spring-default-dur, var(--dur-slow)) allow-discrete,
-    display var(--spring-default-dur, var(--dur-slow)) allow-discrete;
+  touch-action: pan-y;
+  will-change: transform;
 }
-[dir="rtl"] dialog.drawer {
-  translate: -100% 0;
-}
-dialog.drawer[open] {
-  translate: 0 0;
-}
-@starting-style {
-  dialog.drawer[open] { translate: 100% 0; }
-  [dir="rtl"] dialog.drawer[open] { translate: -100% 0; }
-}
-dialog.drawer::backdrop {
-  background: var(--scrim);
-  opacity: 0;
-  transition:
-    opacity var(--dur-slow) var(--ease-out),
-    overlay var(--dur-slow) allow-discrete,
-    display var(--dur-slow) allow-discrete;
-}
-dialog.drawer[open]::backdrop {
-  opacity: 1;
-}
-@starting-style {
-  dialog.drawer[open]::backdrop { opacity: 0; }
-}
-.drawer__panel {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  block-size: 100%;
-}
-.drawer__head {
+dialog.drawer[data-cart] .drawer__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-3) var(--sp-2) var(--sp-5);
-  padding-block-start: calc(var(--sp-3) + env(safe-area-inset-top, 0px));
+  padding: calc(var(--sp-3) + env(safe-area-inset-top, 0px)) var(--sp-3) var(--sp-2) var(--sp-5);
 }
-.drawer__title {
+dialog.drawer[data-cart] .drawer__title {
   margin: 0;
   font-size: var(--fs-xl);
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-tight, 0);
 }
-@media (prefers-reduced-motion: reduce) {
-  dialog.drawer,
-  [dir="rtl"] dialog.drawer {
-    translate: 0 0;
-    opacity: 0;
-    transition:
-      opacity var(--dur-fast) linear,
-      overlay var(--dur-fast) allow-discrete,
-      display var(--dur-fast) allow-discrete;
-  }
-  dialog.drawer[open] { opacity: 1; }
-  @starting-style {
-    dialog.drawer[open],
-    [dir="rtl"] dialog.drawer[open] { translate: 0 0; opacity: 0; }
-  }
-}
-
-.toaster {
-  position: fixed;
-  z-index: var(--z-toast);
-  inset-inline: var(--sp-3);
-  inset-block-end: calc(var(--bottom-nav-h) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-2);
-  pointer-events: none;
-}
-.toaster__stack {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-2);
-  inline-size: 100%;
-}
-@media (min-width: 768px) {
-  .toaster,
-  .toaster__stack {
-    align-items: flex-end;
-  }
-  .toaster {
-    inset-inline: auto var(--sp-6);
-    inset-block-end: var(--sp-6);
-  }
-}
-.toast {
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  inline-size: min(100%, 26rem);
-  min-block-size: 52px;
-  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
-  border-radius: var(--r-lg);
-  corner-shape: squircle;
-  background: var(--ink);
-  color: var(--on-ink);
-  box-shadow: var(--shadow-float);
-  animation: toast-in var(--spring-default-dur, var(--dur-slow)) var(--spring-default, var(--ease-out));
-}
-@keyframes toast-in {
-  from { opacity: 0; translate: 0 12px; scale: 0.98; }
-}
-.toast__icon {
-  flex: none;
-}
-.toast--success .toast__icon { color: var(--success-on-ink, var(--success)); }
-.toast--error .toast__icon { color: var(--danger-on-ink, var(--danger)); }
-.toast__text {
+dialog.drawer[data-cart] .drawer__body {
+  position: relative;
   flex: 1;
-  margin: 0;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  line-height: var(--lh-snug);
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
 }
-.toast__action,
-.toast__close {
-  flex: none;
-  min-block-size: 40px;
-  border: 0;
-  border-radius: var(--r-md);
-  corner-shape: squircle;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  transition: scale 100ms var(--ease-out), background-color var(--dur-fast) var(--ease-out);
-}
-.toast__action {
-  padding-inline: var(--sp-3);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  background: color-mix(in oklab, var(--on-ink) 14%, transparent);
-}
-.toast__close {
-  display: grid;
-  place-items: center;
-  inline-size: 40px;
-  opacity: 0.7;
-}
-.toast__action:active,
-.toast__close:active {
-  scale: var(--press, 0.97);
-}
-/* While the drawer is open (top layer), toasts show inside it instead. */
-html:has(dialog.cart-drawer[open]) .toaster--page {
-  display: none;
-}
-.toaster--drawer {
-  position: absolute;
-  inset-inline: var(--sp-3);
-  inset-block-end: var(--sp-3);
-}
-@media (prefers-reduced-motion: reduce) {
-  .toast { animation-name: toast-fade; }
-  @keyframes toast-fade { from { opacity: 0; } }
+html:has(dialog.drawer[data-cart][open]) {
+  overflow: hidden;
 }

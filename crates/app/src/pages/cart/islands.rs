@@ -3,15 +3,15 @@
 //! through the op queue (`store`) for an instant, sequenced, roll-back-able update.
 
 use super::math::{self, Op};
-use super::shim::drawer::Drawer;
-use super::shim::toast::{ToastKind, Toaster};
-use super::store::{CartOps, OpResult, use_ops};
+use super::store::{CartOps, OpResult, Removed, use_ops};
 use crate::api::cart::{CartAdd, CartRemove, CartSetQty};
 use crate::api::types::CartLineView;
+use crate::components::drawer::Drawer;
 use crate::components::icons::Icon;
 use crate::components::image::Picture;
 use crate::components::price::{PriceLive, PriceSize};
 use crate::components::skeleton::Skeleton;
+use crate::components::toast::ToastKind;
 use crate::format;
 use crate::prefs::{Lang, tr, use_ui};
 use crate::stores::use_cart;
@@ -86,15 +86,15 @@ pub fn CartButton() -> impl IntoView {
         _ => "icon-btn__badge cart-btn__badge is-pop-b",
     };
     view! {
-        <a href="/cart" class="icon-btn icon-btn--outline cart-btn" aria-label=label
+        <a href="/cart" class="icon-btn icon-btn--ghost cart-btn" aria-label=label
             aria-haspopup="dialog" aria-controls="cart-drawer" data-count=move || { count().to_string() }
-            on:click=move |ev| {
+            data-press="" on:click=move |ev| {
                 if !on_cart_pages() {
                     ev.prevent_default();
                     cart.open.set(true);
                 }
             }>
-            <Icon name="shopping-bag" size=20/>
+            <Icon name="shopping-bag" size=22/>
             <span class=badge_class aria-hidden="true">{move || format::count(count(), ui.numerals.get())}</span>
         </a>
     }
@@ -135,29 +135,25 @@ pub fn QuickAdd(product: ProductId, variant: VariantId) -> impl IntoView {
                     .map(|l| l.name.pick(lang.is_rtl()).to_owned())
                     .unwrap_or_default();
                 let text = match lang {
-                    Lang::En => format!("{name} is in your cart"),
-                    Lang::Ar => format!("{name} اتضاف للسلة"),
+                    Lang::En => format!("Added to your cart: {name}"),
+                    Lang::Ar => format!("اتضاف للسلة: {name}"),
                 };
-                ops.toasts.show_with_action(
-                    ToastKind::Success,
-                    text,
-                    tr(lang, "View cart", "شوف السلة"),
-                    move || ops.cart.open.set(true),
-                );
+                ops.toasts.show(text, ToastKind::Success);
             }
             Err(code) => {
                 state.set(Qa::Idle);
                 ops.toasts.show(
-                    ToastKind::Error,
                     super::copy::message(&code, ops.ui.lang.get_untracked()),
+                    ToastKind::Error,
                 );
             }
         });
+        let qty = input.qty.unwrap_or(1).max(1);
         ops.submit(
             Op::Add {
                 product: p,
                 variant: v,
-                qty: input.qty.unwrap_or(1).max(1),
+                qty,
                 addons: vec![],
                 line: None,
             },
@@ -168,15 +164,16 @@ pub fn QuickAdd(product: ProductId, variant: VariantId) -> impl IntoView {
         Qa::Added => tr(ui.lang.get(), "Added to cart", "اتضاف للسلة"),
         _ => tr(ui.lang.get(), "Add to cart", "أضف للسلة"),
     };
+    let state_code = move || match state.get() {
+        Qa::Idle => "idle",
+        Qa::Busy => "busy",
+        Qa::Added => "added",
+    };
     view! {
         <CartForm class="quick-add" on_input=Callback::new(on_input)>
             <input type="hidden" name="product" value=product.0/>
             <input type="hidden" name="variant" value=variant.0/>
-            <button type="submit" class="quick-add__btn" data-state=move || match state.get() {
-                Qa::Idle => "idle",
-                Qa::Busy => "busy",
-                Qa::Added => "added",
-            } aria-label=label>
+            <button type="submit" class="quick-add__btn" data-state=state_code aria-label=label data-press="">
                 {move || match state.get() {
                     Qa::Idle => Either::Left(view! { <Icon name="plus" size=20/> }),
                     Qa::Busy => Either::Right(Either::Left(view! { <Icon name="loader-circle" size=20 class="spin"/> })),
@@ -190,7 +187,8 @@ pub fn QuickAdd(product: ProductId, variant: VariantId) -> impl IntoView {
 // ── Drawer ────────────────────────────────────────────────────────────────────────────────────
 
 /// The slide-over cart, mounted once by the app shell. Lines load the first time it opens (and
-/// are re-checked each time after); quantities change optimistically; removing a line offers undo.
+/// are re-checked each time after); quantities change optimistically; a removed line leaves an
+/// "Undo" in its place.
 #[island]
 pub fn CartDrawer() -> impl IntoView {
     let cart = use_cart();
@@ -201,15 +199,18 @@ pub fn CartDrawer() -> impl IntoView {
         if open && was_open != Some(true) {
             ops.revalidate();
         }
+        if !open && was_open == Some(true) {
+            // Closing forgets pending undos and stale notices.
+            ops.removed.set(vec![]);
+            ops.drawer_error.set(None);
+        }
         open
     });
     let title = Signal::derive(move || tr(ui.lang.get(), "Your cart", "سلتك").to_owned());
     view! {
-        <Drawer open=cart.open title id="cart-drawer" class="cart-drawer">
+        <Drawer open=cart.open title id="cart-drawer" attr:id="cart-drawer" attr:data-cart="">
             <DrawerContent/>
-            <Toaster in_drawer=true/>
         </Drawer>
-        <Toaster/>
     }
 }
 
@@ -230,24 +231,26 @@ fn DrawerContent() -> impl IntoView {
     let cart = use_cart();
     let ops = use_ops();
     let ui = use_ui();
-    let body =
-        Memo::new(
-            move |_| match cart.view.with(|v| v.as_ref().map(|v| v.lines.is_empty())) {
-                None if ops.load_failed.get() => Body::Failed,
-                None => Body::Loading,
-                // A quick add whose line the server hasn't described yet.
-                Some(true) if cart.count.get() > 0 => Body::Loading,
-                Some(true) => Body::Empty,
-                Some(false) => Body::Lines,
-            },
-        );
+    let body = Memo::new(move |_| {
+        let undo = ops.removed.with(|r| !r.is_empty());
+        match cart.view.with(|v| v.as_ref().map(|v| v.lines.is_empty())) {
+            None if ops.load_failed.get() => Body::Failed,
+            None => Body::Loading,
+            // A quick add whose line the server hasn't described yet.
+            Some(true) if cart.count.get() > 0 => Body::Loading,
+            // The last line just went: keep the list for its "Undo".
+            Some(true) if undo => Body::Lines,
+            Some(true) => Body::Empty,
+            Some(false) => Body::Lines,
+        }
+    });
     move || match body.get() {
         Body::Loading => EitherOf4::A(view! { <DrawerSkeleton/> }),
         Body::Failed => EitherOf4::B(view! {
             <div class="cart-note" role="alert">
                 <Icon name="triangle-alert" size=24/>
                 <p>{move || tr(ui.lang.get(), "We couldn't load your cart.", "تعذّر تحميل السلة.")}</p>
-                <button type="button" class="btn btn--secondary btn--md" on:click=move |_| ops.revalidate()>
+                <button type="button" class="btn btn--secondary btn--md" data-press="" on:click=move |_| ops.revalidate()>
                     {move || tr(ui.lang.get(), "Try again", "جرّب تاني")}
                 </button>
             </div>
@@ -259,13 +262,16 @@ fn DrawerContent() -> impl IntoView {
                 <p class="cart-empty__body">
                     {move || tr(ui.lang.get(), "Add something you like — it'll wait for you here.", "ضيف اللي يعجبك، وهيستناك هنا.")}
                 </p>
-                <a class="btn btn--primary btn--md" href="/" on:click=move |_| close_drawer()>
+                <a class="btn btn--primary btn--md" href="/" data-press="" on:click=move |_| close_drawer()>
                     {move || tr(ui.lang.get(), "Start shopping", "ابدأ التسوق")}
                 </a>
             </div>
         }),
         Body::Lines => EitherOf4::D(view! {
             <div class="cart-drawer__scroll">
+                {move || ops.drawer_error.get().map(|m| view! {
+                    <p class="notice notice--error" role="alert"><Icon name="circle-alert" size=20/><span>{m}</span></p>
+                })}
                 <DrawerLines/>
             </div>
             <DrawerSummary/>
@@ -293,86 +299,131 @@ fn DrawerSkeleton() -> impl IntoView {
     }
 }
 
+/// A row of the drawer's list: a live line, or the "Undo" a removed line leaves behind.
+#[derive(Clone, PartialEq)]
+enum Row {
+    Line(String),
+    Gone(u32),
+}
+
+impl Row {
+    fn key(&self) -> String {
+        match self {
+            Row::Line(k) => format!("l:{k}"),
+            Row::Gone(id) => format!("r:{id}"),
+        }
+    }
+}
+
 #[component]
 fn DrawerLines() -> impl IntoView {
     let cart = use_cart();
+    let ops = use_ops();
     let ui = use_ui();
-    let keys = Memo::new(move |_| {
-        cart.view.with(|v| {
+    let rows = Memo::new(move |_| {
+        let mut rows: Vec<Row> = cart.view.with(|v| {
             v.as_ref()
-                .map(|v| v.lines.iter().map(|l| l.key.clone()).collect::<Vec<_>>())
+                .map(|v| v.lines.iter().map(|l| Row::Line(l.key.clone())).collect())
                 .unwrap_or_default()
-        })
+        });
+        ops.removed.with(|removed| {
+            for r in removed {
+                // Back in the cart some other way: the undo has nothing left to do.
+                if rows
+                    .iter()
+                    .any(|x| matches!(x, Row::Line(k) if *k == r.line.key))
+                {
+                    continue;
+                }
+                let at = r.at.min(rows.len());
+                rows.insert(at, Row::Gone(r.id));
+            }
+        });
+        rows
     });
     view! {
-        <ul class="clines" aria-label=move || tr(ui.lang.get(), "Items in your cart", "المنتجات في سلتك")>
-            <For each=move || keys.get() key=|k| k.clone() let:key>
-                <DrawerLine key/>
+        <ul class="clines" aria-label=move || { tr(ui.lang.get(), "Items in your cart", "المنتجات في سلتك") }>
+            <For each=move || rows.get() key=Row::key let:row>
+                {match row {
+                    Row::Line(key) => Either::Left(view! { <DrawerLine key/> }),
+                    Row::Gone(id) => Either::Right(view! { <GoneLine id/> }),
+                }}
             </For>
         </ul>
     }
 }
 
-/// Move focus off a line that's about to disappear: to the next line's stepper, the previous
-/// one's, or the drawer's close button.
-fn focus_after_removal(key: &str) {
-    use wasm_bindgen::JsCast;
-    let doc = document();
-    let row = doc
-        .query_selector(&format!("#cart-drawer [data-line-key=\"{key}\"]"))
-        .ok()
-        .flatten();
-    let next = row
-        .as_ref()
-        .and_then(|r| {
-            r.next_element_sibling()
-                .or_else(|| r.previous_element_sibling())
-        })
-        .and_then(|r| r.query_selector(".qty__btn").ok().flatten());
-    let target = next.or_else(|| {
-        doc.query_selector("#cart-drawer .drawer__close")
-            .ok()
-            .flatten()
-    });
-    if let Some(el) = target.and_then(|e| e.dyn_into::<web_sys::HtmlElement>().ok()) {
-        let _ = el.focus();
-    }
-}
-
-/// Remove a line now; the toast offers to put it back (in place, with its quantity and add-ons).
+/// Remove a line now; an "Undo" takes its place (and the focus) for a few seconds.
 fn remove_with_undo(ops: CartOps, line: CartLineView) {
-    focus_after_removal(&line.key);
+    let at = ops.cart.view.with_untracked(|v| {
+        v.as_ref()
+            .and_then(|v| v.lines.iter().position(|l| l.key == line.key))
+            .unwrap_or(0)
+    });
+    let id = ops.remember_removed(line.clone(), at);
     ops.submit(
         Op::Remove {
             key: line.key.clone(),
         },
         None,
     );
-    let lang = ops.ui.lang.get_untracked();
-    let name = line.name.pick(lang.is_rtl()).to_owned();
-    let text = match lang {
-        Lang::En => format!("Removed {name}"),
-        Lang::Ar => format!("شيلنا {name} من السلة"),
+    super::store::focus_soon_dyn(format!("#cart-drawer [data-undo=\"{id}\"]"));
+}
+
+/// The placeholder a removed line leaves: its name and an "Undo" that re-adds it in place, with
+/// its quantity and add-ons. A real `cart_add` form, like every other control here.
+#[component]
+fn GoneLine(id: u32) -> impl IntoView {
+    let ops = use_ops();
+    let ui = use_ui();
+    let entry = ops
+        .removed
+        .with_untracked(|r| r.iter().find(|x| x.id == id).cloned());
+    let Some(Removed { line, .. }) = entry else {
+        return None;
     };
-    ops.toasts.show_with_action(
-        ToastKind::Info,
-        text,
-        tr(lang, "Undo", "رجّعه"),
-        move || {
-            if let Some((product, variant, addons)) = math::parse_key(&line.key) {
-                ops.submit(
-                    Op::Add {
-                        product,
-                        variant,
-                        qty: line.qty,
-                        addons,
-                        line: Some(Box::new(line.clone())),
-                    },
-                    None,
-                );
-            }
-        },
-    );
+    let (product, variant, addons) =
+        math::parse_key(&line.key).unwrap_or((line.product.0, line.variant.0, vec![]));
+    let name = line.name.clone();
+    let undo_line = line.clone();
+    let on_input = move |input: CartAdd| {
+        ops.forget_removed(id);
+        let key = undo_line.key.clone();
+        ops.submit(
+            Op::Add {
+                product: input.product,
+                variant: input.variant,
+                qty: input.qty.unwrap_or(1),
+                addons: math::parse_key(&key).map(|k| k.2).unwrap_or_default(),
+                line: Some(Box::new(undo_line.clone())),
+            },
+            None,
+        );
+        super::store::focus_soon_dyn(format!("#cart-drawer [data-line-key=\"{key}\"] .qty__btn"));
+    };
+    let text = move || {
+        let lang = ui.lang.get();
+        let n = name.pick(lang.is_rtl()).to_owned();
+        match lang {
+            Lang::En => format!("Removed {n}"),
+            Lang::Ar => format!("شيلنا {n}"),
+        }
+    };
+    Some(view! {
+        <li class="cline cline--gone">
+            <p class="cline__gone-text" role="status">{text}</p>
+            <CartForm class="cline__undo" on_input=Callback::new(on_input)>
+                <input type="hidden" name="product" value=product/>
+                <input type="hidden" name="variant" value=variant/>
+                <input type="hidden" name="qty" value=line.qty/>
+                <input type="hidden" name="addons" value=addons.join(",")/>
+                <button type="submit" class="link-btn" data-undo=id.to_string() data-press="">
+                    <Icon name="rotate-ccw" size=16/>
+                    <span>{move || tr(ui.lang.get(), "Undo", "رجّعه")}</span>
+                </button>
+            </CartForm>
+        </li>
+    })
 }
 
 #[component]
@@ -443,11 +494,12 @@ fn DrawerLine(key: String) -> impl IntoView {
         let n = name_for.clone();
         move || {
             let lang = ui.lang.get();
-            if qty() <= 1 {
-                format!("{}: {}", tr(lang, "Remove", "شيل"), n())
+            let verb = if qty() <= 1 {
+                tr(lang, "Remove", "شيل")
             } else {
-                format!("{}: {}", tr(lang, "One less", "قلّل واحد"), n())
-            }
+                tr(lang, "One less", "قلّل واحد")
+            };
+            format!("{verb}: {}", n())
         }
     };
     let inc_label = {
@@ -475,31 +527,31 @@ fn DrawerLine(key: String) -> impl IntoView {
                 <a class="cline__name" href=href on:click=move |_| close_drawer()>{name_for.clone()}</a>
                 {move || { let d = detail(); (!d.is_empty()).then(|| view! { <p class="cline__detail">{d}</p> }) }}
                 <div class="cline__unit">
-                    <PriceLive amount=unit compare_at=was size=PriceSize::Sm/>
+                    <PriceLive amount=unit compare_at=was size=PriceSize::Sm no_badge=true/>
                     {move || (qty() > 1).then(|| view! { <span class="cline__each">{tr(ui.lang.get(), "each", "للقطعة")}</span> })}
                 </div>
                 {move || low_stock().map(|t| view! { <p class="cline__stock">{t}</p> })}
                 <CartForm class="cline__remove" on_input=Callback::new(on_remove)>
                     <input type="hidden" name="key" value=key_rm/>
-                    <button type="submit" class="link-btn" aria-label=rm_label>{move || tr(ui.lang.get(), "Remove", "شيل")}</button>
+                    <button type="submit" class="link-btn" aria-label=rm_label data-press="">{move || tr(ui.lang.get(), "Remove", "شيل")}</button>
                 </CartForm>
             </div>
             <div class="cline__side">
                 <CartForm class="qty" on_input=Callback::new(on_qty)>
                     <input type="hidden" name="key" value=key_qty/>
                     <button type="submit" name="qty" value=move || { qty().saturating_sub(1).to_string() } class="qty__btn"
-                        aria-label=dec_label>
+                        aria-label=dec_label data-press="">
                         {move || if qty() <= 1 { view! { <Icon name="trash-2" size=18/> } } else { view! { <Icon name="minus" size=18/> } }}
                     </button>
                     <output class="qty__val mono" aria-live="polite" aria-atomic="true">
                         {move || format::count(qty(), ui.numerals.get())}
                     </output>
                     <button type="submit" name="qty" value=move || { (qty() + 1).to_string() } class="qty__btn"
-                        disabled=move || { qty() >= max() } aria-label=inc_label>
+                        disabled=move || { qty() >= max() } aria-label=inc_label data-press="">
                         <Icon name="plus" size=18/>
                     </button>
                 </CartForm>
-                <span class="cline__total"><PriceLive amount=total size=PriceSize::Sm/></span>
+                <span class="cline__total"><PriceLive amount=total size=PriceSize::Sm no_badge=true/></span>
             </div>
         </li>
     })
@@ -518,18 +570,22 @@ fn DrawerSummary() -> impl IntoView {
     let fee = pick(|v| v.delivery_fee);
     let total = pick(|v| v.total);
     let vat = pick(|v| v.tax_included);
+    let empty = move || {
+        cart.view
+            .with(|v| v.as_ref().is_none_or(|v| v.lines.is_empty()))
+    };
     view! {
-        <div class="cart-summary" aria-busy=move || ops.busy.get().to_string()>
+        <div class="cart-summary" aria-busy=move || { ops.busy.get().to_string() } data-empty=move || { empty().to_string() }>
             <FreeDeliveryMeter/>
             <dl class="totals">
                 <div class="totals__row">
                     <dt>{move || tr(ui.lang.get(), "Subtotal", "المجموع")}</dt>
-                    <dd><PriceLive amount=subtotal size=PriceSize::Sm/></dd>
+                    <dd><PriceLive amount=subtotal size=PriceSize::Sm no_badge=true/></dd>
                 </div>
                 {move || (savings.get().0 > 0).then(|| view! {
                     <div class="totals__row totals__row--save">
                         <dt>{move || tr(ui.lang.get(), "You save", "وفّرت")}</dt>
-                        <dd><PriceLive amount=savings size=PriceSize::Sm/></dd>
+                        <dd><PriceLive amount=savings size=PriceSize::Sm no_badge=true/></dd>
                     </div>
                 })}
                 <div class="totals__row">
@@ -537,12 +593,12 @@ fn DrawerSummary() -> impl IntoView {
                     <dd>{move || if fee.get().0 == 0 {
                         Either::Left(view! { <span class="totals__free">{tr(ui.lang.get(), "Free", "مجاني")}</span> })
                     } else {
-                        Either::Right(view! { <PriceLive amount=fee size=PriceSize::Sm/> })
+                        Either::Right(view! { <PriceLive amount=fee size=PriceSize::Sm no_badge=true/> })
                     }}</dd>
                 </div>
                 <div class="totals__row totals__row--total">
                     <dt>{move || tr(ui.lang.get(), "Total", "الإجمالي")}</dt>
-                    <dd><PriceLive amount=total size=PriceSize::Lg/></dd>
+                    <dd><PriceLive amount=total size=PriceSize::Lg no_badge=true/></dd>
                 </div>
             </dl>
             <p class="totals__vat">
@@ -556,11 +612,11 @@ fn DrawerSummary() -> impl IntoView {
                 }}
             </p>
             <div class="cart-summary__actions">
-                <a class="btn btn--primary btn--lg btn--block" href="/checkout" on:click=move |_| close_drawer()>
+                <a class="btn btn--primary btn--lg btn--block" href="/checkout" data-press="" on:click=move |_| close_drawer()>
                     <span class="btn__label">{move || tr(ui.lang.get(), "Checkout", "كمّل الطلب")}</span>
                     <Icon name="arrow-right" size=18 class="flip-rtl btn__end"/>
                 </a>
-                <a class="btn btn--ghost btn--md btn--block" href="/cart" on:click=move |_| close_drawer()>
+                <a class="btn btn--ghost btn--md btn--block" href="/cart" data-press="" on:click=move |_| close_drawer()>
                     {move || tr(ui.lang.get(), "View cart", "شوف السلة")}
                 </a>
             </div>
@@ -598,11 +654,11 @@ pub fn FreeDeliveryMeter() -> impl IntoView {
         }
     };
     view! {
-        <div class="ship" data-done=move || (left() == 0).to_string()>
-            <p class="ship__text"><Icon name="truck" size=18/><span>{text.clone()}</span></p>
+        <div class="ship" data-done=move || { (left() == 0).to_string() }>
+            <p class="ship__text"><Icon name="truck" size=18/><span>{text}</span></p>
             <div class="ship__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-                aria-valuenow=move || ((progress() * 100.0).round() as u32).to_string() aria-valuetext=text>
-                <span class="ship__fill" style=move || format!("--p:{:.4}", progress())></span>
+                aria-valuenow=move || { ((progress() * 100.0).round() as u32).to_string() } aria-valuetext=text>
+                <span class="ship__fill" style=move || { format!("--p:{:.4}", progress()) }></span>
             </div>
         </div>
     }

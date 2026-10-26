@@ -24,9 +24,9 @@
 //! a full page load — checkout steps use it.
 
 use super::math::{self, Op};
-use super::shim::toast::{ToastKind, Toasts, use_toasts};
 use crate::api::cart::{cart_add, cart_get, cart_remove, cart_set_qty};
-use crate::api::types::CartView;
+use crate::api::types::{CartLineView, CartView};
+use crate::components::toast::{ToastKind, Toasts, use_toasts};
 use crate::prefs::{Ui, use_ui};
 use crate::stores::{CartStore, use_cart};
 use domain::Piastres;
@@ -35,6 +35,15 @@ use std::collections::VecDeque;
 
 /// What a queued op's caller hears back: the confirmed cart, or an error code (see `copy`).
 pub type OpResult = Result<CartView, String>;
+
+/// A line removed from the drawer, kept for a few seconds so its "Undo" can put it back in place.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Removed {
+    pub id: u32,
+    pub line: CartLineView,
+    /// Its index in the list when it was removed.
+    pub at: usize,
+}
 
 #[derive(Clone)]
 struct Job {
@@ -63,6 +72,11 @@ pub struct CartOps {
     fee: StoredValue<Piastres>,
     /// The count before pending ops, while no cart has been fetched (from the cookie).
     base_count: StoredValue<u32>,
+    /// Lines just removed in the drawer (their "Undo" rows).
+    pub removed: RwSignal<Vec<Removed>>,
+    next_removed: StoredValue<u32>,
+    /// A failure to show inside the open drawer (toasts sit under its modal layer).
+    pub drawer_error: RwSignal<Option<String>>,
 }
 
 pub fn use_ops() -> CartOps {
@@ -75,8 +89,7 @@ pub fn use_ops() -> CartOps {
 
 /// Provide the client cart store (server: per request; client: once, from `client::init`).
 pub fn provide() {
-    let toasts = super::shim::toast::provide();
-    let ops = CartOps::new(use_cart(), use_ui(), toasts);
+    let ops = CartOps::new(use_cart(), use_ui(), use_toasts());
     provide_context(ops);
     #[cfg(feature = "hydrate")]
     client::init(ops);
@@ -97,6 +110,42 @@ impl CartOps {
             order: StoredValue::new(Vec::new()),
             fee: StoredValue::new(Piastres::ZERO),
             base_count: StoredValue::new(cart.count.get_untracked()),
+            removed: RwSignal::new(Vec::new()),
+            next_removed: StoredValue::new(1),
+            drawer_error: RwSignal::new(None),
+        }
+    }
+
+    /// Keep a removed line for its "Undo" (8 s); returns the row id.
+    pub fn remember_removed(self, line: CartLineView, at: usize) -> u32 {
+        let id = self.next_removed.get_value();
+        self.next_removed.set_value(id + 1);
+        self.removed.update(|r| r.push(Removed { id, line, at }));
+        #[cfg(feature = "hydrate")]
+        set_timeout(
+            move || self.forget_removed(id),
+            std::time::Duration::from_secs(8),
+        );
+        id
+    }
+
+    pub fn forget_removed(self, id: u32) {
+        self.removed.update(|r| r.retain(|x| x.id != id));
+    }
+
+    /// Say what went wrong where the shopper is looking: inside the drawer if it's open (a modal
+    /// dialog covers the page's toasts), else as a toast.
+    fn report(self, code: &str) {
+        let msg = super::copy::message(code, self.ui.lang.get_untracked());
+        if self.cart.open.get_untracked() {
+            self.drawer_error.set(Some(msg));
+            #[cfg(feature = "hydrate")]
+            set_timeout(
+                move || self.drawer_error.set(None),
+                std::time::Duration::from_secs(6),
+            );
+        } else {
+            self.toasts.show(msg, ToastKind::Error);
         }
     }
 
@@ -183,11 +232,7 @@ impl CartOps {
             self.render();
             match (&out, job.done) {
                 (_, Some(cb)) => cb.run(out),
-                (Err(code), None) => {
-                    let lang = self.ui.lang.get_untracked();
-                    self.toasts
-                        .show(ToastKind::Error, super::copy::message(code, lang));
-                }
+                (Err(code), None) => self.report(code),
                 _ => {}
             }
             self.pump();
@@ -307,6 +352,14 @@ pub fn focus_soon(selector: &'static str) {
     let _ = selector;
 }
 
+/// Like [`focus_soon`] for a selector built at run time.
+pub fn focus_soon_dyn(selector: String) {
+    #[cfg(feature = "hydrate")]
+    request_animation_frame(move || client::focus(&selector));
+    #[cfg(not(feature = "hydrate"))]
+    let _ = selector;
+}
+
 /// Navigate through the islands router (view transition, no reload), falling back to a normal
 /// navigation where its script isn't running.
 pub fn soft_navigate(href: &str) {
@@ -414,7 +467,12 @@ mod client {
                 let _ = s.class_list().add_1("is-pending");
                 s.get_attribute("data-focus-id")
             });
-            restore_focus_after_patch(focus_id, form);
+            // Forms that come back to the same page (the /cart steppers) keep their scroll
+            // position; the shell scrolls to the top after posts to another path.
+            let keep_y = form
+                .has_attribute("data-keep-scroll")
+                .then(|| window().scroll_y().unwrap_or(0.0));
+            restore_focus_after_patch(focus_id, keep_y, form);
         });
 
         // 4. Islands hydrated from now on arrived by navigation.
@@ -427,7 +485,11 @@ mod client {
     /// Wait for the router to patch the page, then (if focus fell to <body>) focus, in order: an
     /// element the server marked `data-autofocus` (an error message), the control that was pressed
     /// (same `data-focus-id`), or the list's `data-focus-fallback` (when that control is gone).
-    fn restore_focus_after_patch(focus_id: Option<String>, form: web_sys::HtmlFormElement) {
+    fn restore_focus_after_patch(
+        focus_id: Option<String>,
+        keep_y: Option<f64>,
+        form: web_sys::HtmlFormElement,
+    ) {
         let Some(body) = document().body() else {
             return;
         };
@@ -443,6 +505,9 @@ mod client {
                 }
                 if let Some(o) = slot.borrow_mut().take() {
                     o.disconnect();
+                }
+                if let Some(y) = keep_y {
+                    window().scroll_to_with_x_and_y(0.0, y);
                 }
                 let doc = document();
                 let lost = doc.active_element().is_none_or(|a| {
@@ -462,6 +527,9 @@ mod client {
                     .or_else(|| pick("[data-focus-fallback]".into()));
                 if let Some(el) = target.and_then(|t| t.dyn_into::<web_sys::HtmlElement>().ok()) {
                     let _ = el.focus();
+                    if let Some(y) = keep_y {
+                        window().scroll_to_with_x_and_y(0.0, y);
+                    }
                 }
             }
         };

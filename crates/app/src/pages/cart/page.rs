@@ -304,7 +304,7 @@ fn PageLine(
                     {(q > 1).then(|| view! { <span class="cline__each">{tr(lang, "each", "للقطعة")}</span> })}
                 </div>
                 {low.map(|t| view! { <p class="cline__stock">{t}</p> })}
-                <ActionForm action=remove attr:class="cline__remove" attr:data-pending-ui="" attr:aria-busy="false">
+                <ActionForm action=remove attr:class="cline__remove" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
                     <input type="hidden" name="key" value=key_rm/>
                     <button type="submit" class="link-btn" data-focus-id=rm_id aria-label=rm_label>
                         {tr(lang, "Remove", "شيل")}
@@ -312,7 +312,7 @@ fn PageLine(
                 </ActionForm>
             </div>
             <div class="cline__side">
-                <ActionForm action=set_qty attr:class="qty" attr:data-pending-ui="" attr:aria-busy="false">
+                <ActionForm action=set_qty attr:class="qty" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
                     <input type="hidden" name="key" value=key_qty/>
                     <button type="submit" name="qty" value=q.saturating_sub(1).to_string() class="qty__btn"
                         data-focus-id=dec_id aria-label=dec_label>
@@ -446,7 +446,7 @@ fn Picks(
                             <a class="pick__name" href=format!("/p/{}", c.slug)>{c.name.pick(ar).to_owned()}</a>
                             <Price amount=c.price compare_at=c.compare_at size=PriceSize::Sm lang numerals=num/>
                         </div>
-                        <ActionForm action=add attr:class="pick__add" attr:data-pending-ui="" attr:aria-busy="false">
+                        <ActionForm action=add attr:class="pick__add" attr:data-pending-ui="" attr:data-keep-scroll="" attr:aria-busy="false">
                             <input type="hidden" name="product" value=c.id.0/>
                             <input type="hidden" name="variant" value=c.default_variant.0/>
                             <button type="submit" class="icon-btn icon-btn--outline" data-focus-id=format!("pick:{}", c.id.0)

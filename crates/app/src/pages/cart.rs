@@ -16,7 +16,6 @@ mod copy;
 mod islands;
 pub mod math;
 mod page;
-pub mod shim;
 pub mod store;
 
 pub use islands::{CartButton, CartDrawer, CartForm, FreeDeliveryMeter, QuickAdd};
