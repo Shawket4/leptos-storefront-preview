@@ -714,9 +714,9 @@ html:has(dialog.drawer[data-cart][open]) {
 
 /* ── Line problems: stock moved, a change didn't save ─────────────────────── */
 .line-issue {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
   gap: var(--sp-1) var(--sp-2);
   margin-block-start: var(--sp-1);
   padding: var(--sp-2) var(--sp-3);
@@ -727,7 +727,11 @@ html:has(dialog.drawer[data-cart][open]) {
   font-weight: var(--fw-semibold);
 }
 .line-issue .icon {
-  flex: none;
+  margin-block-start: 0.2em;
+}
+.line-issue > .link-btn,
+.line-issue > .line-issue__fix {
+  align-self: center;
 }
 .line-issue--offline {
   background: var(--warning-wash);
