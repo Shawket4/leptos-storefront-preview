@@ -1,65 +1,75 @@
 /* Home page. Tokens only; logical properties only (RTL mirrors itself); no gradients. */
 
-/* Hero: photo + a solid card that overlaps it (copy never sits on the photo). */
-.hero { margin-block-end: 8px; }
-.hero__frame { position: relative; }
-.hero__media {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  max-block-size: 68svh;
-  inline-size: 100%;
-  background: var(--img-color, var(--sunk)) center / cover no-repeat;
-  overflow: hidden;
-}
-.hero__media img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
-.hero__card {
-  position: relative;
-  margin: -72px var(--gutter) 0;
-  padding: 22px 20px 20px;
-  background: var(--surface);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-md);
+/* Hero: type first, then the photo (phones) / beside it (desktop). Nothing overlaps the image. */
+.hero {
   display: grid;
-  gap: 10px;
+  gap: 24px;
+  padding-block: 28px 8px;
 }
+.hero__copy { display: grid; gap: 12px; justify-items: center; text-align: center; }
 .hero__kicker {
   margin: 0;
-  justify-self: start;
-  padding: 3px 12px;
-  border-radius: var(--r-sm);
-  background: var(--brand-wash);
-  color: var(--brand-text, var(--brand));
-  font-size: .8125rem;
-  font-weight: 700;
+  color: var(--text-2);
+  font-size: .9375rem;
+  font-weight: 600;
 }
 .hero__title {
   margin: 0;
-  font-size: clamp(1.85rem, 1.2rem + 3.2vw, 3.25rem);
-  line-height: 1.1;
-  letter-spacing: -.03em;
+  font-size: clamp(2.125rem, 1.4rem + 3.4vw, 3.75rem);
+  line-height: 1.06;
+  letter-spacing: -.035em;
   font-weight: 800;
+  max-inline-size: 15ch;
   text-wrap: balance;
 }
-[dir="rtl"] .hero__title { letter-spacing: 0; line-height: 1.3; }
-.hero__sub { margin: 0; color: var(--text-2); font-size: clamp(.95rem, .9rem + .3vw, 1.0625rem); max-inline-size: 46ch; text-wrap: pretty; }
-.hero__ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-block-start: 6px; }
-.hero__ctas > * { flex: 1 1 auto; }
-.hero--plain .hero__media { background: var(--brand-wash); aspect-ratio: 16 / 9; }
+[dir="rtl"] .hero__title { letter-spacing: 0; line-height: 1.25; }
+.hero__sub {
+  margin: 0;
+  color: var(--text-2);
+  font-size: clamp(1rem, .95rem + .3vw, 1.1875rem);
+  line-height: 1.5;
+  max-inline-size: 38ch;
+  text-wrap: pretty;
+}
+.hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 24px;
+  margin-block-start: 8px;
+}
+.hero__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-block-size: 44px;
+  font-weight: 700;
+  color: var(--text);
+}
+.hero__link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.hero__link:active { transform: scale(.97); transition: transform 100ms ease-out; }
+.hero__media {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--r-2xl);
+  background: var(--img-color, var(--sunk)) center / cover no-repeat;
+  overflow: hidden;
+}
+@supports (corner-shape: squircle) { .hero__media { corner-shape: squircle; } }
+.hero__media img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.hero--plain .hero__media { display: none; }
 
 @media (min-width: 768px) {
-  .hero { margin-block: 20px 8px; }
-  .hero__frame { inline-size: min(100% - 2 * var(--gutter), var(--container) - 2 * var(--gutter)); margin-inline: auto; }
-  .hero__media { aspect-ratio: 21 / 9; max-block-size: none; border-radius: var(--r-2xl); }
-  .hero__card {
-    position: absolute;
-    inset-inline-start: clamp(20px, 3vw, 40px);
-    inset-block-end: clamp(20px, 3vw, 40px);
-    margin: 0;
-    inline-size: min(520px, 55%);
-    padding: 28px;
+  .hero {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(32px, 5vw, 72px);
+    padding-block: 40px 16px;
   }
-  .hero__ctas > * { flex: 0 0 auto; }
-  .hero--plain .hero__media { aspect-ratio: 21 / 9; }
+  .hero__copy { justify-items: start; text-align: start; }
+  .hero__ctas { justify-content: start; }
+  .hero__media { aspect-ratio: 5 / 4; }
 }
 
 /* Trust strip */

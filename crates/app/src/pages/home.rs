@@ -177,55 +177,46 @@ pub fn HomePage() -> impl IntoView {
     }
 }
 
-/// Art-directed hero: a 4:5 crop on phones, 21:9 from 768px, rendered in the first chunk with
-/// `fetchpriority=high` and its box reserved — it is the LCP element. The copy sits on a solid card
-/// that overlaps the photo (no scrim, no gradient), so contrast never depends on the image.
+/// Hero, Apple-style: type first on the plain page, the photo below it (phones) or beside it
+/// (desktop) — nothing floats over the image and no scrim is needed, so contrast never depends on
+/// the photo. The image is in the first chunk with `fetchpriority=high` and a reserved box: it is the
+/// LCP element.
 #[component]
 fn Hero(art: HomeArt, kicker: String, headline: String, sub: String, cta: String, lang: Lang) -> impl IntoView {
-    let alt = art.hero.as_ref().map(|i| i.alt(lang).to_owned()).unwrap_or_default();
-    let has_img = art.hero.is_some();
-    let lqip = art
-        .hero_m
-        .as_ref()
-        .or(art.hero.as_ref())
-        .map(|i| format!("background-image:url({});--img-color:{}", i.lqip, i.color));
+    // The portrait crop works for both layouts (square box on phones, 5:4 beside the copy on desktop).
+    let img = art.hero_m.clone().or_else(|| art.hero.clone());
+    let alt = img.as_ref().map(|i| i.alt(lang).to_owned()).unwrap_or_default();
+    let placeholder = img.as_ref().map(|i| format!("background-image:url({});--img-color:{}", i.lqip, i.color));
+    let plain = img.is_none();
     view! {
-        <section class="hero" class:hero--plain=!has_img aria-labelledby="hero-title">
-            <div class="hero__frame">
-                <div class="hero__media" style=lqip>
-                    {art.hero.clone().map(|wide| {
-                        let mobile = art.hero_m.clone().unwrap_or_else(|| wide.clone());
-                        view! {
-                            <picture>
-                                <source media="(max-width: 767px)" srcset=mobile.srcset() sizes="100vw"/>
-                                <img
-                                    src=wide.src_near(1280)
-                                    srcset=wide.srcset()
-                                    sizes="(max-width: 1320px) 100vw, 1320px"
-                                    alt=alt.clone()
-                                    width="1920"
-                                    height="823"
-                                    fetchpriority="high"
-                                    decoding="async"
-                                />
-                            </picture>
-                        }
-                    })}
+        <section class="hero container" class:hero--plain=plain aria-labelledby="hero-title">
+            <div class="hero__copy">
+                <p class="hero__kicker">{kicker}</p>
+                <h1 id="hero-title" class="hero__title">{headline}</h1>
+                <p class="hero__sub">{sub}</p>
+                <div class="hero__ctas">
+                    <Button kind=ButtonKind::Primary size=ButtonSize::Lg href="/search?deal=1&sort=discount".to_string()>
+                        {cta}
+                    </Button>
+                    <a class="hero__link" href="#categories">
+                        {tr(lang, "Browse categories", "تصفّح الأقسام")}
+                        <Icon name="chevron-right" size=18 class="flip-rtl"/>
+                    </a>
                 </div>
-                <div class="hero__card">
-                    <p class="hero__kicker">{kicker}</p>
-                    <h1 id="hero-title" class="hero__title">{headline}</h1>
-                    <p class="hero__sub">{sub}</p>
-                    <div class="hero__ctas">
-                        <Button kind=ButtonKind::Primary size=ButtonSize::Lg href="/search?deal=1&sort=discount".to_string()>
-                            {cta}
-                            <Icon name="arrow-right" class="flip-rtl"/>
-                        </Button>
-                        <Button kind=ButtonKind::Outline size=ButtonSize::Lg href="#categories".to_string()>
-                            {tr(lang, "Browse categories", "تصفّح الأقسام")}
-                        </Button>
-                    </div>
-                </div>
+            </div>
+            <div class="hero__media" style=placeholder>
+                {img.map(|i| view! {
+                    <img
+                        src=i.src_near(960)
+                        srcset=i.srcset()
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        alt=alt
+                        width="960"
+                        height="1200"
+                        fetchpriority="high"
+                        decoding="async"
+                    />
+                })}
             </div>
         </section>
     }
