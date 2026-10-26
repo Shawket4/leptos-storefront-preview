@@ -13,20 +13,22 @@
 //!   inside an island serialises its value into the page *again* (the prop already carries it) and
 //!   ties the island to the page-wide hydration-id sequence. Pages seen this visit are kept, so
 //!   Back/Forward and undoing a filter are instant.
-//! - Links the island handles carry `data-lx` and get `preventDefault()`, so the islands router
-//!   leaves them alone; everything else (product cards, other categories) is the router's.
+//! - A click on any link inside the island that points at this same listing (sort, chips, pages,
+//!   "clear filters") is handled in place with `preventDefault()`, so the islands router leaves
+//!   it alone; everything else (product cards, other categories) is the router's.
 //! - The islands router never diffs inside an island. When it navigates to the same route (another
 //!   category from the header, a new search), the island notices through the `data-listing-href`
 //!   attribute the router *does* diff onto the server-rendered wrapper, and reloads itself.
 
 use super::listing::*;
-use super::shim::{Drawer, DrawerSide, EmptyState};
 use crate::api::{
     self,
     types::{BrandFacet, ListingPage, ListingQuery, Sort},
 };
 use crate::components::{
     button::{Button, ButtonKind},
+    drawer::{Drawer, DrawerSide},
+    empty_state::EmptyState,
     icons::Icon,
     product_card::{CardData, ProductCard, ProductGrid, ProductGridSkeleton},
 };
@@ -305,7 +307,7 @@ pub fn CatalogExplorer(initial: ListingPage, site_name: String) -> impl IntoView
         else {
             return;
         };
-        let Ok(Some(a)) = el.closest("a[data-lx]") else {
+        let Ok(Some(a)) = el.closest("a[href]") else {
             return;
         };
         let Some(next) = a.get_attribute("href").and_then(|h| query_from_href(&h)) else {
@@ -671,7 +673,6 @@ fn sort_menu(cx: Cx, node: NodeRef<html::Details>) -> impl IntoView {
                                 <a
                                     class="lx-sort-opt"
                                     href=move || cx.query.with(|q| with_sort(q, s)).href()
-                                    data-lx
                                     aria-current=move || (cx.query.with(|q| q.sort) == s).then_some("true")
                                 >
                                     <span>{move || s.label().pick(cx.lang().is_rtl()).to_owned()}</span>
@@ -737,7 +738,7 @@ fn chips(cx: Cx) -> impl IntoView {
                     let aria = format!("{remove}: {label}");
                     view! {
                         <li>
-                            <a class="lx-chip" href=href data-lx aria-label=aria>
+                            <a class="lx-chip" href=href aria-label=aria>
                                 <span>{label}</span>
                                 <Icon name="x" size=14/>
                             </a>
@@ -747,7 +748,7 @@ fn chips(cx: Cx) -> impl IntoView {
                 .collect_view()}
             {clear_all.map(|href| view! {
                 <li>
-                    <a class="lx-chip-clear" href=href data-lx>{tr(lang, "Clear all", "امسح الكل")}</a>
+                    <a class="lx-chip-clear" href=href>{tr(lang, "Clear all", "امسح الكل")}</a>
                 </li>
             })}
         </ul>
@@ -916,7 +917,7 @@ fn toggle_row(
 }
 
 /// Nothing matched: say why, and offer the way out.
-fn empty_view(cx: Cx) -> impl IntoView {
+fn empty_view(cx: Cx) -> AnyView {
     let lang = cx.lang();
     let q = cx.shown.with(|s| s.query.clone());
     let (title, body, action) = if q.has_filters() {
@@ -970,16 +971,17 @@ fn empty_view(cx: Cx) -> impl IntoView {
             None,
         )
     };
+    let art = if q.has_filters() || q.q.is_some() {
+        "empty-search"
+    } else {
+        "delivery"
+    };
     match action {
-        Some((label, href)) => Either::Left(view! {
-            <EmptyState
-                art="search"
-                title=title
-                body=body
-                action=view! { <Button kind=ButtonKind::Primary href=href attr:data-lx="">{label}</Button> }.into_any()
-            />
-        }),
-        None => Either::Right(view! { <EmptyState art="package" title=title body=body/> }),
+        Some((label, href)) => {
+            view! { <EmptyState art=art title=title body=body action=(href, label.to_owned())/> }
+                .into_any()
+        }
+        None => view! { <EmptyState art=art title=title body=body/> }.into_any(),
     }
 }
 
@@ -1025,7 +1027,7 @@ fn pager(
         };
         match to {
             Some(h) => Either::Left(view! {
-                <a class="lx-page lx-page--step" href=h rel=rel data-lx data-lx-top>{inner}</a>
+                <a class="lx-page lx-page--step" href=h rel=rel data-lx-top>{inner}</a>
             }),
             None => Either::Right(
                 view! { <span class="lx-page lx-page--step is-disabled" aria-hidden="true">{inner}</span> },
@@ -1047,7 +1049,7 @@ fn pager(
                         }),
                         Slot::Page { n, far } => EitherOf3::C(view! {
                             <li class:is-far=far>
-                                <a class="lx-page" href=href(n) data-lx data-lx-top aria-label=page_label(n, lang, num)>
+                                <a class="lx-page" href=href(n) data-lx-top aria-label=page_label(n, lang, num)>
                                     {format::count(n, num)}
                                 </a>
                             </li>

@@ -8,13 +8,15 @@
 
 pub(crate) mod explorer;
 pub(crate) mod listing;
-pub(crate) mod shim;
 
 use crate::api::{
     self,
     types::{ListingQuery, NavCategory},
 };
-use crate::components::{icons::Icon, product_card::ProductGridSkeleton};
+use crate::components::{
+    breadcrumbs::Breadcrumbs, empty_state::EmptyState, icons::Icon,
+    product_card::ProductGridSkeleton,
+};
 use crate::format;
 use crate::prefs::{Lang, tr};
 use crate::request::req;
@@ -23,7 +25,6 @@ use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_meta::{Link, Meta, Title};
 use leptos_router::hooks::{use_location, use_params_map};
-use shim::{Breadcrumbs, EmptyState};
 
 /// The category for a slug, from the in-memory catalogue (synchronous: it decides the status code
 /// and the cache tags before anything streams).
@@ -214,9 +215,10 @@ fn CategoryNotFound() -> impl IntoView {
         <Meta name="robots" content="noindex"/>
         <div class="listing container listing--missing">
             <EmptyState
-                art="search"
+                art="not-found"
                 title=tr(lang, "We don't have that aisle", "القسم ده مش عندنا")
                 body=tr(lang, "It may have moved or been renamed. Here's everything we stock:", "ممكن يكون اتنقل أو اسمه اتغيّر. دي كل الأقسام اللي عندنا:")
+                page=true
             />
             <ul class="cat-pills" role="list">
                 {cats
