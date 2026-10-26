@@ -106,8 +106,8 @@ mounts the new regions.
 
 | Module | API (stable — ask the lead before changing it) |
 |---|---|
-| `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()` |
-| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)`, `prefersReducedMotion()` |
+| `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()`, `digits(n)` (counts and clocks in the visitor's numerals — never money) |
+| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)` (clone a template), `patch(root, values)` (update `[data-slot]`s in place, focus kept), `prefersReducedMotion()` |
 | `core/mount.ts` | `register(feature, el => cleanup?)`; `mountAll(root)`, `unmountAll(root)` (router) |
 | `core/store.ts` | `createStore(initial)` → `get/set/update/subscribe` — only `stores/*` create stores |
 | `core/net.ts` | `request`, `getJSON<T>(url, opts)`, `NetError` (`offline/timeout/http/parse/aborted`), `isOnline`, `onOnline` |
@@ -133,8 +133,21 @@ to stores and clean up in the returned function; strings via `t()`; no `innerHTM
 - Add / remove / change quantity = `stores/cart.ts` → cookie + store, instantly, **no request**.
 - The server reads the cookie when it needs to *price* the cart: `/cart`, the drawer's quote
   (`GET /api/cart/quote` → `CartQuote`), checkout (re-prices and checks stock, like Madar at order
-  intake). It writes the cookie only for no-JS forms (`/cart/add`, `/cart/set`, `/cart/remove` →
-  303 back) and clears it when an order is placed.
+  intake). It writes the cookie only for no-JS forms and clears it when an order is placed.
+- **No-JS cart forms** (cart agent serves them; anyone may post them; with JS the TS intercepts
+  them and nothing is sent). `application/x-www-form-urlencoded` POSTs, plain HTML field names:
+  | Endpoint | Fields |
+  |---|---|
+  | `POST /cart/add` | `product`, `variant`, `qty` (default 1), `addon` (repeated, one per chosen add-on), `next` |
+  | `POST /cart/set` | `key` (a line key, `product:variant[:addons]`), `qty` (0 removes), `next` |
+  | `POST /cart/remove` | `key`, `next` |
+
+  Every form carries a hidden `next` (a same-site path; the page's own URL). The server answers
+  `303` to `next` (else the Referer, else `/cart`) with `?added=<qty>` after a successful add, or
+  `?cart_err=<code>` on failure — codes: `out_of_stock`, `max_qty`, `full`, `addon_required`,
+  `bad_addon`, `unknown_product`, `bad_request`. The receiving page renders the notice server-side
+  (strings in `strings/cart.rs`: `cart.err.<code>`, `cart.added`) and drops the param with
+  `history.replaceState`.
 - Personal → never in a public page's HTML: the header badge is filled by TS from the cookie.
 
 ## Strings (catalogue)
