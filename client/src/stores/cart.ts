@@ -47,8 +47,6 @@ export interface LineSnapshot {
   addonPrices?: number[];
   /** The most that can be ordered (stock when it was added, at most the cart's limit). */
   maxQty?: number;
-  /** @deprecated A formatted price, from before the client computed the cart: ignored (pass `unit`). */
-  price?: string;
 }
 
 /** A snapshot the cart can be computed from (older or partial ones are filled by `quote()`). */
@@ -173,6 +171,23 @@ export function snapshot(k: string): LineSnapshot | undefined {
     return raw ? (JSON.parse(raw) as LineSnapshot) : undefined;
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * Drop this tenant and language's snapshots of lines that are no longer in the cart (call it at
+ * boot: an Undo, which needs its line's snapshot, never outlives a page).
+ */
+export function pruneSnapshots(): void {
+  try {
+    const prefix = SNAP + cfg().tenant + ":" + cfg().lang + ":";
+    const keep = new Set(readCookie().map(lineKey));
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(prefix) && !keep.has(k.slice(prefix.length))) localStorage.removeItem(k);
+    }
+  } catch {
+    /* storage unavailable: nothing kept, nothing to prune */
   }
 }
 
