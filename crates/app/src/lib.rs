@@ -1,5 +1,6 @@
 #![recursion_limit = "512"]
 
+pub mod client_js;
 pub mod api;
 pub mod components;
 pub mod format;
@@ -8,6 +9,7 @@ pub mod pages;
 pub mod prefs;
 pub mod request;
 pub mod stores;
+pub mod strings;
 pub mod tenant;
 
 #[cfg(feature = "ssr")]
@@ -70,7 +72,8 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <link rel="apple-touch-icon" href=format!("/media/brand/{}-icon-192.webp", t.id)/>
                 <meta name="theme-color" content=if p.theme == prefs::Theme::Dark { "#0B0B0C" } else { "#FAFAF9" }/>
                 <AutoReload options=options.clone()/>
-                <HydrationScripts options islands=true islands_router=true/>
+                // The browser code: TypeScript bundled into one ES module (client/, build.rs).
+                <script type="module" src=client_js::APP_JS_PATH></script>
                 <MetaTags/>
             </head>
             <body>
@@ -89,9 +92,8 @@ pub fn App() -> impl IntoView {
                 <Routes fallback=|| view! { <pages::NotFound/> }>
                     // Out-of-order streaming: fastest first paint, sections land as their data
                     // does — but placing them needs JS (each arrives as a <template> + script).
-                    <Route path=path!("") view=pages::HomePage/>
+                    <Route path=path!("") view=pages::HomePage ssr=SsrMode::InOrder/>
                     // The same home page streamed in order, for visitors without JS (see shell).
-                    <Route path=path!("nojs") view=pages::HomePage ssr=SsrMode::InOrder/>
                     // Must work fully without JS → in-order streaming (no script needed).
                     <Route path=path!("c/:slug") view=pages::CategoryPage ssr=SsrMode::InOrder/>
                     <Route path=path!("search") view=pages::SearchPage ssr=SsrMode::InOrder/>

@@ -58,8 +58,7 @@ enum Net {
     Offline,
 }
 
-#[cfg_attr(feature = "split", island(lazy))]
-#[cfg_attr(not(feature = "split"), island)]
+#[component]
 pub fn OrderLive(id: String, track: OrderTrack) -> impl IntoView {
     let ui = use_ui();
     let t = RwSignal::new(track);

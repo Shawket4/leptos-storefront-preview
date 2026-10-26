@@ -448,7 +448,7 @@ fn build_ctx(q: Query) -> Ctx {
         note_error,
         files,
         debug_build: cfg!(debug_assertions),
-        router_nav: use_context::<leptos::hydration::IslandsRouterNavigation>().is_some(),
+        router_nav: false,
         now_ms: crate::server::orders::now_ms(),
         clock: Arc::new(Clock::new()),
         listing,

@@ -1,5 +1,9 @@
 //! Toasts: short, inverted notes ("Added to your cart") that report what just happened.
 //!
+//! **Now in the browser code:** `client/src/stores/toasts.ts` (`toast(msg, kind)`) renders into the
+//! [`Toaster`] region below from its `<template>`. The reactive store further down is the old
+//! WASM-island version, kept only until every caller is ported — it is deprecated.
+//!
 //! [`Toasts`] is a global store (provided on the server per request and once on the client, see
 //! `stores::provide_all`); [`show`] queues a message from any island; the [`Toaster`] island,
 //! mounted once by the shell, renders the queue in a polite live region. Success and info leave
@@ -10,6 +14,7 @@
 //! the stack (a mouse) or focusing into it fans them out into a list. Entry rises on a spring and
 //! the exit goes back the same way; reduced motion swaps both for a fade.
 
+#![allow(deprecated)]
 use super::icons::Icon;
 use crate::prefs::{tr, use_ui};
 use leptos::prelude::*;
@@ -57,6 +62,7 @@ pub struct Toast {
 }
 
 /// The toast queue. Copy; get it with [`use_toasts`].
+#[deprecated(note = "toasts live in the browser code now: client/src/stores/toasts.ts")]
 #[derive(Clone, Copy, Debug)]
 pub struct Toasts {
     pub list: RwSignal<Vec<Toast>>,
@@ -147,6 +153,8 @@ pub fn provide() {
     provide_context(Toasts::new());
 }
 
+#[deprecated(note = "toasts live in the browser code now: client/src/stores/toasts.ts")]
+#[allow(deprecated)]
 pub fn use_toasts() -> Toasts {
     use_context::<Toasts>().unwrap_or_else(|| {
         let t = Toasts::new();
@@ -156,125 +164,37 @@ pub fn use_toasts() -> Toasts {
 }
 
 /// Queue a toast from anywhere in an island: `toast::show(msg, ToastKind::Success)`.
+#[deprecated(note = "toasts live in the browser code now: client/src/stores/toasts.ts")]
+#[allow(deprecated)]
 pub fn show(msg: String, kind: ToastKind) {
     use_toasts().show(msg, kind);
 }
 
-/// Renders the toast queue as a stack. Mounted once by the app shell.
-#[island]
+/// The toast region, mounted once by the shell. The browser code fills it (`stores/toasts.ts`):
+/// each toast is a clone of `#tpl-toast` with its message (and an optional action) put in, and a
+/// `data-kind` that picks the icon. A polite live region, so screen readers hear each one.
+#[component]
 pub fn Toaster() -> impl IntoView {
-    let toasts = use_toasts();
     let ui = use_ui();
-    let region = move || tr(ui.lang.get(), "Notifications", "التنبيهات");
-    let close = move || tr(ui.lang.get(), "Dismiss", "إغلاق");
-    let list = NodeRef::<leptos::html::Ol>::new();
-
-    // Each change (a toast in, a toast leaving): after the DOM settles, give every toast its
-    // place in the stack (data-depth, newest = 0), its own height (--h) and its offset when fanned
-    // out (--y), and the list the front toast's height (--front-h: the ones behind take it, so
-    // each peeks by exactly the same strip).
-    #[cfg(feature = "hydrate")]
-    Effect::new(move |_| {
-        toasts
-            .list
-            .with(|l| l.iter().for_each(|t| t.leaving.track()));
-        request_animation_frame(move || layout_stack(list));
-    });
-
-    let on_focus_out = move |ev: web_sys::FocusEvent| {
-        // Still inside the stack (Tab from one close button to the next): keep it open.
-        let inside = match (list.get_untracked(), ev.related_target()) {
-            (Some(ol), Some(t)) => wasm_bindgen::JsCast::dyn_into::<web_sys::Node>(t)
-                .map(|n| ol.contains(Some(&n)))
-                .unwrap_or(false),
-            _ => false,
-        };
-        if !inside {
-            toasts.focused.set(false);
-        }
-    };
+    let lang = ui.lang.get_untracked();
     view! {
-        <section class="toaster" aria-label=region>
-            <ol
-                class="toaster__list"
-                role="status"
-                aria-live="polite"
-                node_ref=list
-                on:pointerenter=move |ev: web_sys::PointerEvent| {
-                    if ev.pointer_type() == "mouse" {
-                        toasts.hovered.set(true);
-                    }
-                }
-                on:pointerleave=move |_| toasts.hovered.set(false)
-                on:focusin=move |_| toasts.focused.set(true)
-                on:focusout=on_focus_out
-            >
-                <For each=move || toasts.list.get() key=|t| t.id let:t>
-                    {
-                        let id = t.id;
-                        let leaving = t.leaving;
-                        view! {
-                            <li
-                                class="toast"
-                                data-kind=t.kind.code()
-                                data-leaving=move || if leaving.get() { "true" } else { "false" }
-                            >
-                                <div class="toast__inner">
-                                    <Icon name=t.kind.icon() size=20 class="toast__icon"/>
-                                    <p class="toast__msg">{t.msg.clone()}</p>
-                                    <button
-                                        type="button"
-                                        class="toast__close"
-                                        aria-label=close
-                                        on:click=move |_| toasts.dismiss(id)
-                                    >
-                                        <Icon name="x" size=16/>
-                                    </button>
-                                </div>
-                            </li>
-                        }
-                    }
-                </For>
-            </ol>
+        <section class="toaster" id="toaster" aria-label=tr(lang, "Notifications", "التنبيهات")>
+            <ol class="toaster__list" role="status" aria-live="polite"></ol>
         </section>
-    }
-}
-
-/// See [`Toaster`]: depth, heights and fan-out offsets, from the newest toast back.
-#[cfg(feature = "hydrate")]
-fn layout_stack(list: NodeRef<leptos::html::Ol>) {
-    use wasm_bindgen::JsCast;
-    const GAP: f64 = 8.0;
-    let Some(ol) = list.get_untracked() else {
-        return;
-    };
-    let items = ol.children();
-    let (mut depth, mut y, mut front) = (0u32, 0.0_f64, None::<f64>);
-    for i in (0..items.length()).rev() {
-        let Some(li) = items
-            .item(i)
-            .and_then(|e| e.dyn_into::<web_sys::HtmlElement>().ok())
-        else {
-            continue;
-        };
-        let h = li
-            .first_element_child()
-            .and_then(|c| c.dyn_into::<web_sys::HtmlElement>().ok())
-            .map(|c| c.offset_height() as f64)
-            .unwrap_or_default();
-        let style = web_sys::HtmlElement::style(&li);
-        let _ = style.set_property("--h", &format!("{h}px"));
-        // A leaving toast keeps the place it had and fades there.
-        if li.get_attribute("data-leaving").as_deref() == Some("true") {
-            continue;
-        }
-        let _ = li.set_attribute("data-depth", &depth.min(3).to_string());
-        let _ = style.set_property("--y", &format!("{y}px"));
-        front.get_or_insert(h);
-        y += h + GAP;
-        depth += 1;
-    }
-    if let Some(h) = front {
-        let _ = web_sys::HtmlElement::style(&ol).set_property("--front-h", &format!("{h}px"));
+        <template id="tpl-toast">
+            <li class="toast">
+                <div class="toast__inner">
+                    <Icon name="circle-check" size=20 class="toast__icon toast__icon--success"/>
+                    <Icon name="circle-x" size=20 class="toast__icon toast__icon--error"/>
+                    <Icon name="info" size=20 class="toast__icon toast__icon--info"/>
+                    <p class="toast__msg" data-slot="msg"></p>
+                    <button type="button" class="toast__action" data-toast-action="" data-slot="action"></button>
+                    <button type="button" class="toast__close" data-toast-close=""
+                        aria-label=crate::strings::get("toast.dismiss", lang)>
+                        <Icon name="x" size=16/>
+                    </button>
+                </div>
+            </li>
+        </template>
     }
 }

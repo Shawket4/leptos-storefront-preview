@@ -64,6 +64,8 @@ style-file = "style/main.css"
 # Bundle the @import partials in style/ into one file with Lightning CSS.
 style-bundle = true
 assets-dir = "public"
+# The browser code (TypeScript) is bundled by crates/app/build.rs; rebuild when it changes.
+watch-additional-files = ["client/src", "client/build.mjs"]
 # 0.0.0.0 so the phone can reach it over Tailscale (tailscaled's ts-input chain accepts tailscale0 traffic).
 site-addr = "0.0.0.0:3000"
 reload-port = 3001

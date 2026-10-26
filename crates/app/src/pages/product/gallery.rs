@@ -40,8 +40,7 @@ const FLICK: Spring = Spring {
     response: 0.32,
 };
 
-#[cfg_attr(feature = "split", island(lazy))]
-#[cfg_attr(not(feature = "split"), island)]
+#[component]
 pub fn Gallery(data: GalleryData) -> impl IntoView {
     view! { <GalleryBody data=data/> }
 }

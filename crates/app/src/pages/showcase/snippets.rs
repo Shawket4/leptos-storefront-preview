@@ -91,7 +91,7 @@ impl Src {
             Src::Islands => include_str!("islands.rs"),
             Src::Demos => include_str!("demos.rs"),
             Src::Motion => include_str!("../../components/motion.rs"),
-            Src::ShellJs => include_str!("../../components/shell.js"),
+            Src::ShellJs => include_str!("../../../../../client/legacy/shell.js"),
             Src::Net => include_str!("../../components/net.rs"),
             Src::ApiCart => include_str!("../../api/cart.rs"),
             Src::CartPage => include_str!("../cart/page.rs"),

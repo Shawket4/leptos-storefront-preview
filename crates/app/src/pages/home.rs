@@ -148,7 +148,7 @@ pub fn HomePage() -> impl IntoView {
 #[component]
 fn NoJsNote(lang: Lang) -> impl IntoView {
     #[cfg(feature = "ssr")]
-    let show = use_context::<leptos::hydration::IslandsRouterNavigation>().is_none()
+    let show = false
         && !req().path_and_query.starts_with("/nojs");
     #[cfg(not(feature = "ssr"))]
     let show = false;
@@ -324,7 +324,7 @@ fn next_cairo_midnight_ms() -> i64 {
 
 /// A live HH:MM:SS countdown. The server renders the starting value, so it is correct without JS;
 /// the island only ticks it. Re-renders on language/numeral changes.
-#[island]
+#[component]
 fn DealsCountdown(ends_at_ms: i64) -> impl IntoView {
     let ui = use_ui();
     let now = RwSignal::new(now_ms());

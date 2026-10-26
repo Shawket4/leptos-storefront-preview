@@ -6,7 +6,7 @@ use super::icons::Icon;
 use crate::prefs::{tr, use_ui};
 use leptos::prelude::*;
 
-#[island]
+#[component]
 pub fn OfflineBanner() -> impl IntoView {
     let ui = use_ui();
     let offline = RwSignal::new(false);

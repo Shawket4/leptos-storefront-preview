@@ -1,0 +1,14 @@
+{
+  "name": "storefront-client",
+  "private": true,
+  "type": "module",
+  "description": "The storefront's browser code: TypeScript bundled by esbuild into one small file the Rust server embeds and serves (see build.mjs).",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.11",
+    "typescript": "5.9.3"
+  }
+}

@@ -18,7 +18,6 @@ use leptos::prelude::*;
 /// Progressive enhancement for the whole frame (see shell.js; cargo-leptos only rebuilds on .rs
 /// edits, so touch this comment after changing it: prefetch, progress, failures, prefs next,
 /// previews, submitter, scroll, bare ?).
-const SHELL_JS: &str = include_str!("shell.js");
 
 /// The tenant's categories for the header strip and the footer, in display order.
 fn nav_items() -> Vec<NavItem> {
@@ -79,7 +78,7 @@ pub fn AppShell(children: Children) -> impl IntoView {
             <Toaster/>
             <OfflineBanner/>
             <NavFeedback lang=lang/>
-            <script inner_html=SHELL_JS></script>
+            <AppData rq=rq.clone()/>
         </div>
     }
     .into_any()
@@ -114,5 +113,54 @@ fn NavFeedback(lang: crate::prefs::Lang) -> impl IntoView {
                 <Icon name="x" size=16/>
             </button>
         </div>
+    }
+}
+
+/// What the browser code reads about this page (`client/src/core/page.ts`): `#app-config` (tenant,
+/// display prefs, the endpoints it may call for data, the cart limits) and `#app-strings` (the UI
+/// strings in this page's language, from `crate::strings`).
+#[component]
+fn AppData(rq: RequestCtx) -> impl IntoView {
+    #[derive(serde::Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Api {
+        cart_quote: &'static str,
+        search_suggest: &'static str,
+        order_track: &'static str,
+    }
+    #[derive(serde::Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CartCfg {
+        max_lines: usize,
+        max_qty: u32,
+        cookie: &'static str,
+    }
+    #[derive(serde::Serialize)]
+    struct Config<'a> {
+        tenant: &'a str,
+        lang: &'a str,
+        numerals: &'a str,
+        api: Api,
+        cart: CartCfg,
+    }
+    let config = Config {
+        tenant: &rq.tenant.id,
+        lang: rq.prefs.lang.code(),
+        numerals: rq.prefs.numerals.code(),
+        api: Api {
+            cart_quote: "/api/cart/quote",
+            search_suggest: "/api/search/suggest",
+            order_track: "/api/orders/track",
+        },
+        cart: CartCfg {
+            max_lines: domain::cart::MAX_LINES,
+            max_qty: domain::cart::MAX_QTY,
+            cookie: domain::cart::COOKIE,
+        },
+    };
+    let config = serde_json::to_string(&config).unwrap_or_default().replace('<', "\\u003c");
+    view! {
+        <script type="application/json" id="app-config" inner_html=config></script>
+        <script type="application/json" id="app-strings" inner_html=crate::strings::client_json(rq.prefs.lang)></script>
     }
 }

@@ -1,128 +1,151 @@
-# Working on the storefront preview (rules for every build agent)
+# Working on the storefront (rules for every agent)
 
-A Leptos **0.8.22** SSR + **islands** + **islands-router** storefront on Axum 0.8, two tenants by
-Host header, Madar's design language. Read this whole file before writing code.
+A **Leptos 0.8.22 SSR** storefront on Axum with a **TypeScript** client — **no WASM**. Two
+tenants by Host header. Read this whole file before writing code; it was rewritten on 2026-10-26
+when the project moved off WASM islands (they shipped 380–770 KB of WASM per page and needed
+fragile hydration). Ask the lead before departing from anything here.
 
-Reference source for Leptos 0.8.22 (examples, macros, integrations — the API is version-specific,
-don't rely on memory): `/home/apex/work/ref/leptos-0.8.22` (read-only). Useful: `examples/islands`,
-`examples/islands_router`, `examples/hackernews_islands_axum`, `leptos/src/form.rs`,
-`leptos/src/hydration/islands_routing.js`, `integrations/axum/src/lib.rs`, `meta/src/*.rs`.
+## Principles (the owner's; reviewed on every merge)
+
+1. **The server renders data; the client owns state.** Every page is server-rendered by Leptos
+   with the API data it needs (catalogue, prices, orders). The browser code changes *state*
+   (cart contents, open drawers, chosen variant, quantities, filter panel, toasts) locally and
+   instantly — it talks to the server **only when it needs data it doesn't have** (new listing
+   results, search suggestions, the cart's prices/stock, order status).
+2. **One source for everything.** One store per concern, created once (`client/src/stores/*`),
+   imported by whoever needs it — no feature keeps its own copy of server data or of another
+   store. One path per action (the cart is changed only through `stores/cart.ts`). One network
+   layer (`core/net.ts`), one data cache (`core/cache.ts`), one router (`core/router.ts`), one
+   toast queue, one string catalogue. If you need something core doesn't offer, ask the lead —
+   don't build a local variant.
+3. **Markup lives in Rust, once.** The client never builds HTML strings. When it must show data
+   (a cart line, a toast, a search suggestion) it fills a server-rendered `<template>` via
+   `fill()` (`core/dom.ts`). Money, dates and numbers arrive **formatted by the server**
+   (`crate::format`, the visitor's numerals) — the client never formats or computes money.
+4. **Progressive enhancement.** Pages work without JS (plain links and forms, server-side
+   validation); the TS makes them instant. Forms the TS takes over keep a working `action`.
+5. **Fail loudly in dev, gracefully for shoppers.** No silent fallbacks that create a second
+   instance of anything. Network failures show the shared offline/retry states.
+6. **Small.** The whole client stays under **30 KB gzip**; CSS under 35 KB gzip.
 
 ## Map and ownership
 
 | Path | What | Owner |
 |---|---|---|
-| `crates/domain` | domain types (copied from Madar, origins noted) | lead |
-| `crates/app/src/{lib,prefs,request,tenant,format,brand,media}.rs` | shell, routes, contexts, formatting | lead |
-| `crates/app/src/server/` | ssr-only data layer: catalogue, caches, carts, orders | lead |
-| `crates/app/src/api/` | shared server functions (catalogue reads) | lead |
-| `crates/app/src/components/` + `style/` + `public/fonts/` | design system | design agent |
-| `crates/app/src/pages/<page>.rs` + `style/pages/<page>.css` | one page each | that page's agent |
-| `crates/frontend`, `crates/server` | hydrate entry, Axum binary | lead |
-| `data/`, `tools/media/`, `tools/catalog/` | fixtures and images | asset agents |
+| `crates/domain` | domain types (copied from Madar, origins noted); `cart.rs` = the cart cookie | lead |
+| `crates/app/src/{lib,request,prefs,tenant,format,media,client_js}.rs`, `strings/mod.rs` | shell, routes, contexts, formatting, string catalogue | lead |
+| `crates/app/src/server/{mod,catalog,search,cache,sim,pricing}.rs`, `api/{mod,types}.rs` | data layer (catalogue reads) | lead |
+| `client/src/main.ts`, `client/src/api/types.ts`, `client/build.mjs`, `crates/app/build.rs` | client entry, API shapes, build | lead |
+| `client/src/core/*`, `client/src/stores/{toasts,prefs}.ts`, `client/src/features/core.ts`, `client/legacy/` | router, page cache, net, motion, mount, toasts, offline, nav feedback | core agent |
+| `crates/app/src/components/*` (design system, shell parts, header, toaster, offline), `style/components/*`, `style/{tokens,base,main}.css`, `crates/server/src/main.rs` | design system + static serving | core agent |
+| `client/src/stores/cart.ts` (API by the lead), `client/src/features/{cart,checkout}.ts`, `crates/app/src/pages/{cart*,checkout*,order*,orders_lookup.rs}`, `api/cart.rs`, `server/{cart,orders}.rs`, `components/product_card.rs` (its quick-add part), `strings/{cart,checkout}.rs`, `style/pages/{cart,checkout,order}.css` | cart, checkout, orders | cart agent |
+| `client/src/features/{browse,product}.ts`, `crates/app/src/pages/{home,category*,search*,product*}`, `strings/{browse,product}.rs`, `style/pages/{home,category,search,product}.css` | home, listing, search, product page | browse agent |
+| `client/src/features/showcase.ts`, `crates/app/src/pages/{showcase*,ui_kit.rs,errors.rs}`, `strings/showcase.rs`, `style/pages/{showcase,ui-kit,errors}.css` | /showcase, /ui, error pages | showcase agent |
+| `data/`, `tools/media/`, `tools/catalog/` | fixtures and images | — (don't edit) |
 
-Only edit files you own. If you need something from a file you don't own (a new component prop, a
-data-layer function, a route), add a minimal local version in your own module and say so in your
-report — the lead integrates. New files inside your area are fine (`components/foo.rs`,
-`pages/product/gallery.rs` as a submodule, `style/pages/product.css`).
+Only edit files you own. Need something from a file you don't own (a core API, a data-layer
+function, a route, a type)? Ask the lead with SendMessage, or add a clearly marked minimal local
+version and say so in your report. `client/src/api/types.ts`: you may add *your own section*.
 
-## Worktrees, builds, ports
+## Builds, worktrees, ports
 
-Each code agent works in its own git worktree on its own branch (the lead creates it; the path is
-in your brief). Intermediate build artifacts are shared (`build-dir` in `.cargo/config.toml`), so
-dependencies are already compiled; final binaries land in your worktree's `target/`. Cargo
-serialises builds on the shared dir — waiting a bit for the lock is normal.
+Each agent works in its own git worktree and branch (the path is in your brief).
 
 ```bash
 cd <your worktree>
-cargo check -p app --features ssr                                          # server build
-cargo check -p app --features hydrate --target wasm32-unknown-unknown      # island build
-# run it (pick the ports from your brief; data comes from the main checkout):
+npm ci --prefix client                      # once per worktree (esbuild + TypeScript, pinned)
+cargo check -p server                       # the whole app; runs tsc + esbuild through build.rs
+./client/node_modules/.bin/tsc --noEmit -p client   # TS only (fast)
 DATA_DIR=/home/apex/ClaudeProjects/leptos-storefront-preview/data \
 MEDIA_DIR=/home/apex/ClaudeProjects/leptos-storefront-preview/data/media \
 LEPTOS_SITE_ADDR=127.0.0.1:<port> LEPTOS_RELOAD_PORT=<port+100> cargo leptos watch
-# then: http://nile.localhost:<port>/  and  http://souq.localhost:<port>/
+# then http://nile.localhost:<port>/  and  http://souq.localhost:<port>/
 ```
 
-Both `cargo check`s must pass (no new warnings) before you hand off. Format only your own files
-(`rustfmt --edition 2024 <file>`); never `cargo fmt` the workspace (it would touch other agents' files).
+`cargo leptos watch` rebuilds on Rust *and* TS changes (`watch-additional-files`). There is no WASM
+build any more (`crates/frontend` is an empty placeholder cargo-leptos requires). Before handing off:
+`cargo check -p server` with **no new warnings** and `tsc` clean. Format only your own files
+(`rustfmt --edition 2024 <file>`); never `cargo fmt` the workspace.
 
 **Never run test suites, Lighthouse or load/benchmark tools** (owner's rule — the lead asks first).
-Screenshots for visual checks are expected:
+Verification is done in a real browser with Playwright (`tools/shots/`):
 
-```bash
-node /home/apex/ClaudeProjects/leptos-storefront-preview/tools/shots/shoot.mjs \
-  --url http://souq.localhost:<port>/c/spices --out /tmp/<you>/listing \
-  --widths 360,768,1280 --langs en,ar --themes light,dark --full
-```
-
-It prints console errors, failed requests and horizontal overflow — fix all of them. Look at the
-PNGs with the Read tool. Check 360 px Arabic dark mode explicitly; it is where layouts break.
+- **Phone conditions** for anything interactive: 390×844, touch, and network emulation via CDP
+  (`latency: 200`, `downloadThroughput: 3e6/8`, `uploadThroughput: 1e6/8`) — the owner tests on a
+  phone over a slow relay. Tap things *during* load too.
+- Screenshots at 360 and 1280, `en`/`ar`, light/dark (`node tools/shots/shoot.mjs …`); fix every
+  console error, failed request and horizontal overflow it prints. Check 360 px Arabic dark.
+- Walk the flows across **client-side navigations**, not only full loads.
 
 Commit on your branch in small steps (`git -c user.name="Shawket Ibrahim" -c
-user.email="shawketibrahim7@gmail.com" commit`), message trailer:
-`Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Don't merge, rebase or push.
+user.email="shawketibrahim7@gmail.com" commit`), trailer `Co-Authored-By: Claude Opus 5.5
+<noreply@anthropic.com>`. Merge `main` into your branch when the lead says so; don't rebase or push.
 
-## Leptos 0.8 islands: what you must know
+## Server side (Leptos SSR)
 
-- `features = ["islands", "islands-router"]`. Every `#[component]` renders **on the server only**.
-  `#[island]` components also hydrate in the browser. Only island code (and what it calls) is
-  compiled into the WASM bundle, so keep islands small and push markup into server components.
-- Island props must be `Serialize + Deserialize` (they are JSON in a `data-props` attribute).
-  Children of an island are server-rendered HTML and opaque to it (you can't inspect or iterate
-  them; to hide them conditionally, toggle CSS, don't drop them).
-- Code inside a non-island `#[component]` still has to *compile* for wasm32 (dead code is dropped),
-  so server-only APIs go behind `#[cfg(feature = "ssr")]` or inside `#[server]` functions.
-- **Shared client state**: `frontend::hydrate()` calls `hydrate_islands()` and then
-  `app::client::init()`, which provides stores under the root owner, so `use_context` works in
-  every island. The display store is `prefs::use_ui()` (`lang`, `numerals`, `theme` signals).
-  Additional global stores (cart, toasts) are provided the same way — the server must provide the
-  same type per request (in `request::init()` / the shell) so SSR of islands works too.
-- **islands-router** (`islands_router=true`): same-origin `<a>` clicks and `<form>` GET/POST
-  submits are intercepted, the new page's HTML is fetched with an `Islands-Router: true` header and
-  *diffed into the current DOM* inside `document.startViewTransition`. Existing islands are **not**
-  diffed (their client state survives navigation); new islands are hydrated. Consequences:
-  - Plain links and forms are the navigation API, so navigation works with JS disabled.
-  - An island that renders text must make it reactive to `use_ui().lang` (use
-    `prefs::tr_signal` / `move || tr(ui.lang.get(), …)`), because the language toggle swaps the
-    server HTML around it but not inside it.
-  - Router hooks (`use_params_map`, `use_query_map`, `use_navigate`) work in server components.
-    **Inside islands there is no router**: read `window.location`, and update the URL with
-    `history.pushState`/`replaceState` yourself; listen to `popstate`.
-  - An island that handles a link/form itself must `prevent_default()` (the router skips
-    events whose default was prevented).
-  - Because of `mark_branches`, SSR HTML contains `<!--bo-…-->`/`<!--bc-…-->` comments. They are
-    used by the diff. Don't strip them.
-- **Streaming modes are per route (lead sets them in `lib.rs`)**: out-of-order streaming sends each
-  resolved `<Suspense>` as a `<template>` + inline script, so **OOO sections never appear without
-  JS**, and meta tags depending on suspended data miss the `<head>`. Therefore: `/` is OutOfOrder
-  (with a `<noscript>` redirect to `/nojs`, the same page in order); `/c/:slug`, `/search`, `/cart`,
-  `/checkout`, `/orders/:id` are **InOrder** (work fully without JS); `/p/:slug` is
-  **PartiallyBlocked** — use `Resource::new_blocking` for the product so `<head>` (title, OG,
-  JSON-LD) waits for it and its HTML is inline; other sections still stream. islands-router
-  navigations always get in-order HTML (leptos_axum disables OOO for them).
-  **Response headers and status must be set before the first chunk** — synchronously at the top of
-  the page component (or, in PartiallyBlocked pages, before the blocking resource resolves).
-- **Islands must never be pending at hydration** (found 2026-10-26): an island whose
-  `<Suspense>`/`<Transition>` wraps a `Resource`/`LocalResource` that isn't ready synchronously
-  hydrates on a full load, but PANICS after an islands-router navigation into that page (its
-  resolved-resource inline scripts never run in DOMParser-inserted HTML, and the hydration-id
-  sequence breaks) — and the panic cascades to every island hydrated after it (header badge
-  included). Seed island data from PROPS (an `AsyncDerived`/signal ready on first poll); fetch only
-  in response to user actions after hydration (e.g. opening the drawer).
-- Data: `Resource::new(source, fetcher)` + `<Suspense fallback=…>` / `<Transition>`;
-  `Suspend::new(async move { … })` inside the view; `ErrorBoundary` per section;
-  `ServerAction::<Fn>::new()` + `<ActionForm action=…>` (works without JS: a plain POST to the
-  server function URL, which redirects back).
-- `#[server]` functions get the same context as pages: call `request::init()` first to get the
-  tenant (`RequestCtx`), then use the server data layer.
-- leptos_meta: `<Title text=…/>`, `<Meta name=… content=…/>`, `<Meta property="og:…" …/>`,
-  `<Link rel="canonical" href=…/>`, `<Script type_="application/ld+json">{json}</Script>`.
+- Everything is a `#[component]` rendered on the server; there are **no islands** and no client
+  Rust. Event handlers in `view!` do nothing (they never run) — delete them when you touch a file;
+  interaction is TS. Code under `#[cfg(feature = "hydrate")]` is dead: delete it in your area.
+- All routes are `SsrMode::InOrder` (one complete HTML document, works without JS). Response
+  headers and status are set synchronously at the top of the page component.
+- Hook TS behaviour onto markup with **`data-ts="<feature>"`** (space-separated if several) and
+  `data-*` for its inputs (ids, limits). Pass bigger data as `<script type="application/json"
+  data-ts-json>` inside the element. Templates the client fills: `<template id="tpl-<name>">`
+  with `data-slot="<key>"` (text) and `data-attr-<attr>="<key>"` (attributes).
+- Data endpoints for the client: server functions with **fixed** URLs, e.g.
+  `#[server(endpoint = "cart/quote", input = GetUrl)]` → `/api/cart/quote`; JSON out, money
+  pre-formatted; `cache::private()` for anything personal. Add the TS shape to `client/src/api/types.ts`.
+- `<head>`: title/meta/OG/JSON-LD synchronously from in-memory data (no async head).
+
+## Client code (TypeScript) — `client/src`
+
+Bundled into one ES module by esbuild (via `crates/app/build.rs`), embedded in the server and
+served at `/js/app-<hash>.js` (cached forever). `main.ts` boots: `readPage()` → stores →
+`mountAll()` → `startRouter()`; after each client-side navigation it re-reads the page and
+mounts the new regions.
+
+| Module | API (stable — ask the lead before changing it) |
+|---|---|
+| `core/page.ts` | `cfg()` (tenant, lang, numerals, `api.*` endpoints, cart limits), `t(key, vars?)`, `readPage()` |
+| `core/dom.ts` | `$`, `$$`, `on(root, type, selector, fn)` (delegated), `fill(templateName, values)`, `prefersReducedMotion()` |
+| `core/mount.ts` | `register(feature, el => cleanup?)`; `mountAll(root)`, `unmountAll(root)` (router) |
+| `core/store.ts` | `createStore(initial)` → `get/set/update/subscribe` — only `stores/*` create stores |
+| `core/net.ts` | `request`, `getJSON<T>(url, opts)`, `NetError` (`offline/timeout/http/parse/aborted`), `isOnline`, `onOnline` |
+| `core/cache.ts` | `cached(key, {ttl, swr}, fetcher, onUpdate?)`, `key(...parts)`, `peek`, `invalidate`, `noteGeneration` |
+| `core/router.ts` | `startRouter`, `navigate(url, {replace})`, `refresh()`, `prefetch(url)`, `onNavigate(fn)` |
+| `core/motion.ts` | `SpringValue`, `SPRING`, `project`, `rubberband`, `VelocityTracker` |
+| `stores/cart.ts` | `cart` (store: `lines`, `count`), `add(item, snapshot?)`, `setQty(key, n)`, `remove(key)` → undo, `clear()`, `lineKey`, `snapshot(key)`, `quote(onUpdate?)`, `syncFromCookie()` |
+| `stores/toasts.ts` | `toast(msg, kind, action?)`, `dismiss(id)` |
+
+Rules: features register in their own `features/<area>.ts`; they touch the DOM only inside the
+element they're mounted on (plus the page singletons: header badge, drawer, toaster); they subscribe
+to stores and clean up in the returned function; strings via `t()`; no `innerHTML` with data.
+
+## The cart (contract)
+
+- The browser owns the cart. It lives in the **`cart` cookie** (not HttpOnly):
+  `product:variant:qty[:addon+addon]` lines joined by `|` — `crates/domain/src/cart.rs` and
+  `client/src/stores/cart.ts` are the two (identical) implementations. Limits: 50 lines, 99 each.
+- Add / remove / change quantity = `stores/cart.ts` → cookie + store, instantly, **no request**.
+- The server reads the cookie when it needs to *price* the cart: `/cart`, the drawer's quote
+  (`GET /api/cart/quote` → `CartQuote`), checkout (re-prices and checks stock, like Madar at order
+  intake). It writes the cookie only for no-JS forms (`/cart/add`, `/cart/set`, `/cart/remove` →
+  303 back) and clears it when an order is placed.
+- Personal → never in a public page's HTML: the header badge is filled by TS from the cookie.
+
+## Strings (catalogue)
+
+`crates/app/src/strings/<area>.rs`: `s("area.key", "English", "عربي")`. All of them reach the page as
+`#app-strings`; `t("area.key", {name})` in TS, `strings::get("area.key", lang)` in Rust. Keys are
+unique (checked at startup in debug). Arabic register: warm Egyptian colloquial on shop pages,
+clear MSA for errors and legal text.
 
 ## Language, numerals, direction
 
-- Every user-visible string exists in English and Arabic. Static UI strings: `tr(lang, "Add to
-  cart", "أضف للسلة")` next to their use. Data strings: `L10n::pick(lang.is_rtl())`.
+- Every user-visible string exists in English and Arabic. Strings the browser code shows, and any
+  string used in more than one place, live in the catalogue (`crates/app/src/strings/<area>.rs`,
+  `t("area.key")` in TS, `strings::get(key, lang)` in Rust). One-off server labels may stay inline
+  as `tr(lang, "…", "…")`. Data strings: `L10n::pick(lang.is_rtl())`.
 - Arabic register: shop pages use warm Egyptian colloquial (like Madar's shop pages); errors and
   legal text in clear MSA. Read your Arabic once more as an Egyptian customer would.
 - Numbers, money, dates: always through `crate::format` (`money`, `MoneyParts`, `int`, `count`,
@@ -132,6 +155,7 @@ user.email="shawketibrahim7@gmail.com" commit`), message trailer:
   `inset-inline-end`, `padding-block`, `text-align: start`…), never left/right. Directional icons
   (arrows, chevrons, "back") get the `.flip-rtl` class. Figures stay LTR (`format` already isolates
   them). Don't mirror logos, product photos or media controls.
+
 
 ## Design rules (owner decisions, 2026-10-26 — supersede everything earlier)
 
@@ -175,7 +199,7 @@ WWDC design principles translated for the web) and apply it to every component a
   springs instead of fixed-duration curves: CSS tokens `--spring-default` (damping 1, response .35s,
   510ms), `--spring-snappy` (1, .25s, 370ms), `--spring-gentle` (1, .5s, 730ms), `--spring-bouncy`
   (0.8, .3s, 400ms — only after a flick/throw), each with a `-dur`; gesture-driven UI (drawers, bottom
-  sheets, gallery swipe) uses the Rust spring animator in `components::motion` (interruptible: starts
+  sheets, gallery swipe) uses `SpringValue` from `client/src/core/motion.ts` (interruptible: starts
   from the live on-screen value, hands off release velocity, projects momentum with Apple's
   `(v/1000)·d/(1−d)`, rubber-bands at edges). Enter and exit along the same path; anchor popovers to
   their trigger. `prefers-reduced-motion` → short cross-fades.
@@ -184,70 +208,20 @@ WWDC design principles translated for the web) and apply it to every component a
 - **No layout shift**, mobile-first (flawless at 360px), 44px targets, visible `:focus-visible`,
   semantic HTML, `aria-*`, AA contrast. Icons: lucide geometry via `components::icons`.
 
-## Caching (lead's helpers, in `crate::server::cache` — ssr only)
+## Caching
 
-- Catalogue pages: `cache::public(&[tags])` → browsers `Cache-Control: no-cache` + `Vary: Cookie`
-  (prefs are cookies), edge `CDN-Cache-Control: public, s-maxage=300, stale-while-revalidate=60`,
-  `Cache-Tag: t{tenant}, t{tenant}-p{id}, t{tenant}-cat{id}`.
-- Anything personalised (cart, checkout, orders): `cache::private()` → `Cache-Control: private,
-  no-store`. Never render cart contents into a public page; personal bits are islands fed by
-  cookies or server functions.
+- **Server**: catalogue reads go through `server::cache::ReadCache` (moka, TTL + per-tenant
+  generation bump = invalidate). HTTP: catalogue pages `cache::public(&[tags])` (browsers
+  `no-cache` + `Vary: Cookie`; edge `CDN-Cache-Control` + `Cache-Tag`); personal (cart quote,
+  checkout, orders) `cache::private()`.
+- **Client**: `core/cache.ts` — pages and API reads with TTL + stale-while-revalidate, refresh,
+  and invalidation when the server's `x-catalog-gen` changes. Static assets are content-hashed
+  and `immutable`.
 
 ## Data layer (lead) — use it, don't re-implement it
 
-Server functions (call them from a `Resource` in a server component, or from an island):
-
-| Function | Returns |
-|---|---|
-| `api::nav_categories()` | `Vec<NavCategory>` (display order, counts, optional image) |
-| `api::home_rail(rail: Rail, limit)` | `Vec<CardData>` — `Rail::{Featured, Deals, New, Bestsellers, Express}` |
-| `api::list_products(query: ListingQuery)` | `ListingPage` (items, total, page/pages, `Facets` from the unfiltered set) |
-| `api::product_detail(slug)` | `Option<ProductView>` (product incl. options/variants/modifier groups/specs, resolved `images: Vec<Img>`, brand, category) |
-| `api::related_products(id, limit)` | `Vec<CardData>` |
-| `api::search_products(q, limit)` | `SearchResults` (hits with `name_en`/`name_ar` highlight `Seg`s, matching categories) |
-| `api::cart::{cart_get, cart_add(product, variant, qty, addons), cart_set_qty(key, qty), cart_remove(key)}` | `CartView` (lines priced by `madar-catalog`, savings, delivery fee, VAT included via `madar-money`) |
-
-Types live in `api::types`. `ListingQuery::from_query(category, qs)` / `.to_query()` / `.href()`
-are the single source of truth for listing URLs (server and islands). Errors are
-`ServerFnError::new("<code>")` (codes listed at the top of `api/cart.rs`).
-
-Server-only (`#[cfg(feature = "ssr")]`): `server::state()`, `server::current_catalog()`
-(synchronous, in-memory — use it to compute cache tags before streaming starts),
-`server::cache::{public, private, tag_product, tag_category}`, `server::sim::{delay, check_fail,
-Widget}` (simulated latency is OFF by default — `SIM_LATENCY_MS=350` env for the server, or the
-`sim` cookie via `/__sim?ms=350&next=…` per visitor; `?fail=<widget>` on the page URL makes a read
-fail — use that to demo error boundaries), `state().orders()` (`place`, `get`, `next_step_at`) and
-`server::orders::slots(&tenant, now_ms)`, `server::cart::{view, cookies}`,
-`TenantCatalog::variant_label`.
-
-Global client stores (`crate::stores`): `use_cart()` → `CartStore { count, view, open, pulse }`
-— **the one cart signal**: the header badge reads `count`, every cart mutation calls
-`store.apply(view)` with the server's response; optimistic UIs adjust `count`/`view` first and
-reconcile on response. `prefs::use_ui()` → `Ui { lang, numerals, theme }`.
-
-## Design-system contract (being built on `agent/design`; lands on main soon)
-
-CSS tokens (`style/tokens.css`): `--page --surface --surface-2 --sunk --well --text --text-2
---text-3 --line --line-strong --rule --brand --on-brand --brand-wash --brand-text --ink --on-ink
---success(-wash) --warning(-wash) --danger(-wash) --info(-wash) --focus`; `--font-sans --font-mono
---fs-xs/sm/md/lg/xl/2xl/3xl/display --lh-tight --lh-body`; `--sp-1 … --sp-16` (4px steps: 1,2,3,4,
-5,6,8,10,12,16); `--r-sm/md/lg/xl/2xl/pill`; `--dur-fast/base/slow/brand --ease-out/in/in-out/
-expo/drawer/pop`; `--shadow-sm/md/float/modal`; `--gutter --container --header-h`;
-`--z-header/drawer/toast`.
-
-Components (`crate::components::…`), APIs fixed:
-`icons::Icon(name, size?, class?, label?)` · `button::{Button, IconButton, ButtonKind, ButtonSize}`
-· `price::{Price(amount, compare_at?, size?, from?, lang, numerals), PriceLive(amount: Signal,
-compare_at: Signal, size?)}` · `rating::Rating(value, count, lang, numerals, compact?)` ·
-`badge::{Badge, BadgeKind}` · `status_pill::{StatusPill, Tone}` · `image::Picture(img, sizes,
-priority?, class?, vt_name?, lang)` · `skeleton::{Skeleton, SkeletonText}` ·
-`product_card::{CardData, ProductCard(card, lang, numerals, priority?), ProductCardSkeleton,
-ProductGrid, ProductGridSkeleton}` · `layout::{Container, Section, SectionHeader, Rail}` ·
-`drawer::{Drawer(open, side?, title, children), DrawerSide}` · `toast::{show, ToastKind, Toaster}`
-· `form::{Field, TextInput, TextArea, Select, RadioCard, Checkbox}` · `stepper::Stepper(value,
-on_change, min, max, label)` · `empty_state::EmptyState(art, title, body, action?)` ·
-`breadcrumbs::Breadcrumbs(items)` · `segmented::Segmented`.
-
-Until it lands, page agents may put **minimal placeholders with the same names and props** in a
-local `shim` submodule of their page (e.g. `pages/product/shim.rs`), and swap to the real ones when
-the lead says the design system is on main (`git merge main` in your worktree, then delete the shim).
+`api::*` server functions (`nav_categories`, `home_rail`, `list_products`, `product_detail`,
+`related_products`, `search_products`) and `server::current_catalog()` (synchronous, in-memory)
+for server components. Types in `api::types`; `ListingQuery::{from_query,to_query,href}` is the
+single source of truth for listing URLs. Simulated latency: `SIM_LATENCY_MS` / `/__sim?ms=350` /
+`?fail=<widget>` (`server::sim`).

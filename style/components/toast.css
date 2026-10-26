@@ -176,3 +176,15 @@
   background: color-mix(in oklab, var(--on-ink) 12%, transparent);
   color: var(--on-ink);
 }
+
+/* The browser code renders toasts from #tpl-toast with all three icons; data-kind shows one. */
+.toast__icon--success,
+.toast__icon--error,
+.toast__icon--info {
+  display: none;
+}
+.toast[data-kind="success"] .toast__icon--success,
+.toast[data-kind="error"] .toast__icon--error,
+.toast[data-kind="info"] .toast__icon--info {
+  display: block;
+}

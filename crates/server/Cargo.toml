@@ -8,8 +8,8 @@ publish.workspace = true
 [dependencies]
 app = { workspace = true, features = ["ssr"] }
 domain = { workspace = true }
-leptos = { workspace = true, features = ["ssr", "islands", "islands-router"] }
-leptos_axum = { workspace = true, features = ["islands-router"] }
+leptos = { workspace = true, features = ["ssr"] }
+leptos_axum = { workspace = true }
 leptos_meta = { workspace = true, features = ["ssr"] }
 axum = { workspace = true }
 tokio = { workspace = true }

@@ -37,6 +37,19 @@ async fn main() {
         ));
 
     let app = Router::new()
+        // The browser code, content-hashed: cache it forever.
+        .route(
+            app::client_js::APP_JS_PATH,
+            get(|| async {
+                (
+                    [
+                        (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                        (header::CACHE_CONTROL, "public, max-age=31536000, immutable"),
+                    ],
+                    app::client_js::APP_JS,
+                )
+            }),
+        )
         .route("/__prefs", get(set_prefs))
         .route("/__tenant/{id}", get(set_tenant))
         .route("/__sim", get(set_sim))

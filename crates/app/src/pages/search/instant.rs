@@ -92,7 +92,7 @@ fn askable(q: &str) -> bool {
     q.chars().filter(|c| c.is_alphanumeric()).count() >= 2
 }
 
-#[island]
+#[component]
 pub fn HeaderSearch(#[prop(optional)] kind: Option<SearchBox>) -> impl IntoView {
     let ui = use_ui();
     let kind = kind.unwrap_or_default();

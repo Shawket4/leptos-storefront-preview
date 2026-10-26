@@ -9,3 +9,6 @@ node_modules/
 /shots/
 /tools/shots/node_modules/
 /tools/shots/package-lock.json
+
+# TypeScript toolchain (npm ci --prefix client)
+client/node_modules/

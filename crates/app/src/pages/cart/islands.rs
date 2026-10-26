@@ -61,7 +61,7 @@ fn on_cart_pages() -> bool {
 /// The bag in the header. One signal drives it (`CartStore::count`); it pops when the count goes
 /// up. The server renders it empty — public pages never contain a visitor's cart — and the client
 /// fills it from the `cart_n` cookie right after hydration. Without JS it is a link to `/cart`.
-#[island]
+#[component]
 pub fn CartButton() -> impl IntoView {
     let cart = use_cart();
     let ui = use_ui();
@@ -114,7 +114,7 @@ enum Qa {
 /// The round "+" on product cards (single variant, nothing required). The badge bumps and pops
 /// the moment it's pressed; the toast names the product once the server confirms; a failure
 /// rolls the count back and says why. Without JS: a POST to `cart_add`, redirected back.
-#[island]
+#[component]
 pub fn QuickAdd(product: ProductId, variant: VariantId) -> impl IntoView {
     let ops = use_ops();
     let ui = use_ui();
@@ -191,7 +191,7 @@ pub fn QuickAdd(product: ProductId, variant: VariantId) -> impl IntoView {
 /// The slide-over cart, mounted once by the app shell. Lines load the first time it opens (and
 /// are re-checked each time after); quantities change optimistically; a removed line leaves an
 /// "Undo" in its place.
-#[island]
+#[component]
 pub fn CartDrawer() -> impl IntoView {
     let cart = use_cart();
     let ops = use_ops();

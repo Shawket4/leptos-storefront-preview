@@ -1,9 +1,5 @@
-//! WASM entry point. Only `#[island]` components (and what they use) end up in this bundle.
+//! Empty on purpose: cargo-leptos expects a WASM lib package, but no page loads it. The browser
+//! code is TypeScript (`client/`), bundled by `crates/app/build.rs` and served by the server.
 
 #[wasm_bindgen::prelude::wasm_bindgen]
-pub fn hydrate() {
-    console_error_panic_hook::set_once();
-    leptos::mount::hydrate_islands();
-    // Must run after hydrate_islands(): it provides the shared stores under the root owner.
-    app::client::init();
-}
+pub fn unused() {}

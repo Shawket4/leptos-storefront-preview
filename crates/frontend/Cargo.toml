@@ -1,6 +1,6 @@
 [package]
 name = "frontend"
-description = "WASM entry point: hydrates the islands."
+description = "Empty placeholder for cargo-leptos, which expects a WASM lib package. The storefront ships no WASM: the browser code is TypeScript in /client, bundled into the server."
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
@@ -9,11 +9,4 @@ publish.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-app = { workspace = true, features = ["hydrate"] }
-leptos = { workspace = true, features = ["hydrate", "islands", "islands-router"] }
 wasm-bindgen = { workspace = true }
-console_error_panic_hook = { workspace = true }
-
-[features]
-# See `app/split`.
-split = ["app/split"]

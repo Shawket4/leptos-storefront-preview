@@ -2,6 +2,27 @@
 // a delegated listener, so it keeps working while the islands router patches pages in.
 (() => {
   const d = document, w = window, H = history;
+
+  // Islands the islands router hydrates after a navigation (Leptos 0.8 island_script.js publishes
+  // `__hydrateIsland` as soon as the JS loads). Two fixes, before every call:
+  // - not until the WASM is ready: a tap during a slow load made the router hydrate against an
+  //   uninitialised module (TypeError per island). The first pass hydrates every island anyway.
+  // - under the app's root owner (`__leptosRoot`, set by the frontend's hydrate()): otherwise the
+  //   island can't see the shared stores (cart, toasts) and makes its own.
+  {
+    let hydrate;
+    Object.defineProperty(w, "__hydrateIsland", {
+      configurable: true,
+      get: () => hydrate,
+      set: (f) => {
+        hydrate = (el, id) => {
+          if (!w.__leptosRoot) return;
+          w.__leptosRoot();
+          return f(el, id);
+        };
+      },
+    });
+  }
   const reduced = () => w.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const ofetch = w.fetch.bind(w);
   const keyOf = (u) => { const x = new URL(u, location.href); x.hash = ""; return x.href; };
