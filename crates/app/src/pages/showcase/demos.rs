@@ -638,7 +638,7 @@ fn SpringsDemo(cx: Arc<Ctx>) -> impl IntoView {
             </div>
             <p class="sc-row sc-row--wrap" data-needs-js="" hidden>
                 <SegmentedToggle
-                    items=presets.into_iter().map(|(p, on)| SegItem::toggle(format!("SPRING.{p}"), p, on)).collect()
+                    items=presets.into_iter().map(|(p, on)| SegItem::toggle(p, p, on).attr("lang", "en")).collect()
                     label=tr(lang, "Spring", "السبرينج")
                     class="sc-spring__presets"
                 />

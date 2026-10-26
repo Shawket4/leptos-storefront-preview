@@ -1241,7 +1241,7 @@ a.sc-mini__name:hover {
 /* Spring lab. */
 .sc-spring__presets {
   max-inline-size: 100%;
-  overflow-x: auto;
+  font-family: var(--font-mono);
 }
 .sc-spring__track {
   position: relative;
