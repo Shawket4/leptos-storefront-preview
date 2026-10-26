@@ -62,7 +62,8 @@ pub struct Chip {
 ///
 /// It also keeps same-page `#anchor` links native: the islands router would otherwise intercept
 /// them as navigations (re-fetch the page, no scroll). See "Sharp edges".
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn TocFilter(chips: Vec<Chip>, active: String) -> impl IntoView {
     let ui = use_ui();
     let current = RwSignal::new(active);
@@ -208,7 +209,8 @@ struct NavStat {
 /// A counter whose state lives in the browser. With `probe`, it also shows how long this
 /// document has existed (only a real page load resets it) and what the last client-side
 /// navigation cost.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn IslandCounter(probe: bool) -> impl IntoView {
     let ui = use_ui();
     let count = RwSignal::new(0i64);
@@ -354,7 +356,8 @@ struct PageCost {
 
 /// Measures, in the visitor's browser: the WASM/JS actually transferred (Resource Timing), how
 /// many islands this page hydrates, and how big the DOM is. The server passes the on-disk sizes.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn BundleProbe(files: Vec<DiskFile>, debug_build: bool) -> impl IntoView {
     let ui = use_ui();
     let cost = RwSignal::new(None::<PageCost>);
@@ -513,7 +516,8 @@ fn watch<T>(
 /// qty × unit (derived signal) → coupon discount (Memo) → delivery fee (Memo, only changes when
 /// the subtotal crosses the free-delivery threshold) → total (Memo). Each output counts and flashes
 /// its own updates; nothing else is touched.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn PriceCalc(units: Vec<Unit>, fee: i64, free_over: i64) -> impl IntoView {
     let ui = use_ui();
     let qty = RwSignal::new(2u32);
@@ -683,7 +687,8 @@ pub struct SaveItem {
 }
 
 /// One "save" toggle. Each instance is a separate island.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn SaveToggle(item: SaveItem) -> impl IntoView {
     let ui = use_ui();
     let s = use_saved();
@@ -719,7 +724,8 @@ pub fn SaveToggle(item: SaveItem) -> impl IntoView {
 }
 
 /// The saved list, a separate island elsewhere on the page — bound to the same store.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn SavedTray(items: Vec<SaveItem>) -> impl IntoView {
     let ui = use_ui();
     let s = use_saved();
@@ -791,7 +797,8 @@ enum LabNote {
 
 /// Calls three server functions from the browser: `cache_stats()`, `cache_bump()` and a catalogue
 /// read (`home_rail`) to watch a miss turn into a hit.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn CacheLab(initial: CacheInfo, tenant: String) -> impl IntoView {
     let ui = use_ui();
     let info = RwSignal::new(initial);
@@ -924,7 +931,8 @@ pub fn CacheLab(initial: CacheInfo, tenant: String) -> impl IntoView {
 /// no fetch, no hydration data. (A `Resource` or `LocalResource` here would leave the Transition
 /// pending, and its hydration would depend on inline scripts and the page-wide hydration-id
 /// sequence, which the islands router doesn't carry over a client navigation — see "Sharp edges".)
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn ListingPager(
     pages: u32,
     first: Vec<crate::components::product_card::CardData>,
@@ -1064,7 +1072,8 @@ fn error_code(e: &ServerFnError) -> String {
 /// `<ActionForm>` around a real `<form method=post action=/api/leave_note…>`. With JS the
 /// island dispatches the `ServerAction` and swaps in the returned board; without JS the browser
 /// posts it and the server redirects back (an error comes back as `?__err=`, passed in `error`).
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn NoteBoard(board: Board, error: Option<String>) -> impl IntoView {
     let ui = use_ui();
     let action = ServerAction::<notes::LeaveNote>::new();
@@ -1164,7 +1173,8 @@ pub struct HeadTag {
 
 /// Lists what is actually in `document.head` (title, description, canonical, robots,
 /// OpenGraph/Twitter tags, JSON-LD). Before JS runs it shows what the server says it set.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn HeadReadout(server: Vec<HeadTag>) -> impl IntoView {
     let ui = use_ui();
     let read = RwSignal::new(None::<Vec<HeadTag>>);
@@ -1255,7 +1265,8 @@ const PROBE_HEADERS: [&str; 5] = [
 
 /// `fetch(url, {method: 'HEAD'})` a few routes (and POST one server function) and show the
 /// caching headers each one actually sends.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn HeaderProbe(targets: Vec<Probe>) -> impl IntoView {
     let ui = use_ui();
     let n = targets.len();
@@ -1381,7 +1392,8 @@ fn shot(r: StreamResult) -> Shot {
 }
 
 /// Fetches the same page in each streaming mode and draws when every piece of HTML arrived.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn StreamInspector(targets: Vec<StreamTarget>) -> impl IntoView {
     let ui = use_ui();
     let n = targets.len();
@@ -1470,7 +1482,8 @@ pub fn StreamInspector(targets: Vec<StreamTarget>) -> impl IntoView {
 
 /// Its text is rendered by the island itself, so only the `Ui` store (fed by the `<html>`
 /// MutationObserver in `client::init`) can change its language — and it does, live.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn LiveLang(amount: i64, items: u32, at_ms: i64) -> impl IntoView {
     let ui = use_ui();
     let renders = RwSignal::new(0u32);
@@ -1516,7 +1529,8 @@ pub fn LiveLang(amount: i64, items: u32, at_ms: i64) -> impl IntoView {
 
 // ─── View transitions: support check ───────────────────────────────────────────────────────────
 
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn VtSupport() -> impl IntoView {
     let ui = use_ui();
     let state = RwSignal::new(None::<(bool, bool)>);
@@ -1558,7 +1572,8 @@ struct Picked {
 /// Renders one image with `srcset` + `sizes` and reports `currentSrc`: the rung the browser chose
 /// for this box width and screen density. Resize the window to watch it change (browsers keep a
 /// bigger file they already have rather than download a smaller one).
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn CurrentSrc(img: Img, sizes: String) -> impl IntoView {
     let ui = use_ui();
     let node = NodeRef::<leptos::html::Img>::new();
@@ -1632,7 +1647,8 @@ pub fn CurrentSrc(img: Img, sizes: String) -> impl IntoView {
 /// A native `<dialog>` opened with `showModal()`: focus moves in, the page behind is inert (Tab
 /// can't leave), Esc closes it, focus returns to the button. The open button also carries
 /// `command="show-modal"` so browsers with invoker commands open it before WASM has loaded.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn SheetDemo() -> impl IntoView {
     let ui = use_ui();
     let dialog = NodeRef::<leptos::html::Dialog>::new();
@@ -1745,7 +1761,8 @@ fn stop_label(i: usize, lang: Lang) -> &'static str {
 /// from where you grabbed it), pull it past an end (it rubber-bands), let go mid-flick (the release
 /// velocity carries on and the projected landing picks the resting place), or catch it mid-flight
 /// (it starts from where it is on screen). Arrow keys and the buttons do the same without a pointer.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn SpringLab() -> impl IntoView {
     use crate::components::motion::{Spring, SpringValue, VelocityTracker, project, rubberband};
     let ui = use_ui();
@@ -1954,7 +1971,8 @@ pub fn SpringLab() -> impl IntoView {
 /// Checks, in the visitor's browser, that the shell's router patches are in place, and asks the
 /// server for the home page both ways to show the <noscript> refresh is left out of router
 /// responses.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn PatchProbe() -> impl IntoView {
     let ui = use_ui();
     // [head realignment, scroll after swap, inert noscript, router response without refresh, first load with it]
@@ -2040,7 +2058,8 @@ pub fn PatchProbe() -> impl IntoView {
 /// banner (`components::offline::OfflineBanner`, mounted once on every page). The buttons fire the
 /// same `offline`/`online` window events the browser fires, so the banner reacts exactly as it
 /// would; the status line keeps reading the browser's own answer.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn OfflineDemo() -> impl IntoView {
     let ui = use_ui();
     let online = RwSignal::new(true);
@@ -2096,7 +2115,8 @@ struct Try {
 /// `components::net::retry` against a server function that fails its first two tries
 /// (`notes::flaky_read`): each try's start time shows the backoff, 300 ms and then 600 ms on top
 /// of the round trips. Offline, no try is spent: the helper waits for the `online` event.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 pub fn RetryDemo() -> impl IntoView {
     let ui = use_ui();
     let tries = RwSignal::new(Vec::<Try>::new());

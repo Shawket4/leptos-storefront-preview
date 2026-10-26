@@ -662,7 +662,8 @@ pub fn UiKitPage() -> impl IntoView {
 }
 
 /// Drawer demo: the cart slide-over and the filters bottom sheet. Drag them toward their edge.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 fn KitDrawers() -> impl IntoView {
     let ui = use_ui();
     let cart = RwSignal::new(false);
@@ -699,7 +700,8 @@ fn KitDrawers() -> impl IntoView {
 }
 
 /// Toast demo.
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 fn KitToasts() -> impl IntoView {
     let ui = use_ui();
     let t = move |en: &'static str, ar: &'static str| move || tr(ui.lang.get(), en, ar);
@@ -722,7 +724,8 @@ fn KitToasts() -> impl IntoView {
 }
 
 /// Stepper demo, with a live line total (PriceLive re-renders on quantity, language, numerals).
-#[island]
+#[cfg_attr(feature = "split", island(lazy))]
+#[cfg_attr(not(feature = "split"), island)]
 fn KitStepper() -> impl IntoView {
     let ui = use_ui();
     let a = RwSignal::new(1u32);
