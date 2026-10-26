@@ -74,7 +74,8 @@ for (const file of walk(path.join(root, "client/src"), [".ts"])) {
     if (/\bcreateStore\(/.test(l) && !/client\/src\/(stores|core)\//.test(area) && !/import/.test(l))
       report(file, i + 1, "store created outside stores/ (one store per concern, AGENTS.md)", l);
     if (/\.innerHTML\s*=(?!=)/.test(l)) report(file, i + 1, "innerHTML assignment (fill a server <template> instead)", l);
-    if (/Intl\.NumberFormat|toLocaleString\(/.test(l)) report(file, i + 1, "client-side number/money formatting (money comes formatted; counts use digits())", l);
+    if (/Intl\.NumberFormat|toLocaleString\(/.test(l) && !/client\/src\/core\/money\.ts$/.test(area))
+      report(file, i + 1, "number/money formatting outside core/money.ts (counts: digits(); money: core/money.ts)", l);
   });
 }
 
