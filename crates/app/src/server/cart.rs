@@ -408,10 +408,12 @@ pub mod forms {
             self.0.iter().find(|(a, _)| a == k).map(|(_, v)| v.as_str())
         }
 
-        fn all(&self, k: &str) -> Vec<String> {
+        /// The chosen add-ons: every `addon` field (multi-choice checkboxes) and every
+        /// `addon.<group>` field (a single-choice group's radios, one name per group).
+        fn addons(&self) -> Vec<String> {
             self.0
                 .iter()
-                .filter(|(a, _)| a == k)
+                .filter(|(k, _)| k == "addon" || k.starts_with("addon."))
                 .map(|(_, v)| v.trim().to_owned())
                 .filter(|v| !v.is_empty())
                 .collect()
@@ -567,7 +569,7 @@ pub mod forms {
                 ProductId(product),
                 VariantId(variant),
                 qty,
-                f.all("addon"),
+                f.addons(),
             )
             .map(Some)
         })();

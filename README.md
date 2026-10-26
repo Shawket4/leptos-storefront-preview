@@ -68,6 +68,22 @@ still the first label. A bare IP works too: pick the shop at `/__tenant/nile`.
 | `/__prefs?lang=ar&num=arab&theme=dark&next=/` | `en`/`ar` per shop, `latn`, `light` | Display preferences (cookies). The header's language and theme controls use it. |
 | `DATA_DIR`, `MEDIA_DIR` (env) | `data`, `data/media` | Catalogue JSON, images and search synonyms. Edits are picked up live. |
 
+## Deploy
+
+One Docker image, built like MadarRust's (`Dockerfile`):
+- cargo-chef caches the dependencies in their own layer;
+- the release profile is fat LTO with one codegen unit, and CI targets the VPS's CPU (`x86-64-v4`);
+- the private madar-shared dependency is fetched with a BuildKit secret that never reaches a layer.
+
+The image holds the server, the site assets and the catalogue (JSON, WebP images, synonyms). It
+needs no database, `.env` or volume: carts live in the shopper's cookie. It is about 326 MB to
+pull, 300 MB of which is catalogue images.
+
+`.github/workflows/deploy.yaml` runs on a version tag (`v*.*.*`). It builds the image and pushes
+it to GHCR. On the VPS it starts the image with `docker compose` behind nginx and waits for
+`/health`. Then it checks the public URL and publishes a GitHub Release. One-time VPS setup is in
+`deploy/SETUP.md`; `deploy/vps-agent-prompt.md` is the brief for the agent that prepares the box.
+
 ## The pages, and what each one demonstrates
 
 Every page is rendered completely by the server, in order, so it works without JavaScript. The
@@ -294,6 +310,7 @@ checked against the running server, with Leptos 0.8.22, leptos_axum 0.8.10 and c
 
 Sections 1, 4, 5 and 6 are about **islands**. They are why the client moved to TypeScript, and they
 no longer apply to what ships. Sections 2, 3, 7, 8 and 9 still apply to Leptos on the server.
+Sections 10 and 11 are what the SSR + TypeScript architecture costs.
 
 ### 1. The islands router is a work in progress, and it needs a client shim
 The router's own README calls it "Work in Progress". It fetches the next page and diffs it into the
@@ -404,6 +421,31 @@ On this machine (6 cores, sccache, mold):
 leptos 0.9.0-rc0 shipped on 2026-10-15, and the islands router is still marked WIP. Adopting 0.8
 now means planning a migration soon.
 
+### 10. Leptos without hydration still assumes hydration
+These apply to Stage 2, which renders on the server only:
+- **Bootstrap scripts.** Every page carries two inline scripts that set up hydration state
+  (`__RESOLVED_RESOURCES=[]…`, `__INCOMPLETE_CHUNKS=[]`), although nothing hydrates. They're tiny,
+  but they carry a per-response nonce. A strict Content-Security-Policy therefore has to come from
+  the app, which knows the nonce, not from nginx.
+- **Resources ship their data.** A `Resource` read during server rendering is serialised into the
+  page for hydration, even when no client will read it. Pages here read through `Suspend` with
+  plain futures instead.
+- **A WASM crate nobody loads.** cargo-leptos still requires a library crate for the browser. It
+  builds an empty one, downloads `wasm-opt` during the build, and writes `.wasm`, glue JS and
+  `.d.ts` files into the site. The image deletes them.
+- **Compile-time environment.** `leptos` and `leptos_config` read `LEPTOS_OUTPUT_NAME` with
+  `option_env!`, and cargo-leptos sets it. A Docker dependency layer built without it is silently
+  rebuilt in the final step, so the Dockerfile sets it for both.
+
+### 11. Two languages share contracts by hand
+The browser code is TypeScript, so everything that crosses the boundary exists twice, and nothing
+but care keeps the two copies identical:
+- the cart cookie format (`crates/domain/src/cart.rs`, `client/src/stores/cart.ts`);
+- the money formatter (`crate::format::money`, `client/src/core/money.ts`);
+- the API types (`api::types`, `client/src/api/types.ts`).
+
+A code generator (ts-rs or specta) would remove the third. The first two are small and stable.
+
 ### Our own choices that cost time (not Leptos)
 - **Display preferences in cookies:** they fight public caching. The fix is `no-cache` for
   browsers plus an edge cache key on the preference cookies. Language in the URL (`/ar/…`) would
@@ -413,4 +455,45 @@ now means planning a migration soon.
 
 ## Verdict
 
-⟨TBD⟩
+**Leptos is ready as a server renderer. It isn't ready to run a phone-first shop in the browser.**
+Use it the way Stage 2 does: Leptos SSR on Axum for every page, with a small TypeScript client.
+
+**On the server, it's good.**
+- Every page here is a Leptos component tree rendered on Axum, complete and in order, in 2–6 ms
+  (median, release build, compression included).
+  It works without JavaScript. `#[component]`s compose the way a React developer expects, and
+  server functions with fixed URLs give typed data endpoints with almost no code.
+- The strongest argument for Rust in Madar's web layer is sharing, not speed. madar-shared's
+  pricing and VAT crates run unchanged at checkout, so the storefront prices exactly as Madar's
+  backend does instead of re-implementing it.
+- The server-side traps (rough edges 2, 3 and 10) cost time once. They're avoidable now that
+  they're rules in `AGENTS.md`.
+
+**In the browser, it isn't ready yet.**
+- Stage 1 (islands) shipped 379–769 KB of WASM, brotli, to every first visit. Stage 2 does the
+  same jobs with **10.9 KB** of JavaScript on the first load and 24.7 KB on the heaviest page
+  (brotli). That's 35–70 times less, and every page still renders on the server first.
+- The islands router is marked work in progress and needed a client shim. Hydration had races we
+  never root-caused: toasts and cart updates were lost after navigation. Lazy islands traded one
+  379 KB file for over 100 requests.
+- The weight is architectural, from rendering large UIs in the browser in WASM, not a build
+  setting. The profile was already `opt-level = "z"`, LTO and one codegen unit.
+
+**What it costs to build with.**
+- **The compile loop is the daily cost.** A one-line change takes about 15 s to show (server
+  only), a cold release build 5½ minutes, and an image built without a cache about 25 minutes on
+  this machine (fat LTO; cargo-leptos's own install, which CI caches, is 10 of them). JavaScript
+  stacks reload in under a second.
+- **Two languages in the web layer.** The client is TypeScript either way. What crosses the
+  boundary (the cart cookie, the money formatter, the API types) is written twice and kept
+  identical by hand.
+- **Version churn.** 0.9 is at release candidate, so adopting 0.8 means planning a migration
+  within months.
+- **Macro papercuts** (rough edge 8) slow newcomers down more than they slow old hands.
+
+**Recommendation.** For Madar's customer-facing web:
+- Leptos SSR on Axum, rendering in order, with server functions on fixed URLs.
+- A TypeScript client that owns the state, uses no framework, and has a size budget.
+- Money and pricing stay in madar-shared, called from the server.
+- Revisit islands or full hydration when the islands router is out of work in progress and a
+  storefront's WASM is within a few times the TypeScript client's size, not 35–70 times.

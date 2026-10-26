@@ -74,7 +74,9 @@ RUN --mount=type=secret,id=madar_shared_token \
     mkdir -p /out; \
     cp target/x86_64-unknown-linux-gnu/release/server /out/server; \
     cp "$(find target -name hash.txt -path '*release*' | head -1)" /out/hash.txt; \
-    cp -r target/site /out/site
+    cp -r target/site /out/site; \
+    # cargo-leptos also builds the empty WASM placeholder crate; no page loads it, so don't ship it.
+    rm -f /out/site/pkg/*.wasm /out/site/pkg/*.js /out/site/pkg/*.ts
 
 # ── Stage 3: runtime ───────────────────────────────────────────────────────────
 FROM debian:bookworm-slim
