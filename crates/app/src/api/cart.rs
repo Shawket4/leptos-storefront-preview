@@ -95,7 +95,13 @@ mod imp {
 
     /// The quote for `lines` (cookie order; lines the catalogue lost come back `unavailable`).
     /// `snaps` are the lines' snapshots (`server::cart::snapshot`), in the same order.
-    pub fn quote(lines: &[CartLine], snaps: &[Option<Snapshot>], p: &Priced, lang: Lang, num: Numerals) -> CartQuote {
+    pub fn quote(
+        lines: &[CartLine],
+        snaps: &[Option<Snapshot>],
+        p: &Priced,
+        lang: Lang,
+        num: Numerals,
+    ) -> CartQuote {
         let m = |x: Piastres| format::money(x, lang, num);
         let ar = lang.is_rtl();
         let v = &p.view;
@@ -169,6 +175,15 @@ pub async fn get_quote() -> Result<CartQuote, ServerFnError> {
     let tenant = st.tenant(&rq.tenant.id).clone();
     let catalog = st.catalog(&tenant.id);
     let priced = cart::price(&lines, &tenant, &catalog, st.media());
-    let snaps: Vec<_> = lines.iter().map(|l| cart::snapshot(l, &catalog, st.media(), rq.prefs.lang)).collect();
-    Ok(quote(&lines, &snaps, &priced, rq.prefs.lang, rq.prefs.numerals))
+    let snaps: Vec<_> = lines
+        .iter()
+        .map(|l| cart::snapshot(l, &catalog, st.media(), rq.prefs.lang))
+        .collect();
+    Ok(quote(
+        &lines,
+        &snaps,
+        &priced,
+        rq.prefs.lang,
+        rq.prefs.numerals,
+    ))
 }

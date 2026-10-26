@@ -29,79 +29,62 @@ function message(el: Control): string {
   return el.validationMessage;
 }
 
-// ── The address step: constraint messages, the city narrowing the areas, the notes counter ───
+// ── The address step: what's missing, said before the round-trip ─────────────────────────────
+// The constraint validation API with the catalogue's words: each missing field gets a custom
+// validity message, and the first one is reported (the browser's bubble, focused). The server's
+// own messages render inline under the fields (components::form).
 register("checkout-form", (form) => {
   if (!(form instanceof HTMLFormElement)) return;
-  form.noValidate = true; // our messages, inline, in the page's language
-  let tried = false;
+  form.noValidate = true; // our words, on submit
   const controls = () => $$<Control>("input[name], select[name], textarea[name]", form).filter((c) => c.type !== "hidden");
 
-  /** Show (or clear) the message of the field `name`; returns whether it's valid. */
-  const check = (name: string): boolean => {
+  /** Set the field's message (empty when fine); returns its first control when it isn't. */
+  const check = (name: string): Control | null => {
     const group = controls().filter((c) => c.name === name);
-    const msg = group.map(message).find(Boolean) ?? "";
-    for (const c of group) c.setAttribute("aria-invalid", String(!!msg));
-    const box = form.querySelector<HTMLElement>(`#co-${CSS.escape(name)}-err`);
-    if (box) {
-      // A message the server sent stays until the field is edited.
-      if (msg || box.dataset.client !== undefined || tried) {
-        box.hidden = !msg;
-        patch(box, { error: msg || null });
-        box.toggleAttribute("data-client", !!msg);
-      }
+    const first = group[0];
+    if (!first) return null;
+    for (const c of group) c.setCustomValidity("");
+    let msg = "";
+    if (first instanceof HTMLInputElement && first.type === "radio") {
+      msg = group.some((c) => (c as HTMLInputElement).checked) ? "" : t("checkout.v.choose");
+    } else if (first instanceof HTMLSelectElement) {
+      msg = first.value ? "" : t("checkout.v.choose");
+    } else if (first.name === "notes" && first.value.length > max) {
+      msg = t("checkout.v.too_long", { n: digits(max) });
+    } else {
+      msg = message(first);
     }
-    return !msg;
+    first.setCustomValidity(msg);
+    return msg ? first : null;
   };
-
-  const area = $<HTMLSelectElement>("select[name=area]", form);
-  const narrow = () => {
-    const city = $<HTMLInputElement>("input[name=city]:checked", form)?.value;
-    if (!area || !city) return;
-    for (const og of $$<HTMLOptGroupElement>("optgroup[data-city]", area)) {
-      const other = og.dataset.city !== city;
-      og.hidden = other;
-      og.disabled = other;
-    }
-    if (area.selectedOptions[0]?.parentElement instanceof HTMLOptGroupElement && area.selectedOptions[0].parentElement.disabled) area.value = "";
-  };
-  narrow();
 
   const notes = $<HTMLTextAreaElement>("textarea[name=notes]", form);
   const counter = $("[data-notes-count]", form);
+  const max = Number(counter?.dataset.max) || 200;
   const count = () => {
-    if (notes && counter) counter.textContent = `${digits(notes.value.length)}/${digits(notes.maxLength)}`;
+    if (notes && counter) counter.textContent = `${digits(notes.value.length)}/${digits(max)}`;
   };
 
   const onSubmit = (ev: SubmitEvent) => {
-    tried = true;
     const names = [...new Set(controls().map((c) => c.name))];
-    const bad = names.filter((n) => !check(n));
-    if (!bad.length) return; // valid: the router posts it
+    const bad = names.map(check).filter((c): c is Control => !!c);
+    if (!bad.length) return; // complete: the router posts it
     ev.preventDefault();
-    const first = controls().find((c) => c.name === bad[0]);
-    first?.focus();
+    bad[0]!.reportValidity();
   };
   const onInput = (ev: Event) => {
     const c = ev.target as Control;
     if (!c.name) return;
     if (c.name === "notes") count();
-    if (c.name === "city") narrow();
-    if (tried || c.getAttribute("aria-invalid") === "true") check(c.name);
-    if (c.name === "city" && area && (tried || area.getAttribute("aria-invalid") === "true")) check("area");
-  };
-  const onBlur = (ev: FocusEvent) => {
-    const c = ev.target as Control;
-    if (c.name && "value" in c && c.value.trim()) check(c.name);
+    check(c.name);
   };
   form.addEventListener("submit", onSubmit);
   form.addEventListener("input", onInput);
   form.addEventListener("change", onInput);
-  form.addEventListener("focusout", onBlur);
   return () => {
     form.removeEventListener("submit", onSubmit);
     form.removeEventListener("input", onInput);
     form.removeEventListener("change", onInput);
-    form.removeEventListener("focusout", onBlur);
   };
 });
 
@@ -117,7 +100,9 @@ register("checkout", (root) => {
   }
 
   // What the server sent back: the first field it flagged, else the step's message.
-  const first = $<HTMLElement>('[aria-invalid="true"]', root) ?? $<HTMLElement>(".notice[data-autofocus]", root);
+  const first =
+    $<HTMLElement>(':is(input, select, textarea)[aria-invalid="true"], fieldset[aria-invalid="true"] input', root) ??
+    $<HTMLElement>(".notice[data-autofocus]", root);
   first?.focus();
 
   let busy: HTMLFormElement | null = null;

@@ -33,10 +33,16 @@ pub fn QuickAdd(card: CardData, lang: Lang, numerals: Numerals) -> impl IntoView
     let _ = numerals;
     // The line's snapshot (display data + prices in piastres): the cart is computed in the
     // browser from it, without asking the server.
-    let line = domain::cart::CartLine { product: card.id, variant: card.default_variant, qty: 1, addons: vec![] };
+    let line = domain::cart::CartLine {
+        product: card.id,
+        variant: card.default_variant,
+        qty: 1,
+        addons: vec![],
+    };
     let st = crate::server::state();
-    let snapshot = crate::server::cart::snapshot(&line, &crate::server::current_catalog(), st.media(), lang)
-        .and_then(|s| serde_json::to_string(&s).ok());
+    let snapshot =
+        crate::server::cart::snapshot(&line, &crate::server::current_catalog(), st.media(), lang)
+            .and_then(|s| serde_json::to_string(&s).ok());
     // Come back to this page (without a previous add's notice).
     let next = crate::request::req()
         .path_and_query
