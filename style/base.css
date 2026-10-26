@@ -290,7 +290,7 @@ hr {
 }
 [data-press]:active:not(:disabled, [aria-disabled="true"]) {
   scale: var(--press);
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-press);
 }
 
 /* A spinner: the lucide loader-circle, turning. The only loop that survives

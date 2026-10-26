@@ -180,7 +180,7 @@
   margin: 0;
 }
 .kit__pic-box {
-  --pic-radius: var(--r-lg);
+  --r-pic: var(--r-lg);
 }
 
 /* Cards */

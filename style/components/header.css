@@ -32,7 +32,7 @@
 @supports (animation-timeline: scroll()) {
   .site-header::after {
     opacity: 0;
-    animation: header-edge linear both;
+    animation: header-edge var(--ease-linear) both;
     animation-timeline: scroll(root);
     animation-range: 0 3rem;
   }

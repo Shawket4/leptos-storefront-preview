@@ -682,7 +682,7 @@ a.co-step__link:hover {
 }
 .mini-line__media {
   display: block;
-  --pic-radius: var(--r-md);
+  --r-pic: var(--r-md);
   border-radius: var(--r-md);
   corner-shape: squircle;
   overflow: hidden;

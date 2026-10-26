@@ -47,7 +47,7 @@
 }
 .bottom-nav__link:active {
   scale: 0.94;
-  transition: scale var(--press-dur) ease-out;
+  transition: scale var(--press-dur) var(--ease-press);
 }
 .bottom-nav__icon {
   position: relative;
