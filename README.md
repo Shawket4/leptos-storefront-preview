@@ -234,8 +234,69 @@ data/            catalogue JSON, WebP image ladders, search synonyms
 
 ### Stage 2: SSR + TypeScript (what ships)
 
-⟨TBD after integration: the client bundle (raw · gzip · brotli), HTML per page, what each page
-downloads⟩
+Release build, 2026-10-26, measured by `node tools/size-budget.mjs`. Brotli is what browsers
+download.
+
+| JavaScript | Raw · gzip · **brotli** | When it loads |
+|---|---|---|
+| **First load** (entry + one shared chunk) | 31.6 KB · 12.1 KB · **10.9 KB** | With every page |
+| Listing (filters, sort) | 3.3 · 1.6 · 1.4 KB | On listings |
+| Home | 0.4 · 0.3 · 0.3 KB | On the home page |
+| Product (gallery, variants, add-ons) | 16.2 · 6.8 · 6.2 KB | On product pages |
+| Checkout | 5.7 · 2.6 · 2.3 KB | On checkout and tracking |
+| Showcase | 16.8 · 7.0 · 6.3 KB | On /showcase and /ui |
+| Cart drawer and /cart renderer | 7.2 · 3.1 · 2.7 KB | On /cart; elsewhere on the first reach for the cart, or after a quick add |
+| Instant search | 4.5 · 2.1 · 1.9 KB | On first use of the search box, or once the page is idle |
+| Sheet gestures, rails, pull-to-refresh, toggles | 10.7 · 5.1 · 4.6 KB | Where they're used |
+| **Heaviest page** (showcase + every extra) | 67.1 · 27.6 · **24.8 KB** | An upper bound |
+| **CSS** (one file for every page) | 169.7 · 29.4 · **25.0 KB** | Cached `immutable` |
+
+The budgets are 15 KB gzip for the first load, 30 KB for the heaviest page and 35 KB for the CSS.
+The script fails when any is exceeded. Three things got the first load from 18.5 to 12.1 KB:
+- **Features load on demand.** Product code loads only on `/p/*` and listing code only on
+  listings. Back and forward fetch no JavaScript.
+- **The cart drawer and instant search load on first use** (`lazyOnIntent` in `core/mount.ts`).
+  Hovering or touching starts the download; a press, focus or key loads it. No event is
+  swallowed, so a tap before the code arrives still works.
+- **One chunk for the first load.** esbuild split the always-loaded code into 11 small files,
+  each compressed on its own: 17.8 KB gzip, against 14.8 KB for the same code in one file.
+  `client/build.mjs` now runs twice so that this code lands in one shared chunk.
+
+**What each page downloads** on a first visit, measured in Chromium against the release server
+(phone viewport, cold cache, KB as sent, headers included). Nile pages are English, Souq pages
+Arabic:
+
+| Page | HTML | JS at load (files) | JS once idle | CSS | Fonts | Images |
+|---|---:|---:|---:|---:|---:|---:|
+| Home | 25.7 · 28.5 | 16.0 (5) | 20.4 | 32.0 | 78 · 109 | 127 · 139 |
+| Listing | 17.0 · 23.3 | 12.8 (2) · 16.6 (4) | 21.0 | 32.0 | 78 · 109 | 79 · 369 |
+| Search | 18.4 · 19.2 | 20.0 (6) · 18.9 (5) | 21.0 | 32.0 | 78 · 109 | 108 · 257 |
+| Product | 19.7 · 20.9 | 12.8 (2) | 26.2 | 32.0 | 78 · 109 | 30 · 87 |
+| Cart | 10.7 · 11.7 | 12.8 (2) · 18.1 (4) | 22.6 | 32.0 | 80 · 94 | 35 · 49 |
+| Checkout | 11.7 · 13.2 | 16.8 (4) | 22.3 | 32.0 | 78 · 109 | 4 · 7 |
+| Orders | 9.5 · 10.7 | 16.8 (5) · 12.8 (2) | 19.2 | 32.0 | 63 · 78 | 4 · 7 |
+| `/showcase` | 30.2 · 33.3 | 12.8 (2) | 26.5 | 32.0 | 109 | 4 · 7 |
+| `/ui` | 37.1 · 39.4 | 16.0 (5) · 21.7 (6) | 27.1 | 32.0 | 109 | 24 · 45 |
+
+Where a cell has two figures, Nile comes first. "Once idle" adds what loads after the `load` event:
+instant search, and pull-to-refresh on touch screens. Everything else on these pages is the
+catalogue's photos and the fonts:
+- **Fonts** are the largest fixed cost: Cairo (Latin 34 KB, Arabic 31 KB) and IBM Plex Mono in
+  three weights (45 KB). They're cached forever.
+- English pages skip the Arabic subset since the language switch shows «العربية» and «١٢٣» in
+  the system font: 78 KB instead of 109 KB.
+
+Pages render on the server in about 2 ms (cart, orders) to about 20 ms (`/ui`, 370 KB of HTML
+with every component). These are medians of 60 requests on localhost, release build, brotli
+included. They vary by up to about 2× with what else the machine is doing.
+
+**Against Stage 1:**
+
+| | Stage 1, islands (split build) | Stage 2, SSR + TypeScript |
+|---|---|---|
+| Code for a first visit | 379 KB WASM + 13 KB JS | **10.9 KB** JS |
+| Code for the product page | 581 KB WASM in 107 files + 13 KB JS | **17.1 KB** JS in 4 files |
+| Works without JavaScript | Yes, with a `/nojs` twin for the streamed home page | Yes, every page as is |
 
 ### Stage 1: the islands build (measured before the rebuild)
 
@@ -459,8 +520,8 @@ A code generator (ts-rs or specta) would remove the third. The first two are sma
 Use it the way Stage 2 does: Leptos SSR on Axum for every page, with a small TypeScript client.
 
 **On the server, it's good.**
-- Every page here is a Leptos component tree rendered on Axum, complete and in order, in 2–6 ms
-  (median, release build, compression included).
+- Every page here is a Leptos component tree rendered on Axum, complete and in order, in about
+  2–20 ms (median, release build, compression included).
   It works without JavaScript. `#[component]`s compose the way a React developer expects, and
   server functions with fixed URLs give typed data endpoints with almost no code.
 - The strongest argument for Rust in Madar's web layer is sharing, not speed. madar-shared's
@@ -471,7 +532,7 @@ Use it the way Stage 2 does: Leptos SSR on Axum for every page, with a small Typ
 
 **In the browser, it isn't ready yet.**
 - Stage 1 (islands) shipped 379–769 KB of WASM, brotli, to every first visit. Stage 2 does the
-  same jobs with **10.9 KB** of JavaScript on the first load and 24.7 KB on the heaviest page
+  same jobs with **10.9 KB** of JavaScript on the first load and 24.8 KB on the heaviest page
   (brotli). That's 35–70 times less, and every page still renders on the server first.
 - The islands router is marked work in progress and needed a client shim. Hydration had races we
   never root-caused: toasts and cart updates were lost after navigation. Lazy islands traded one
