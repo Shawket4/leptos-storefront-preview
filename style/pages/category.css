@@ -811,6 +811,11 @@ a.lx-page:active {
   .lx-sheet-close {
     display: none;
   }
+  /* Seven-figure prices fit the sidebar's half-width boxes (phones keep 16px: no iOS zoom). */
+  .lx-filters .lx-input input {
+    padding-inline: var(--sp-2);
+    font-size: var(--fs-sm);
+  }
 }
 
 /* ── The skeleton (only shown if the route ever streams out of order) ────── */
