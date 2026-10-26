@@ -50,12 +50,8 @@ pub fn Drawer(
     /// Extra classes on the `<dialog>`.
     #[prop(optional, into)]
     class: String,
-    /// Islands-era prop, ignored (the drawer starts closed; see the module docs). Remove it.
-    #[prop(optional)]
-    open: Option<RwSignal<bool>>,
     children: Children,
 ) -> impl IntoView {
-    let _ = open;
     let lang = use_ui().lang.get_untracked();
     let id = id.unwrap_or_else(|| "drawer".to_owned());
     let title_id = format!("{id}-title");

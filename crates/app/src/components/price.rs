@@ -4,10 +4,10 @@
 //!
 //! Screen readers get one sentence (`format::money`) from a visually hidden span; the visual
 //! parts are `aria-hidden`. The DOM order of the parts is the same in both languages (CSS orders
-//! them), so a language switch patched in by the islands router only swaps text.
+//! them), so the two languages render the same element tree.
 
 use crate::format::{self, MoneyParts};
-use crate::prefs::{Lang, Numerals, tr, use_ui};
+use crate::prefs::{Lang, Numerals, tr};
 use domain::Piastres;
 use leptos::prelude::*;
 
@@ -155,30 +155,4 @@ pub fn Price(
     price_view(
         amount, compare_at, size, from, !no_badge, lang, numerals, &class,
     )
-}
-
-/// A price inside an island: re-renders when the amount changes or the visitor flips the language
-/// or numerals (reads `prefs::use_ui()`).
-#[component]
-pub fn PriceLive(
-    #[prop(into)] amount: Signal<Piastres>,
-    #[prop(optional, into)] compare_at: Signal<Option<Piastres>>,
-    #[prop(optional)] size: PriceSize,
-    #[prop(optional, into)] from: Signal<bool>,
-    #[prop(optional)] no_badge: bool,
-    #[prop(optional, into)] class: String,
-) -> impl IntoView {
-    let ui = use_ui();
-    move || {
-        price_view(
-            amount.get(),
-            compare_at.get(),
-            size,
-            from.get(),
-            !no_badge,
-            ui.lang.get(),
-            ui.numerals.get(),
-            &class,
-        )
-    }
 }

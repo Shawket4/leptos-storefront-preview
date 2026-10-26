@@ -14,7 +14,6 @@ pub mod header;
 pub mod icons;
 pub mod image;
 pub mod layout;
-pub mod net;
 pub mod offline;
 pub mod prefs_controls;
 pub mod price;

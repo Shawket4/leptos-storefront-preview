@@ -33,13 +33,7 @@ pub fn Stepper(
     #[prop(optional, into)]
     id: Option<String>,
     #[prop(optional, into)] class: String,
-    /// Islands-era props, ignored (listen for `change` on the input instead). Remove them.
-    #[prop(optional)]
-    on_change: Option<Callback<u32>>,
-    #[prop(optional)] on_remove: Option<Callback<()>>,
 ) -> impl IntoView {
-    let _ = on_change;
-    let removable = removable || on_remove.is_some();
     let lang = use_ui().lang.get_untracked();
     let max = max.max(min);
     let v = value

@@ -1,8 +1,7 @@
 //! Per-visitor display preferences: language, numeral system, colour theme.
 //!
 //! They live in cookies so the server renders the right `<html lang dir data-theme>` before the
-//! first byte (no flash), and in one reactive [`Ui`] store on the client so every island re-renders
-//! its own strings when the visitor flips a toggle.
+//! first byte (no flash). A change is a `/__prefs` link: the router swaps the whole frame in place.
 
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -118,11 +117,8 @@ pub struct Prefs {
     pub theme: Theme,
 }
 
-/// The reactive preference store shared by every island on the page.
-///
-/// Server: provided per request from cookies (see `request::RequestCtx`).
-/// Client: provided once in `frontend::hydrate()` from the `<html>` attributes, under the root
-/// owner that `hydrate_islands()` installs, so sibling islands all see the same signals.
+/// The request's preferences as context, provided per request from cookies (see
+/// `request::RequestCtx`); components read them with [`use_ui`] / [`lang_now`].
 #[derive(Clone, Copy, Debug)]
 pub struct Ui {
     pub lang: RwSignal<Lang>,
@@ -156,18 +152,11 @@ pub fn lang_now() -> Lang {
     use_ui().lang.get_untracked()
 }
 
-/// Pick the English or Arabic literal. Keeps strings next to where they are used, and an island
-/// only ships the strings it actually renders.
+/// Pick the English or Arabic literal (one-off server labels; shared strings live in `strings`).
 #[inline]
 pub fn tr(lang: Lang, en: &'static str, ar: &'static str) -> &'static str {
     match lang {
         Lang::En => en,
         Lang::Ar => ar,
     }
-}
-
-/// Reactive version of [`tr`] for islands: re-renders when the language toggles.
-pub fn tr_signal(en: &'static str, ar: &'static str) -> Signal<&'static str> {
-    let lang = use_ui().lang;
-    Signal::derive(move || tr(lang.get(), en, ar))
 }

@@ -86,6 +86,10 @@
   inline-size: 40px;
   block-size: 40px;
 }
+/* The quick-add "+" is the card's one action: its stroke heavier than the rest. */
+.pcard__quick .icon {
+  --icon-stroke: 2.75;
+}
 .pcard__quick:empty {
   pointer-events: none;
 }

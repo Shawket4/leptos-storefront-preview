@@ -1,9 +1,8 @@
 //! Buttons and round icon buttons.
 //!
 //! `Button` renders an `<a>` when given `href` (navigation is a link, so it works without JS and
-//! the islands router can follow it) and a `<button>` otherwise. Event handlers and extra
-//! attributes can be put straight on the component (`<Button on:click=… attr:form="x">`); Leptos
-//! spreads them onto the element.
+//! the router takes it) and a `<button>` otherwise. Extra attributes go straight on the component
+//! (`<Button attr:form="x" attr:data-drawer-close="">`); Leptos spreads them onto the element.
 
 use super::icons::Icon;
 use leptos::either::Either;
