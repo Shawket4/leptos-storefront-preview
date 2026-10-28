@@ -47,10 +47,10 @@ LEPTOS_OUTPUT_NAME=storefront LEPTOS_SITE_ROOT=target/site LEPTOS_SITE_PKG_DIR=p
 LEPTOS_SITE_ADDR=0.0.0.0:3000 LEPTOS_ENV=PROD ./target/release/server
 ```
 
-The TypeScript in `client/` is type-checked by `tsc` and bundled by esbuild from
-`crates/app/build.rs`. The result is an entry module plus chunks that load when a page needs them,
-all named by content hash. They're embedded in the server binary and served from `/js/` with
-`immutable` caching. A type error fails the Rust build.
+The TypeScript in `client/` is type-checked by `tsc` (TypeScript 7, the native compiler) and
+bundled by esbuild from `crates/app/build.rs`. The result is an entry module plus chunks that load
+when a page needs them, all named by content hash. They're embedded in the server binary and served
+from `/js/` with `immutable` caching. A type error fails the Rust build.
 
 **On a phone** (Tailscale): `http://nile.100-123-21-13.sslip.io:3000` and
 `http://souq.100-123-21-13.sslip.io:3000`. sslip.io maps the name to the tailnet IP, and the shop is
